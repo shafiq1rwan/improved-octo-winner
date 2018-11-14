@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Coffee" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ced95029-b569-4027-895c-af2843a4e088">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<style name="Title" fontName="Times New Roman" fontSize="50" isBold="true"/>
+	<style name="SubTitle" forecolor="#736343" fontName="Times New Roman" fontSize="18"/>
+	<style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="12" isBold="true"/>
+	<style name="Detail" fontName="Times New Roman" fontSize="12"/>
+	<style name="Row" mode="Transparent">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style backcolor="#3AE090"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="month" class="java.lang.Integer"/>
+	<parameter name="year" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT c.name, COUNT(c.name) as qty, (c.detail_item_price*count(c.name)) as ttl 
+					FROM checks b JOIN details c ON b.chk_seq = c.chk_seq
+					WHERE c.detail_item_status = 0 
+					AND c.detail_type = 'S' AND b.chk_open = 3
+					AND month(b.createdate) >= $P{month}  AND year(b.createdate)= $P{year}
+					GROUP BY c.name ORDER BY b.chk_seq]]>
+	</queryString>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="details"/>
+	</field>
+	<field name="qty" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="qty"/>
+	</field>
+	<field name="ttl" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ttl"/>
+	</field>
+	<variable name="subTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{ttl}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="128" splitType="Stretch">
+			<frame>
+				<reportElement style="Title" mode="Opaque" x="0" y="0" width="555" height="128" backcolor="#3AE090" uuid="05030119-af24-49d7-aac5-c5d9648d99bc"/>
+				<image>
+					<reportElement x="20" y="24" width="101" height="80" uuid="ddc15723-2728-421f-b95e-2df9faf64ce1"/>
+					<imageExpression><![CDATA["src/main/resources/static/meta/img/ecpos_logo.png"]]></imageExpression>
+				</image>
+				<staticText>
+					<reportElement style="Title" x="207" y="62" width="140" height="39" forecolor="#FFFFFF" uuid="2a034bc0-511f-4650-869a-326ff9fa5e00"/>
+					<textElement verticalAlignment="Middle">
+						<font size="20" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Restaurant MPay]]></text>
+				</staticText>
+			</frame>
+			<staticText>
+				<reportElement style="Title" x="137" y="0" width="280" height="62" forecolor="#FFFFFF" uuid="1a652692-054a-40f3-ade5-68d8da36626d"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Sales Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="24" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="15" width="555" height="1" uuid="1a61a836-d137-48b1-ad67-6ff64600bf93"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement style="Column header" x="0" y="0" width="185" height="15" forecolor="#736343" uuid="6f9b0297-909a-4db9-8ab1-04266d2dde3f">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9ddcdd0c-56ff-4ef3-94d3-3df974976c75"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<text><![CDATA[Item Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="185" y="0" width="185" height="15" forecolor="#736343" uuid="974c04e0-67d4-458c-b08c-b8e8023482f4">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9e812a0a-d18d-4d42-8904-147ddb7f7417"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<text><![CDATA[Quantity]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="420" y="0" width="135" height="15" forecolor="#736343" uuid="704167b6-bfb3-4f13-9f5c-87b362cb858c">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a704e05e-12f3-441f-92be-28a501fdde9f"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman"/>
+				</textElement>
+				<text><![CDATA[Total (RM)]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="1" uuid="061224ce-7381-4416-906d-d9f568bb85c4"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<frame>
+				<reportElement style="Row" mode="Opaque" x="0" y="0" width="555" height="15" uuid="a98495d8-3c8d-4fa0-81f5-30c3efc2f766"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="Row" isPrintRepeatedValues="false" x="0" y="0" width="185" height="15" uuid="41a2798d-6a11-4b25-8b19-6d9a049fd673">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9ddcdd0c-56ff-4ef3-94d3-3df974976c75"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="Row" isPrintRepeatedValues="false" x="185" y="0" width="185" height="15" uuid="86c30e5d-e8c1-413b-a03f-516608d68206">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9e812a0a-d18d-4d42-8904-147ddb7f7417"/>
+					</reportElement>
+					<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="Row" isPrintRepeatedValues="false" x="420" y="0" width="135" height="15" uuid="b510f803-d447-435b-9478-80fa79d1e09a">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a704e05e-12f3-441f-92be-28a501fdde9f"/>
+					</reportElement>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression><![CDATA[$F{ttl}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="50"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="25" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="53"/>
+	</lastPageFooter>
+	<summary>
+		<band height="60">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="420" y="30" width="135" height="20" uuid="00c93e1d-b320-499a-b43c-c24008c7a215"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" size="12" isBold="true" isUnderline="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{subTotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="30" width="100" height="20" uuid="1dfcd9b9-3440-4aea-af86-c3c530ff2d96"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Subtotal (RM)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="555" height="1" uuid="48df249b-77f0-43b4-a5a8-1943391addd4"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="10" width="100" height="20" uuid="c7841cbb-bcd8-4d40-a0a4-b1a8dd28e002"/>
+				<textElement>
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Discount (RM)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="420" y="10" width="135" height="20" uuid="0651ea5a-749e-49bf-a30d-f81ee9e9d465"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" size="12" isBold="true" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[0.00]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

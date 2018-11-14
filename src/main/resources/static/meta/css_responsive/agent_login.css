@@ -1,0 +1,251 @@
+@import url(http://fonts.googleapis.com/css?family=Montserrat);
+
+html {
+	background-color: #f3f3f3;
+}
+
+img.fix-left {
+	margin-left: -90%;
+	height: 18%;
+	width: 18%;
+}
+
+img.fix-left-parcelpay {
+	margin-left: -90%;
+	height: 20%;
+	width: 30%;
+}
+
+.form-login {
+	max-width: 1000px;
+	width: 100%;
+	margin: 0 auto;
+	font: bold 14px montserrat;
+	text-align: center;
+}
+
+.take-a-tour {
+	display: block;
+	margin: 5% auto;
+	max-width: 250px;
+	font-size: 10pt;
+	color: #fff;
+}
+
+.form-log-in-with-email {
+	position: relative;
+	display: inline-block;
+	vertical-align: top;
+	margin-right: 130px;
+	text-align: center;
+}
+
+.form-log-in-with-email .form-white-background {
+	width: 570px;
+	box-sizing: border-box;
+	background-color: #ffffff;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+	padding: 20px 80px;
+	margin-bottom: 32px;
+}
+
+.form-log-in-with-email .form-row {
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+.form-log-in-with-email .form-title-row {
+	text-align: center;
+	margin-bottom: 30px;
+}
+
+.form-log-in-with-email h1 {
+	display: inline-block;
+	box-sizing: border-box;
+	color: #4c565e;
+	font-size: 24px;
+	padding: 0 30px 15px;
+	border-bottom: 2px solid #B3112C;
+	margin: 0;
+}
+
+.form-log-in-with-email .form-row>label span {
+	display: inline-block;
+	box-sizing: border-box;
+	color: #5f5f5f;
+	width: 125px;
+	text-align: right;
+	padding-right: 25px;
+}
+
+.form-log-in-with-email input {
+	color: #5f5f5f;
+	box-sizing: border-box;
+	width: 230px;
+	box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
+	padding: 12px 18px;
+	border: 1px solid #dbdbdb;
+	font-family: montserrat;
+}
+
+.form-log-in-with-email button {
+	display: block;
+	border-radius: 2px;
+	background-color: #B3112C;
+	color: #ffffff;
+	font-weight: bold;
+	box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
+	padding: 15px 35px;
+	border: 0;
+	margin: 25px auto 0;
+	cursor: pointer;
+	font-family: montserrat;
+}
+
+.request-activation-code {
+	text-decoration: none;
+	padding: 4px 8px;
+	font-weight: normal;
+	color: #ffffff;
+	background-color: #B3112C;
+}
+
+.form-log-in-with-email .form-forgotten-password,
+	.form-log-in-with-email .form-create-an-account {
+	text-decoration: none;
+	padding: 4px 8px;
+	font-weight: normal;
+}
+
+.form-log-in-with-email .form-forgotten-password {
+	color: #4e9eda;
+}
+
+.form-log-in-with-email .form-create-an-account {
+	color: #ffffff;
+	background-color: #B3112C;
+}
+
+.form-action {
+	display: block;
+	margin: 5px auto;
+	max-width: 250px;
+	font-size: 10pt;
+	color: #fff;
+}
+
+.form-action-parcelpay {
+	
+}
+
+.form-action-modify-bundle {
+	display: block;
+	margin: 5px 0 0 80px;
+	max-width: 200px;
+	color: #B3112C;
+	height: 25px;
+	font-size: 10pt;
+}
+
+div.action {
+	margin-top: -16%;
+	margin-left: 10%;
+	white-space: nowrap;
+	text-align: initial;
+}
+
+div.arrange {
+	margin-bottom: 0px;
+	margin-top: 20px;
+}
+
+/*	Making the form responsive. Remove these media queries
+    if you don't need the form to work on mobile devices. */
+@media ( max-width : 900px) {
+	.form-login {
+		margin: 20px auto;
+	}
+	.form-log-in-with-email {
+		position: relative;
+		display: block;
+		margin: 0 0 50px;
+	}
+	.form-log-in-with-email .form-white-background {
+		margin: 0 auto 32px;
+	}
+	.form-sign-in-with-social {
+		margin-top: 60px;
+	}
+}
+
+@media ( max-width : 600px) {
+	.form-log-in-with-email .form-white-background {
+		width: auto;
+		padding-left: 35px;
+		padding-right: 35px;
+	}
+	.form-log-in-with-email .form-row>label span {
+		display: block;
+		text-align: left;
+		padding: 0 0 10px;
+	}
+	.form-log-in-with-email .form-email, .form-log-in-with-email .form-password
+		{
+		display: block;
+		margin: 0 auto;
+	}
+	.form-log-in-with-email .form-forgotten-password,
+		.form-log-in-with-email .form-create-an-account {
+		display: block;
+		margin: 5px auto;
+		max-width: 180px;
+	}
+	.request-activation-code {
+		display: block;
+		margin: 5px auto;
+		max-width: 250px;
+	}
+	.form-action {
+		display: block;
+		margin: 5px 0 0 60px;
+		max-width: 200px;
+		color: #fff;
+		height: 25px;
+		font-size: 10pt;
+	}
+	.form-action-parcelpay {
+		display: block;
+		margin: 5px 0 0 60px;
+		max-width: 200px;
+		color: #fff;
+		height: 25px;
+		font-size: 10pt;
+	}
+	.form-action-modify-bundle {
+		display: block;
+		margin: 5px 0 0 60px;
+		max-width: 200px;
+		color: #B3112C;
+		height: 25px;
+		font-size: 10pt;
+	}
+	div.action {
+		margin-top: -20%;
+		white-space: nowrap;
+		text-align: initial;
+		margin-left: 10%;
+	}
+	img.fix-left {
+		margin-left: -90%;
+		height: 20%;
+		width: 20%;
+	}
+	img.fix-left-parcelpay {
+		margin-left: -85%;
+		height: 20%;
+		width: 30%;
+	}
+	.take-a-tour {
+		margin-top: 10%;
+	}
+}
