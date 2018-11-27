@@ -50,8 +50,6 @@ import mpay.my.ecpos_manager_v2.webutil.UtilWebComponents;
 @RequestMapping("/printerapi")
 public class show_printer_config_RestController {
 	
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 	
 	@Autowired
@@ -116,16 +114,16 @@ public class show_printer_config_RestController {
 				jsonResult.put("portInfoIndex", index);
 				jsonResult.put(PORT_INFO_LIST, portInfoList);
 				jsonResult.put(PAPER_SIZE_LIST, paperSizeList);
-				Logger.writeActivity("FIND PRINTERS SUCCESS", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("FIND PRINTERS SUCCESS", ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "FAILURE WHEN RETRIEVING PRINTER DATA");
-				Logger.writeActivity("FIND PRINTERS FAIL", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("FIND PRINTERS FAIL", ECPOS_FOLDER);
 			}
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 		System.out.println(jsonResult.toString());
 		return jsonResult.toString();
@@ -190,11 +188,11 @@ public class show_printer_config_RestController {
 				jsonResult.put(PAPER_SIZE_LIST, paperSizeList);
 				jsonResult.put("htmlElementString", html);
 				//jsonResult.put("firstTimeSetup", firstTimeSetup);
-				Logger.writeActivity("Available Printer Ports: " + portInfoList.toString(), ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Available Printer Ports: " + portInfoList.toString(), ECPOS_FOLDER);
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -244,24 +242,24 @@ public class show_printer_config_RestController {
 					if (insertPrinterResult == 1) {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						Logger.writeActivity("SUCCESSFULLY SET ACTIVE PRINTER", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+						Logger.writeActivity("SUCCESSFULLY SET ACTIVE PRINTER", ECPOS_FOLDER);
 						
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "CANNOT SAVE PRINTER DATA");
-						Logger.writeActivity("CANNOT SAVE ACTIVE PRINTER", ECPOS_ACT_FILENAME, ECPOS_FOLDER);	
+						Logger.writeActivity("CANNOT SAVE ACTIVE PRINTER", ECPOS_FOLDER);	
 					}
 				}
 
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "FAILURE WHEN RETRIEVING REQUEST DATA");
-				Logger.writeActivity("FAILURE WHEN RETRIEVING REQUEST DATA", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("FAILURE WHEN RETRIEVING REQUEST DATA", ECPOS_FOLDER);
 			}
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 		return jsonResult.toString();
 	}
@@ -576,17 +574,17 @@ public class show_printer_config_RestController {
 			if (jsonObj.has("ResponseCode") && jsonObj.has("ResponseMessage")) {
 				if (jsonObj.getInt("ResponseCode") == 1) {
 					System.out.println("Success Printing Transaction Receipt");
-					Logger.writeActivity("Success Printing", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Success Printing", ECPOS_FOLDER);
 				} else {
 					System.out.println("Please Check Your Printer Setting!");
-					Logger.writeActivity("Fail Printing", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Fail Printing", ECPOS_FOLDER);
 				}
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -887,7 +885,7 @@ public class show_printer_config_RestController {
 						if (jsonPrinterResponse.getInt("ResponseCode") != 1) {
 							jsonResult.put(Constant.RESPONSE_CODE, "00");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-							Logger.writeActivity("Receipt :"+ jsonData.getString("checkNumber") +" had been printed", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+							Logger.writeActivity("Receipt :"+ jsonData.getString("checkNumber") +" had been printed", ECPOS_FOLDER);
 						}
 						else {
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -905,9 +903,8 @@ public class show_printer_config_RestController {
 
 		}
 		catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 		}
 
 		return jsonResult.toString();
@@ -926,14 +923,14 @@ public class show_printer_config_RestController {
 			JSONObject jsonData = new JSONObject(data);
 			if (!jsonData.has("printerName"))
 			{
-				Logger.writeActivity("Printer Not Found", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Printer Not Found", ECPOS_FOLDER);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 			jdbcTemplate.update(removePrinterModelSql, new Object[] { jsonData.getString("printerName") });
-			Logger.writeActivity("Printer Deselected", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Printer Deselected", ECPOS_FOLDER);
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

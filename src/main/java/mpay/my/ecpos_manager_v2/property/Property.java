@@ -27,5 +27,4 @@ public class Property {
 	public static String getECPOS_ERR_FILENAME() {
 		return ECPOS_ERR_FILENAME;
 	}
-
 }

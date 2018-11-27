@@ -42,8 +42,6 @@ public class show_trans_RestController {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	private static final String SELECT_TRANSACTION_USING_DATE_SQL = "SELECT a.*, DATE_FORMAT(a.tran_datetime,'%r') as tran_time, "
@@ -231,21 +229,18 @@ public class show_trans_RestController {
 			}
 
 			jsonResult.put("trans_list", trans_list);
-			Logger.writeActivity("Transaction List: " + jsonResult.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Transaction List: " + jsonResult.toString(), ECPOS_FOLDER);
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -260,8 +255,7 @@ public class show_trans_RestController {
 	public String getTransactionDetails(@PathVariable("tran_id") String tran_id, HttpServletRequest request) {
 
 		System.out.println("Transaction Details with Id :" + tran_id);
-		Logger.writeActivity("Transaction Details with Id :" + tran_id,
-				ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+		Logger.writeActivity("Transaction Details with Id :" + tran_id, ECPOS_FOLDER);
 		
 		JSONObject jsonResult = null;
 		JSONArray detail_list = null;
@@ -326,21 +320,18 @@ public class show_trans_RestController {
 				detail_list.put(itemList);
 			}
 			jsonResult.put("detail_list", detail_list);
-			Logger.writeActivity("Transaction Details: " + jsonResult.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Transaction Details: " + jsonResult.toString(), ECPOS_FOLDER);
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -399,7 +390,7 @@ public class show_trans_RestController {
 			JSONObject jsonObj = new JSONObject(data);
 
 			if (!jsonObj.has("datetime")) {
-				Logger.writeActivity("No Datetime Found", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("No Datetime Found", ECPOS_FOLDER);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
@@ -424,13 +415,11 @@ public class show_trans_RestController {
 			}
 
 			jsonResult.put("trans_list", transList);
-			Logger.writeActivity("Transaction List Until " + dateString + " " + jsonResult.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Transaction List Until " + dateString + " " + jsonResult.toString(), ECPOS_FOLDER);
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
 	}

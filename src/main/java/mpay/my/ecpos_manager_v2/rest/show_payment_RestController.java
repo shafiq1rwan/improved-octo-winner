@@ -41,9 +41,7 @@ public class show_payment_RestController {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
+	
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	private static final String GET_CHECK_TTL_SQL = "SELECT chk_seq, sub_ttl, pymnt_ttl FROM checks WHERE chk_num = ?";
@@ -89,17 +87,15 @@ public class show_payment_RestController {
 					}
 					jsonResult.put("transactionPrice", checkTotal);
 					jsonResult.put("transactionName", "Check Total");
-					Logger.writeActivity("Payment Check Total : " + checkTotal.toString(), ECPOS_ACT_FILENAME,
-							ECPOS_FOLDER);
+					Logger.writeActivity("Payment Check Total : " + checkTotal.toString(), ECPOS_FOLDER);
 				}
 			} else {
-				Logger.writeActivity("Payment Check Number Not Found!", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Payment Check Number Not Found!", ECPOS_FOLDER);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -146,11 +142,10 @@ public class show_payment_RestController {
 				jsonResult.put("tableOrderList", tableOrderJsonArray);
 
 			}
-			Logger.writeActivity("Unpaid Check List :" + jsonResult.toString(), ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Unpaid Check List :" + jsonResult.toString(), ECPOS_FOLDER);
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -229,16 +224,15 @@ public class show_payment_RestController {
 
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-				Logger.writeActivity("=== CASH PAYMENT TRANSACTION SUCCESS ===", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("=== CASH PAYMENT TRANSACTION SUCCESS ===", ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "CHECK NOT FOUND");
-				Logger.writeActivity("=== CHECK NOT FOUND ===", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("=== CHECK NOT FOUND ===", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -281,16 +275,15 @@ public class show_payment_RestController {
 			if (responseData.getString("responseCode").equals("00")) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-				Logger.writeActivity("PING SUCCESS", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("PING SUCCESS", ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "FAIL");
-				Logger.writeActivity("PING FAILURE", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("PING FAILURE", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -334,8 +327,7 @@ public class show_payment_RestController {
 				String uniqueTranNumber = year + month + date + storeId + posId + transactionId;
 
 				System.out.println("[CardPayment] Transaction Number: " + uniqueTranNumber);
-				Logger.writeActivity("[CardPayment] Transaction Number: " + uniqueTranNumber, ECPOS_ACT_FILENAME,
-						ECPOS_FOLDER);
+				Logger.writeActivity("[CardPayment] Transaction Number: " + uniqueTranNumber, ECPOS_FOLDER);
 
 				requestData = "{\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType
 						+ "\\\"," + "\\\"amount\\\":" + "\\\"" + amount + "\\\"," + "\\\"tips\\\":" + "\\\"" + tips
@@ -368,7 +360,7 @@ public class show_payment_RestController {
 				if (responseData.getString("cardResponse") == null) {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "NO CARD RESPONSE");
-					Logger.writeActivity("[CardPayment] NO CARD RESPONSE", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("[CardPayment] NO CARD RESPONSE", ECPOS_FOLDER);
 				} else {
 					JSONObject terminalResponse = responseData.getJSONObject("cardResponse");
 
@@ -389,24 +381,20 @@ public class show_payment_RestController {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 						jsonResult.put("cardResponse", terminalResponse);
-						Logger.writeActivity("[CardPayment] Response Data: " + terminalResponse.toString(),
-								ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+						Logger.writeActivity("[CardPayment] Response Data: " + terminalResponse.toString(), ECPOS_FOLDER);
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "FAIL");
-						Logger.writeActivity(
-								"[CardPayment] Response Message: " + responseData.getString("responseMessage"),
-								ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+						Logger.writeActivity("[CardPayment] Response Message: " + responseData.getString("responseMessage"), ECPOS_FOLDER);
 					}
 				}
 			} else {
-				Logger.writeActivity("[CardPayment] USER ID NOT FOUND", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("[CardPayment] USER ID NOT FOUND", ECPOS_FOLDER);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 
 		System.out.println("Card Payment END RESULT: " + jsonResult.toString());
@@ -447,7 +435,7 @@ public class show_payment_RestController {
 			if (responseData.getString("cardResponse") == null) {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "NO CARD RESPONSE");
-				Logger.writeActivity("[VoidPayment] NO CARD RESPONSE", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("[VoidPayment] NO CARD RESPONSE", ECPOS_FOLDER);
 			} else {
 				JSONObject terminalResponse = responseData.getJSONObject("cardResponse");
 				if (responseData.getString("responseCode").equals("00")) {
@@ -458,19 +446,16 @@ public class show_payment_RestController {
 
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-					Logger.writeActivity("[VoidPayment] Response Data: " + terminalResponse.toString(),
-							ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("[VoidPayment] Response Data: " + terminalResponse.toString(), ECPOS_FOLDER);
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "FAIL");
-					Logger.writeActivity("[VoidPayment] Response Message: " + responseData.getString("responseMessage"),
-							ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("[VoidPayment] Response Message: " + responseData.getString("responseMessage"), ECPOS_FOLDER);
 				}
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		System.out.println("Void Payment END Result: " + jsonResult.toString());
 		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
@@ -527,7 +512,7 @@ public class show_payment_RestController {
 				System.out.println("No Response");
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "NO SETTLEMENT RESPONSE");
-				Logger.writeActivity("[Settlement] NO SETTLEMENT RESPONSE", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("[Settlement] NO SETTLEMENT RESPONSE", ECPOS_FOLDER);
 			} else {
 				System.out.println("Got Response");
 				JSONObject terminalSettlementResponse = responseData.getJSONObject("settlementResponse");
@@ -549,19 +534,16 @@ public class show_payment_RestController {
 
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-					Logger.writeActivity("[Settlement] Response Data: " + terminalSettlementResponse.toString(),
-							ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("[Settlement] Response Data: " + terminalSettlementResponse.toString(), ECPOS_FOLDER);
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "FAIL");
-					Logger.writeActivity("[Settlement] Response Message: " + responseData.getString("responseMessage"),
-							ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("[Settlement] Response Message: " + responseData.getString("responseMessage"), ECPOS_FOLDER);
 				}
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 
 		System.out.println("Settlement END RESULT: " + jsonResult.toString());
@@ -592,12 +574,10 @@ public class show_payment_RestController {
 			jsonResult.put("terminalList", terminalJsonArray);
 
 			System.out.println("Available WiFi Terminal: " + jsonResult.toString());
-			Logger.writeActivity("Available Terminal List: " + jsonResult.toString().toString(), ECPOS_ACT_FILENAME,
-					ECPOS_FOLDER);
+			Logger.writeActivity("Available Terminal List: " + jsonResult.toString().toString(), ECPOS_FOLDER);
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		}
 		return jsonResult.toString();
 	}

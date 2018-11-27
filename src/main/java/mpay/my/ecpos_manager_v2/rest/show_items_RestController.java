@@ -46,17 +46,12 @@ public class show_items_RestController {
 	@Value("${SYSTEM_IMAGE_LOCAL_PATH}")
 	String SYSTEM_IMAGE_LOCAL_PATH;
 
-	@Value("${SYSTEM_IMAGE_FILE_PATH}")
-	String SYSTEM_IMAGE_FILE_PATH;
-
 	@Value("${ECPOS_BASE_URL}")
 	String ECPOS_BASE_URL;
 
 	@Autowired
 	DataSource dataSource;
-	
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
+
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 /*	@Autowired
@@ -98,27 +93,27 @@ public class show_items_RestController {
 
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-					Logger.writeActivity("Create Item Group "+ jsonObj.getString(Constant.GROUP_NAME) + " Success.", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Create Item Group "+ jsonObj.getString(Constant.GROUP_NAME) + " Success.", ECPOS_FOLDER);
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "STAFF NOT FOUND");
-					Logger.writeActivity("Staff Not Found While Creating Item Group", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Staff Not Found While Creating Item Group", ECPOS_FOLDER);
 				}
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
-				Logger.writeActivity("Invalid Request While Creating Item Group", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Request While Creating Item Group", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -155,22 +150,22 @@ public class show_items_RestController {
 
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-				Logger.writeActivity("Update Item Group "+ group_name + " Success.", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Update Item Group "+ group_name + " Success.", ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
-				Logger.writeActivity("Invalid Request While Updating Item Group "+ jsonObj.getString("group_name"), ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Request While Updating Item Group "+ jsonObj.getString("group_name"), ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -203,17 +198,17 @@ public class show_items_RestController {
 
 			jsonResult.put(Constant.RESPONSE_CODE, "00");
 			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-			Logger.writeActivity("Remove Item Group Success", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Remove Item Group Success", ECPOS_FOLDER);
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -372,7 +367,7 @@ public class show_items_RestController {
 							if (duplication_code_status == 1) {
 								jsonResult.put(Constant.RESPONSE_CODE, "02");
 								jsonResult.put(Constant.RESPONSE_MESSAGE, "DUPLICATED ITEM CODE DETECTED");
-								Logger.writeActivity("DUPLICATED ITEM CODE DETECTED", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+								Logger.writeActivity("DUPLICATED ITEM CODE DETECTED", ECPOS_FOLDER);
 								duplication_code_status = 0;
 							} else {
 
@@ -404,49 +399,49 @@ public class show_items_RestController {
 									}
 									jsonResult.put(Constant.RESPONSE_CODE, "00");
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-									Logger.writeActivity("Menu Item " + item_name + " Successfully Created.", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+									Logger.writeActivity("Menu Item " + item_name + " Successfully Created.", ECPOS_FOLDER);
 								} else {
 									jsonResult.put(Constant.RESPONSE_CODE, "01");
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "ITEM CREATE FAILED");
-									Logger.writeActivity("Menu Item Cannot Created", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+									Logger.writeActivity("Menu Item Cannot Created", ECPOS_FOLDER);
 								}
 
 							}
 						} else {
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID GST GROUP");
-							Logger.writeActivity("Invalid Group Name", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+							Logger.writeActivity("Invalid Group Name", ECPOS_FOLDER);
 						}
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID GROUP NAME");
-						Logger.writeActivity("Invalid Group Name", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+						Logger.writeActivity("Invalid Group Name", ECPOS_FOLDER);
 					}
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "STAFF NOT FOUND");
-					Logger.writeActivity("Staff Not Found", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Staff Not Found", ECPOS_FOLDER);
 				}
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
-				Logger.writeActivity("Invalid Request While Creating Menu Item", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Request While Creating Menu Item", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
 		System.out.println("After item created: " + jsonResult.toString());
-		Logger.writeActivity("After item created: "+jsonResult.toString(), ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+		Logger.writeActivity("After item created: "+jsonResult.toString(), ECPOS_FOLDER);
 		return jsonResult.toString();
 	}
 
@@ -515,22 +510,22 @@ public class show_items_RestController {
 
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-				Logger.writeActivity("Update Menu Item "+itemName, ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Update Menu Item "+itemName, ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
-				Logger.writeActivity("Invalid Request While Updating Menu Item", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Request While Updating Menu Item", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -555,17 +550,17 @@ public class show_items_RestController {
 
 			jsonResult.put(Constant.RESPONSE_CODE, "00");
 			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-			Logger.writeActivity("Menu Item Successfully Removed/Hide", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Menu Item Successfully Removed/Hide", ECPOS_FOLDER);
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -764,14 +759,14 @@ public class show_items_RestController {
 				fileOuputStream.write(image);
 				fileOuputStream.close();
 			} catch (Exception e) {
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 				e.printStackTrace();
-				Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				return result;
 			}
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 			return result;
 		}
 		return result;

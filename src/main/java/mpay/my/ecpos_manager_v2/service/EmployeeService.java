@@ -16,8 +16,6 @@ public class EmployeeService {
 
 	private EmployeeRepository employeeRepo;
 
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	@Autowired
@@ -36,11 +34,11 @@ public class EmployeeService {
 				user.setName(userData.getName());
 				user.setRoleType(userData.getRoleType());
 				user.setStoreId(userData.getStoreId());
-				Logger.writeError("=== USER AUTHENTICATED ===", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("=== USER AUTHENTICATED ===", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.writeError(e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			return user;
 		}
 		return user;

@@ -3,7 +3,6 @@ package mpay.my.ecpos_manager_v2.rest;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Enumeration;
 
 import org.codehaus.jettison.json.JSONObject;
@@ -22,9 +21,7 @@ public class client_RestController {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
+
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 	
 	@PostMapping("/getconnection_QR")
@@ -50,16 +47,13 @@ public class client_RestController {
 		        }
 		    }
 		    jsonResult.put("QR", QR);
-		} catch (SocketException e) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
-		    throw new RuntimeException(e);
 		} catch (Exception e) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 		}
 		
 		System.out.println("************QR************" + QR);	
-		Logger.writeActivity("************QR************" + QR, ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+		Logger.writeActivity("************QR************" + QR, ECPOS_FOLDER);
 		return jsonResult.toString();
 		//return QR;
 	}
