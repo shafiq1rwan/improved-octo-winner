@@ -3,15 +3,15 @@
 
 <style>
 .sectioncalibrator {
-	height:90vh;
-	overflow-y:scroll;
+	height: calc(100vh - 50px);
+	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
-    .sectioncalibrator {
-		height:77vh;
-		overflow-y:scroll;
-    }
+	.sectioncalibrator {
+		height: calc(100vh - 100px);
+		overflow-y: scroll;
+	}
 }
 
 #home{

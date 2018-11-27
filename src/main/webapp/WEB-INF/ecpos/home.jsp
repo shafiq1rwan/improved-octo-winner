@@ -48,8 +48,7 @@
 
 @font-face {
 	font-family: 'robotofontregular';
-	src:
-		url('${pageContext.request.contextPath}/font/Roboto-Regular.ttf');
+	src: url('${pageContext.request.contextPath}/font/Roboto-Regular.ttf');
 }
 
 .font-roboto-regular {
@@ -113,7 +112,8 @@
 <!-- jQuery 2.2.3 -->
 <script src="${pageContext.request.contextPath}/js/loadImg.js"></script>
 <!-- jQuery UI 1.11.4 -->
-<script src="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script
+	src="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/jquery-ui/jquery-ui.min.js"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
 	$.widget.bridge('uibutton', $.ui.button);
@@ -160,7 +160,8 @@
 <script
 	src="${pageContext.request.contextPath}/adminLTE-2.4.5/dist/js/adminlte.min.js"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="${pageContext.request.contextPath}/adminLTE-2.4.5/dist/js/demo.js"></script>
+<script
+	src="${pageContext.request.contextPath}/adminLTE-2.4.5/dist/js/demo.js"></script>
 
 <!-- DataTables -->
 <script
@@ -183,10 +184,11 @@
 	src="${pageContext.request.contextPath}/angular-1.7.5/js/angular-route.min.js"></script>
 <script
 	src="${pageContext.request.contextPath}/angular-1.7.5/js/angular-messages.min.js"></script>
-	
+
 <!-- *****OTHERS JS***** -->
 <script src="${pageContext.request.contextPath}/qrcode/qrcode.min.js"></script>
-<script src="${pageContext.request.contextPath}/ui-cropper/js/ui-cropper.js"></script>
+<script
+	src="${pageContext.request.contextPath}/ui-cropper/js/ui-cropper.js"></script>
 
 </head>
 
@@ -218,8 +220,65 @@
 </body>
 
 <script>
-	var app = angular.module("myApp", [ "ngRoute", "uiCropper","ngMessages"]);
- 	/* app
+	var app = angular.module("myApp", [ "ngRoute", "uiCropper", "ngMessages" ]);
+	/* app
+		.config([
+				'$routeProvider',
+				'$compileProvider',
+				function($routeProvider, $compileProvider) {
+					$compileProvider
+							.imgSrcSanitizationWhitelist(/^\s*(local|http|https|app|tel|ftp|file|blob|content|ms-appx|x-wmapp0|cdvfile):|data:image\//);
+					$routeProvider
+							.when(
+									"/tableOrder",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/tableOrder",
+										controller : "Show_sales_CTRL"
+									})
+							.when(
+									"/transactionList",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/transactionList",
+									 	controller : "Show_trans_CTRL"
+									})
+							.when(
+									"/itemsManagement",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/itemsManagement"
+									})
+							.when(
+									"/check/:check_no",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/check"
+									})
+							.when(
+									"/generateReport",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/generateReport"
+									})
+							.when(
+									"/configSetting",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/configSetting"
+									})		
+							.when(
+									"/takeAwayOrder",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeAwayOrder"
+									})	
+							.when(
+									"/payment/:check_no?",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment"
+									})	
+							.when(
+									"/clientQRConnection",
+									{
+										templateUrl : "${pageContext.request.contextPath}/ecpos/views/clientQRConnection"
+									});
+				} ]); */
+
+	app
 			.config([
 					'$routeProvider',
 					'$compileProvider',
@@ -228,115 +287,53 @@
 								.imgSrcSanitizationWhitelist(/^\s*(local|http|https|app|tel|ftp|file|blob|content|ms-appx|x-wmapp0|cdvfile):|data:image\//);
 						$routeProvider
 								.when(
-										"/tableOrder",
+										"/sales",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/tableOrder",
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/sales",
 											controller : "Show_sales_CTRL"
 										})
 								.when(
-										"/transactionList",
+										"/trans",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/transactionList",
-										 	controller : "Show_trans_CTRL"
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/trans",
+											controller : "Show_trans_CTRL"
 										})
 								.when(
-										"/itemsManagement",
+										"/items",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/itemsManagement"
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/items"
 										})
 								.when(
-										"/check/:check_no",
+										"/checks/:check_no",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/check"
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks"
 										})
 								.when(
-										"/generateReport",
+										"/reports",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/generateReport"
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/reports"
 										})
 								.when(
-										"/configSetting",
+										"/setting",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/configSetting"
-										})		
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/ecpos_manager_setting"
+										})
 								.when(
-										"/takeAwayOrder",
+										"/take_away_order",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeAwayOrder"
-										})	
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeaway"
+										})
 								.when(
-										"/payment/:check_no?",
+										"/payment/:check_no",
 										{
 											templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment"
-										})	
+										})
 								.when(
-										"/clientQRConnection",
+										"/connection_qr",
 										{
-											templateUrl : "${pageContext.request.contextPath}/ecpos/views/clientQRConnection"
+											templateUrl : "${pageContext.request.contextPath}/ecpos/views/qr_scan"
 										});
-					} ]); */
- 	
-					app
-					.config([
-							'$routeProvider',
-							'$compileProvider',
-							function($routeProvider, $compileProvider) {
-								$compileProvider
-										.imgSrcSanitizationWhitelist(/^\s*(local|http|https|app|tel|ftp|file|blob|content|ms-appx|x-wmapp0|cdvfile):|data:image\//);
-								$routeProvider
-										.when(
-												"/sales",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/sales",
-													controller : "Show_sales_CTRL"
-												})
-										.when(
-												"/trans",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/trans",
-													controller : "Show_trans_CTRL"
-												})
-										.when(
-												"/items",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/items"
-												})
-										.when(
-												"/checks/:check_no",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks"
-												})
-										.when(
-												"/reports",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/reports"
-												})
-										.when(
-												"/setting",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/ecpos_manager_setting"
-												})		
-										.when(
-												"/take_away_order",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeaway"
-												})	
-										.when(
-												"/payment/:check_no",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment"
-												})	
-										.when(
-												"/connection_qr",
-												{
-													templateUrl : "${pageContext.request.contextPath}/ecpos/views/qr_scan"
-												});
-							} ]);
- 	
- 	
- 	
- 	
- 	
+					} ]);
 </script>
 
 <!-- ***** ANGULAR JS CONTROLLER ***** -->
@@ -346,8 +343,10 @@
 <jsp:include page="/WEB-INF/ecpos/controller/show_items_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_sales_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/printer_configuration.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/ecpos_manager_setting_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/show_take_away_order_CTRL.jsp" />
+<jsp:include
+	page="/WEB-INF/ecpos/controller/ecpos_manager_setting_CTRL.jsp" />
+<jsp:include
+	page="/WEB-INF/ecpos/controller/show_take_away_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_reports_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/connection_qr_CTRL.jsp" />

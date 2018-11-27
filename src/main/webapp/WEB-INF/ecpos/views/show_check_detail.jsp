@@ -4,13 +4,13 @@
 
 <style>
 .sectioncalibrator {
-	height: 90vh;
+	height: calc(100vh - 50px);
 	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
 	.sectioncalibrator {
-		height: 77vh;
+		height: calc(100vh - 100px);
 		overflow-y: scroll;
 	}
 }

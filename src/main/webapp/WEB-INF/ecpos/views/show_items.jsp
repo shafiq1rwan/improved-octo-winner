@@ -3,6 +3,19 @@
 <html>
 <head>
 </head>
+<style>
+.sectioncalibrator {
+	height: calc(100vh - 50px);
+	overflow-y: scroll;
+}
+
+@media only screen and (max-width:600px) {
+	.sectioncalibrator {
+		height: calc(100vh - 100px);
+		overflow-y: scroll;
+	}
+}
+</style>
 
 <script>
 	//Make it global for easily access by other javascript file

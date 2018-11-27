@@ -1,28 +1,29 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <html>
 
 <style>
 .sectioncalibrator {
-	height:90vh;
-	overflow-y:scroll;
+	height: calc(100vh - 50px);
+	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
-    .sectioncalibrator {
-		height:77vh;
-		overflow-y:scroll;
-    }
+	.sectioncalibrator {
+		height: calc(100vh - 100px);
+		overflow-y: scroll;
+	}
 }
 </style>
 
 <body>
 	<div>
 		<div class="content-wrapper" style="font-size: 0.9em;">
-		
+
 			<section class="content sectioncalibrator">
-			
-							<div class="active item" data-slide-number="0">
-								<!-- 		<div class="row container-fluid">
+
+				<div class="active item" data-slide-number="0">
+					<!-- 		<div class="row container-fluid">
 											<nav class="navbar navbar-inverse">
 											<div class="container-fluid">
 												<div class="navbar-header">
@@ -51,40 +52,44 @@
 
 											<hr class="divider">
 										</div> -->
-		<!-- 								<div class="row container-fluid">
+					<!-- 								<div class="row container-fluid">
 											<hr class="divider">
 										</div> -->
-										<div class="row container-fluid"
-											style="overflow-y: auto;">
-											
-															<div ng-repeat="table in manager_tablelist"
-					class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
-					<a ng-click="get_table_checklist(table.table)" ng-model="table.table">
-						<div class="panel text-center">
-							<div class="panel-heading" ng-style="{'background-color':display_table_check_no(table.check)}">
-								<h3 class="panel-title" ng-style="{'color':display_table_check_no_title_color(table.check)}">Checks ({{table.check}})</h3>
-							</div>
-							<div class="panel-body"
-								style="color: grey; font-weight: bold; font-size: small;">
-								TABLE<br> {{table.table}}
-							</div>
-						</div></a>
-				</div>
-											
-											
-											
-											
-											
-										</div>
+					<div class="row container-fluid" style="overflow-y:auto;padding-right:2px;padding-left:2px;">
+
+						<div ng-repeat="table in manager_tablelist" class="col-lg-2 col-md-3 col-sm-4 col-xs-6" style="padding-left:2px;padding-right:2px;">
+							<a ng-click="get_table_checklist(table.table)"
+								ng-model="table.table">
+								<div class="panel text-center">
+									<div class="panel-heading"
+										ng-style="{'background-color':display_table_check_no(table.check)}">
+										<h3 class="panel-title"
+											ng-style="{'color':display_table_check_no_title_color(table.check)}">Checks
+											({{table.check}})</h3>
 									</div>
+									<div class="panel-body"
+										style="color: grey; font-weight: bold; font-size: small;">
+										TABLE<br> {{table.table}}
+									</div>
+								</div>
+							</a>
+						</div>
+
+
+
+
+
+					</div>
+				</div>
 
 			</section>
 
 		</div>
-		
+
 		<!-- MODAL START -->
 		<div class="row">
-			<div class="modal fade" id="modal_table_check_list" role="dialog" data-keyboard="false" data-backdrop="true">
+			<div class="modal fade" id="modal_table_check_list" role="dialog"
+				data-keyboard="false" data-backdrop="true">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -107,7 +112,8 @@
 												<div class="row">
 													<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12"
 														ng-repeat="existing_check in check_list">
-														<a data-dismiss='modal' ng-click="redirect_to_check_detail(existing_check)">
+														<a data-dismiss='modal'
+															ng-click="redirect_to_check_detail(existing_check)">
 															<div class="panel panel-primary text-center">
 																<div class="panel-heading">
 																	<h3 class="panel-title">CHECK NUM</h3>
@@ -121,7 +127,7 @@
 														</a>
 													</div>
 
-				
+
 													<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 														<a data-dismiss='modal' ng-click="create_new_check()">
 															<div class="panel panel-default text-center">
@@ -143,8 +149,7 @@
 												<br>
 
 												<div class="row">
-													<a class="btn btn-danger center-block"
-														data-dismiss="modal">CANCEL</a>
+													<a class="btn btn-danger center-block" data-dismiss="modal">CANCEL</a>
 												</div>
 											</div>
 										</div>

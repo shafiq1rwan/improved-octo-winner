@@ -4,13 +4,13 @@
 
 <style>
 .sectioncalibrator {
-	height: 90vh;
+	height: calc(100vh - 50px);
 	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
 	.sectioncalibrator {
-		height: 77vh;
+		height: calc(100vh - 100px);
 		overflow-y: scroll;
 	}
 }
@@ -80,12 +80,12 @@ tfoot th {
 
 	<div ng-controller="Show_Takeaway_Order_CTRL" ng-init="getItemGroup();">
 		<div class="content-wrapper" style="font-size: 0.9em;">
-			<section class="content sectioncalibrator">
+			<section class="content sectioncalibrator" style="padding-right:15px;padding-left:15px;">
 
-				<div class="row container-fluid">
+				<div class="row container-fluid" style="padding-right:2px;padding-left:2px;">
 
 					<!-- START of left well -->
-					<div class="col-md-6">
+					<div class="col-md-6" style="padding-right:2px;padding-left:2px;">
 
 						<div class="well" style="height: 75vh;">
 
@@ -98,15 +98,14 @@ tfoot th {
 
 							<div class="tab-pane">
 								<hr class="divider">
-								<div class="row" style="max-height: 55vh; overflow-y: auto;">
+								<div class="row" style="max-height: 65vh; overflow-y: auto;">
 
 									<div class="panel-body" style="width: max-width">
 										<div id='div_category' style="height: 50vh; overflow-y: auto;">
 
-											<div id="group_item_container" ng-show="insideGroupStatus==0"
-												ng-hide="insideGroupStatus==1">
+											<div id="group_item_container" ng-show="insideGroupStatus==0" ng-hide="insideGroupStatus==1">
 												<div ng-repeat="group_list in groupList.group_list">
-													<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6" style="display: table-cell;">
+													<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6" style="display:table-cell;padding-right:2px;padding-left:2px;">
 														<a ng-click="getGroupItem(group_list.groupid)">
 															<div class="panel panel-default text-center">
 																<div class="panel-body center-block"
