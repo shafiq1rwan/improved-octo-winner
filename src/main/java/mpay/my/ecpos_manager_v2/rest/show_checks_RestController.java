@@ -63,8 +63,6 @@ public class show_checks_RestController {
 	private JdbcTemplate jdbcTemplate;
 
 	private final static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
-	private final static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private final static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
 
 	// SQL Statements
 	private static final String UPDATE_DETAILS_CHKSEQ_DETAILSEQ_SQL = "UPDATE details SET chk_seq = ?, dtl_seq =? WHERE id = ?";
@@ -168,10 +166,9 @@ public class show_checks_RestController {
 
 			return new ResponseEntity<>(HttpStatus.OK);
 
-		} catch (DataAccessException ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -230,10 +227,9 @@ public class show_checks_RestController {
 			jsonResult.put("generatedItemId", (long) keyHolder.getKey());
 
 			return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -268,8 +264,9 @@ public class show_checks_RestController {
 					tenderName, amount, detailType, amount });
 
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -380,10 +377,9 @@ public class show_checks_RestController {
 			//storeBalanceReceiptPrinting(itemList);
 
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -429,7 +425,8 @@ public class show_checks_RestController {
 			try {
 				detailsMapResult = jdbcTemplate.queryForMap(openItemNameSql,
 						new Object[] { chkSequence, "OpenItem_%" });
-			} catch (EmptyResultDataAccessException ex) {
+			} catch (EmptyResultDataAccessException e) {
+				Logger.writeError(e, "EmptyResultDataAccessException: ", ECPOS_FOLDER);
 				detailsMapResult = Collections.emptyMap();
 			}
 
@@ -471,10 +468,9 @@ public class show_checks_RestController {
 			jsonResult.put("generatedItemId", (long) keyHolder.getKey());
 
 			return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
@@ -550,10 +546,9 @@ public class show_checks_RestController {
 						(long) selectedCheck.get("chk_seq"));
 			}
 
-		} catch (JSONException ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
@@ -756,10 +751,9 @@ public class show_checks_RestController {
 			double subtotal = (subtotalHolder == null) ? 0.00 : subtotalHolder.doubleValue();
 			jsonResult.put("subttl", subtotal);
 
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 
 		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
@@ -834,10 +828,9 @@ public class show_checks_RestController {
 			}
 
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -943,10 +936,9 @@ public class show_checks_RestController {
 			jsonResult.put("pre_check_seq", (long) checkMapResult.get("chk_seq"));
 			return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
@@ -1008,8 +1000,9 @@ public class show_checks_RestController {
 
 			responseResult = new ResponseEntity<String>(jsonString, HttpStatus.OK);
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 
 		return responseResult;
@@ -1074,10 +1067,9 @@ public class show_checks_RestController {
 
 			return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 
-		} catch (Exception ex) {
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
-			ex.printStackTrace();
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
@@ -1206,7 +1198,8 @@ public class show_checks_RestController {
 		String selectedItemNameSql = "SELECT * FROM menudef WHERE name LIKE ?";
 		try {
 			return jdbcTemplate.queryForMap(selectedItemNameSql, new Object[] { itemName });
-		} catch (EmptyResultDataAccessException ex) {
+		} catch (EmptyResultDataAccessException e) {
+			Logger.writeError(e, "EmptyResultDataAccessException: ", ECPOS_FOLDER);
 			return Collections.emptyMap();
 		}
 	}
@@ -1215,7 +1208,8 @@ public class show_checks_RestController {
 		String findCheckSql = "SELECT * FROM checks WHERE chk_num = ?";
 		try {
 			return jdbcTemplate.queryForMap(findCheckSql, new Object[] { chkNo });
-		} catch (DataAccessException ex) {
+		} catch (DataAccessException e) {
+			Logger.writeError(e, "DataAccessException: ", ECPOS_FOLDER);
 			return Collections.emptyMap();
 		}
 	}
@@ -1224,7 +1218,8 @@ public class show_checks_RestController {
 		String findDetailInfoSql = "SELECT dtl_seq FROM details WHERE chk_seq = ? ORDER BY dtl_seq DESC LIMIT 1";
 		try {
 			return jdbcTemplate.queryForObject(findDetailInfoSql, new Object[] { chkSeq }, Integer.class);
-		} catch (DataAccessException ex) {
+		} catch (DataAccessException e) {
+			Logger.writeError(e, "DataAccessException: ", ECPOS_FOLDER);
 			return 0;
 		}
 	}
@@ -1233,7 +1228,8 @@ public class show_checks_RestController {
 		String findDetailInfoSql = "SELECT sub_ttl,tax_ttl,pymnt_ttl,due_ttl FROM checks WHERE chk_seq = ?";
 		try {
 			return jdbcTemplate.queryForMap(findDetailInfoSql, new Object[] { chkSeq });
-		} catch (DataAccessException ex) {
+		} catch (DataAccessException e) {
+			Logger.writeError(e, "DataAccessException: ", ECPOS_FOLDER);
 			return Collections.emptyMap();
 		}
 	}
@@ -1253,6 +1249,7 @@ public class show_checks_RestController {
 			return new ObjectMapper().readValue(jsonData, new TypeReference<Map<String, Object>>() {
 			});
 		} catch (IOException e) {
+			Logger.writeError(e, "IOException: ", ECPOS_FOLDER);
 			return Collections.emptyMap();
 		}
 	}

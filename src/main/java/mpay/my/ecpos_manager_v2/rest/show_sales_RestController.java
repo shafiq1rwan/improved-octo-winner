@@ -55,8 +55,6 @@ import mpay.my.ecpos_manager_v2.webutil.UtilWebComponents;
 @RequestMapping("/memberapi/show_sales")
 public class show_sales_RestController {
 
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 	
 	@Autowired
@@ -105,25 +103,23 @@ public class show_sales_RestController {
 				}
 
 				jsonResult.put(Constant.TABLE_LIST, tableList);
-				Logger.writeActivity("Table List: " + tableList.toString(), ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Table List: " + tableList.toString(), ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "NO TABLE FOUND, PLEASE TRY AGAIN");
-				Logger.writeActivity("Table List Not Found", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Table List Not Found", ECPOS_FOLDER);
 			}
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-				ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -159,24 +155,22 @@ public class show_sales_RestController {
 				}
 
 				jsonResult.put("check_list", check_list);
-				Logger.writeActivity("Table Check List: "+check_list.toString(), ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Table Check List: "+check_list.toString(), ECPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
-				Logger.writeActivity("Invalid Request for Table Check List", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Request for Table Check List", ECPOS_FOLDER);
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -247,17 +241,15 @@ public class show_sales_RestController {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);		
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();	
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME	, ECPOS_FOLDER);	
 				}
 			}
 		}
@@ -322,30 +314,28 @@ public class show_sales_RestController {
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
 					jsonResult.put(Constant.CHECK_NO, resultSet2.getString("chk_num"));
-					Logger.writeActivity("Check Number : "+ resultSet2.getString("chk_num") + " Created", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Check Number : "+ resultSet2.getString("chk_num") + " Created", ECPOS_FOLDER);
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
-					Logger.writeActivity("Staff Not Found When Creating Check", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+					Logger.writeActivity("Staff Not Found When Creating Check", ECPOS_FOLDER);
 				}
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
-				Logger.writeActivity("Invalid Request While Creating Check", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Request While Creating Check", ECPOS_FOLDER);
 			}
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -475,17 +465,15 @@ public class show_sales_RestController {
 				
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -583,17 +571,15 @@ public class show_sales_RestController {
 			}
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (Exception e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -617,18 +603,16 @@ public class show_sales_RestController {
 
 				jsonResult.put(Constant.STAFF_NAME, session_container_user.getUsername());
 			} catch (JSONException e) {
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 				e.printStackTrace();
-				Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-						ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 			}
 		} else {
 			try {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "STAFF NOT FOUND");
 			} catch (JSONException e) {
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 				e.printStackTrace();
-				Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-						ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 			}
 		}
 
@@ -695,17 +679,15 @@ public class show_sales_RestController {
 			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
+					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 					e.printStackTrace();
-					Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-							ECPOS_ERR_FILENAME, ECPOS_FOLDER);
 				}
 			}
 		}
@@ -936,16 +918,16 @@ public class show_sales_RestController {
 
 			jsonResult.put("group_list", group_list);
 
-		} catch (Exception ex) {			
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
+		} catch (Exception e) {			
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return Constant.EXCEPTION_MESSAGE;
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
+					Logger.writeError(e, "SQLException: ", ECPOS_FOLDER);
 					e.printStackTrace();
 				}
 			}
@@ -995,10 +977,9 @@ public class show_sales_RestController {
 
 			jsonResult.put("item_list", item_list);
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return Constant.EXCEPTION_MESSAGE;
 		} finally {
 			if (connection != null) {
@@ -1127,10 +1108,9 @@ public class show_sales_RestController {
 
 			connection.close();
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 			return Constant.EXCEPTION_MESSAGE;
 		} finally {
 			if (connection != null) {
@@ -1239,10 +1219,9 @@ public class show_sales_RestController {
 					+ "AND chk_num NOT LIKE ? AND chk_open != 3";
 			splittedCheckList = jdbcTemplate.queryForList(sqlStatement,
 					new Object[] { getChkNumWithoutSplitNum(chk_num) + "%", chk_num }, String.class);
-		} catch (DataAccessException ex) {
-			ex.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + ex.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
+		} catch (DataAccessException e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 		return splittedCheckList;
 	}
@@ -1394,9 +1373,8 @@ public class show_sales_RestController {
 			jsonResult.put("kitchenReceiptPrinting", generatedIdList);
 			detailSequence = 1; // Reset the value
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME	, ECPOS_FOLDER);
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);

@@ -18,7 +18,7 @@ public class UtilWebComponents {
 	}
 
 	public UserAuthenticationModel performUserAuthentication(String username, String password, DataSource dataSource) {
-		UserAuthenticationModel domainContainer = null;
+		UserAuthenticationModel domainContainer = new UserAuthenticationModel();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -32,7 +32,6 @@ public class UtilWebComponents {
 			if (rs.next()) {
 
 				if (password.matches(rs.getString("password"))) {
-					domainContainer = new UserAuthenticationModel();
 					domainContainer.setUserLoginId(Integer.parseInt(rs.getString("id")));
 					domainContainer.setUsername(rs.getString("username"));
 					domainContainer.setName(rs.getString("name"));
@@ -54,16 +53,17 @@ public class UtilWebComponents {
 		}
 		return domainContainer;
 	}
-	
-	public void clearEcposSession(HttpServletRequest request) {	
-		HttpSession session = request.getSession();	
+
+	public void clearEcposSession(HttpServletRequest request) {
+		HttpSession session = request.getSession();
 		session.invalidate();
 	}
 
-/*	public CheckDetailItemList getStoreTempCheckData(HttpServletRequest request) {
-		HttpSession session = request.getSession();
-		CheckDetailItemList domain_container = (CheckDetailItemList) session.getAttribute("session_temp_check_data");
-		return domain_container;
-	}*/
+	/*
+	 * public CheckDetailItemList getStoreTempCheckData(HttpServletRequest request)
+	 * { HttpSession session = request.getSession(); CheckDetailItemList
+	 * domain_container = (CheckDetailItemList)
+	 * session.getAttribute("session_temp_check_data"); return domain_container; }
+	 */
 
 }

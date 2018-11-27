@@ -30,8 +30,6 @@ public class ecpos_manager_setting_RestController {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	private static final String SELECT_PRINTER_SQL = "SELECT * FROM printer";
@@ -76,7 +74,7 @@ public class ecpos_manager_setting_RestController {
 						? (int) loadedSettingResult.get("other_tax_percentage")
 						: 0);
 
-		Logger.writeActivity("SETTING SUCCESSFULLY LOADED", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+		Logger.writeActivity("SETTING SUCCESSFULLY LOADED", ECPOS_FOLDER);
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
 	}
 
@@ -103,16 +101,16 @@ public class ecpos_manager_setting_RestController {
 
 			if (printerDataExist()) {
 				jdbcTemplate.update(UPDATE_PRINTER_TABLE_SQL, new Object[] { printerModel, paperSize, portName });
-				Logger.writeActivity(printerModel + " had been selected", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity(printerModel + " had been selected", ECPOS_FOLDER);
 			} else {
 				jdbcTemplate.update(INSERT_PRINTER_SQL, new Object[] { printerModel, paperSize, portName });
-				Logger.writeActivity(printerModel + " had been selected", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity(printerModel + " had been selected", ECPOS_FOLDER);
 			}
 		}
 
 		jdbcTemplate.update(UPDATE_SYS_TABLE_NUMBER_SQL, new Object[] { propertyName, tableCount, gstPercentage,
 				salesTaxPercentage, serviceTaxPercentage, otherTaxPercentage });
-		Logger.writeActivity("SETTING SUCCESSFULLY SAVED", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+		Logger.writeActivity("SETTING SUCCESSFULLY SAVED", ECPOS_FOLDER);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -143,16 +141,15 @@ public class ecpos_manager_setting_RestController {
 			if (jsonData.has("terminalName") && jsonData.has("ipAddress") && jsonData.has("port")) {
 				jdbcTemplate.update(INSERT_TERMINAL_SQL, new Object[] { jsonData.getString("terminalName"),
 						jsonData.getString("ipAddress"), jsonData.getString("port") });
-				Logger.writeActivity("Terminal " + jsonData.getString("terminalName") + " Is Added", ECPOS_ACT_FILENAME,
+				Logger.writeActivity("Terminal " + jsonData.getString("terminalName") + " Is Added",
 						ECPOS_FOLDER);
 			} else {
-				Logger.writeActivity("Terminal Data Not Found", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("Terminal Data Not Found", ECPOS_FOLDER);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -178,12 +175,10 @@ public class ecpos_manager_setting_RestController {
 			}
 
 			jsonResult.put("terminalInfo", terminalJsonArray);
-			Logger.writeActivity("Terminal Info List: " + terminalJsonArray.toString(), ECPOS_ACT_FILENAME,
-					ECPOS_FOLDER);
+			Logger.writeActivity("Terminal Info List: " + terminalJsonArray.toString(), ECPOS_FOLDER);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 		}
 		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 	}
@@ -192,16 +187,15 @@ public class ecpos_manager_setting_RestController {
 	@DeleteMapping("/removeTerminalInfo/{id}")
 	public ResponseEntity<?> removeTerminalInfo(@PathVariable String id) {
 		if (id == null) {
-			Logger.writeActivity("Terminal Not Found. Therefore Cannot Remove.", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Terminal Not Found. Therefore Cannot Remove.", ECPOS_FOLDER);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		try {
 			jdbcTemplate.update(DELECT_TERMINAL_SQL, new Object[] { id });
-			Logger.writeActivity("Terminal Successfully Removed", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("Terminal Successfully Removed", ECPOS_FOLDER);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -214,8 +208,7 @@ public class ecpos_manager_setting_RestController {
 					jsonData.getString("ipAddress"), jsonData.getString("port"), jsonData.getString("id") });			
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.toString(),
-					ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

@@ -27,20 +27,9 @@ import mpay.my.ecpos_manager_v2.webutil.UtilWebComponents;
 @RequestMapping("/ecpos")
 public class EcposManagerController {
 
-	@Value("${SYSTEM_IMAGE_HTTPDOMAIN}")
-	String SYSTEM_IMAGE_HTTPDOMAIN;
-
-	@Value("${SYSTEM_IMAGE_LOCALDOMAIN}")
-	String SYSTEM_IMAGE_LOCALDOMAIN;
-
 	@Value("${ECPOS_BASE_URL}")
 	String ECPOS_BASE_URL;
-
-	@Value("${PASSWORD}")
-	String PASSWORD;
-
-	private static String ECPOS_ACT_FILENAME = Property.getECPOS_ACT_FILENAME();
-	private static String ECPOS_ERR_FILENAME = Property.getECPOS_ERR_FILENAME();
+	
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	@Autowired
@@ -70,7 +59,7 @@ public class EcposManagerController {
 	public ModelAndView ecposLogin(@RequestParam(value = "username", required = false) String username,
 			@RequestParam(value = "password", required = false) String password, HttpServletRequest request)
 			throws IOException {
-		Logger.writeActivity("----------- RECEIVE ECPOS LOGIN REQUEST ---------", ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+		Logger.writeActivity("----------- RECEIVE ECPOS LOGIN REQUEST ---------", ECPOS_FOLDER);
 
 		ModelAndView model = new ModelAndView();
 		HttpSession session = request.getSession();
@@ -79,8 +68,7 @@ public class EcposManagerController {
 		UserAuthenticationModel user = webComponent.getUserSession(request);
 		//UserAuthenticationModel user = employeeService.getUserSession(request);
 		if (user != null) {
-			Logger.writeActivity("SESSION NOT EXPIRED, FORWARD " + user.getUsername() + " TO MAIN PAGE",
-					ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+			Logger.writeActivity("SESSION NOT EXPIRED, FORWARD " + user.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
 			model.setViewName("/ecpos/home");
 		} else {
 			UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent
@@ -88,13 +76,11 @@ public class EcposManagerController {
 			//UserAuthenticationModel loginUser = employeeService.performUserAuthentication(username, password);
 
 			if (loginUser != null) {
-				Logger.writeActivity("LOGIN SUCCESSFULLY, FORWARD " + loginUser.getUsername() + " TO MAIN PAGE",
-						ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("LOGIN SUCCESSFULLY, FORWARD " + loginUser.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
 				session.setAttribute("session_user", loginUser);
 				model.setViewName("redirect:" + "/ecpos/#!sales");		
 			} else {
-				Logger.writeActivity("INVALID LOGIN ID / PASSWORD, FORWARD " + username + " TO LOGIN PAGE",
-						ECPOS_ACT_FILENAME, ECPOS_FOLDER);
+				Logger.writeActivity("INVALID LOGIN ID / PASSWORD, FORWARD " + username + " TO LOGIN PAGE", ECPOS_FOLDER);
 				model.addObject("http_message", "Information : Wrong Password/Username");
 				model.setViewName("/ecpos/login");
 			}
