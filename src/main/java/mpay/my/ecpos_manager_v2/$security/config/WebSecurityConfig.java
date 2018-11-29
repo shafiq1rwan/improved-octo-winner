@@ -10,14 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @Order(1)
-public class WebSecurityConfig_admin extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-
 		http.csrf().disable();
 		http.authorizeRequests().anyRequest().permitAll();
-
 	}
 
 	@Bean(name = "passwordEncoder")
@@ -26,7 +24,6 @@ public class WebSecurityConfig_admin extends WebSecurityConfigurerAdapter {
 	}
 
 	public static void main(String args[]) {
-
 		String password = "lokepass123";
 
 		BCryptPasswordEncoder ab = new BCryptPasswordEncoder();
@@ -34,7 +31,6 @@ public class WebSecurityConfig_admin extends WebSecurityConfigurerAdapter {
 		System.out.println(com);
 
 		boolean result = ab.matches(password, com);
-
 		System.out.println(result);
 	}
 }

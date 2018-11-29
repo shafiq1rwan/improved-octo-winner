@@ -16,7 +16,7 @@ public class EmployeeRepository {
 	public EmployeeRepository(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
-	
+
 	private RowMapper<UserAuthenticationModel> rowMapper = (rs, rowNum) -> {
 		UserAuthenticationModel authenticatedUser = new UserAuthenticationModel();
 		authenticatedUser.setUserLoginId(rs.getInt("id"));
@@ -27,8 +27,8 @@ public class EmployeeRepository {
 		authenticatedUser.setStoreId(rs.getInt("storeid"));
 		return authenticatedUser;
 	};
-	
+
 	public UserAuthenticationModel getAuthenticatedUser(String username) {
-		return jdbcTemplate.queryForObject("SELECT * FROM empldef WHERE username = ?", new Object[] {username}, rowMapper);
+		return jdbcTemplate.queryForObject("SELECT * FROM empldef WHERE username = ?", new Object[] { username }, rowMapper);
 	}
 }

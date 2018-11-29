@@ -2,18 +2,10 @@ package mpay.my.ecpos_manager_v2.rest;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,20 +22,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -65,16 +51,17 @@ public class show_checks_RestController {
 	private final static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	// SQL Statements
-	private static final String UPDATE_DETAILS_CHKSEQ_DETAILSEQ_SQL = "UPDATE details SET chk_seq = ?, dtl_seq =? WHERE id = ?";
-	private static final String UPDATE_CHECKS_SQL = "UPDATE checks SET sub_ttl =  ?, tax_ttl =?, sales_tax=?, service_tax=? WHERE chk_num = ?";
-	private static final String INSERT_DETAILS_SQL = "INSERT INTO Details (chk_seq,dtl_seq,number,name,chk_ttl,detail_type,detail_item_price) VALUES (?,?,?,?,?,?,?)";
-
 	private static final String SELECT_MENUDEF_BY_ID_SQL = "SELECT * from menudef WHERE id=?";
 	private static final String SELECT_DETAILS_CHKTTL_BY_CHKSEQ_ORDERBY_TOP1_SQL = "SELECT chk_ttl FROM details WHERE chk_seq = ? ORDER BY dtl_seq DESC LIMIT 1";
-	private static final String INSERT_TRANX_SQL = "INSERT INTO transaction (check_no, tran_type ,tran_status, payment_type, amount, performBy) VALUES (?,?,?,?,?,?)";
 	private static final String SELECT_TENDERTYPE_BY_ID_SQL = "SELECT tender_name FROM tendertype WHERE id =?";
 	private static final String GET_SYS_TABLE_NUMBER_SQL = "SELECT propertyname,table_count,gst_percentage, sales_tax_percentage, service_tax_percentage, other_tax_percentage FROM system";
-
+	
+	private static final String UPDATE_DETAILS_CHKSEQ_DETAILSEQ_SQL = "UPDATE details SET chk_seq = ?, dtl_seq =? WHERE id = ?";
+	private static final String UPDATE_CHECKS_SQL = "UPDATE checks SET sub_ttl =  ?, tax_ttl =?, sales_tax=?, service_tax=? WHERE chk_num = ?";
+	
+	private static final String INSERT_DETAILS_SQL = "INSERT INTO Details (chk_seq,dtl_seq,number,name,chk_ttl,detail_type,detail_item_price) VALUES (?,?,?,?,?,?,?)";
+	private static final String INSERT_TRANX_SQL = "INSERT INTO transaction (check_no, tran_type ,tran_status, payment_type, amount, performBy) VALUES (?,?,?,?,?,?)";
+	
 	// @GetMapping("/storebalance/{chkNo}")
 	// public ResponseEntity<String> getStoreBalanceCheck(@PathVariable("chkNo")
 	// String chkNo) {
@@ -142,9 +129,11 @@ public class show_checks_RestController {
 	public ResponseEntity<String> createCheck(@RequestBody String jsonData) {
 		try {
 			Map<String, Object> parsedJsonData = parseJsonStringToMap(jsonData);
+			
 			if (parsedJsonData == null) {
 				return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
 			}
+			
 			String staffName = (String) parsedJsonData.get("staff_name");
 			String tableNo = (String) parsedJsonData.get("table_no");
 
@@ -154,7 +143,6 @@ public class show_checks_RestController {
 			int staffId = (int) staffResultSet.get("id");
 			String masterChecksInfoSql = "SELECT chk_num FROM masterchecks";
 			int masterCheckResultSet = jdbcTemplate.queryForObject(masterChecksInfoSql, Integer.class);
-
 			int currentChkNo = masterCheckResultSet;
 			int newChkNo = currentChkNo + 1;
 
@@ -165,7 +153,6 @@ public class show_checks_RestController {
 			jdbcTemplate.update(checksInsertionSql, new Object[] { newChkNo, staffId, tableNo, 1 });
 
 			return new ResponseEntity<>(HttpStatus.OK);
-
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -175,7 +162,6 @@ public class show_checks_RestController {
 
 	@PostMapping("/additem")
 	public ResponseEntity<String> addItemIntoCheck(@RequestBody String jsonData) {
-
 		try {
 			JSONObject jsonResult = new JSONObject();
 			JSONObject jsonObj = new JSONObject(jsonData);
@@ -186,8 +172,7 @@ public class show_checks_RestController {
 
 			int detailSequence = (getDetailSequence(checkSequence) == 0) ? 1 : getDetailSequence(checkSequence) + 1;
 
-			Map<String, Object> menudefMapResult = jdbcTemplate.queryForMap(SELECT_MENUDEF_BY_ID_SQL,
-					new Object[] { itemId });
+			Map<String, Object> menudefMapResult = jdbcTemplate.queryForMap(SELECT_MENUDEF_BY_ID_SQL, new Object[] { itemId });
 
 			// String sql = "SELECT chk_ttl FROM details WHERE chk_seq = ? ORDER BY dtl_seq
 			// DESC LIMIT 1";
@@ -210,8 +195,7 @@ public class show_checks_RestController {
 			// (BigDecimal) menudefMapResult.get("price") });
 
 			jdbcTemplate.update(connection -> {
-				PreparedStatement ps = connection.prepareStatement(INSERT_DETAILS_SQL,
-						PreparedStatement.RETURN_GENERATED_KEYS);
+				PreparedStatement ps = connection.prepareStatement(INSERT_DETAILS_SQL, PreparedStatement.RETURN_GENERATED_KEYS);
 				ps.setLong(1, checkSequence);
 				ps.setInt(2, detailSequence);
 				ps.setInt(3, (int) menudefMapResult.get("id"));
@@ -246,7 +230,6 @@ public class show_checks_RestController {
 	// Important
 	@PostMapping("addtransaction")
 	public ResponseEntity<Void> addTransaction(@RequestBody String jsonData) {
-
 		try {
 			JSONObject jsonObj = new JSONObject(jsonData);
 			String checkNumber = jsonObj.getString("chkNo");
@@ -257,11 +240,9 @@ public class show_checks_RestController {
 			long checkSequence = (long) findCheck(checkNumber).get("chk_seq");
 			int detailSequence = (getDetailSequence(checkSequence) == 0) ? 1 : getDetailSequence(checkSequence) + 1;
 
-			String tenderName = jdbcTemplate.queryForObject(SELECT_TENDERTYPE_BY_ID_SQL, new Object[] { tenderId },
-					String.class);
+			String tenderName = jdbcTemplate.queryForObject(SELECT_TENDERTYPE_BY_ID_SQL, new Object[] { tenderId }, String.class);
 
-			jdbcTemplate.update(INSERT_DETAILS_SQL, new Object[] { checkSequence, detailSequence++, (long) tenderId,
-					tenderName, amount, detailType, amount });
+			jdbcTemplate.update(INSERT_DETAILS_SQL, new Object[] { checkSequence, detailSequence++, (long) tenderId, tenderName, amount, detailType, amount });
 
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
@@ -274,32 +255,29 @@ public class show_checks_RestController {
 	// Important
 	@PostMapping("/storebalance")
 	public ResponseEntity<Void> checkStoreBalance(@RequestBody String jsonData) {
-
 		System.out.println("Store Balance Concern :" + jsonData);
-		
+
 		try {
 			JSONObject jsonObj = new JSONObject(jsonData);
 			String checkNumber = jsonObj.getString("chk_num");
 			long checkSequence = jsonObj.getLong("chk_seq");
 			JSONArray itemList = jsonObj.getJSONArray("store_balance_item_list");
 
-			String detailPriceSql = "SELECT SUM(detail_item_price) AS 'detail_item_price' FROM details WHERE "
-					+ "chk_seq =? AND detail_type =? AND detail_item_status = 0";
+			String detailPriceSql = "SELECT SUM(detail_item_price) AS 'detail_item_price' FROM details WHERE chk_seq =? AND detail_type =? AND detail_item_status = 0";
 
 			// Count service and Sales Tax
-			List<Map<String, Object>> itemDetailMapResultList = jdbcTemplate.queryForList(
-					"SELECT * FROM details WHERE chk_seq = ? " + "AND detail_type='S' AND detail_item_status = 0",
-					new Object[] { checkSequence });
+			List<Map<String, Object>> itemDetailMapResultList = jdbcTemplate.queryForList("SELECT * FROM details WHERE chk_seq = ? " + "AND detail_type='S' AND detail_item_status = 0", new Object[] { checkSequence });
 
 			Map<String, Object> settingDataMapResult = jdbcTemplate.queryForMap(GET_SYS_TABLE_NUMBER_SQL);
-/*			System.out.println((int) settingDataMapResult.get("table_count"));
-			System.out.println((int) settingDataMapResult.get("sales_Tax_Percentage"));*/
+			/*
+			 * System.out.println((int) settingDataMapResult.get("table_count"));
+			 * System.out.println((int) settingDataMapResult.get("sales_Tax_Percentage"));
+			 */
 
 			BigDecimal salesTax = BigDecimal.ZERO;
 			BigDecimal serviceTax = BigDecimal.ZERO;
 
 			if (!itemDetailMapResultList.isEmpty() && !settingDataMapResult.isEmpty()) {
-
 				double salesTaxPercentage = (int) settingDataMapResult.get("sales_Tax_Percentage");
 				double serviceTaxPercentage = (int) settingDataMapResult.get("service_Tax_Percentage");
 
@@ -307,21 +285,17 @@ public class show_checks_RestController {
 				serviceTaxPercentage = serviceTaxPercentage / 100;
 
 				for (Map<String, Object> itemDetail : itemDetailMapResultList) {
-
 					Map<String, Object> itemMapResult;
-				
+
 					int itemGroupNumber = (int) itemDetail.get("number");
-					
-					if(itemGroupNumber == 0) { //it is an open item		
+
+					if (itemGroupNumber == 0) { // it is an open item
 						itemMapResult = Collections.emptyMap();
-					}
-					else {						
-						itemMapResult = jdbcTemplate.queryForMap("SELECT * FROM menudef WHERE id = ?",
-								new Object[] { (int) itemDetail.get("number") });
+					} else {
+						itemMapResult = jdbcTemplate.queryForMap("SELECT * FROM menudef WHERE id = ?", new Object[] { (int) itemDetail.get("number") });
 					}
 
 					if (!itemMapResult.isEmpty()) {
-
 						if ((int) itemMapResult.get("sststatus") == 1) {
 							// Goods
 							if ((int) itemMapResult.get("itemtype") == 1) {
@@ -330,52 +304,39 @@ public class show_checks_RestController {
 								// Service
 							} else if ((int) itemMapResult.get("itemtype") == 2) {
 								BigDecimal serviceTaxAmt = (BigDecimal) itemDetail.get("detail_item_price");
-								serviceTax = serviceTax
-										.add(serviceTaxAmt.multiply(new BigDecimal(serviceTaxPercentage)));
-
+								serviceTax = serviceTax.add(serviceTaxAmt.multiply(new BigDecimal(serviceTaxPercentage)));
 							}
 						}
-
-					}
-					else {
-						//dealt with open item
+					} else {
+						// dealt with open item
 						BigDecimal salesTaxAmt = (BigDecimal) itemDetail.get("detail_item_price");
 						salesTax = salesTax.add(salesTaxAmt.multiply(new BigDecimal(salesTaxPercentage)));
 					}
-
 				}
-
 			}
 
-			BigDecimal salesDetailPrices = jdbcTemplate.queryForObject(detailPriceSql,
-					new Object[] { checkSequence, String.valueOf('S') }, BigDecimal.class);
-
-			BigDecimal transactionDetailPrices = jdbcTemplate.queryForObject(detailPriceSql,
-					new Object[] { checkSequence, String.valueOf('T') }, BigDecimal.class);
-
+			BigDecimal salesDetailPrices = jdbcTemplate.queryForObject(detailPriceSql, new Object[] { checkSequence, String.valueOf('S') }, BigDecimal.class);
+			BigDecimal transactionDetailPrices = jdbcTemplate.queryForObject(detailPriceSql, new Object[] { checkSequence, String.valueOf('T') }, BigDecimal.class);
 			BigDecimal subTotal = (salesDetailPrices == null) ? BigDecimal.ZERO : salesDetailPrices;
-			//BigDecimal paymentTotal = (transactionDetailPrices == null) ? BigDecimal.ZERO : transactionDetailPrices;
-			//System.out.println("My Test: " + paymentTotal.toString());
+			// BigDecimal paymentTotal = (transactionDetailPrices == null) ? BigDecimal.ZERO
+			// : transactionDetailPrices;
+			// System.out.println("My Test: " + paymentTotal.toString());
 
 			BigDecimal taxTotal = BigDecimal.ZERO;
 			taxTotal = taxTotal.add(salesTax.add(serviceTax));
-
 			subTotal = subTotal.add(taxTotal);
-			//BigDecimal dueTotal = BigDecimal.ZERO;
-			//dueTotal = paymentTotal.add(subTotal);
+			// BigDecimal dueTotal = BigDecimal.ZERO;
+			// dueTotal = paymentTotal.add(subTotal);
 
 			System.out.println("======");
 			System.out.println(subTotal.toString());
-			//System.out.println(paymentTotal.toString());
+			// System.out.println(paymentTotal.toString());
 			System.out.println(taxTotal.toString());
-			//System.out.println(dueTotal.toString());
+			// System.out.println(dueTotal.toString());
 			System.out.println("======");
 
-			int haha = jdbcTemplate.update(UPDATE_CHECKS_SQL,
-					new Object[] { subTotal, taxTotal, salesTax, serviceTax, checkNumber });
-
-			//storeBalanceReceiptPrinting(itemList);
-
+			int haha = jdbcTemplate.update(UPDATE_CHECKS_SQL, new Object[] { subTotal, taxTotal, salesTax, serviceTax, checkNumber });
+			// storeBalanceReceiptPrinting(itemList);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -386,8 +347,8 @@ public class show_checks_RestController {
 
 	// Important
 	private void storeBalanceReceiptPrinting(JSONArray itemList) {
-
 		int[] itemIds = new int[itemList.length()];
+		
 		for (int i = 0; i < itemList.length(); ++i) {
 			itemIds[i] = itemList.optInt(i);
 		}
@@ -400,7 +361,6 @@ public class show_checks_RestController {
 	// Important
 	@PostMapping("/addopenitem")
 	public ResponseEntity<String> addOpenItemIntoCheck(@RequestBody String jsonData) {
-
 		try {
 			JSONObject jsonResult = new JSONObject();
 			JSONObject jsonObj = new JSONObject(jsonData);
@@ -422,15 +382,16 @@ public class show_checks_RestController {
 			String openItemNameSql = "SELECT name FROM details WHERE chk_seq = ? AND name LIKE ? AND detail_item_status = 0 ORDER BY name DESC LIMIT 1";
 
 			Map<String, Object> detailsMapResult;
+			
 			try {
-				detailsMapResult = jdbcTemplate.queryForMap(openItemNameSql,
-						new Object[] { chkSequence, "OpenItem_%" });
+				detailsMapResult = jdbcTemplate.queryForMap(openItemNameSql, new Object[] { chkSequence, "OpenItem_%" });
 			} catch (EmptyResultDataAccessException e) {
 				Logger.writeError(e, "EmptyResultDataAccessException: ", ECPOS_FOLDER);
 				detailsMapResult = Collections.emptyMap();
 			}
 
 			String openItemName = "";
+			
 			if (!detailsMapResult.isEmpty()) {
 				openItemName = (String) detailsMapResult.get("name");
 				openItemName = openItemName.substring(openItemName.indexOf("_") + 1, openItemName.length());
@@ -440,7 +401,6 @@ public class show_checks_RestController {
 			} else {
 				openItemName = "OpenItem_001";
 			}
-
 			System.out.println(openItemName);
 
 			// jdbcTemplate.update(INSERT_DETAILS_SQL,
@@ -451,8 +411,7 @@ public class show_checks_RestController {
 
 			final String itemName = openItemName;
 			jdbcTemplate.update(connection -> {
-				PreparedStatement ps = connection.prepareStatement(INSERT_DETAILS_SQL,
-						PreparedStatement.RETURN_GENERATED_KEYS);
+				PreparedStatement ps = connection.prepareStatement(INSERT_DETAILS_SQL, PreparedStatement.RETURN_GENERATED_KEYS);
 				ps.setLong(1, chkSequence);
 				ps.setInt(2, detailSequence);
 				ps.setInt(3, 0);
@@ -479,20 +438,16 @@ public class show_checks_RestController {
 	// Done //Not important
 	@PostMapping("/update")
 	public ResponseEntity<String> updateCheck(@RequestBody String jsonData) {
-
 		String checkNoSql = "SELECT * FROM checks WHERE chk_num = ?";
-		String insertDetailItemSql = "INSERT INTO Details (chk_seq,dtl_seq,number,name,chk_ttl,detail_type) "
-				+ "VALUES (?,?,?,?,?,?)";
-		String updateCheckSql = "UPDATE checks " + "SET sub_ttl =  ?, tax_ttl =?, pymnt_ttl=?, due_ttl = ? "
-				+ "WHERE chk_num = ?";
+		String insertDetailItemSql = "INSERT INTO Details (chk_seq,dtl_seq,number,name,chk_ttl,detail_type) VALUES (?,?,?,?,?,?)";
+		String updateCheckSql = "UPDATE checks " + "SET sub_ttl =  ?, tax_ttl =?, pymnt_ttl=?, due_ttl = ? WHERE chk_num = ?";
 
 		try {
 			JSONObject jsonCheckData = new JSONObject(jsonData);
 			int updateType = jsonCheckData.getInt("update_type");
 			JSONArray orderedItemJsonArray = jsonCheckData.getJSONArray("ordered_item");
 
-			Map<String, Object> selectedCheck = jdbcTemplate.queryForMap(checkNoSql,
-					new Object[] { jsonCheckData.getString("chk_num") });
+			Map<String, Object> selectedCheck = jdbcTemplate.queryForMap(checkNoSql, new Object[] { jsonCheckData.getString("chk_num") });
 
 			int detailSequenceNo = 1;
 			double subTotal = 0.00;
@@ -918,11 +873,10 @@ public class show_checks_RestController {
 					(int) checkMapResult.get("tblno"), 1 });
 
 			updateSplitCheckDetailData(selectedItems, result_chk_num);
-			
-			//Get the result back to 
-			Map<String,Object> splitCheckResult = jdbcTemplate.queryForMap("SELECT * FROM checks WHERE chk_num =?",new Object[] {
-					result_chk_num
-			});
+
+			// Get the result back to
+			Map<String, Object> splitCheckResult = jdbcTemplate.queryForMap("SELECT * FROM checks WHERE chk_num =?",
+					new Object[] { result_chk_num });
 
 			// addItemIntoDetailsList(selectedItems, result_chk_num, UPDATE_CHECKS_SQL,
 			// INSERT_DETAILS_SQL,
@@ -932,7 +886,7 @@ public class show_checks_RestController {
 			jsonResult.put(Constant.RESPONSE_CODE, "00");
 			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			jsonResult.put("check_num", result_chk_num);
-			jsonResult.put("new_check_seq", (long)splitCheckResult.get("chk_seq"));
+			jsonResult.put("new_check_seq", (long) splitCheckResult.get("chk_seq"));
 			jsonResult.put("pre_check_seq", (long) checkMapResult.get("chk_seq"));
 			return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
 

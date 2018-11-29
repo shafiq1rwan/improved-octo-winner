@@ -1253,15 +1253,15 @@ a:focus {
   appearance: none;
 }
 .form-group.has-success label {
-  color: #00a65a;
+  color: #00FF7F;
 }
 .form-group.has-success .form-control,
 .form-group.has-success .input-group-addon {
-  border-color: #00a65a;
+  border-color: #00FF7F;
   box-shadow: none;
 }
 .form-group.has-success .help-block {
-  color: #00a65a;
+  color: #00FF7F;
 }
 .form-group.has-warning label {
   color: #f39c12;
@@ -1406,7 +1406,7 @@ a:focus {
 }
 .progress-bar-green,
 .progress-bar-success {
-  background-color: #00a65a;
+  background-color: #00FF7F;
 }
 .progress-striped .progress-bar-green,
 .progress-striped .progress-bar-success {
@@ -1548,7 +1548,7 @@ a:focus {
   border-top-color: #f39c12;
 }
 .box.box-success {
-  border-top-color: #00a65a;
+  border-top-color: #00FF7F;
 }
 .box.box-default {
   border-top-color: #d2d6de;
@@ -1645,12 +1645,12 @@ a:focus {
   color: #ffffff;
 }
 .box.box-solid.box-success {
-  border: 1px solid #00a65a;
+  border: 1px solid #00FF7F;
 }
 .box.box-solid.box-success > .box-header {
   color: #ffffff;
-  background: #00a65a;
-  background-color: #00a65a;
+  background: #00FF7F;
+  background-color: #00FF7F;
 }
 .box.box-solid.box-success > .box-header a,
 .box.box-solid.box-success > .box-header .btn {
@@ -1925,7 +1925,7 @@ a:focus {
   border-left-color: #00c0ef;
 }
 .todo-list .success {
-  border-left-color: #00a65a;
+  border-left-color: #00FF7F;
 }
 .todo-list .primary {
   border-left-color: #3c8dbc;
@@ -1957,7 +1957,7 @@ a:focus {
   border-radius: 50%;
 }
 .chat .item > .online {
-  border: 2px solid #00a65a;
+  border: 2px solid #00FF7F;
 }
 .chat .item > .offline {
   border: 2px solid #dd4b39;
@@ -2239,13 +2239,13 @@ a:focus {
   background-color: #367fa9;
 }
 .btn-success {
-  background-color: #00a65a;
-  border-color: #008d4c;
+  background-color: #00FF7F;
+  border-color: #3CB371;
 }
 .btn-success:hover,
 .btn-success:active,
 .btn-success.hover {
-  background-color: #008d4c;
+  background-color: #3CB371;
 }
 .btn-info {
   background-color: #00c0ef;
@@ -2397,7 +2397,7 @@ a:focus {
   text-decoration: underline;
 }
 .alert-success {
-  border-color: #008d4c;
+  border-color: #3CB371;
 }
 .alert-danger,
 .alert-error {
@@ -2570,7 +2570,7 @@ a:focus {
   border-top-color: #f39c12;
 }
 .nav-tabs-custom.tab-success > .nav-tabs > li.active {
-  border-top-color: #00a65a;
+  border-top-color: #00FF7F;
 }
 .nav-tabs-custom.tab-default > .nav-tabs > li.active {
   border-top-color: #d2d6de;
@@ -2901,13 +2901,13 @@ table.text-center th {
   border-left-color: #00c0ef;
 }
 .direct-chat-success .right > .direct-chat-text {
-  background: #00a65a;
-  border-color: #00a65a;
+  background: #00FF7F;
+  border-color: #00FF7F;
   color: #ffffff;
 }
 .direct-chat-success .right > .direct-chat-text:after,
 .direct-chat-success .right > .direct-chat-text:before {
-  border-left-color: #00a65a;
+  border-left-color: #00FF7F;
 }
 /*
  * Component: Users List
@@ -3509,7 +3509,7 @@ table.text-center th {
 .alert-success,
 .label-success,
 .modal-success .modal-body {
-  background-color: #00a65a !important;
+  background-color: #00FF7F !important;
 }
 .bg-navy {
   background-color: #001f3f !important;
@@ -3568,7 +3568,7 @@ table.text-center th {
 .bg-green-active,
 .modal-success .modal-header,
 .modal-success .modal-footer {
-  background-color: #008d4c !important;
+  background-color: #3CB371 !important;
 }
 .bg-navy-active {
   background-color: #001a35 !important;
@@ -3617,7 +3617,7 @@ table.text-center th {
   color: #3c8dbc !important;
 }
 .text-green {
-  color: #00a65a !important;
+  color: #00FF7F !important;
 }
 .text-gray {
   color: #d2d6de !important;
@@ -3762,12 +3762,12 @@ table.text-center th {
   color: #fff;
 }
 .bg-green-gradient {
-  background: #00a65a !important;
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0, #00a65a), color-stop(1, #00ca6d)) !important;
-  background: -ms-linear-gradient(bottom, #00a65a, #00ca6d) !important;
-  background: -moz-linear-gradient(center bottom, #00a65a 0%, #00ca6d 100%) !important;
-  background: -o-linear-gradient(#00ca6d, #00a65a) !important;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ca6d', endColorstr='#00a65a', GradientType=0) !important;
+  background: #00FF7F !important;
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0, #00FF7F), color-stop(1, #00ca6d)) !important;
+  background: -ms-linear-gradient(bottom, #00FF7F, #00ca6d) !important;
+  background: -moz-linear-gradient(center bottom, #00FF7F 0%, #00ca6d 100%) !important;
+  background: -o-linear-gradient(#00ca6d, #00FF7F) !important;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ca6d', endColorstr='#00FF7F', GradientType=0) !important;
   color: #fff;
 }
 .bg-red-gradient {

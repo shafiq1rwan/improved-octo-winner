@@ -20,21 +20,16 @@ public class SettingRepository {
 	public Map<String, Object> getSystemData() {
 		return jdbcTemplate.queryForMap("SELECT * FROM system");
 	}
-	
-	public List<Map<String,Object>> getTerminalList(){
+
+	public List<Map<String, Object>> getTerminalList() {
 		return jdbcTemplate.queryForList("SELECT * FROM terminal");
 	}
 
 	public int addTerminal(String wifiIP, String wifiPort) {
-		return jdbcTemplate.update("INSERT INTO terminal (wifiIP, wifiPort) VALUES (?,?)",
-				new Object[] { wifiIP, wifiPort });
+		return jdbcTemplate.update("INSERT INTO terminal (wifiIP, wifiPort) VALUES (?,?)", new Object[] { wifiIP, wifiPort });
 	}
-	
-	public int removeTerminal(String id) {
-		return jdbcTemplate.update("DELETE FROM terminal WHERE id = ?",
-				new Object[] {id});
-	}
-	
-	
 
+	public int removeTerminal(String id) {
+		return jdbcTemplate.update("DELETE FROM terminal WHERE id = ?", new Object[] { id });
+	}
 }

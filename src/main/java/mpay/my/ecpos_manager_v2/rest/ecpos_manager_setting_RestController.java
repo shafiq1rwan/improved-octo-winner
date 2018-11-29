@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import mpay.my.ecpos_manager_v2.constant.Constant;
 import mpay.my.ecpos_manager_v2.logger.Logger;
 import mpay.my.ecpos_manager_v2.property.Property;
 
@@ -37,7 +36,7 @@ public class ecpos_manager_setting_RestController {
 	private static final String GET_SYS_TABLE_NUMBER_SQL = "SELECT propertyname,table_count,gst_percentage, sales_tax_percentage, service_tax_percentage, other_tax_percentage FROM system";
 
 	private static final String UPDATE_SYS_TABLE_NUMBER_SQL = "UPDATE system SET propertyname = ?, table_count = ? , gst_percentage = ?, sales_tax_percentage = ?, "
-			+ "service_tax_percentage = ?, other_tax_percentage =? " + "WHERE version = 'alpha1.0'";
+															+ "service_tax_percentage = ?, other_tax_percentage =? WHERE version = 'alpha1.0'";
 	private static final String UPDATE_PRINTER_TABLE_SQL = "UPDATE printer SET printer_model=?, paper_size = ?, port_name = ?";
 	private static final String UPDATE_TERMINAL_TABLE_SQL = "UPDATE terminal SET terminalName = ?, wifiIP = ?, wifiPort = ? WHERE id = ?";
 
@@ -53,26 +52,12 @@ public class ecpos_manager_setting_RestController {
 
 		Map<String, Object> loadedSettingResult = jdbcTemplate.queryForMap(GET_SYS_TABLE_NUMBER_SQL);
 
-		jsonResult.put("tableCount",
-				loadedSettingResult.containsKey("table_count") ? (int) loadedSettingResult.get("table_count") : 1);
-		jsonResult.put("propertyName",
-				loadedSettingResult.containsKey("propertyname") ? (String) loadedSettingResult.get("propertyname")
-						: "");
-		jsonResult.put("gstPercentage",
-				loadedSettingResult.containsKey("gst_percentage") ? (int) loadedSettingResult.get("gst_percentage")
-						: 0);
-		jsonResult.put("salesTaxPercentage",
-				loadedSettingResult.containsKey("sales_tax_percentage")
-						? (int) loadedSettingResult.get("sales_tax_percentage")
-						: 0);
-		jsonResult.put("serviceTaxPercentage",
-				loadedSettingResult.containsKey("service_tax_percentage")
-						? (int) loadedSettingResult.get("service_tax_percentage")
-						: 0);
-		jsonResult.put("otherTaxPercentage",
-				loadedSettingResult.containsKey("other_tax_percentage")
-						? (int) loadedSettingResult.get("other_tax_percentage")
-						: 0);
+		jsonResult.put("tableCount", loadedSettingResult.containsKey("table_count") ? (int) loadedSettingResult.get("table_count") : 1);
+		jsonResult.put("propertyName", loadedSettingResult.containsKey("propertyname") ? (String) loadedSettingResult.get("propertyname") : "");
+		jsonResult.put("gstPercentage", loadedSettingResult.containsKey("gst_percentage") ? (int) loadedSettingResult.get("gst_percentage") : 0);
+		jsonResult.put("salesTaxPercentage", loadedSettingResult.containsKey("sales_tax_percentage") ? (int) loadedSettingResult.get("sales_tax_percentage") : 0);
+		jsonResult.put("serviceTaxPercentage", loadedSettingResult.containsKey("service_tax_percentage") ? (int) loadedSettingResult.get("service_tax_percentage") : 0);
+		jsonResult.put("otherTaxPercentage", loadedSettingResult.containsKey("other_tax_percentage") ? (int) loadedSettingResult.get("other_tax_percentage") : 0);
 
 		Logger.writeActivity("SETTING SUCCESSFULLY LOADED", ECPOS_FOLDER);
 		return new ResponseEntity<>(jsonResult.toString(), HttpStatus.OK);
@@ -80,11 +65,10 @@ public class ecpos_manager_setting_RestController {
 
 	@PostMapping("/savesetting")
 	public ResponseEntity<?> saveSetting(@RequestBody String data) throws DataAccessException, JSONException {
-
 		JSONObject jsonData = new JSONObject(data);
-		if (!jsonData.has("tableCount") && !jsonData.has("propertyName") && !jsonData.has("gstPercentage")
-				&& !jsonData.has("salesTaxPercentage") && !jsonData.has("serviceTaxPercentage")
-				&& !jsonData.has("otherTaxPercentage"))
+		
+		if (!jsonData.has("tableCount") && !jsonData.has("propertyName") && !jsonData.has("gstPercentage") 
+				&& !jsonData.has("salesTaxPercentage") && !jsonData.has("serviceTaxPercentage") && !jsonData.has("otherTaxPercentage"))
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 		int tableCount = jsonData.getInt("tableCount");
@@ -108,25 +92,23 @@ public class ecpos_manager_setting_RestController {
 			}
 		}
 
-		jdbcTemplate.update(UPDATE_SYS_TABLE_NUMBER_SQL, new Object[] { propertyName, tableCount, gstPercentage,
-				salesTaxPercentage, serviceTaxPercentage, otherTaxPercentage });
+		jdbcTemplate.update(UPDATE_SYS_TABLE_NUMBER_SQL, new Object[] { propertyName, tableCount, gstPercentage, salesTaxPercentage, serviceTaxPercentage, otherTaxPercentage });
 		Logger.writeActivity("SETTING SUCCESSFULLY SAVED", ECPOS_FOLDER);
-
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	private boolean printerDataExist() {
 		try {
 			Map<String, Object> printerResultMap = jdbcTemplate.queryForMap(SELECT_PRINTER_SQL);
+			
 			if (printerResultMap.get("printer_model") != null) {
 				return true; // Data Exist
 			} else {
 				return false; // Not Exist
 			}
 		} catch (DataAccessException e) {
-			// e.printStackTrace();
-			// Logger.writeError(Thread.currentThread().getStackTrace()[1].getMethodName() +
-			// ": " + e.toString(), ECPOS_ERR_FILENAME, ECPOS_FOLDER);
+			e.printStackTrace();
+			Logger.writeError(e, "DataAccessException: ", ECPOS_FOLDER);
 			return false; // Not Exist
 		}
 	}
@@ -138,11 +120,10 @@ public class ecpos_manager_setting_RestController {
 
 		try {
 			JSONObject jsonData = new JSONObject(data);
+			
 			if (jsonData.has("terminalName") && jsonData.has("ipAddress") && jsonData.has("port")) {
-				jdbcTemplate.update(INSERT_TERMINAL_SQL, new Object[] { jsonData.getString("terminalName"),
-						jsonData.getString("ipAddress"), jsonData.getString("port") });
-				Logger.writeActivity("Terminal " + jsonData.getString("terminalName") + " Is Added",
-						ECPOS_FOLDER);
+				jdbcTemplate.update(INSERT_TERMINAL_SQL, new Object[] { jsonData.getString("terminalName"), jsonData.getString("ipAddress"), jsonData.getString("port") });
+				Logger.writeActivity("Terminal " + jsonData.getString("terminalName") + " Is Added", ECPOS_FOLDER);
 			} else {
 				Logger.writeActivity("Terminal Data Not Found", ECPOS_FOLDER);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -165,7 +146,6 @@ public class ecpos_manager_setting_RestController {
 
 			for (Map<String, Object> terminalResultMap : terminalResultMaps) {
 				JSONObject jsonObj = new JSONObject();
-
 				jsonObj.put("id", (int) terminalResultMap.get("id"));
 				jsonObj.put("terminalName", (String) terminalResultMap.get("terminalName"));
 				jsonObj.put("wifiIP", (String) terminalResultMap.get("wifiIP"));
@@ -173,7 +153,6 @@ public class ecpos_manager_setting_RestController {
 
 				terminalJsonArray.put(jsonObj);
 			}
-
 			jsonResult.put("terminalInfo", terminalJsonArray);
 			Logger.writeActivity("Terminal Info List: " + terminalJsonArray.toString(), ECPOS_FOLDER);
 		} catch (Exception e) {
@@ -190,6 +169,7 @@ public class ecpos_manager_setting_RestController {
 			Logger.writeActivity("Terminal Not Found. Therefore Cannot Remove.", ECPOS_FOLDER);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+		
 		try {
 			jdbcTemplate.update(DELECT_TERMINAL_SQL, new Object[] { id });
 			Logger.writeActivity("Terminal Successfully Removed", ECPOS_FOLDER);
@@ -204,13 +184,11 @@ public class ecpos_manager_setting_RestController {
 	public ResponseEntity<?> editTerminalInfo(@RequestBody String data) {
 		try {
 			JSONObject jsonData = new JSONObject(data);
-			jdbcTemplate.update(UPDATE_TERMINAL_TABLE_SQL, new Object[] { jsonData.getString("terminalName"),
-					jsonData.getString("ipAddress"), jsonData.getString("port"), jsonData.getString("id") });			
+			jdbcTemplate.update(UPDATE_TERMINAL_TABLE_SQL, new Object[] { jsonData.getString("terminalName"), jsonData.getString("ipAddress"), jsonData.getString("port"), jsonData.getString("id") });
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
 }

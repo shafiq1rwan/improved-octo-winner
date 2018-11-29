@@ -13,11 +13,4 @@ public class CheckRepository {
 	public CheckRepository(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
-	
-	
-	
-	
-	
-	
-	
 }

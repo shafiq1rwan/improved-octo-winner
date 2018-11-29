@@ -90,7 +90,7 @@ public class EcposManagerController {
 	}
 	
 	//Logout
-	@PostMapping("/logout")
+	@GetMapping("/logout")
 	public ModelAndView ecposSessionInvalidate(HttpServletRequest request) {
 		ModelAndView model = new ModelAndView();
 		//UtilWebComponents webComponent = new UtilWebComponents();
@@ -254,19 +254,4 @@ public class EcposManagerController {
 			model.setViewName("ecpos/views/connection_qr");
 			return model;	
 		}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }

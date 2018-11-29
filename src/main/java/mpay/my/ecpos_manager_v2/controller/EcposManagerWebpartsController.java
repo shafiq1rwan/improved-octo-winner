@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-@RequestMapping("/ecposWebparts")  
+@RequestMapping("/ecposWebparts")
 public class EcposManagerWebpartsController {
 
 	@GetMapping("/main_header")
@@ -15,12 +15,11 @@ public class EcposManagerWebpartsController {
 		model.setViewName("/ecpos/webparts_include/main_header");
 		return model;
 	}
-	
+
 	@GetMapping("/main_menudrawer")
 	public ModelAndView ecposManagerWebpartsMenuDrawer() {
 		ModelAndView model = new ModelAndView();
 		model.setViewName("/ecpos/webparts_include/menu_drawer");
 		return model;
 	}
-	
 }
