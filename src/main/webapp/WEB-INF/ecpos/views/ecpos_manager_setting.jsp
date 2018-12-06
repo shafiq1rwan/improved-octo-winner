@@ -25,7 +25,7 @@
 	<div ng-controller="ECPOS_Manager_Setting_CTRL"
 		ng-init="loadSettingData()">
 		<div class="content-wrapper" style="font-size: 0.9em;">
-			<section class="content-header">
+<!-- 			<section class="content-header">
 				<h1>
 					ECPOS <small>Setting</small>
 				</h1>
@@ -33,7 +33,7 @@
 					<li>MAIN NAVIGATION</li>
 					<li>Setting</li>
 				</ol>
-			</section>
+			</section> -->
 			<section class="content sectioncalibrator">
 				<div class="form_container">
 

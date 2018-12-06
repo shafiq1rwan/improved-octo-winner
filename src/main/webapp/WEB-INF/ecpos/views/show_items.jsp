@@ -5,13 +5,13 @@
 </head>
 <style>
 .sectioncalibrator {
-	height: calc(100vh - 50px);
+	height: calc(100vh - 91px);
 	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
 	.sectioncalibrator {
-		height: calc(100vh - 100px);
+		height: calc(100vh - 141px);
 		overflow-y: scroll;
 	}
 }
@@ -332,7 +332,8 @@
 			</section>
 
 			<!-- Main content -->
-			<section class="content" style="height: 85vh; overflow-y: scroll;">
+			<!-- <section class="content" style="height: 85vh; overflow-y: scroll;"> -->
+			<section class="content sectioncalibrator">
 				<div class="row">
 					<div class="col-xs-12">
 

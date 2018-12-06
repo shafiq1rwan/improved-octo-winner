@@ -4,15 +4,13 @@
 
 <style>
 .sectioncalibrator {
-	height: 90vh;
-	width: 75vw;
-	margin: 0 auto;
-	/* overflow-y: scroll; */
+	height: calc(100vh - 50px);
+	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
 	.sectioncalibrator {
-		height: 77vh;
+		height: calc(100vh - 100px);
 		overflow-y: scroll;
 	}
 }
@@ -119,11 +117,9 @@ hr {
 		ng-init="paymentInitialization()">
 		<div class="content-wrapper" style="font-size: 0.9em;">
 			<section class="content sectioncalibrator">
-
-				<div id="payment-container" class="row container"
-					style="border: 2px solid red; border-radius: 5px;">
+				<div id="payment-container" class="row container-fluid">
 					<!-- Upper Half Container -->
-					<div class="row">
+					<div class="row" style="height:calc(100vh - 100px);">
 			<!-- 			<div class="col-md-3" style="height: 38vh; overflow-y: scroll;">
 							<div ng-repeat="tableOrder in tableOrders"
 								ng-if="tableOrder.checkNumber != checkNum" id="bigContainer">
@@ -140,7 +136,9 @@ hr {
 								</a>
 							</div>
 						</div> -->
-						<div class="col-md-7" style="height: 38vh;">
+						<!-- <div class="col-md-7" style="height: 38vh;"> -->
+						<div class="col-md-7">
+						<div class="well row container-fluid" style="height:calc(100vh - 100px);">
 							<table id='payment_datatable' class='table table-fixed'>
 								<thead>
 									<tr>
@@ -162,10 +160,12 @@ hr {
 									</tr>
 								</tfoot>
 							</table>
+							</div>
 						</div>
 
-						<div class="col-md-4 text-center parent"
-							style="height: 38vh; border-left: 2px solid red;">
+						<!-- <div class="col-md-4 text-center parent" style="height: 38vh; border-left: 2px solid red;"> -->
+						<div class="col-md-5 text-center parent">
+							<div class="well row container-fluid" style="height:calc(100vh - 100px);">
 							<div class="child">
 								<button class="btn btn-danger" style="margin-bottom: 13px;"
 									ng-disabled="isRemoveAvailable === true ? true:false"
@@ -175,6 +175,7 @@ hr {
 									ng-disabled="isPaymentAvailable === true? true:false"
 									ng-click="makeCashPayment()">Cash Payment</button>
 							</div>
+							</div>
 						</div>
 
 
@@ -182,14 +183,10 @@ hr {
 					</div>
 
 					<!-- Lower Half Container -->
-					<div class="row" style="height: 38vh;">
-
+<%-- 					<div class="row" style="height: 38vh;">
 						<div class="col-md-6"
 							style="border-style: solid; border-width: 2px; border-radius: 4px;">
-
-
 							<div class="row">
-
 								<div class="col-md-12"
 									style="overflow: auto; white-space: nowrap; height: 19vh;">
 									<div ng-repeat="rm in ringgitMalaysiaArray"
@@ -210,16 +207,9 @@ hr {
 											type="button" data-toggle="modal"
 											data-target="#terminal_selection_modal">Card Payment</button>
 									</div>
-
-
 								</div>
-
 							</div>
-
-
-
 						</div>
-
 
 
 						<div class="col-md-6"
@@ -297,16 +287,11 @@ hr {
 												class="form-control btn btn-calculator-outline"
 												ng-click="add_calc('calc',20)" /></td>
 										</tr>
-
 									</tbody>
 								</table>
-
-
 							</div>
 						</div>
-
-
-					</div>
+					</div> --%>
 
 
 				</div>
