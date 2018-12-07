@@ -22,7 +22,7 @@
 .box {
 	border-radius: 5px;
 	box-shadow: 1px 2px 10px silver;
-	  display: inline-block;
+	display: inline-block;
 	padding: 10px;
 }
 
@@ -49,12 +49,12 @@
 }
 
 .table-fixed thead {
+	height: calc(100vh - 100px);
 	width: 97%;
 }
 
- .table-fixed tbody {
-	min-height: 40vh;
-	max-height: 40vh;
+.table-fixed tbody {
+	height: calc(100vh - 100px);
 	overflow-y: auto;
 	width: 100%;
 }
@@ -64,30 +64,33 @@ tfoot th {
 }
 
 .container {
-    overflow: hidden;
-}
-.column {
-    float: left;
-    margin: 20px;
-    background-color: grey;
-    padding-bottom: 100%;
-    margin-bottom: -100%;
+	overflow: hidden;
 }
 
+.column {
+	float: left;
+	margin: 20px;
+	background-color: grey;
+	padding-bottom: 100%;
+	margin-bottom: -100%;
+}
 </style>
 
 <body>
 
 	<div ng-controller="Show_Takeaway_Order_CTRL" ng-init="getItemGroup();">
 		<div class="content-wrapper" style="font-size: 0.9em;">
-			<section class="content sectioncalibrator" style="padding-right:15px;padding-left:15px;">
+			<section class="content sectioncalibrator"
+				style="padding-right: 15px; padding-left: 15px;">
 
-				<div class="row container-fluid" style="padding-right:2px;padding-left:2px;">
+				<div class="row container-fluid"
+					style="padding-right: 2px; padding-left: 2px;">
 
 					<!-- START of left well -->
-					<div class="col-md-6" style="padding-right:2px;padding-left:2px;">
+					<div class="col-md-6"
+						style="padding-right: 2px; padding-left: 2px;">
 
-						<div class="well" style="height: 75vh;">
+						<div class="well" style="height: calc(100vh - 100px);">
 
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
@@ -101,15 +104,18 @@ tfoot th {
 								<div class="row" style="max-height: 65vh; overflow-y: auto;">
 
 									<div class="panel-body" style="width: max-width">
-										<div id='div_category' style="height: 50vh; overflow-y: auto;">
+										<div id='div_category'
+											style="height: calc(100vh - 260px); overflow-y: auto;">
 
-											<div id="group_item_container" ng-show="insideGroupStatus==0" ng-hide="insideGroupStatus==1">
+											<div id="group_item_container" ng-show="insideGroupStatus==0"
+												ng-hide="insideGroupStatus==1">
 												<div ng-repeat="group_list in groupList.group_list">
-													<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6" style="display:table-cell;padding-right:2px;padding-left:2px;">
+													<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6"
+														style="display: table-cell; padding-right: 2px; padding-left: 2px;">
 														<a ng-click="getGroupItem(group_list.groupid)">
 															<div class="panel panel-default text-center">
 																<div class="panel-body center-block"
-																	style="color: grey; font-weight: bold; font-size: small; ">
+																	style="color: grey; font-weight: bold; font-size: small;">
 																	{{group_list.groupname}}</div>
 															</div>
 														</a>
@@ -123,7 +129,8 @@ tfoot th {
 
 												<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6"
 													ng-repeat="item in itemList.item_list">
-													<a ng-click="addItemIntoTakeAwayCheck(item.item_id, item.item_code, item.name, item.item_price)">
+													<a
+														ng-click="addItemIntoTakeAwayCheck(item.item_id, item.item_code, item.name, item.item_price)">
 														<div class="panel panel-default text-center">
 															<img src="${pageContext.request.contextPath}"
 																+"item.image_path" width="200" height="200"
@@ -148,75 +155,60 @@ tfoot th {
 
 					<!-- END of left well -->
 
-					<div class="col-md-6">
-					<!-- START of right well -->
-						<div class="well" style="height: 75vh;">
-						
-								<table class='table table-fixed' id="takeaway_datatable">
-													<thead>
-														<tr>
-															<th class='col-md-1 col-xs-1'></th>
-															<th></th>
-															<th class='col-md-3 col-xs-3'>Code</th>
-															<th class='col-md-5 col-xs-5 text-left'>Items</th>
-															<!-- 					<th class='col-md-2 col-xs-2 text-center'>Qty</th> -->
-															<th class='col-md-3 col-xs-3 text-right'>Price</th>
-													
-														</tr>
-													</thead>
-													<tbody>
+					<div class="col-md-6"
+						style="padding-right: 2px; padding-left: 2px;">
+						<!-- START of right well -->
+						<div class="well" style="height: calc(100vh - 100px);">
 
-												
+							<table class='table table-fixed' id="takeaway_datatable">
+								<thead>
+									<tr>
+										<th class='col-md-1 col-xs-1'></th>
+										<th></th>
+										<th class='col-md-3 col-xs-3'>Code</th>
+										<th class='col-md-5 col-xs-5 text-left'>Items</th>
+										<!-- 					<th class='col-md-2 col-xs-2 text-center'>Qty</th> -->
+										<th class='col-md-3 col-xs-3 text-right'>Price</th>
 
-													</tbody>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
 
-													<tfoot>
-				<!-- 										<tr>
-															<th class='col-md-1 col-xs-1'></th>
-																						<th></th>
-															<th class='col-md-3 col-xs-3'>Discount(0.00%)</th>
-															<th class='col-md-5 col-xs-5'></th>
-															<th class='col-md-3 col-xs-3 text-right'><font
-																color='Grey'><b>0.00</b></font></th>
-						
-														</tr> -->
+								<tfoot>
 
-														 <tr>
-															<th class='col-md-1 col-xs-1'></th>
-																						<th></th>
-															<th class='col-md-3 col-xs-3'>Total</th>
-															<th class='col-md-5 col-xs-5'></th>
-															<th class='col-md-3 col-xs-3 text-right'><font
-																color='Grey'>{{takeAwayTotalPrice | number:2}}</font></th>
-												
-														</tr>
-													</tfoot>
-												</table>
-						
+									<tr>
+										<th class='col-md-1 col-xs-1'></th>
+										<th></th>
+										<th class='col-md-3 col-xs-3'>Total</th>
+										<th class='col-md-5 col-xs-5'></th>
+										<th class='col-md-3 col-xs-3 text-right'><font
+											color='Grey'>{{takeAwayTotalPrice | number:2}}</font></th>
+
+									</tr>
+								</tfoot>
+							</table>
+
 							<!-- Button group control -->
-									<div class="row">
-												<hr class="divider">
-											</div>
-															
-											<div class="row" style="margin-bottom: 5px;">
-												<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-													<button class="btn btn-block btn-primary"
-														ng-click = "payTakeAwayOrder()"
-														ng-disabled="isPaymentAvailable === true ? true:false"
-														id="selectable_btn">PAY</button>
-												</div>
-												<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-													<button class="btn btn-block btn-danger"
-														ng-click="removeItemFromTakeAwayCheck()"
-														ng-disabled="isRemoveAvailable === true? true:false">REMOVE</button>
-												</div>
-											</div>						
-							
-					
+							<div class="row">
+								<hr class="divider">
+							</div>
 
-						
+							<div class="row" style="margin-bottom: 5px;">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+									<button class="btn btn-block btn-primary"
+										ng-click="payTakeAwayOrder()"
+										ng-disabled="isPaymentAvailable === true ? true:false"
+										id="selectable_btn">PAY</button>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+									<button class="btn btn-block btn-danger"
+										ng-click="removeItemFromTakeAwayCheck()"
+										ng-disabled="isRemoveAvailable === true? true:false">REMOVE</button>
+								</div>
+							</div>
 						</div>
-					<!-- END of right well -->
+						<!-- END of right well -->
 					</div>
 				</div>
 
