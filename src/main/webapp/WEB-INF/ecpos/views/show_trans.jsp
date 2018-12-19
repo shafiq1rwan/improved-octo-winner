@@ -64,12 +64,9 @@
 		<div class="content-wrapper" style="font-size: 0.9em;">
 
 			<section class="content sectioncalibrator">
-				<div class="row container-fluid">
-					<div class="row">
-						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+				<div class="row container-fluid" style="padding-right:2px;padding-left:2px;">								
 							<div id="transaction_list">
-								<div
-									class="col-md-7 col-lg-7 col-xl-7 container-fluid visible-lg visible-xl visible-md hidden-sm hidden-xs">
+								<div class="col-md-7 col-lg-7 col-xl-7 container-fluid visible-lg visible-xl visible-md hidden-sm hidden-xs" style="padding-right:2px;padding-left:2px;">
 									<div class="well" style="height: 80vh;">
 
 										<div id="myCalendar" class="input-group date"
@@ -108,7 +105,7 @@
 								</div>
 							</div>
 							<div id="transaction_detail">
-								<div class="col-md-5 col-lg-5 col-xl-5 container-fluid">
+								<div class="col-md-5 col-lg-5 col-xl-5 container-fluid" style="padding-right:2px;padding-left:2px;">
 									<div class="well" style="height: 80vh;">
 										<h4>
 											<font color=#205081><b>Transaction Details</b></font>
@@ -225,8 +222,6 @@
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
 				</div>
 
 
