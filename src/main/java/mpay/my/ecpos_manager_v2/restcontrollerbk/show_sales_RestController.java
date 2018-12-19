@@ -1,10 +1,6 @@
-package mpay.my.ecpos_manager_v2.rest;
+package mpay.my.ecpos_manager_v2.restcontrollerbk;
 
 import java.math.BigDecimal;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -14,11 +10,8 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
@@ -30,7 +23,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -56,60 +48,53 @@ import mpay.my.ecpos_manager_v2.webutil.UtilWebComponents;
 public class show_sales_RestController {
 
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
-	
+
 	@Autowired
 	DataSource dataSource;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-/*	@Autowired
-	private RestTemplate restTemplate;*/
-
 	private DecimalFormat df2 = new DecimalFormat(".##");
 
-	//Success
-	@RequestMapping(value = { "/get_table_list" }, method = { RequestMethod.GET,
-			RequestMethod.POST }, produces = "application/json")
+	// Success
+	@RequestMapping(value = { "/get_table_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	@ResponseBody
-	public String getTablelist(HttpServletRequest request) {
-		JSONObject jsonResult = null;
+	public String getTablelist() {
+		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 
 		try {
-			jsonResult = new JSONObject();
-
 			connection = dataSource.getConnection();
 
 			PreparedStatement stmt = connection.prepareStatement("SELECT table_count FROM system;");
-			ResultSet resultSet = (ResultSet) stmt.executeQuery();
+			ResultSet rs = (ResultSet) stmt.executeQuery();
 
-			if (resultSet.next()) {
-
-				jsonResult.put(Constant.RESPONSE_CODE, "00");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-
-				int table_count = resultSet.getInt("table_count");
+			if (rs.next()) {
+				int table_count = rs.getInt("table_count");
+				
 				JSONArray tableList = new JSONArray();
 				for (int i = 0; i < table_count; i++) {
 
-					stmt = connection.prepareStatement(
-							"SELECT COUNT(*) AS count FROM checks WHERE tblno = ? AND chk_open IN (1,2)");
+					stmt = connection.prepareStatement("SELECT COUNT(*) AS count FROM checks WHERE tblno = ? AND chk_open IN (1,2)");
 					stmt.setInt(1, i + 1);
-					ResultSet resultSet2 = (ResultSet) stmt.executeQuery();
-					resultSet2.next();
-					String data = Integer.toString(i + 1) + "," + resultSet2.getString("count");
-					tableList.put(data);
+					ResultSet rs2 = (ResultSet) stmt.executeQuery();
+					
+					if (rs2.next()) {
+						String data = Integer.toString(i + 1) + "," + rs2.getString("count");
+						tableList.put(data);
+					}
 				}
-
 				jsonResult.put(Constant.TABLE_LIST, tableList);
 				Logger.writeActivity("Table List: " + tableList.toString(), ECPOS_FOLDER);
+				
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "NO TABLE FOUND, PLEASE TRY AGAIN");
 				Logger.writeActivity("Table List Not Found", ECPOS_FOLDER);
 			}
-
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -117,8 +102,8 @@ public class show_sales_RestController {
 			if (connection != null) {
 				try {
 					connection.close();
-				} catch (Exception e) {
-					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+				} catch (SQLException e) {
+					Logger.writeError(e, "SQLException: ", ECPOS_FOLDER);
 					e.printStackTrace();
 				}
 			}
@@ -126,36 +111,34 @@ public class show_sales_RestController {
 		return jsonResult.toString();
 	}
 
-	//Success
+	// Success
 	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.POST }, produces = "application/json")
 	@ResponseBody
-	public String getChecklist(HttpServletRequest request, @RequestBody String data) {
-
-		JSONObject jsonObj = null;
+	public String getChecklist(@RequestBody String data) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 
 		try {
-			jsonObj = new JSONObject(data);
+			JSONObject jsonObj = new JSONObject(data);
 
 			if (jsonObj.has(Constant.TABLE_NO)) {
 				String table_no = jsonObj.getString(Constant.TABLE_NO);
-				jsonResult.put(Constant.RESPONSE_CODE, "00");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				
 				connection = dataSource.getConnection();
 
-				PreparedStatement stmt = connection
-						.prepareStatement("SELECT chk_num FROM checks WHERE tblno = ? AND chk_open IN (1,2);");
+				PreparedStatement stmt = connection.prepareStatement("SELECT chk_num FROM checks WHERE tblno = ? AND chk_open IN (1,2);");
 				stmt.setString(1, table_no);
-				ResultSet resultSet = (ResultSet) stmt.executeQuery();
+				ResultSet rs = (ResultSet) stmt.executeQuery();
+
 				JSONArray check_list = new JSONArray();
-
-				while (resultSet.next()) {
-					check_list.put(resultSet.getString("chk_num"));
+				while (rs.next()) {
+					check_list.put(rs.getString("chk_num"));
 				}
-
 				jsonResult.put("check_list", check_list);
-				Logger.writeActivity("Table Check List: "+check_list.toString(), ECPOS_FOLDER);
+				Logger.writeActivity("Table Check List: " + check_list.toString(), ECPOS_FOLDER);
+				
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
@@ -168,16 +151,42 @@ public class show_sales_RestController {
 			if (connection != null) {
 				try {
 					connection.close();
-				} catch (Exception e) {
-					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+				} catch (SQLException e) {
+					Logger.writeError(e, "SQLException: ", ECPOS_FOLDER);
 					e.printStackTrace();
 				}
 			}
 		}
 		return jsonResult.toString();
 	}
+	
+	// Support API
+	@RequestMapping(value = { "/get_staff_name" }, method = { RequestMethod.GET }, produces = "application/json")
+	@ResponseBody
+	public String getStaffName(HttpServletRequest request) {
+		JSONObject jsonResult = null;
 
-	//Unknown
+		UtilWebComponents webcomponent = new UtilWebComponents();
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
+
+		try {
+			jsonResult = new JSONObject();
+			
+			if (session_container_user != null) {
+				jsonResult.put(Constant.STAFF_NAME, session_container_user.getUsername());
+			} else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "STAFF NOT FOUND");
+			}
+		} catch (JSONException e) {
+			Logger.writeError(e, "JSONException: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+
+		return jsonResult.toString();
+	}
+
+	// Unknown
 	@RequestMapping(value = { "/get_check_detail" }, method = { RequestMethod.POST }, produces = "application/json")
 	@ResponseBody
 	public String getCheckDetail(HttpServletRequest request, @RequestBody String data) {
@@ -197,9 +206,9 @@ public class show_sales_RestController {
 				String staff_name = "";
 				PreparedStatement stmt = connection.prepareStatement("SELECT * FROM checks WHERE chk_num = ?;");
 				stmt.setString(1, check_no);
-				ResultSet resultSet = (ResultSet) stmt.executeQuery();
+				ResultSet rs = (ResultSet) stmt.executeQuery();
 
-				if (resultSet.next()) {
+				if (rs.next()) {
 
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
@@ -208,20 +217,20 @@ public class show_sales_RestController {
 							+ " (c.chk_ttl*c.number) as ttl " + " FROM checks a JOIN empldef b ON a.empl_id = b.id "
 							+ " JOIN details c ON a.chk_seq = c.chk_seq " + " WHERE a.chk_num = ? GROUP BY c.name;");
 					stmt.setString(1, check_no);
-					ResultSet resultSet2 = (ResultSet) stmt.executeQuery();
+					ResultSet rs2 = (ResultSet) stmt.executeQuery();
 					JSONArray ordered_item = new JSONArray();
 					double total_amount = 0.00;
 
-					while (resultSet2.next()) {
+					while (rs2.next()) {
 						JSONObject item = new JSONObject();
 
-						item.put(Constant.ITEM_NAME, resultSet2.getString("name"));
-						item.put(Constant.ITEM_QTY, resultSet2.getString("qty"));
-						item.put(Constant.TOTAL_PRICE, resultSet2.getString("ttl"));
-						total_amount = total_amount + resultSet2.getDouble("ttl");
+						item.put(Constant.ITEM_NAME, rs2.getString("name"));
+						item.put(Constant.ITEM_QTY, rs2.getString("qty"));
+						item.put(Constant.TOTAL_PRICE, rs2.getString("ttl"));
+						total_amount = total_amount + rs2.getDouble("ttl");
 
 						if (staff_name.equals("")) {
-							staff_name = resultSet2.getString("username");
+							staff_name = rs2.getString("username");
 						}
 
 						ordered_item.put(item);
@@ -242,7 +251,7 @@ public class show_sales_RestController {
 
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();	
+			e.printStackTrace();
 		} finally {
 			if (connection != null) {
 				try {
@@ -257,75 +266,90 @@ public class show_sales_RestController {
 		return jsonResult.toString();
 	}
 
-	//Success
-	@RequestMapping(value = { "/create_check" }, method = { RequestMethod.GET,
-			RequestMethod.POST }, produces = "application/json")
+	// Success
+	@RequestMapping(value = { "/create_check" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	@ResponseBody
-	public String createCheck(HttpServletRequest request, @RequestBody String data) {
-
-		JSONObject jsonObj = null;
-		JSONObject jsonResult = null;
+	public String createCheck(@RequestBody String data) {
+		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 
 		try {
-			jsonResult = new JSONObject();
-			jsonObj = new JSONObject(data);
+			JSONObject jsonObj = new JSONObject(data);
 
 			if (jsonObj.has(Constant.STAFF_NAME) && jsonObj.has(Constant.TABLE_NO)) {
-
 				String staff_name = jsonObj.getString(Constant.STAFF_NAME);
 				String table_no = jsonObj.getString(Constant.TABLE_NO);
+				
 				connection = dataSource.getConnection();
 
 				PreparedStatement stmt = connection.prepareStatement("SELECT id FROM empldef WHERE username = ?;");
 				stmt.setString(1, staff_name);
-				ResultSet resultSet = (ResultSet) stmt.executeQuery();
-				if (resultSet.next()) {
-					String staff_id = resultSet.getString("id");
+				ResultSet rs = (ResultSet) stmt.executeQuery();
+				
+				if (rs.next()) {
+					String staff_id = rs.getString("id");
 
 					stmt = connection.prepareStatement("select chk_num from masterchecks");
-					ResultSet masterCheckRS = (ResultSet) stmt.executeQuery();
-					masterCheckRS.next();
-
-					int currentchknum = masterCheckRS.getInt("chk_num");
-					int newchecknum = currentchknum + 1;
-
-					stmt = connection.prepareStatement("UPDATE masterchecks set chk_num=? where chk_num=?");
-					stmt.setInt(1, newchecknum);
-					stmt.setInt(2, currentchknum);
-
-					String checknumber = Integer.toString(newchecknum);
-
-					stmt.executeUpdate();
-
-					stmt = connection.prepareStatement(
-							"INSERT INTO checks(chk_num,empl_id,tblno,storeid,chk_open,sub_ttl,tax_ttl,pymnt_ttl,due_ttl) values (?,?,?,?,2,0,0,0,0)");
-					stmt.setString(1, checknumber);
-					stmt.setString(2, staff_id);
-					stmt.setString(3, table_no);
-					stmt.setInt(4, 1);
-					stmt.executeUpdate();
-
-					stmt = connection.prepareStatement("select * from checks where chk_num=?");
-					stmt.setInt(1, newchecknum);
-					ResultSet resultSet2 = (ResultSet) stmt.executeQuery();
-					resultSet2.next();
-
-					jsonResult.put(Constant.RESPONSE_CODE, "00");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
-					jsonResult.put(Constant.CHECK_NO, resultSet2.getString("chk_num"));
-					Logger.writeActivity("Check Number : "+ resultSet2.getString("chk_num") + " Created", ECPOS_FOLDER);
+					ResultSet rs2 = (ResultSet) stmt.executeQuery();
+					
+					if (rs2.next()) {
+						int currentchknum = rs2.getInt("chk_num");
+						int newchecknum = currentchknum + 1;
+	
+						stmt = connection.prepareStatement("UPDATE masterchecks set chk_num=? where chk_num=?");
+						stmt.setInt(1, newchecknum);
+						stmt.setInt(2, currentchknum);
+						int rs3 = stmt.executeUpdate();
+						
+						if (rs3 > 0) {		
+							stmt = connection.prepareStatement("INSERT INTO checks(chk_num,empl_id,tblno,storeid,chk_open,sub_ttl,tax_ttl,pymnt_ttl,due_ttl) values (?,?,?,?,2,0,0,0,0)");
+							stmt.setInt(1, newchecknum);
+							stmt.setString(2, staff_id);
+							stmt.setString(3, table_no);
+							stmt.setInt(4, 1);
+							int rs4 = stmt.executeUpdate();
+							
+							if (rs4 > 0) {
+								stmt = connection.prepareStatement("select * from checks where chk_num=?");
+								stmt.setInt(1, newchecknum);
+								ResultSet rs5 = (ResultSet) stmt.executeQuery();
+								
+								if (rs5.next()) {
+									jsonResult.put(Constant.CHECK_NO, rs5.getString("chk_num"));
+									Logger.writeActivity("Check Number : " + rs5.getString("chk_num") + " Created", ECPOS_FOLDER);
+									
+									jsonResult.put(Constant.RESPONSE_CODE, "00");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+								} else {
+									Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
+								}
+							} else {
+								Logger.writeActivity("Check Failed To Insert", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Insert");
+							}
+						} else {
+							Logger.writeActivity("MasterCheckNum Failed To Update", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "MasterCheckNum Failed To Update");
+						}
+					} else {
+						Logger.writeActivity("MasterCheckNum Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "MasterCheckNum Not Found");
+					}
 				} else {
+					Logger.writeActivity("Staff Not Found When Creating Check", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
-					Logger.writeActivity("Staff Not Found When Creating Check", ECPOS_FOLDER);
 				}
 			} else {
+				Logger.writeActivity("Invalid Request While Creating Check", ECPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
-				Logger.writeActivity("Invalid Request While Creating Check", ECPOS_FOLDER);
 			}
-
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -333,8 +357,8 @@ public class show_sales_RestController {
 			if (connection != null) {
 				try {
 					connection.close();
-				} catch (Exception e) {
-					Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+				} catch (SQLException e) {
+					Logger.writeError(e, "SQLException: ", ECPOS_FOLDER);
 					e.printStackTrace();
 				}
 			}
@@ -364,7 +388,7 @@ public class show_sales_RestController {
 
 				for (int i = 0; i < selected_items.length(); i++) {
 					itemIds[i] = selected_items.optInt(i);
-					//System.out.println("Selected ITem Id:" + selected_items.optInt(i));
+					// System.out.println("Selected ITem Id:" + selected_items.optInt(i));
 				}
 
 				// Insert new item
@@ -453,16 +477,16 @@ public class show_sales_RestController {
 
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-					
+
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
-					
+
 				}
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
-				
+
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -585,38 +609,6 @@ public class show_sales_RestController {
 		}
 		return jsonResult.toString();
 
-	}
-
-	// Support API
-	@RequestMapping(value = { "/get_staff_name" }, method = { RequestMethod.GET }, produces = "application/json")
-	@ResponseBody
-	public String getStaffName(HttpServletRequest request) {
-
-		JSONObject jsonResult = null;
-
-		UtilWebComponents webcomponent = new UtilWebComponents();
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
-
-		if (session_container_user != null) {
-			try {
-				jsonResult = new JSONObject();
-
-				jsonResult.put(Constant.STAFF_NAME, session_container_user.getUsername());
-			} catch (JSONException e) {
-				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "STAFF NOT FOUND");
-			} catch (JSONException e) {
-				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
-
-		return jsonResult.toString();
 	}
 
 	// Add customItem into checks ({})
@@ -797,7 +789,7 @@ public class show_sales_RestController {
 
 		try {
 
-			UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+			UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 			if (session_container_user != null) {
 				userid = session_container_user.getUserLoginId();
 			}
@@ -918,7 +910,7 @@ public class show_sales_RestController {
 
 			jsonResult.put("group_list", group_list);
 
-		} catch (Exception e) {			
+		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 			return Constant.EXCEPTION_MESSAGE;
@@ -963,12 +955,12 @@ public class show_sales_RestController {
 				item.put("item_price", resultSet.getString("price"));
 				item.put("itemgroup_id", resultSet.getString("itemgroup_id"));
 				item.put("gstgroup_id", resultSet.getString("gstgroup_id"));
-				
-				if(resultSet.getString("image_path") == null)
-					item.put("image_path","/member/meta/images/default_image.png");
+
+				if (resultSet.getString("image_path") == null)
+					item.put("image_path", "/member/meta/images/default_image.png");
 				else
 					item.put("image_path", resultSet.getString("image_path"));
-				
+
 				item_list.put(item);
 			}
 
@@ -1236,7 +1228,7 @@ public class show_sales_RestController {
 
 	private static int detailSequence = 1;
 
-	//Used in show_take_away_order_CTRL
+	// Used in show_take_away_order_CTRL
 	@PostMapping("/takeaway")
 	public ResponseEntity<?> createTakeAwayOrder(@RequestBody String data) {
 
@@ -1271,69 +1263,65 @@ public class show_sales_RestController {
 			jdbcTemplate.update(UPDATE_MASTERCHECK_SQL, new Object[] { newchecknum, existingCheckNum });
 			String checknumber = Integer.toString(newchecknum) + "TA";
 
-			
-//			KeyHolder checkKeyHolder = new GeneratedKeyHolder();
-//			
-//			jdbcTemplate.update(connection-> {PreparedStatement ps = connection.prepareStatement(INSERT_CHECK_SQL, PreparedStatement.RETURN_GENERATED_KEYS);
-//				ps.setString(1, checknumber);
-//				ps.setInt(2, staffId);
-//				ps.setInt(3, 1);
-//				return ps;
-//			},checkKeyHolder);
-				
-			jdbcTemplate.update(INSERT_CHECK_SQL, new Object[] { checknumber, staffId, 1 }); //Get generated id here
-			
+			// KeyHolder checkKeyHolder = new GeneratedKeyHolder();
+			//
+			// jdbcTemplate.update(connection-> {PreparedStatement ps =
+			// connection.prepareStatement(INSERT_CHECK_SQL,
+			// PreparedStatement.RETURN_GENERATED_KEYS);
+			// ps.setString(1, checknumber);
+			// ps.setInt(2, staffId);
+			// ps.setInt(3, 1);
+			// return ps;
+			// },checkKeyHolder);
+
+			jdbcTemplate.update(INSERT_CHECK_SQL, new Object[] { checknumber, staffId, 1 }); // Get generated id here
+
 			Map<String, Object> checkResultMap = jdbcTemplate.queryForMap(SELECT_CHECK_WITH_CHECKNO_SQL,
 					new Object[] { checknumber });
 
 			// Retrieve the takeaway item
 			takeAwayItems = jsonData.getJSONArray("takeAwayItemList");
 			List<Long> generatedIdList = new ArrayList<>();
-			
-			
-			
-			//Get system tax
+
+			// Get system tax
 			Map<String, Object> systemTaxResultMap = jdbcTemplate.queryForMap("SELECT * FROM system");
-			double salesTaxPercentage = (int)systemTaxResultMap.get("sales_tax_percentage");
-			double serviceTaxPercentage = (int)systemTaxResultMap.get("service_tax_percentage");
-			
-			salesTaxPercentage = salesTaxPercentage/100;
-			serviceTaxPercentage = serviceTaxPercentage/100;
-			
+			double salesTaxPercentage = (int) systemTaxResultMap.get("sales_tax_percentage");
+			double serviceTaxPercentage = (int) systemTaxResultMap.get("service_tax_percentage");
+
+			salesTaxPercentage = salesTaxPercentage / 100;
+			serviceTaxPercentage = serviceTaxPercentage / 100;
+
 			BigDecimal subTtl = new BigDecimal(0.00);
 			BigDecimal taxTtl = new BigDecimal(0.00);
 			BigDecimal dueTtl = new BigDecimal(0.00);
 			BigDecimal salesTax = new BigDecimal(0.00);
 			BigDecimal serviceTax = new BigDecimal(0.00);
-		
+
 			for (int i = 0; i < takeAwayItems.length(); i++) {
 				JSONObject item = takeAwayItems.getJSONObject(i);
 				KeyHolder keyHolder = new GeneratedKeyHolder();
-		
+
 				// jdbcTemplate.update(INSERT_DETAILS_SQL, new Object[]
 				// {(int)checkResultMap.get("chk_seq"),detailSequence,item.getInt("itemid"),item.getDouble("itemPrice"),'S',item.getDouble("itemPrice")});
 
-				
-				//Check the item detail
-				Map<String, Object> menuItemResultMap = jdbcTemplate.queryForMap("SELECT * FROM menudef WHERE id = ?", new Object[] {
-						item.getInt("itemid")
-				});
-				
-				if(!menuItemResultMap.isEmpty()) {		
-						if ((int) menuItemResultMap.get("sststatus") == 1) {
-							// Goods
-							if ((int) menuItemResultMap.get("itemtype") == 1) {
-								BigDecimal salesTaxAmt = new BigDecimal(item.getDouble("itemprice"));
-								salesTax = salesTax.add(salesTaxAmt.multiply(new BigDecimal(salesTaxPercentage)));
-								// Service
-							} else if ((int) menuItemResultMap.get("itemtype") == 2) {
-								BigDecimal serviceTaxAmt = new BigDecimal(item.getDouble("itemprice"));
-								serviceTax = serviceTax
-										.add(serviceTaxAmt.multiply(new BigDecimal(serviceTaxPercentage)));
-							}
-						}		
+				// Check the item detail
+				Map<String, Object> menuItemResultMap = jdbcTemplate.queryForMap("SELECT * FROM menudef WHERE id = ?",
+						new Object[] { item.getInt("itemid") });
+
+				if (!menuItemResultMap.isEmpty()) {
+					if ((int) menuItemResultMap.get("sststatus") == 1) {
+						// Goods
+						if ((int) menuItemResultMap.get("itemtype") == 1) {
+							BigDecimal salesTaxAmt = new BigDecimal(item.getDouble("itemprice"));
+							salesTax = salesTax.add(salesTaxAmt.multiply(new BigDecimal(salesTaxPercentage)));
+							// Service
+						} else if ((int) menuItemResultMap.get("itemtype") == 2) {
+							BigDecimal serviceTaxAmt = new BigDecimal(item.getDouble("itemprice"));
+							serviceTax = serviceTax.add(serviceTaxAmt.multiply(new BigDecimal(serviceTaxPercentage)));
+						}
+					}
 				}
-					
+
 				jdbcTemplate.update(connection -> {
 					PreparedStatement ps = connection.prepareStatement(INSERT_DETAILS_SQL,
 							PreparedStatement.RETURN_GENERATED_KEYS);
@@ -1351,24 +1339,23 @@ public class show_sales_RestController {
 					}
 					return ps;
 				}, keyHolder);
-				
+
 				subTtl = subTtl.add(new BigDecimal(item.getDouble("itemprice")));
-				System.out.println("My Bigger Subtotal: "+ subTtl.toString());
+				System.out.println("My Bigger Subtotal: " + subTtl.toString());
 				taxTtl = salesTax.add(serviceTax);
 
 				generatedIdList.add((long) keyHolder.getKey());
 			}
-			
+
 			subTtl = subTtl.add(taxTtl);
-			System.out.println("Subtotal: "+ subTtl.toString());
+			System.out.println("Subtotal: " + subTtl.toString());
 			dueTtl = subTtl.add(BigDecimal.ZERO);
-			
-			//Need to add taxes deduction amount into checks
-			jdbcTemplate.update("UPDATE checks SET sales_tax = ?, service_tax = ?, tax_ttl = ?, sub_ttl = ?, due_ttl = ? WHERE chk_num = ?", 
-					new Object[] {
-							salesTax, serviceTax, taxTtl,subTtl,dueTtl, checknumber
-			});
-			
+
+			// Need to add taxes deduction amount into checks
+			jdbcTemplate.update(
+					"UPDATE checks SET sales_tax = ?, service_tax = ?, tax_ttl = ?, sub_ttl = ?, due_ttl = ? WHERE chk_num = ?",
+					new Object[] { salesTax, serviceTax, taxTtl, subTtl, dueTtl, checknumber });
+
 			jsonResult.put("checkNumber", checknumber);
 			jsonResult.put("kitchenReceiptPrinting", generatedIdList);
 			detailSequence = 1; // Reset the value

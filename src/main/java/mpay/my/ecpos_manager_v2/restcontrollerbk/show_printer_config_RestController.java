@@ -1,4 +1,4 @@
-package mpay.my.ecpos_manager_v2.rest;
+package mpay.my.ecpos_manager_v2.restcontrollerbk;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -361,7 +361,7 @@ public class show_printer_config_RestController {
 			int chk_seq = Integer.parseInt(data);
 
 			UtilWebComponents webcomponent = new UtilWebComponents();
-			UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+			UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 
 			String staff_name = null;
 
@@ -482,7 +482,7 @@ public class show_printer_config_RestController {
 			jsonObj = new JSONObject(data);
 
 			UtilWebComponents webcomponent = new UtilWebComponents();
-			UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+			UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 
 			String staff_name = null;
 
@@ -604,7 +604,7 @@ public class show_printer_config_RestController {
 
 			// Retrieve user name
 			UtilWebComponents webcomponent = new UtilWebComponents();
-			UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+			UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 
 			String staff_name = null;
 

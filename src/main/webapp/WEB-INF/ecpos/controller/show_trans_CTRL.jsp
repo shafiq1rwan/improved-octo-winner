@@ -1,7 +1,7 @@
 <script>
 	app
 			.controller(
-					'Show_trans_CTRL',
+					'show_trans_CTRL',
 					function($scope, $http, $timeout) {
 
 						$scope.fields_TransList = {};

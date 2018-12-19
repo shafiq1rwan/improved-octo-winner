@@ -1,4 +1,4 @@
-package mpay.my.ecpos_manager_v2.rest;
+package mpay.my.ecpos_manager_v2.restcontrollerbk;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -157,7 +157,7 @@ public class show_payment_RestController {
 		int userid = 0;
 
 		UtilWebComponents webcomponent = new UtilWebComponents();
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 		if (session_container_user != null) {
 			userid = session_container_user.getUserLoginId();
 		}
@@ -297,7 +297,7 @@ public class show_payment_RestController {
 		System.out.println("Card Payment data: " + data);
 
 		UtilWebComponents webcomponent = new UtilWebComponents();
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 		if (session_container_user != null) {
 			userid = session_container_user.getUserLoginId();
 		}
@@ -409,7 +409,7 @@ public class show_payment_RestController {
 		System.out.println("Void Payment data: " + data);
 
 		UtilWebComponents webcomponent = new UtilWebComponents();
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 		if (session_container_user != null) {
 			userid = session_container_user.getUserLoginId();
 		}
@@ -470,7 +470,7 @@ public class show_payment_RestController {
 		System.out.println("Settlement data: " + data);
 
 		UtilWebComponents webcomponent = new UtilWebComponents();
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 		if (session_container_user != null) {
 			userid = session_container_user.getUserLoginId();
 		}

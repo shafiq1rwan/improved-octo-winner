@@ -378,7 +378,7 @@ if (!document.createElement('canvas').getContext) {
     slategray: '#708090',
     slategrey: '#708090',
     snow: '#FFFAFA',
-    springgreen: '#00FF7F',
+    springgreen: '#00fa9a',
     steelblue: '#4682B4',
     tan: '#D2B48C',
     thistle: '#D8BFD8',

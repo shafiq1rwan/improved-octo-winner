@@ -64,8 +64,8 @@
 	input[type="tel"]:focus, input[type="color"]:focus, input[type="phone"]:focus,
 	select[name="gender"]:focus, select[name="country"]:focus, select[name="state"]:focus,
 	.uneditable-input:focus {
-		border-color: #00FF7F;
-		/* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #00FF7F; */
+		border-color: #00FA9A;
+		/* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #00FA9A; */
 		outline: 0 none;
 	}
 
@@ -155,7 +155,7 @@
 							<label class="login-label"  style="color: white;">Password</label>
 							<input class="form-control" name="password" placeholder="Password" type="password" required>
 							<br> 
-							<input class="btn btn-lg btn-block" style="background-color: #00FF7F; color: white;" type="submit" value="Login">
+							<input class="btn btn-lg btn-block" style="background-color: #00FA9A; color: white;" type="submit" value="Login">
 						</fieldset>
 					</form>
 				</div>

@@ -204,7 +204,7 @@
     "slateblue": "6a5acd",
     "slategray": "708090",
     "snow": "fffafa",
-    "springgreen": "00ff7f",
+    "springgreen": "00fa9a",
     "steelblue": "4682b4",
     "tan": "d2b48c",
     "teal": "008080",

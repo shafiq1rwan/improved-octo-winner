@@ -151,83 +151,27 @@
 
 <script>
 	var app = angular.module("myApp", [ "ngRoute", "uiCropper", "ngMessages" ]);
-	/* app
-		.config([
-				'$routeProvider',
-				'$compileProvider',
-				function($routeProvider, $compileProvider) {
-					$compileProvider
-							.imgSrcSanitizationWhitelist(/^\s*(local|http|https|app|tel|ftp|file|blob|content|ms-appx|x-wmapp0|cdvfile):|data:image\//);
-					$routeProvider
-							.when(
-									"/tableOrder",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/tableOrder",
-										controller : "Show_sales_CTRL"
-									})
-							.when(
-									"/transactionList",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/transactionList",
-									 	controller : "Show_trans_CTRL"
-									})
-							.when(
-									"/itemsManagement",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/itemsManagement"
-									})
-							.when(
-									"/check/:check_no",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/check"
-									})
-							.when(
-									"/generateReport",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/generateReport"
-									})
-							.when(
-									"/configSetting",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/configSetting"
-									})		
-							.when(
-									"/takeAwayOrder",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeAwayOrder"
-									})	
-							.when(
-									"/payment/:check_no?",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment"
-									})	
-							.when(
-									"/clientQRConnection",
-									{
-										templateUrl : "${pageContext.request.contextPath}/ecpos/views/clientQRConnection"
-									});
-				} ]); */
-
 	app.config(['$routeProvider', '$compileProvider', function($routeProvider, $compileProvider) {
 		$compileProvider.imgSrcSanitizationWhitelist(/^\s*(local|http|https|app|tel|ftp|file|blob|content|ms-appx|x-wmapp0|cdvfile):|data:image\//);
 		$routeProvider
 		.when("/sales",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/sales",
-				controller : "Show_sales_CTRL"
+				controller : "show_sales_CTRL"
+			})
+		.when("/checks/:check_no",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks",
+				controller : "show_checks_CTRL"
 			})
 		.when("/trans",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/trans",
-				controller : "Show_trans_CTRL"
+				controller : "show_trans_CTRL"
 			})
 		.when("/items",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items"
-			})
-		.when("/checks/:check_no",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks"
 			})
 		.when("/reports",
 			{
@@ -239,7 +183,8 @@
 			})
 		.when("/take_away_order",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeaway"
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeaway",
+				controller : "show_take_away_order_CTRL"
 			})
 		.when("/payment/:check_no",
 			{
@@ -248,21 +193,38 @@
 		.when("/connection_qr",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/qr_scan"
+			})
+		
+		
+		
+		.when("/table_order",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/table_order",
+				controller : "table_order_CTRL"
+			})
+		.when("/check/:tableNo/:checkNo",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/check",
+				controller : "check_CTRL"
 			});
 	}]);
 </script>
 
 <!-- ***** ANGULAR JS CONTROLLER ***** -->
-<jsp:include page="/WEB-INF/ecpos/controller/show_sales_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/c_bk/show_sales_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/c_bk/show_checks_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_trans_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/show_checks_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_items_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/show_sales_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/printer_configuration.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/ecpos_manager_setting_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_take_away_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_reports_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/connection_qr_CTRL.jsp" />
+
+
+<jsp:include page="/WEB-INF/ecpos/controller/table_order_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/check_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/menu_CTRL.jsp" />
 
 </html>

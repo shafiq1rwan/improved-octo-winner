@@ -1,7 +1,6 @@
 package mpay.my.ecpos_manager_v2.constant;
 
 public class Constant {
-
 	public static String LOGIN_ID = "loginId";
 	public static String PASSWORD = "password";
 	public static String PRODUCT_LIST = "product_list";
@@ -43,7 +42,7 @@ public class Constant {
 	public static String AMOUNT = "amount";
 	public static String RESPONSE_CODE = "response_code";
 	public static String RESPONSE_MESSAGE = "response_message";
-	
+
 	public static int REFERENCE_ID = 0;
 	public static int RESPONSECODE = 1;
 	public static int REPONSEMSG = 2;
@@ -62,7 +61,6 @@ public class Constant {
 	public static int REFERENCE_CODE = 15;
 	public static int TRANAID = 16;
 	public static int TRANTC = 18;
-	
+
 	public static String EXCEPTION_MESSAGE = "{\"response_code\":\"01\",\"response_message\":\"SERVER EXCEPTION\"}";
-	
 }

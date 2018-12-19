@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.sectioncalibrator {
+	height: calc(100vh - 50px);
+	overflow-y: scroll;
+}
+
+@media only screen and (max-width:600px) {
+	.sectioncalibrator {
+		height: calc(100vh - 100px);
+		overflow-y: scroll;
+	}
+}
+
+hr {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+</style>
+</head>
+
+<body>
+	<div ng-controller="check_CTRL">
+		<div ng-init="initiation();">
+			<div class="content-wrapper" style="font-size: 0.9em;">
+				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">
+					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
+
+						<!-- START of left well -->
+						<div class="col-md-6" style="padding-right: 2px; padding-left: 2px;">
+							<div class="well" style="background-color: white; margin-bottom: 0px; max-height: 88vh;">	
+								<jsp:include page="/WEB-INF/ecpos/views/menu.jsp" flush="true"></jsp:include>
+							</div>
+						</div>
+						<!-- END of left well -->
+						
+						<!-- START of right well -->
+						<div class="col-md-6" style="padding-right: 2px; padding-left: 2px;">
+							<div class="well" style="background-color: white; margin-bottom: 0px;">
+								<div class="box box-success">
+									<div class="box-body">
+										<div class="row">
+											<div class="col-sm-6 form-group">
+												<div>
+													<font><b>Check : {{checkDetail.checkNo}}</b>/<b>Table : {{checkDetail.tableNo}}</b></font>
+												</div>
+												<div>
+													<font><b>Created Date : {{checkDetail.createdDate}}</b></font>
+												</div>
+												<div>
+													<font><b>Status : {{checkDetail.status}}</b></font>
+												</div>
+											</div>
+											<div class="col-sm-6 form-group">
+												<button id="print_kitchen_receipt_btn" class="btn btn-social btn-sm pull-right" style="background-color: #00FA9A;" ng-click="printKitchenReceipt()">
+													<i class="fa fa-plus"></i> PRINT KITCHEN RECEIPT
+												</button>
+											</div>
+										</div>
+										<div style="margin-right: 3px;">
+											<div class="row" style="padding-right: 40px;">
+												<div class='col-sm-1 text-center'><input type="checkbox" ng-click="AllGrandParentItemCheckbox()" id="AllGrandParentItemCheckbox" style="margin: 2px 0 0;"></div>
+												<div class='col-sm-2 text-left'><b>Code</b></div>
+												<div class='col-sm-6 text-left'><b>Item</b></div>
+												<div class='col-sm-2 text-center'><b>Quantity</b></div>
+												<div class='col-sm-1 text-center'><b>Price</b></div>
+											</div>
+											<hr>
+											<div id="itemLoop" style="padding-right: 20px;">
+												<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
+													<div>
+														<div class="row">
+															<div class='col-sm-1 text-center'><input type="checkbox" ng-click="grandParentItemCheckbox()" name="grandParentItemCheckbox" value={{grandParentItem.checkDetailId}} style="margin: 2px 0 0;"></div>
+															<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
+															<div class='col-sm-6 text-left'>{{grandParentItem.itemName}}</div>
+															<div class='col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
+															<div class='col-sm-1 text-right'>{{grandParentItem.subtotal| number:2}}</div>
+														</div>
+														<div ng-repeat="parentItem in grandParentItem.parentItemArray">
+															<div class="row">
+																<div class='col-sm-1 text-center'></div>
+																<div class='col-sm-2 text-left'>{{parentItem.itemCode}}</div>
+																<div class='col-sm-6 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{parentItem.itemName}}</div>
+																<div class='col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
+																<div class='col-sm-1 text-right'>{{parentItem.subtotal| number:2}}</div>										
+															</div>
+															<div ng-repeat="childItem in parentItem.childItemArray">
+																<div class="row">
+																	<div class='col-sm-1 text-center'></div>
+																	<div class='col-sm-2 text-left'>{{childItem.itemCode}}</div>
+																	<div class='col-sm-6 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{childItem.itemName}}</div>
+																	<div class='col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
+																	<div class='col-sm-1 text-right'>{{childItem.subtotal| number:2}}</div>										
+																</div>
+															</div>
+														</div>
+													</div>
+													<br>
+												</div>
+											</div>
+											<hr>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Subtotal</b></div>
+												<div class='col-sm-2 text-right'><b>{{checkDetail.subtotal| number:2}}</b></div>
+											</div>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Goods & Services Tax</b></div>
+												<div class='col-sm-2 text-right'><b>{{checkDetail.tax| number:2}}</b></div>
+											</div>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Service Charge</b></div>
+												<div class='col-sm-2 text-right'><b>{{checkDetail.serviceCharge| number:2}}</b></div>
+											</div>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Rounding Adjustment</b></div>
+												<div class='col-sm-2 text-right'><b>{{checkDetail.roundingAdjustment| number:2}}</b></div>
+											</div>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Grand Total</b></div>
+												<div class='col-sm-2 text-right' style="border-top: solid; border-top-width: thin; border-bottom: 3px double;"><b>{{checkDetail.grandTotal| number:2}}</b></div>
+											</div>
+											<hr>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Deposit Amount</b></div>
+												<div class='col-sm-2 text-right'><b>{{checkDetail.deposit| number:2}}</b></div>
+											</div>
+											<div class="row" style="padding-right: 23px;">
+												<div class='col-sm-1 text-center'></div>
+												<div class='col-sm-9 text-left'><b>Overdue Amount</b></div>
+												<div class='col-sm-2 text-right'><b>{{checkDetail.overdue| number:2}}</b></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div>
+									<div class="row" style="margin-bottom: 5px;">
+										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+											<button class="btn btn-block btn-info" ng-disabled="valid_btn_status === true ? true:false" ng-click="createSplitCheck()" id="selectable_btn">SPLIT CHECK</button>
+										</div>
+										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+											<button class="btn btn-block btn-info" ng-click="remove_selected_check_items()" ng-disabled="valid_btn_status === true? true:false">VOID</button>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+											<button class="btn btn-block btn-info" id="cash_payment_btn" ng-disabled="isPaymentAvailable" ng-click="goToPayment(checkDetail.checknumber,checkDetail.chksequence)">PAYMENT</button>
+										</div>
+										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+											<button class="btn btn-block btn-info" id="" ng-click="storeBalance(checkDetail.chksequence)">STORE BALANCE</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- END of right well -->
+						
+					</div>
+				</section>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

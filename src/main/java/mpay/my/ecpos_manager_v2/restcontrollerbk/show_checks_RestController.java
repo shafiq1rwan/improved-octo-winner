@@ -1,4 +1,4 @@
-package mpay.my.ecpos_manager_v2.rest;
+package mpay.my.ecpos_manager_v2.restcontrollerbk;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -45,10 +45,10 @@ import mpay.my.ecpos_manager_v2.webutil.UtilWebComponents;
 @RequestMapping("/ecposmanagerapi/checks")
 public class show_checks_RestController {
 
+	private final static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
+	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-
-	private final static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 
 	// SQL Statements
 	private static final String SELECT_MENUDEF_BY_ID_SQL = "SELECT * from menudef WHERE id=?";
@@ -61,6 +61,64 @@ public class show_checks_RestController {
 	
 	private static final String INSERT_DETAILS_SQL = "INSERT INTO Details (chk_seq,dtl_seq,number,name,chk_ttl,detail_type,detail_item_price) VALUES (?,?,?,?,?,?,?)";
 	private static final String INSERT_TRANX_SQL = "INSERT INTO transaction (check_no, tran_type ,tran_status, payment_type, amount, performBy) VALUES (?,?,?,?,?,?)";
+	
+	// Half done, not yet handle void
+	@GetMapping("/getcheckdetail/{checkNo}")
+	public ResponseEntity<String> getCheckDetails(@PathVariable("checkNo") String checkNo) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray item_detail_array = null;
+		String itemDetailsSql = "SELECT *,(SELECT itemcode from menudef where id= number) as 'itemcode'"
+				+ " FROM details where chk_seq=? AND detail_item_status = 0 AND detail_type = 'S' ";
+		String subttlSql = "SELECT ROUND(SUM(detail_item_price), 2) as ttl from details WHERE chk_seq=? AND detail_item_status =0 AND detail_type = 'S' ";
+		try {
+			Map<String, Object> checkInfo = findCheck(checkNo);
+			if (checkInfo.isEmpty())
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+			jsonResult.put(Constant.RESPONSE_CODE, "00");
+			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			jsonResult.put("checknumber", (String) checkInfo.get("chk_num"));
+			jsonResult.put("chksequence", (long) checkInfo.get("chk_seq"));
+			jsonResult.put("datetime", (Timestamp) checkInfo.get("createdate"));
+			jsonResult.put("tableno", (int) checkInfo.get("tblno"));
+			jsonResult.put("status", (int) checkInfo.get("chk_open"));
+			jsonResult.put("ttl", (BigDecimal) checkInfo.get("pymnt_ttl"));
+			jsonResult.put("salestax", (BigDecimal) checkInfo.get("tax_ttl"));
+			jsonResult.put("due", (BigDecimal) checkInfo.get("due_ttl"));
+
+			List<Map<String, Object>> itemDetailList = jdbcTemplate.queryForList(itemDetailsSql,
+					new Object[] { (long) checkInfo.get("chk_seq") });
+
+			item_detail_array = new JSONArray();
+
+			if (!itemDetailList.isEmpty()) {
+				for (Map<String, Object> itemDetail : itemDetailList) {
+					JSONObject detail_item = new JSONObject();
+					detail_item.put("itemcode", (String) itemDetail.get("itemcode"));
+					detail_item.put("itemid", (long) itemDetail.get("id"));
+					detail_item.put("itemname", (String) itemDetail.get("name"));
+					detail_item.put("itemprice", (BigDecimal) itemDetail.get("detail_item_price"));
+					detail_item.put("detailtype", (String) itemDetail.get("detail_type"));
+					detail_item.put("itemmenudefid", (int) itemDetail.get("number"));
+
+					item_detail_array.put(detail_item);
+				}
+			}
+
+			jsonResult.put("item_detail_array", item_detail_array);
+
+			Double subtotalHolder = jdbcTemplate.queryForObject(subttlSql,
+					new Object[] { (long) checkInfo.get("chk_seq") }, Double.class);
+			double subtotal = (subtotalHolder == null) ? 0.00 : subtotalHolder.doubleValue();
+			jsonResult.put("subttl", subtotal);
+
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+
+		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
+	}
 	
 	// @GetMapping("/storebalance/{chkNo}")
 	// public ResponseEntity<String> getStoreBalanceCheck(@PathVariable("chkNo")
@@ -655,65 +713,6 @@ public class show_checks_RestController {
 
 	}
 
-	// Half done, not yet handle void
-	@GetMapping("/getcheckdetail/{checkNo}")
-	public ResponseEntity<String> getCheckDetails(@PathVariable("checkNo") String checkNo) {
-
-		JSONObject jsonResult = new JSONObject();
-		JSONArray item_detail_array = null;
-		String itemDetailsSql = "SELECT *,(SELECT itemcode from menudef where id= number) as 'itemcode'"
-				+ " FROM details where chk_seq=? AND detail_item_status = 0 AND detail_type = 'S' ";
-		String subttlSql = "SELECT ROUND(SUM(detail_item_price), 2) as ttl from details WHERE chk_seq=? AND detail_item_status =0 AND detail_type = 'S' ";
-		try {
-			Map<String, Object> checkInfo = findCheck(checkNo);
-			if (checkInfo.isEmpty())
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
-			jsonResult.put(Constant.RESPONSE_CODE, "00");
-			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-			jsonResult.put("checknumber", (String) checkInfo.get("chk_num"));
-			jsonResult.put("chksequence", (long) checkInfo.get("chk_seq"));
-			jsonResult.put("datetime", (Timestamp) checkInfo.get("createdate"));
-			jsonResult.put("tableno", (int) checkInfo.get("tblno"));
-			jsonResult.put("status", (int) checkInfo.get("chk_open"));
-			jsonResult.put("ttl", (BigDecimal) checkInfo.get("pymnt_ttl"));
-			jsonResult.put("salestax", (BigDecimal) checkInfo.get("tax_ttl"));
-			jsonResult.put("due", (BigDecimal) checkInfo.get("due_ttl"));
-
-			List<Map<String, Object>> itemDetailList = jdbcTemplate.queryForList(itemDetailsSql,
-					new Object[] { (long) checkInfo.get("chk_seq") });
-
-			item_detail_array = new JSONArray();
-
-			if (!itemDetailList.isEmpty()) {
-				for (Map<String, Object> itemDetail : itemDetailList) {
-					JSONObject detail_item = new JSONObject();
-					detail_item.put("itemcode", (String) itemDetail.get("itemcode"));
-					detail_item.put("itemid", (long) itemDetail.get("id"));
-					detail_item.put("itemname", (String) itemDetail.get("name"));
-					detail_item.put("itemprice", (BigDecimal) itemDetail.get("detail_item_price"));
-					detail_item.put("detailtype", (String) itemDetail.get("detail_type"));
-					detail_item.put("itemmenudefid", (int) itemDetail.get("number"));
-
-					item_detail_array.put(detail_item);
-				}
-			}
-
-			jsonResult.put("item_detail_array", item_detail_array);
-
-			Double subtotalHolder = jdbcTemplate.queryForObject(subttlSql,
-					new Object[] { (long) checkInfo.get("chk_seq") }, Double.class);
-			double subtotal = (subtotalHolder == null) ? 0.00 : subtotalHolder.doubleValue();
-			jsonResult.put("subttl", subtotal);
-
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		}
-
-		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
-	}
-
 	// Done
 	/*
 	 * @PutMapping("/storebalance/update/{chkNo}") public ResponseEntity<String>
@@ -968,7 +967,7 @@ public class show_checks_RestController {
 		int userid = 0;
 
 		UtilWebComponents webcomponent = new UtilWebComponents();
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 		if (session_container_user != null) {
 			userid = session_container_user.getUserLoginId();
 		}
@@ -1039,7 +1038,7 @@ public class show_checks_RestController {
 
 		int userid = 0;
 
-		UserAuthenticationModel session_container_user = webcomponent.getUserSession(request);
+		UserAuthenticationModel session_container_user = webcomponent.getEcposSession(request);
 		if (session_container_user != null) {
 			userid = session_container_user.getUserLoginId();
 		}

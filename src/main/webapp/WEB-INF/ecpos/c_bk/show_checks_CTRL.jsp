@@ -1,87 +1,85 @@
 <script>
-
-	app.controller('Show_checks_CTRL', function ($scope, $http, $routeParams, $window, $location, $route) {
-
+	app.controller('show_checks_CTRL', function ($scope, $http, $routeParams, $window, $location, $route) {
 		$scope.check_detail = {};
 		$scope.list_of_group = {};
-		$scope.inside_group_status = 0;
-
+		
+		$scope.temp_item_holder = []; //Important to store
+		$scope.splitted_checklist_no = [];
+		
 		var chk_num = $routeParams.check_no;
-
+		var addTransactionFlag = 0;
+		
+		$scope.inside_group_status = 0;
 		$scope.selected_items_ttl = 0.00;
 
 		//Important
 		$scope.valid_btn_status = true;
 		$scope.isPaymentAvailable = true;
 
-		$scope.splitted_checklist_no = [];
-
-		$scope.temp_item_holder = []; //Important to store
-
-		var addTransactionFlag = 0; //Not Important
-
 		//$scope.check_number = $routeParams.check_no;
 
 		//Init the list when entered the detail
 		$scope.getInitCheckNum = function () {
 			$scope.get_check_details(chk_num); //important
-			//$scope.getCheckDetails(chk_num);
 			get_splitted_checklist(chk_num);
 		}
 
-		//Deal with localstorage
-		localStorage.setItem("myChkNo", chk_num);
-
 		//Important
-		$scope.get_check_details = function (data) {
+		$scope.get_check_details = function (check_num) {
 			addTransactionFlag = 0;
-			$http.get("${pageContext.request.contextPath}/ecposmanagerapi/checks/getcheckdetail/" + data)
-				.then(
-					function (response) {
-						$scope.check_detail = response.data;
-						displayCheckDetailTableData($scope.check_detail.item_detail_array);
-					},
-					function (response) {
-						alert("Session TIME OUT");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/ecpos/#!sales');
-					});
+			$http.get("${pageContext.request.contextPath}/ecposmanagerapi/checks/getcheckdetail/" + check_num)
+			.then(function (response) {
+				$scope.check_detail = response.data;
+				displayCheckDetailTableData($scope.check_detail.item_detail_array);
+			},
+			function (response) {
+				alert("Session TIME OUT");
+				$(location).attr('href', '${pageContext.request.contextPath}/ecpos/#!sales');
+			});
 		}
 		
+		//Important => Relevant	
+		function get_splitted_checklist(check_num) {
+			$http.get("${pageContext.request.contextPath}/memberapi/show_sales/get_splitted_checklist/" + check_num)
+			.then(function (response) {
+				$scope.splitted_checklist_no = response.data;
+			},
+			function (response) {
+				alert("Error Occured While Retrieving Split Check!");
+				$(location).attr('href', '${pageContext.request.contextPath}/ecpos/#!sales');
+			});
+		}
+		
+		
+		
+		
+		//Deal with localstorage
+		localStorage.setItem("myChkNo", chk_num);
+		
 		function add_open_item(open_item_price) {
-
 			var check_num = chk_num;
-			console.log("Add open item chk_item: " + check_num);
-			console.log("Add open item price: " + open_item_price);
 
 			var jsonData = JSON.stringify({
 				"check_no": check_num,
 				"price": open_item_price
 			});
 
-			$http.post("${pageContext.request.contextPath}/ecposmanagerapi/checks/addopenitem",
-				jsonData)
-				.then(
-					function (response) {
-						if (response.status === 200) {
-							$scope.added_open_item = response.data;
-							console.log("add_open_item response: " + $scope.added_open_item);
+			$http.post("${pageContext.request.contextPath}/ecposmanagerapi/checks/addopenitem", jsonData)
+			.then(function (response) {
+				if (response.status === 200) {
+					$scope.added_open_item = response.data;
 
-							$scope.temp_item_holder.push(response.data.generatedItemId);
-							localStorage.setItem("kitchenItemDisplay", JSON.stringify($scope.temp_item_holder)); //store into array
-							$scope.get_check_details(check_num);
-						}
-					},
-					function (response) {
-						alert("Error Occured While Adding Item");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/ecpos/#!sales');
-					});
+					$scope.temp_item_holder.push(response.data.generatedItemId);
+					localStorage.setItem("kitchenItemDisplay", JSON.stringify($scope.temp_item_holder)); //store into array
+					$scope.get_check_details(check_num);
+				}
+			},
+			function (response) {
+				alert("Error Occured While Adding Item");
+				$(location).attr('href', '${pageContext.request.contextPath}/ecpos/#!sales');
+			});
 
 		}
-
 		
 	/* ================================================================================  */
 		
@@ -91,7 +89,6 @@
 			var amount = document.getElementById(id).innerHTML;
 
 			if (n === 99) {
-				console.log(amount);
 				add_open_item(amount);
 				//add_open_item_into_temp_check(amount);
 				document.getElementById(id).innerHTML = "0.00";
@@ -106,13 +103,11 @@
 				var i = parseFloat(amount);
 				if (n === -1) {
 					i = i / 10;
-				}
-				else {
+				} else {
 					if (amount.length < 10) {
 						if (n === 20) {
 							i = i * 100;
-						}
-						else {
+						} else {
 							i = i * 10;
 						}
 					}
@@ -131,64 +126,43 @@
 		//Important
 		//Show group name list
 		$scope.show_group = function () {
-
 			$http.get("${pageContext.request.contextPath}/memberapi/show_sales/get_group_list")
-				.then(
-					function (response) {
-						$scope.list_of_group = response.data;
-						$scope.inside_group_status = 0;
-					},
-					function (response) {
-						alert("Error Occured While Displaying Groups");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/ecpos/#!sales');
-					});
-
+			.then(function (response) {
+				$scope.list_of_group = response.data;
+				$scope.inside_group_status = 0;
+			},
+			function (response) {
+				alert("Error Occured While Displaying Groups");
+				$(location).attr('href', '${pageContext.request.contextPath}/ecpos/#!sales');
+			});
 		}
 
 		//Important
 		//Show group item list
 		$scope.get_group_item = function (groupid) {
-
 			$http.get("${pageContext.request.contextPath}/memberapi/show_sales/get_group_items/" + groupid)
-				.then(
-					function (response) {
-						$scope.list_of_item = response.data;
-						console.log(response.data);
-						$scope.inside_group_status = 1;
-					},
-					function (response) {
-						alert("Error Occured While Displaying Items");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/ecpos/#!sales');
-					});
-
+			.then(function (response) {
+				$scope.list_of_item = response.data;
+				console.log(response.data);
+				$scope.inside_group_status = 1;
+			},
+			function (response) {
+				alert("Error Occured While Displaying Items");
+				$(location)
+					.attr('href',
+						'${pageContext.request.contextPath}/ecpos/#!sales');
+			});
 		}
 		
 /* 		function defaultImageFallback(itemImage){
 			angular.forEach();
-			
-			
 		} */
-		
 
 		//Important => Relevant
 		//Add new item by using 
 		$scope.add_item_into_check = function (chk_seq, item_id, detail_type) {
-
 			//var check_num = $scope.check_detail.checknumber;
 			var check_num = chk_num;
-
-/* 			console.log("c1");
-			console.log(check_num);
-
-			console.log("c2");
-			console.log(chk_seq);
-
-			console.log("c3");
-			console.log(item_id); */
 
 			var jsonData = JSON.stringify({
 				"check_num": check_num,
@@ -198,22 +172,17 @@
 			});
 
 			$http.post("${pageContext.request.contextPath}/ecposmanagerapi/checks/additem", jsonData)
-				.then(
-					function (response) {
-						if (response.status === 200) {
-							$scope.temp_item_holder.push(response.data.generatedItemId);
-							localStorage.setItem("kitchenItemDisplay", JSON.stringify($scope.temp_item_holder)); //store into array
-							$scope.get_check_details(check_num);
-						}
-					},
-					function (response) {
-						alert("Error Occured While Adding Item into Check");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/ecpos/#!sales');
-					});
-
-
+			.then(function (response) {
+				if (response.status === 200) {
+					$scope.temp_item_holder.push(response.data.generatedItemId);
+					localStorage.setItem("kitchenItemDisplay", JSON.stringify($scope.temp_item_holder)); //store into array
+					$scope.get_check_details(check_num);
+				}
+			},
+			function (response) {
+				alert("Error Occured While Adding Item into Check");
+				$(location).attr('href', '${pageContext.request.contextPath}/ecpos/#!sales');
+			});
 		}
 
 // -------------------------------````````````[Experiment Feature]``````````````````
@@ -224,6 +193,7 @@
 		//important after
 		function findExistingOpenItemName(itemDetailArray) {
 			var nameTempHolder = [];
+			
 			for (var i = 0; i < itemDetailArray.length; i++) {
 				if (itemDetailArray[i].itemname.startsWith("OpenItem")) {
 					nameTempHolder.push(itemDetailArray[i].itemname);
@@ -240,55 +210,41 @@
 		// }
 
 		function add_open_item_into_temp_check(open_item_price) {
-
-			console.log(open_item_price);
-
 			if (open_holder_name == '') {
 				open_holder_name = 'OpenItem_001';
-				console.log(open_holder_name);
-			}
-			else {
+			} else {
 				var open_item_splitted_str = open_holder_name.split('_');
 				var open_item_number = parseInt(open_item_splitted_str[1]) + 1;
 				open_holder_name = open_item_splitted_str[0] + '_' + add_zero_pad(open_item_number);
 			}
-
 			add_new_item_into_check(0, '#', open_holder_name, open_item_price, 'S');
 		}
 
 		$scope.check_payment = function () {
-
 			var selectItems = check_detail_datatable.rows({
 				selected: true
 			}).data().toArray();
 
 			var jsonData = JSON.stringify({
 
-
-
-
 			});
 
 
 			$http.post("${pageContext.request.contextPath}///", jsonData)
-				.then(
-					function (response) {
+			.then(function (response) {
 
-					},
-					function (response) {
+			},
+			function (response) {
 
-					});
+			});
 		}
 
 		$scope.add_payment_into_check = function (payment_id, payment_name, payment_amount) {
 			add_new_item_into_check(payment_id, '', payment_name, payment_amount, 'T');
 		}
 
-
-
 		//done
 		function add_new_item_into_check(item_id, item_code, name, item_price, detail_type) {
-
 			var check_item_data = {
 				"itemid": 0,
 				"itemcode": item_code,
@@ -308,12 +264,9 @@
 				"detailsequence": -1,
 				"itemvoidstatus": -1,
 				"itemmenudefid": item_id
-			}
-			).draw();
+			}).draw();
 
 			$scope.temp_item_holder.push(check_item_data);
-			// console.log("My Array of items");
-			// console.log($scope.temp_item_holder);
 			$scope.calculated_subttl = calculate_subtotal($scope.temp_item_holder);
 		}
 
@@ -324,8 +277,7 @@
 
 			if (count === 1) {
 				count = count + 2;
-			}
-			else {
+			} else {
 				count++;
 			}
 
@@ -338,8 +290,8 @@
 		//Not Relevant
 		function calculate_subtotal(item_array) {
 			var total = 0;
+			
 			for (var i = 0; i < item_array.length; i++) {
-
 				if (item_array[i].detailtype === 'S' && item_array[i].itemvoidstatus != 1) {
 					total += parseFloat(item_array[i].itemprice);
 				} else if (item_array[i].detailtype === 'T') {
@@ -349,8 +301,6 @@
 						total = Math.abs(total);
 				}
 			}
-			console.log("total");
-			console.log(total);
 			return total;
 		}
 
@@ -462,7 +412,6 @@
 			}
 		} */
 
-
 		var itemPriceHolderBalance = 0.00; //Hold the deduct amt 
 		var transactionHolderBalance = 0.00;
 
@@ -477,8 +426,6 @@
 			// 		itemPriceHolderBalance += parseFloat(all_row_data[i].itemprice);
 			//  	}
 			//  }
-
-
 		}
 
 	/* 	$scope.createSplitCheck = function () {
@@ -509,65 +456,46 @@
 					});
 
 		} */
-
-
-
-
-
-
-
+		
 		// `````````````````````````````````````````````````````
-
-
 
 		//Important
 		$scope.remove_selected_check_items = function () {
-
 			var array_of_selected_items = GetSelectedDetailItem();
-
-			//console.log(array_of_selected_items);
 
 			//Remove the dedicated items
 			removeItemTempHolderItem(array_of_selected_items);
-			console.log($scope.temp_item_holder);
 
 			var jsonData = JSON.stringify(array_of_selected_items);
 
 			$http.post("${pageContext.request.contextPath}/ecposmanagerapi/checks/void", jsonData)
-				.then(
-					function (response) {
-						if (response.status === 200) {
-							$scope.get_check_details(chk_num);
-							$scope.valid_btn_status = true;
-						}
-
-					},
-					function (response) {
-						alert("Error Occured While Removing Check Item");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/member');
-					});
+			.then(function (response) {
+				if (response.status === 200) {
+					$scope.get_check_details(chk_num);
+					$scope.valid_btn_status = true;
+				}
+			},
+			function (response) {
+				alert("Error Occured While Removing Check Item");
+				$(location).attr('href', '${pageContext.request.contextPath}/member');
+			});
 		}
 
 		//Important
 		function removeItemTempHolderItem(array_of_selected_items) {
-
 			$scope.temp_item_holder.reverse();
 			array_of_selected_items.reverse();
 
 			//Reverse to prevent out of bound because of array deletion
 			for (var i = array_of_selected_items.length - 1; i >= 0; i--) {
 				for (var j = $scope.temp_item_holder.length - 1; j >= 0; j--) {
-					if ($scope.temp_item_holder[j].itemid == array_of_selected_items[i].itemid
-						&& array_of_selected_items[i].detailtype != 'T') {
+					if ($scope.temp_item_holder[j].itemid == array_of_selected_items[i].itemid && array_of_selected_items[i].detailtype != 'T') {
 						$scope.temp_item_holder.splice(j, 1);
 						localStorage.setItem("kitchenItemDisplay", JSON.stringify($scope.temp_item_holder)); //store into array
 						break;
 					}
 				}
 			}
-
 			$scope.temp_item_holder.reverse();
 		}
 
@@ -589,10 +517,8 @@
 			$scope.selected_items_ttl = selected_ttl;
 		} */
 		
-		
 		//Important => Related
 		$scope.goToPayment = function(checkNumber,checkSequence){
-			
 			var jsonData = JSON.stringify({
 				'chk_num': checkNumber,
 				'chk_seq': checkSequence,
@@ -600,24 +526,21 @@
 			});
 
 			$http.post("${pageContext.request.contextPath}/ecposmanagerapi/checks/storebalance", jsonData)
-				.then(
-					function (response) {
-						if (response.status === 200) {			
-							localStorage.clear();
-							$location.path("/payment/" + checkNumber).replace();		
-						}
-					});
+			.then(function (response) {
+				if (response.status === 200) {			
+					localStorage.clear();
+					$location.path("/payment/" + checkNumber).replace();		
+				}
+			});
 		}
 		
 /*============================================ Not Relevant[START] ========================================*/
 
 		//Method for inputting calc input into How much to pay..
 		$scope.cash_payment_calc = function (id, n) {
-
 			var amount = document.getElementById(id).innerHTML;
 
 			if (n === 99) {
-				console.log(amount);
 				addTransactionFlag = 1;
 				calc_balance($scope.selected_items_ttl, amount); //important dont del
 
@@ -1065,24 +988,6 @@
 			
 		}
 
-		//Important => Relevant	
-		function get_splitted_checklist(check_num) {
-			$http.get("${pageContext.request.contextPath}/memberapi/show_sales/get_splitted_checklist/" +
-				check_num)
-				.then(
-					function (response) {
-						//console.log(response.data);
-						$scope.splitted_checklist_no = response.data;
-					},
-					function (response) {
-						alert("Error Occured While Retrieving Split Check!");
-						$(location)
-							.attr('href',
-								'${pageContext.request.contextPath}/ecpos/#!sales');
-					});
-
-		}
-
 		//Important
 		//Modified Needed
 		$scope.createSplitCheck = function () {
@@ -1241,8 +1146,5 @@
 					alert("Cannot perform Printing.");
 				});
 		}
-		
-	
-
 	}); 
 </script>

@@ -7,7 +7,7 @@
 
 				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Order Management</li>
 				<li>
-					<a href="${pageContext.request.contextPath}/ecpos/#!sales">
+					<a href="${pageContext.request.contextPath}/ecpos/#!table_order">
 						<i class="fa fa-desktop"></i> 
 						<span>Table Order</span> 
 						<span class="pull-right-container"></span>
