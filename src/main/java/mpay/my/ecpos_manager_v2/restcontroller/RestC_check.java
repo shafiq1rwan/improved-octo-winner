@@ -10,9 +10,6 @@ import javax.sql.DataSource;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,8 +31,8 @@ public class RestC_check {
 	@Autowired
 	DataSource dataSource;
 	
-	@GetMapping("/getcheckdetail/{tableNo}/{checkNo}")
-	public ResponseEntity<String> getCheckDetails(@PathVariable("tableNo") int tableNo, @PathVariable("checkNo") String checkNo) {
+	@RequestMapping(value = { "/get_check_detail/{tableNo}/{checkNo}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getCheckDetails(@PathVariable("tableNo") int tableNo, @PathVariable("checkNo") String checkNo) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -48,7 +45,7 @@ public class RestC_check {
 			connection = dataSource.getConnection();
 			
 			stmt = connection.prepareStatement("select * from `check` c "
-					+ "inner join check_status cs on c.check_status = cs.id "
+					+ "inner join check_status cs on cs.id = c.check_status "
 					+ "where table_number = ? and check_number = ? and device_type = 2 and check_status in (1, 2);");
 			stmt.setInt(1, tableNo);
 			stmt.setString(2, checkNo);
@@ -157,12 +154,12 @@ public class RestC_check {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(jsonResult.toString());
-		return new ResponseEntity<String>(jsonResult.toString(), HttpStatus.OK);
+		return jsonResult.toString();
 	}
 	
 	@RequestMapping(value = { "/create" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String createCheck(@RequestBody String data, HttpServletRequest request) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -179,22 +176,45 @@ public class RestC_check {
 
 			String username = user.getUsername();
 			
-			if (jsonObj.has(Constant.TABLE_NO)) {
-				String tableNo = jsonObj.getString(Constant.TABLE_NO);
-
+			int orderType = -1;
+			String tableNo = null;
+			boolean proceed = false;
+			
+			if (jsonObj.has("order_type")) {
+				if (jsonObj.getString("order_type").equals("table")) {
+					if (jsonObj.has("table_no")) {
+						orderType = 1;
+						tableNo = jsonObj.getString("table_no");
+						proceed = true;
+					} else {
+						Logger.writeActivity("Table Number Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Table Number Not Found");
+					}
+				} else if (jsonObj.getString("order_type").equals("take away")) {
+					orderType = 2;
+					proceed = true;
+				}
+			} else {
+				Logger.writeActivity("Order Type Not Found", ECPOS_FOLDER);
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Order Type Not Found");
+			}
+			
+			if (proceed) {
 				connection = dataSource.getConnection();
-
+	
 				stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
 				stmt.setString(1, username);
 				rs = stmt.executeQuery();
-
+	
 				if (rs.next()) {
 					long staffId = rs.getLong("id");
 					
 					stmt.close();
 					stmt = connection.prepareStatement("select * from master where type = 'check';");
 					rs2 = stmt.executeQuery();
-
+	
 					if (rs2.next()) {
 						int currentCheckNo = rs2.getInt("count");
 						int newCheckNo = currentCheckNo + 1;
@@ -203,16 +223,17 @@ public class RestC_check {
 						stmt = connection.prepareStatement("update master set count = ? where type = 'check';");
 						stmt.setString(1, Integer.toString(newCheckNo));
 						rs3 = stmt.executeUpdate();
-
+	
 						if (rs3 > 0) {
 							stmt.close();
-							stmt = connection.prepareStatement("insert into `check` (check_number,device_type,staff_id,table_number,total_item_quantity,subtotal_amount,total_tax_amount,total_service_charge_amount,total_amount,total_amount_rounding_adjustment,grand_total_amount,deposit_amount,overdue_amount,check_status,created_date) " + 
-									"values (?,2,?,?,0,0,0,0,0,0,0,0,0,1,now());");
+							stmt = connection.prepareStatement("insert into `check` (check_number,device_type,staff_id,order_type,table_number,total_item_quantity,subtotal_amount,total_tax_amount,total_service_charge_amount,total_amount,total_amount_rounding_adjustment,grand_total_amount,deposit_amount,overdue_amount,check_status,created_date) " + 
+									"values (?,2,?,?,?,0,0,0,0,0,0,0,0,0,1,now());");
 							stmt.setString(1, Integer.toString(newCheckNo));
 							stmt.setLong(2, staffId);
-							stmt.setString(3, tableNo);
+							stmt.setInt(3, orderType);
+							stmt.setString(4, tableNo);
 							rs4 = stmt.executeUpdate();
-
+	
 							if (rs4 > 0) {
 								jsonResult.put(Constant.CHECK_NO, newCheckNo);
 								jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -237,10 +258,6 @@ public class RestC_check {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
 				}
-			} else {
-				Logger.writeActivity("Table Number Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Table Number Not Found");
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);

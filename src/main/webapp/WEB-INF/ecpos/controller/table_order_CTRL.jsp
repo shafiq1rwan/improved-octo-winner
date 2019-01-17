@@ -73,10 +73,11 @@
 
 			$("#modal_table_check_list").modal('show');
 		}
-		
+
 		$scope.create_new_check = function() {
 			var jsonData = JSON.stringify({
-				"table_no" :  $scope.table_no
+				"table_no" :  $scope.table_no,
+				"order_type" : "table"
 			});
 			
 			$http.post("${pageContext.request.contextPath}/rc/check/create", jsonData)
@@ -92,7 +93,7 @@
 				alert("Check Failed To Create");
 			});
 		}
-		
+				
 		//Redirect to check detail page
 		$scope.redirect_to_check_detail = function(chk_no) {
 			$("#modal_table_check_list").modal('hide');
