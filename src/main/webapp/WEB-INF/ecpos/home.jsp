@@ -194,7 +194,11 @@
 			})
 		
 		
-		
+		.when("/",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/table_order",
+				controller : "table_order_CTRL"
+			})
 		.when("/table_order",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/table_order",

@@ -64,7 +64,7 @@ public class EcposManagerController {
 			if (loginUser != null) {
 				Logger.writeActivity("LOGIN SUCCESSFULLY, FORWARD " + loginUser.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
 				session.setAttribute("session_user", loginUser);
-				model.setViewName("redirect:" + "/ecpos/#!table_order");
+				model.setViewName("redirect:" + "/ecpos/#");
 			} else {
 				Logger.writeActivity("INVALID LOGIN ID / PASSWORD, FORWARD " + username + " TO LOGIN PAGE", ECPOS_FOLDER);
 				model.addObject("http_message", "Incorrect Username/Password");

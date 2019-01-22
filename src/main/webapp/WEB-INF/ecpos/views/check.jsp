@@ -58,39 +58,39 @@ hr {
 											</div>
 										</div>
 										<div style="margin-right: 3px;">
-											<div class="row" style="padding-right: 40px;">
+											<div class="row" style="padding-right: 30px;">
 												<div class='col-sm-1 text-center'><input type="checkbox" ng-click="allGrandParentItemCheckbox()" id="allGrandParentItemCheckbox" style="margin: 2px 0 0;"></div>
 												<div class='col-sm-2 text-left'><b>Code</b></div>
-												<div class='col-sm-6 text-left'><b>Item</b></div>
+												<div class='col-sm-5 text-left'><b>Item</b></div>
 												<div class='col-sm-2 text-center'><b>Quantity</b></div>
-												<div class='col-sm-1 text-center'><b>Price</b></div>
+												<div class='col-sm-2 text-right'><b>Price</b></div>
 											</div>
 											<hr>
-											<div id="itemLoop" style="padding-right: 20px;">
+											<div style="padding-right: 15px; max-height: 27vh; overflow-y: auto; height: 27vh;">
 												<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
 													<div>
 														<div class="row">
 															<div class='col-sm-1 text-center'><input type="checkbox" ng-click="grandParentItemCheckbox()" name="grandParentItemCheckbox" value={{grandParentItem.checkDetailId}} style="margin: 2px 0 0;"></div>
 															<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
-															<div class='col-sm-6 text-left'>{{grandParentItem.itemName}}</div>
+															<div class='col-sm-5 text-left'>{{grandParentItem.itemName}}</div>
 															<div class='col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
-															<div class='col-sm-1 text-right'>{{grandParentItem.subtotal| number:2}}</div>
+															<div class='col-sm-2 text-right'>{{grandParentItem.subtotal| number:2}}</div>
 														</div>
 														<div ng-repeat="parentItem in grandParentItem.parentItemArray">
 															<div class="row">
 																<div class='col-sm-1 text-center'></div>
 																<div class='col-sm-2 text-left'>{{parentItem.itemCode}}</div>
-																<div class='col-sm-6 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*{{parentItem.itemName}}*</div>
+																<div class='col-sm-5 text-left'>*{{parentItem.itemName}}*</div>
 																<div class='col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
-																<div class='col-sm-1 text-right'>{{parentItem.subtotal| number:2}}</div>										
+																<div class='col-sm-2 text-right'>{{parentItem.subtotal| number:2}}</div>										
 															</div>
 															<div ng-repeat="childItem in parentItem.childItemArray">
 																<div class="row">
 																	<div class='col-sm-1 text-center'></div>
 																	<div class='col-sm-2 text-left'>{{childItem.itemCode}}</div>
-																	<div class='col-sm-6 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}*</div>
+																	<div class='col-sm-5 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;:{{childItem.itemName}}</div>
 																	<div class='col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
-																	<div class='col-sm-1 text-right'>{{childItem.subtotal| number:2}}</div>										
+																	<div class='col-sm-2 text-right'>{{childItem.subtotal| number:2}}</div>										
 																</div>
 															</div>
 														</div>

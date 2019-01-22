@@ -16,6 +16,7 @@
 		
 		$scope.sequence = "";
 		
+		$("#alaCarteModifier").show();
 		$("#back").show();
 		
 		$scope.initiation = function() {
@@ -56,6 +57,10 @@
 				$scope.alaCarte = $scope.temporary;
 				$('#alaCarteItemName').html($scope.alaCarte.name);
 				$('#menuCarousel').carousel(3);
+				
+				if ($scope.temporary.hasModifier == false) {
+					$("#alaCarteModifier").hide();
+				}
 			} else if ($scope.temporary.type == 1) {
 				$scope.getTiers($scope.temporary);
 			}
@@ -101,7 +106,7 @@
 								
 								var modifierId = "#selectedModifiers"+index;
 								for (var k = 0; k < $scope.temporaryTiers[i].items[j].modifiers.length; k++) {
-									$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].name + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].valueName + "</div>");
+									$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].groupName + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].name + "</div>");
 								}
 							}
 						}
@@ -206,15 +211,18 @@
 			
 			for (var i = 0; i < $scope.modifiers.jary.length; i++){
 				$scope.temporaryModifier = {};
-				$scope.temporaryModifier.id = $scope.modifiers.jary[i].id;
-				$scope.temporaryModifier.name = $scope.modifiers.jary[i].name;
-				var modifierValue = $("input[name='"+$scope.modifiers.jary[i].name+"']:checked").val().split("!!");
-				$scope.temporaryModifier.valueId = modifierValue[0];
-				$scope.temporaryModifier.valueName = modifierValue[1];
+				$scope.temporaryModifier.groupId = $scope.modifiers.jary[i].id;
+				$scope.temporaryModifier.groupName = $scope.modifiers.jary[i].name;
 				
+				var modifierValue = $("input[name='"+$scope.modifiers.jary[i].name+"']:checked").val();
 				if (modifierValue == null) {
 					return alert($scope.modifiers.jary[i].name + " cannot be blank.");
 				}
+				
+				var modifierValueSplit = $("input[name='"+$scope.modifiers.jary[i].name+"']:checked").val().split("!!");
+				$scope.temporaryModifier.id = modifierValueSplit[0];
+				$scope.temporaryModifier.backendId = modifierValueSplit[1];
+				$scope.temporaryModifier.name = modifierValueSplit[2];
 				
 				$scope.temporaryModifiers.push($scope.temporaryModifier);
 			}
@@ -222,7 +230,7 @@
 			if ($scope.temporary.type == 0) {
 				$("#selectedAlaCarteModifiers").html("");
 				for (var i = 0; i < $scope.temporaryModifiers.length; i++) {
-					$("#selectedAlaCarteModifiers").append("<div>" + $scope.temporaryModifiers[i].name + ": " + $scope.temporaryModifiers[i].valueName + "</div>");
+					$("#selectedAlaCarteModifiers").append("<div>" + $scope.temporaryModifiers[i].groupName + ": " + $scope.temporaryModifiers[i].name + "</div>");
 				}
 			} else if ($scope.temporary.type == 1) {
 				$scope.temporaryTierItem.modifiers = $scope.temporaryModifiers;
@@ -276,7 +284,7 @@
 								var modifierId = "#selectedModifiers"+index;
 								$(modifierId).html("");
 								for (var k = 0; k < $scope.temporaryTiers[i].items[j].modifiers.length; k++) {
-									$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].name + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].valueName + "</div>");
+									$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].groupName + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].name + "</div>");
 								}
 							}
 						}
@@ -298,8 +306,10 @@
 		
 		$scope.submitOrder = function() {
 			if ($scope.temporary.type == 0) {
-				if ($scope.temporaryModifiers.length == 0) {
-					return alert("Order is not complete. Kindly fill in.");
+				if ($scope.temporary.hasModifier == true) {
+					if ($scope.temporaryModifiers.length == 0) {
+						return alert("Order is not complete. Kindly fill in.");
+					}
 				}
 				$scope.temporary.modifiers = $scope.temporaryModifiers;
 				$scope.temporary.orderQuantity = $('#alaCarteItemQuantity').val();
@@ -327,7 +337,27 @@
 
 			$http.post("${pageContext.request.contextPath}/rc/menu/order", jsonData)
 			.then(function(response) {
-//to do
+				if (response.data.response_code === "00") {
+					$scope.getCheckDetails();
+					
+					$('#itemQuantity').val(1);
+					$('#alaCarteItemQuantity').val(1);
+					
+ 					$('#menuCarousel').carousel(0);
+ 					$('#itemCarousel').carousel(0);
+					$scope.temporary = {};
+					$scope.temporaryTiers = [];
+					$scope.temporaryTierItems = [];
+					$scope.temporaryModifiers = [];
+					
+					$scope.sequence = "";
+					
+					$("#alaCarteModifier").show();
+					$("#back").show();
+				} else {
+					alert("Error Occured While Submit Order");
+					window.location.href = "${pageContext.request.contextPath}/ecpos";
+				}
 			},
 			function(response) {
 				alert("Session TIME OUT");

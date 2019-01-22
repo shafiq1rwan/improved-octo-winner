@@ -57,15 +57,15 @@ public class RestC_check {
 				jsonResult.put("checkNo", rs.getString("check_number"));
 				jsonResult.put("tableNo", rs.getString("table_number"));
 				jsonResult.put("createdDate", rs.getString("created_date"));
-				jsonResult.put("subtotal", rs.getString("subtotal_amount"));
-				jsonResult.put("tax", rs.getString("total_tax_amount"));
-				jsonResult.put("serviceCharge", rs.getString("total_service_charge_amount"));
-				jsonResult.put("total", rs.getString("total_amount"));
-				jsonResult.put("roundingAdjustment", rs.getString("total_amount_rounding_adjustment"));
-				jsonResult.put("grandTotal", rs.getString("grand_total_amount"));
+				jsonResult.put("subtotal", rs.getString("subtotal_amount") == null ? "0.00" : rs.getString("subtotal_amount"));
+				jsonResult.put("tax", rs.getString("total_tax_amount") == null ? "0.00" : rs.getString("total_tax_amount"));
+				jsonResult.put("serviceCharge", rs.getString("total_service_charge_amount") == null ? "0.00" : rs.getString("total_service_charge_amount"));
+				jsonResult.put("total", rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount"));
+				jsonResult.put("roundingAdjustment", rs.getString("total_amount_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_rounding_adjustment"));
+				jsonResult.put("grandTotal", rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount"));
 				jsonResult.put("status", rs.getString("name"));
-				jsonResult.put("deposit", rs.getString("deposit_amount"));
-				jsonResult.put("overdue", rs.getString("overdue_amount"));
+				jsonResult.put("deposit", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
+				jsonResult.put("overdue", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
 				
 				stmt.close();
 				stmt = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2) order by id asc;");
@@ -80,9 +80,9 @@ public class RestC_check {
 					
 					JSONObject grandParentItem = new JSONObject();
 					grandParentItem.put("checkDetailId", rs2.getString("id"));
-					grandParentItem.put("itemId", rs2.getString("item_id"));
-					grandParentItem.put("itemCode", rs2.getString("item_code"));
-					grandParentItem.put("itemName", rs2.getString("item_name"));
+					grandParentItem.put("itemId", rs2.getString("menu_item_id"));
+					grandParentItem.put("itemCode", rs2.getString("menu_item_code"));
+					grandParentItem.put("itemName", rs2.getString("menu_item_name"));
 					grandParentItem.put("itemQuantity", rs2.getString("quantity"));
 					grandParentItem.put("subtotal", rs2.getString("subtotal_amount"));
 					
@@ -98,9 +98,9 @@ public class RestC_check {
 						long parentId = rs3.getLong("id");
 						
 						JSONObject parentItem = new JSONObject();
-						parentItem.put("itemId", rs3.getString("item_id"));
-						parentItem.put("itemCode", rs3.getString("item_code"));
-						parentItem.put("itemName", rs3.getString("item_name"));
+						parentItem.put("itemId", rs3.getString("menu_item_id"));
+						parentItem.put("itemCode", rs3.getString("menu_item_code"));
+						parentItem.put("itemName", rs3.getString("menu_item_name"));
 						parentItem.put("itemQuantity", rs3.getString("quantity"));
 						parentItem.put("subtotal", rs3.getString("subtotal_amount"));
 						
@@ -114,9 +114,9 @@ public class RestC_check {
 						
 						while (rs4.next()) {
 							JSONObject childItem = new JSONObject();
-							childItem.put("itemId", rs4.getString("item_id"));
-							childItem.put("itemCode", rs4.getString("item_code"));
-							childItem.put("itemName", rs4.getString("item_name"));
+							childItem.put("itemId", rs4.getString("menu_item_id"));
+							childItem.put("itemCode", rs4.getString("menu_item_code"));
+							childItem.put("itemName", rs4.getString("menu_item_name"));
 							childItem.put("itemQuantity", rs4.getString("quantity"));
 							childItem.put("subtotal", rs4.getString("subtotal_amount"));
 							

@@ -13,13 +13,6 @@
 			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + $scope.tableNo + "/" + $scope.checkNo)
 			.then(function(response) {
 				$scope.checkDetail = response.data;
-				
-				if ($scope.checkDetail.grandParentItemArray.length == 0 || $scope.checkDetail.grandParentItemArray === undefined) {
-					document.getElementById("itemLoop").style.height = "10vh";
-				} else {
-					document.getElementById("itemLoop").style.maxHeight = "27vh";
-					document.getElementById("itemLoop").style.overflowY = "auto";
-				}
 			},
 			function(response) {
 				alert("Session TIME OUT");

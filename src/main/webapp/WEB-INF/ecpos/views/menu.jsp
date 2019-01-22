@@ -218,20 +218,22 @@
 									</div>
 								</div>
 								<div style="padding: 15px; padding-bottom: 0px;">
-									<div class="row">
-										<div class="col-sm-1 form-group"></div>
-										<div class="col-sm-8 form-group">
-											<div><b><u>Modifiers</u></b></div>
+									<div id="alaCarteModifier">
+										<div class="row">
+											<div class="col-sm-1 form-group"></div>
+											<div class="col-sm-8 form-group">
+												<div><b><u>Modifiers</u></b></div>
+											</div>
+											<div class="col-sm-3 form-group"></div>
 										</div>
-										<div class="col-sm-3 form-group"></div>
-									</div>
-									<div class="row">
-										<div class="col-sm-1 form-group"></div>
-										<div class="col-sm-8 form-group">
-											<div id="selectedAlaCarteModifiers"></div>
-										</div>
-										<div class="col-sm-3 form-group">
-											<button class="btn btn-primary pull-right" ng-click="openMenuItemModal(alaCarte, 0, 'alaCarte')">Select Modifier(s)</button>
+										<div class="row">
+											<div class="col-sm-1 form-group"></div>
+											<div class="col-sm-8 form-group">
+												<div id="selectedAlaCarteModifiers"></div>
+											</div>
+											<div class="col-sm-3 form-group">
+												<button class="btn btn-primary pull-right" ng-click="openMenuItemModal(alaCarte, 0, 'alaCarte')">Select Modifier(s)</button>
+											</div>
 										</div>
 									</div>
 									<hr style="padding-bottom: 15px;">
@@ -301,7 +303,7 @@
 														<div ng-repeat="modifierDetail in modifier.jary">
 															<div class="col-sm-3">
 																<label>
-																	<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.name}}" required /> <b>{{modifierDetail.name}}</b>
+																	<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.backendId}}!!{{modifierDetail.name}}" required /> <b>{{modifierDetail.name}}</b>
 																</label>
 															</div>
 														</div>
