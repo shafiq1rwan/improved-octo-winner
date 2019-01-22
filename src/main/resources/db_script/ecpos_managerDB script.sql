@@ -171,7 +171,7 @@ CREATE TABLE menu_item_type_lookup (
 	menu_item_type_name NVARCHAR(50) NOT NULL UNIQUE
 );
 
-INSERT INTO menu_item_type_lookup VALUES (0,'A La Cart');
+INSERT INTO menu_item_type_lookup VALUES (0,'A La Carte');
 INSERT INTO menu_item_type_lookup VALUES (1,'Combo');
 INSERT INTO menu_item_type_lookup VALUES (2,'Modifier');
 
@@ -208,12 +208,12 @@ create table `check` (
     `table_number` int(20) NULL,
 	`total_item_quantity` int(20) NOT NULL,
 	`subtotal_amount` decimal(25, 4) NOT NULL,
-	`total_tax_amount` decimal(25, 4) NOT NULL,
-	`total_service_charge_amount` decimal(25, 4) NOT NULL,
+	`total_tax_amount` decimal(25, 4) NULL,
+	`total_service_charge_amount` decimal(25, 4) NULL,
 	`total_amount` decimal(25, 4) NOT NULL,
 	`total_amount_rounding_adjustment` decimal(25, 4) NOT NULL,
 	`grand_total_amount` decimal(25, 4) NOT NULL,
-	`deposit_amount` decimal(25, 4) NOT NULL,
+	`deposit_amount` decimal(25, 4) NULL,
 	`overdue_amount` decimal(25, 4) NOT NULL,
     `check_status` bigint(20) NOT NULL,
 	`created_date` datetime NOT NULL,
@@ -229,7 +229,6 @@ create table `transaction_status` (
 
 create table `transaction` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `staff_id` bigint (20) NOT NULL,
     `check_id` bigint(20) NOT NULL,
 	`check_number` bigint(20) NOT NULL,
     `transaction_currency` nvarchar(100) NOT NULL,
@@ -316,18 +315,17 @@ create table `check_detail` (
     `check_id` bigint(20) NOT NULL,
 	`check_number` bigint(20) NOT NULL,
 	`parent_check_detail_id` bigint(20) NULL,
-    `item_id` bigint(20) NOT NULL,
-	`item_code` nvarchar(50) NOT NULL,
-	`item_name` nvarchar(150) NOT NULL,
-    `item_price` decimal(25, 4) NOT NULL,
+    `menu_item_id` bigint(20) NOT NULL,
+	`menu_item_code` nvarchar(50) NOT NULL,
+	`menu_item_name` nvarchar(150) NOT NULL,
+    `menu_item_price` decimal(25, 4) NOT NULL,
 	`tax_rate` INT NULL,
 	`service_charge_rate` INT NULL,
-	`item_tax_price` decimal(25, 4) NULL,
 	`quantity` int(20) NOT NULL,
 	`subtotal_amount` decimal(25, 4) NOT NULL,
 	`total_tax_amount` decimal(25, 4) NULL,
 	`total_service_charge_amount` decimal(25, 4) NULL,
-	`total_amount` decimal(25, 4) NULL,
+	`total_amount` decimal(25, 4) NOT NULL,
     `check_detail_status` bigint(20) NOT NULL,
 	`transaction_detail_id` bigint(20) NULL,
 	`created_date` datetime NOT NULL,

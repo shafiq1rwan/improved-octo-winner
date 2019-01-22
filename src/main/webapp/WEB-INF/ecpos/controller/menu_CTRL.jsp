@@ -335,7 +335,7 @@
 				"item" : $scope.temporary
 			});
 
-			$http.post("${pageContext.request.contextPath}/rc/menu/order", jsonData)
+			$http.post("${pageContext.request.contextPath}/rc/check/order", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
 					$scope.getCheckDetails();

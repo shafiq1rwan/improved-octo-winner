@@ -184,10 +184,10 @@
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeaway",
 				controller : "show_take_away_order_CTRL"
 			}) */
-		.when("/payment/:check_no",
+/* 		.when("/payment/:check_no",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment"
-			})
+			}) */
 		.when("/connection_qr",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/qr_scan"
@@ -209,6 +209,11 @@
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/check",
 				controller : "check_CTRL"
 			})
+		.when("/payment/:check_no",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment",
+				controller : "payment_CTRL"
+			})
 		.when("/take_away_order",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/take_away_order",
@@ -221,11 +226,11 @@
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_sales_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_checks_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_take_away_order_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/c_bk/show_payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_trans_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_items_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/printer_configuration.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/ecpos_manager_setting_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/show_payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/show_reports_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/connection_qr_CTRL.jsp" />
 
@@ -233,6 +238,7 @@
 <jsp:include page="/WEB-INF/ecpos/controller/table_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/check_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/menu_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/take_away_order_CTRL.jsp" />
 
 </html>

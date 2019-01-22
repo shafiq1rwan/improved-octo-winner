@@ -141,18 +141,18 @@ hr {
 								<div>
 									<div class="row" style="margin-bottom: 5px;">
 										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-											<button class="btn btn-block btn-info" ng-click="remove_selected_check_items()" ng-disabled="valid_btn_status === true? true:false">VOID ORDER</button>
+											<button class="btn btn-block btn-info" ng-click="cancelOrder()">VOID ORDER</button>
 										</div>
 										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-											<button class="btn btn-block btn-info" id="cash_payment_btn" ng-disabled="isPaymentAvailable" ng-click="goToPayment(checkDetail.checknumber,checkDetail.chksequence)">PAYMENT</button>
+											<button class="btn btn-block btn-info" ng-click="redirectPayment('full')">PAYMENT</button>
 										</div>
 									</div>
 									<div class="row">
 										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-											<button class="btn btn-block btn-info" ng-disabled="valid_btn_status === true ? true:false" ng-click="createSplitCheck()" id="selectable_btn">SPLIT CHECK</button>
+											<button class="btn btn-block btn-info" ng-click="redirectPayment('partial')">PARTIAL PAYMENT</button>
 										</div>
 										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-											<button class="btn btn-block btn-info" id="" ng-click="storeBalance(checkDetail.chksequence)">STORE BALANCE</button>
+											<button class="btn btn-block btn-info" id="" ng-click="redirectTableOrder()">STORE BALANCE</button>
 										</div>
 									</div>
 								</div>
