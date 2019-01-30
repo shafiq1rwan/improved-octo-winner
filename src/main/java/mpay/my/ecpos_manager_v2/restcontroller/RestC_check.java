@@ -35,8 +35,58 @@ public class RestC_check {
 	@Autowired
 	DataSource dataSource;
 	
-	@RequestMapping(value = { "/get_check_detail/{tableNo}/{checkNo}" }, method = { RequestMethod.GET }, produces = "application/json")
-	public String getCheckDetails(@PathVariable("tableNo") int tableNo, @PathVariable("checkNo") String checkNo) {
+	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String getChecklist(@RequestBody String data) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			JSONObject jsonObj = new JSONObject(data);
+
+			if (jsonObj.has(Constant.TABLE_NO)) {
+				String table_no = jsonObj.getString(Constant.TABLE_NO);
+				
+				connection = dataSource.getConnection();
+
+				stmt = connection.prepareStatement("SELECT * FROM `check` WHERE table_number = ? AND check_status IN (1,2);");
+				stmt.setString(1, table_no);
+				rs = (ResultSet) stmt.executeQuery();
+
+				JSONArray check_list = new JSONArray();
+				while (rs.next()) {
+					check_list.put(rs.getString("check_number"));
+				}
+				jsonResult.put("check_list", check_list);
+				Logger.writeActivity("Table Check List: " + check_list.toString(), ECPOS_FOLDER);
+				
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			} else {
+				Logger.writeActivity("Invalid Request for Table Check List", ECPOS_FOLDER);
+				
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_check_detail/{orderType}/{checkNo}/{tableNo}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getCheckDetails(@PathVariable("orderType") String orderType, @PathVariable("checkNo") String checkNo, @PathVariable("tableNo") int tableNo) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -48,18 +98,24 @@ public class RestC_check {
 		try {
 			connection = dataSource.getConnection();
 			
+			String tableNoCondition = null;
+			if (orderType.equals("table")) {
+				tableNoCondition = "table_number = " + tableNo;
+			} else if (orderType.equals("take_away")) {
+				tableNoCondition = "table_number is null";
+			}
+			
 			stmt = connection.prepareStatement("select * from `check` c "
 					+ "inner join check_status cs on cs.id = c.check_status "
-					+ "where table_number = ? and check_number = ? and device_type = 2 and check_status in (1, 2);");
-			stmt.setInt(1, tableNo);
-			stmt.setString(2, checkNo);
+					+ "where " + tableNoCondition + " and check_number = ? and device_type = 2 and check_status in (1, 2);");
+			stmt.setString(1, checkNo);
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
 				long id = rs.getLong("id");
 				
 				jsonResult.put("checkNo", rs.getString("check_number"));
-				jsonResult.put("tableNo", rs.getString("table_number"));
+				jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 				jsonResult.put("createdDate", rs.getString("created_date"));
 				jsonResult.put("subtotal", rs.getString("subtotal_amount") == null ? "0.00" : rs.getString("subtotal_amount"));
 				jsonResult.put("tax", rs.getString("total_tax_amount") == null ? "0.00" : rs.getString("total_tax_amount"));
@@ -69,6 +125,7 @@ public class RestC_check {
 				jsonResult.put("grandTotal", rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount"));
 				jsonResult.put("status", rs.getString("name"));
 				jsonResult.put("deposit", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
+				jsonResult.put("tender", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 				jsonResult.put("overdue", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
 				
 				stmt.close();
@@ -298,16 +355,22 @@ public class RestC_check {
 			
 			connection = dataSource.getConnection();
 
-			stmt = connection.prepareStatement("select * from `check` where check_number = ? and table_number = ? and order_type = ? and device_type = ? and check_status in (1, 2);");
-			stmt.setInt(1, order.getInt("checkNo"));
-			stmt.setInt(2, order.getInt("tableNo"));
-			stmt.setInt(3, order.getInt("orderType"));
-			stmt.setInt(4, order.getInt("deviceType"));
+			String tableNoCondition = null;
+			if (order.getInt("orderType") == 1) {
+				tableNoCondition = "table_number = " + order.getInt("tableNo");
+			} else if (order.getInt("orderType") == 2) {
+				tableNoCondition = "table_number is null";
+			}
+			
+			stmt = connection.prepareStatement("select * from `check` where check_number = ? and " + tableNoCondition + " and order_type = ? and device_type = ? and check_status in (1, 2);");
+			stmt.setString(1, order.getString("checkNo"));
+			stmt.setInt(2, order.getInt("orderType"));
+			stmt.setInt(3, order.getInt("deviceType"));
 			rs = stmt.executeQuery();
 
 			if (rs.next()) {
 				long checkId = rs.getLong("id");
-				int checkNo = rs.getInt("check_number");
+				String checkNo = rs.getString("check_number");
 				
 				stmt.close();
 				stmt = connection.prepareStatement("select * from menu_item where id = ? and backend_id = ?;");
@@ -339,7 +402,7 @@ public class RestC_check {
 					stmt = connection.prepareStatement("insert into check_detail (check_id,check_number,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) " + 
 							"values (?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
 					stmt.setLong(1, checkId);
-					stmt.setInt(2, checkNo);
+					stmt.setString(2, checkNo);
 					stmt.setLong(3, rs2.getLong("id"));
 					stmt.setString(4, rs2.getString("backend_id"));
 					stmt.setString(5, rs2.getString("menu_item_name"));
@@ -515,7 +578,7 @@ public class RestC_check {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/cancelOrder" }, method = { RequestMethod.POST }, produces = "application/json")
+	@RequestMapping(value = { "/cancel_order" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String cancelOrder(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
@@ -542,24 +605,28 @@ public class RestC_check {
 					stmt.setLong(1, checkDetailId);
 					rs2 = stmt.executeQuery();
 					
-					if (rs2 != null) {
-						while (rs2.next()) {
-							stmt = connection.prepareStatement("update check_detail set check_detail_status = 4, updated_date = now() where id = ? or parent_check_detail_id = ?;");
-							stmt.setLong(1, rs2.getLong("id"));
-							stmt.setLong(2, rs2.getLong("id"));
-							int rs3 = stmt.executeUpdate();
-							
-							if (rs3 > 0) {
-								Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "00");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
-							} else {
-								Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Update");
-							}
+					boolean empty = true;
+					
+					while (rs2.next()) {
+						empty = false;
+						
+						stmt = connection.prepareStatement("update check_detail set check_detail_status = 4, updated_date = now() where id = ? or parent_check_detail_id = ?;");
+						stmt.setLong(1, rs2.getLong("id"));
+						stmt.setLong(2, rs2.getLong("id"));
+						int rs3 = stmt.executeUpdate();
+						
+						if (rs3 > 0) {
+							Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+						} else {
+							Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Update");
 						}
-					} else {
+					}
+					
+					if (empty) {
 						Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
@@ -631,7 +698,7 @@ public class RestC_check {
 		return result;
 	}
 	
-	public long insertChildCheckDetail (long checkId, int checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
+	public long insertChildCheckDetail (long checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
@@ -651,7 +718,7 @@ public class RestC_check {
 				stmt1 = connection.prepareStatement("insert into check_detail (check_id,check_number,parent_check_detail_id,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) " + 
 						"values (?,?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
 				stmt1.setLong(1, checkId);
-				stmt1.setInt(2, checkNo);
+				stmt1.setString(2, checkNo);
 				stmt1.setLong(3, parentCheckDetailId);
 				stmt1.setString(4, rs.getString("id"));
 				stmt1.setString(5, rs.getString("backend_id"));
@@ -688,7 +755,7 @@ public class RestC_check {
 		return checkDetailId;
 	}
 	
-	public boolean updateCheck (long checkId, int checkNo) {
+	public boolean updateCheck (long checkId, String checkNo) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
@@ -703,11 +770,11 @@ public class RestC_check {
 					"(select sum(total_amount) from check_detail where check_id = ? and check_number = ? and check_detail_status = 3) as 'amount_paid' " + 
 					"from check_detail where check_id = ? and check_number = ? and check_detail_status in (1, 2, 3);");
 			stmt.setLong(1, checkId);
-			stmt.setInt(2, checkNo);
+			stmt.setString(2, checkNo);
 			stmt.setLong(3, checkId);
-			stmt.setInt(4, checkNo);
+			stmt.setString(4, checkNo);
 			stmt.setLong(5, checkId);
-			stmt.setInt(6, checkNo);
+			stmt.setString(6, checkNo);
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
@@ -716,7 +783,7 @@ public class RestC_check {
 				BigDecimal totalAmountRoundingAdjustment = grandTotalAmount.subtract(totalAmount);
 				BigDecimal amountPaid = rs.getBigDecimal("amount_paid") == null ? new BigDecimal("0.00") : rs.getBigDecimal("amount_paid");
 				
-				stmt1 = connection.prepareStatement("update `check` set total_item_quantity = ?,subtotal_amount = ?,total_tax_amount = ?,total_service_charge_amount = ?,total_amount = ?,total_amount_rounding_adjustment = ?,grand_total_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
+				stmt1 = connection.prepareStatement("update `check` set total_item_quantity = ?,subtotal_amount = ?,total_tax_amount = ?,total_service_charge_amount = ?,total_amount = ?,total_amount_rounding_adjustment = ?,grand_total_amount = ?,tender_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
 				stmt1.setInt(1, rs.getInt("quantity"));
 				stmt1.setBigDecimal(2, rs.getBigDecimal("subtotal_amount"));
 				stmt1.setBigDecimal(3, rs.getBigDecimal("total_tax_amount"));
@@ -724,9 +791,10 @@ public class RestC_check {
 				stmt1.setBigDecimal(5, totalAmount);
 				stmt1.setBigDecimal(6, totalAmountRoundingAdjustment);
 				stmt1.setBigDecimal(7, grandTotalAmount);
-				stmt1.setBigDecimal(8, grandTotalAmount.subtract(amountPaid));
-				stmt1.setLong(9, checkId);
-				stmt1.setInt(10, checkNo);
+				stmt1.setBigDecimal(8, amountPaid);
+				stmt1.setBigDecimal(9, grandTotalAmount.subtract(amountPaid));
+				stmt1.setLong(10, checkId);
+				stmt1.setString(11, checkNo);
 				int rs2 = stmt1.executeUpdate();
 				
 				if (rs2 > 0) {

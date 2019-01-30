@@ -204,15 +204,10 @@
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/table_order",
 				controller : "table_order_CTRL"
 			})
-		.when("/check/:tableNo/:checkNo",
+		.when("/check/:orderType/:checkNo/:tableNo",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/check",
 				controller : "check_CTRL"
-			})
-		.when("/payment/:check_no",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment",
-				controller : "payment_CTRL"
 			})
 		.when("/take_away_order",
 			{

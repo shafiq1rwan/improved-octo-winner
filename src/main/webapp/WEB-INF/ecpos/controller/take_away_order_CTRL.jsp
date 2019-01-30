@@ -4,8 +4,12 @@
 			$scope.create_new_check();
 		}
 		
-		$scope.create_new_check = function() {			
-			$http.post("${pageContext.request.contextPath}/rc/check/create")
+		$scope.create_new_check = function() {
+			var jsonData = JSON.stringify({
+				"order_type" : "take away"
+			});
+			
+			$http.post("${pageContext.request.contextPath}/rc/check/create", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
 					$scope.redirect_to_check_detail(response.data.check_no);
@@ -15,46 +19,18 @@
 				}
 			},
 			function(response) {
-				alert("Check Failed To Create");
-			});
-		}
-		
-		$scope.getCheckDetails = function() {
-			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + $scope.checkNo)
-			.then(function(response) {
-				$scope.checkDetail = response.data;
-				
-				if ($scope.checkDetail.grandParentItemArray.length == 0 || $scope.checkDetail.grandParentItemArray === undefined) {
-					document.getElementById("itemLoop").style.height = "10vh";
-				} else {
-					document.getElementById("itemLoop").style.maxHeight = "40vh";
-					document.getElementById("itemLoop").style.overflowY = "auto";
-				}
-			},
-			function(response) {
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
 		}
-		
-		$scope.allGrandParentItemCheckbox = function () {
-			if(allGrandParentItemCheckbox.checked) {
-		        $('[name=grandParentItemCheckbox]').each(function() {
-		            this.checked = true;                        
-		        });
-		    } else {
-		        $('[name=grandParentItemCheckbox]').each(function() {
-		            this.checked = false;                       
-		        });
-		    }
-		}
-		
-		$scope.grandParentItemCheckbox = function () {
-			if ($("[name=grandParentItemCheckbox]:checked").length == $scope.checkDetail.grandParentItemArray.length) {
-				allGrandParentItemCheckbox.checked = true;
-			} else {
-				allGrandParentItemCheckbox.checked = false;
-			}
+				
+		//Redirect to check detail page
+		$scope.redirect_to_check_detail = function(chk_no) {
+			$("#modal_table_check_list").modal('hide');
+			$('.modal-backdrop').remove();
+
+			var data = "/check/" + "take_away" + "/" + chk_no + "/" + -99;
+			$location.path(data);
 		}
 	});
 </script>

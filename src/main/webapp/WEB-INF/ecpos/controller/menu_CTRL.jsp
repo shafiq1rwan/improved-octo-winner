@@ -327,9 +327,15 @@
 				$scope.temporary.orderQuantity = $('#itemQuantity').val();
 			}
 			
+			if ($scope.orderType == "table") {
+				orderType = 1;
+			} else if ($scope.orderType == "take_away") {
+				orderType = 2;
+			}
+			
 			var jsonData = JSON.stringify({
 				"deviceType" : 2,
-				"orderType" : 1,
+				"orderType" : orderType,
 				"tableNo" : $scope.tableNo,
 				"checkNo" : $scope.checkNo,
 				"item" : $scope.temporary

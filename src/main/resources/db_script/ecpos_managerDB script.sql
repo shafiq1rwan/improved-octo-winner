@@ -214,6 +214,7 @@ create table `check` (
 	`total_amount_rounding_adjustment` decimal(25, 4) NOT NULL,
 	`grand_total_amount` decimal(25, 4) NOT NULL,
 	`deposit_amount` decimal(25, 4) NULL,
+	`tender_amount` decimal(25, 4) NULL,
 	`overdue_amount` decimal(25, 4) NOT NULL,
     `check_status` bigint(20) NOT NULL,
 	`created_date` datetime NOT NULL,
@@ -224,17 +225,6 @@ create table `check` (
 create table `transaction_status` (
 	`id` bigint(20) NOT NULL,
     `name` varchar(255) NOT NULL,
-    PRIMARY KEY (`id`)
-);
-
-create table `transaction` (
-	`id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `check_id` bigint(20) NOT NULL,
-	`check_number` bigint(20) NOT NULL,
-    `transaction_currency` nvarchar(100) NOT NULL,
-    `transaction_amount` decimal(25, 4) NOT NULL,
-    `transaction_status` bigint(20) NOT NULL,
-    `transaction_date` datetime NOT NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -256,56 +246,85 @@ create table `payment_type` (
     PRIMARY KEY (`id`)
 );
 
-create table `settlement` (
-	`id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `staff_id` bigint (20) NOT NULL,
-    `batch_number` varchar(255) NOT NULL,
-    `bank_mid` varchar(255) NOT NULL,
-    `bank_tid` varchar(255) NOT NULL,
-    `total_sale` int(20) NOT NULL,
-    `total_sale_amount` decimal(25, 4) NOT NULL,
-    `settlement_status` bigint(20) NOT NULL,
-    `created_date` datetime NOT NULL,
-    `response_code` varchar(255) NULL,
-    `response_message` varchar(255) NULL,
-    `updated_date` datetime NULL,
-    `transaction_date` datetime NULL,
-    `nii` varchar(255) NULL,
-    `settlement_nii` varchar(255) NULL,
+create table `nii_type` (
+	`id` bigint(20) NOT NULL,
+    `name` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
-create table `transaction_detail` (
+create table `settlement` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
     `staff_id` bigint (20) NOT NULL,
-    `transaction_id` bigint(20) NOT NULL,
+	`nii_type` bigint (20) NOT NULL,
+	`total_sale_count` int(20) NOT NULL,
+    `total_sale_amount` decimal(25, 4) NOT NULL,
+	`settlement_status` bigint(20) NOT NULL,
+	`created_date` datetime NOT NULL,
+	`response_code` varchar(255) NULL,
+    `response_message` varchar(255) NULL,
+	`updated_date` datetime NULL,
+	`wifi_ip` varchar(255) NULL,
+    `wifi_port` varchar(255) NULL,
+	`merchant_info` varchar(255) NULL,
+	`bank_mid` varchar(255) NOT NULL,
+    `bank_tid` varchar(255) NOT NULL,
+    `batch_number` varchar(255) NOT NULL,
+    `transaction_date` varchar(255) NULL,
+	`transaction_time` varchar(255) NULL,
+	`batch_total` varchar(255) NULL,
+	`nii` varchar(255) NULL,
+    PRIMARY KEY (`id`)
+);
+
+create table `transaction` (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `staff_id` bigint (20) NOT NULL,
     `check_id` bigint(20) NOT NULL,
+	`check_number` bigint(20) NOT NULL,
     `transaction_type` bigint(20) NOT NULL,
     `payment_method` bigint(20) NOT NULL,
 	`payment_type` bigint(20) NOT NULL,
+	`terminal_serial_number` varchar(255) NULL,
     `transaction_currency` nvarchar(100) NOT NULL,
     `transaction_amount` decimal(25, 4) NOT NULL,
-    `transaction_tips` decimal(25, 4) NOT NULL,
-    `transaction_detail_status`bigint(20) NOT NULL,
+    `transaction_tips` decimal(25, 4) NULL,
+    `transaction_status`bigint(20) NOT NULL,
+	`unique_trans_number` varchar(255) NULL,
+	`qr_content` varchar(255) NULL,
     `created_date` datetime NOT NULL,
     `response_code` varchar(255) NULL,
     `response_message` varchar(255) NULL,
     `updated_date` datetime NULL,
-    `trace_number` varchar(255) NULL,
-    `batch_number` varchar(255) NULL,
-    `bank_mid` varchar(255) NULL,
+	`wifi_ip` varchar(255) NULL,
+    `wifi_port` varchar(255) NULL,
+	`approval_code` varchar(255) NULL,
+	`bank_mid` varchar(255) NULL,
     `bank_tid` varchar(255) NULL,
-    `approval_code` varchar(255) NULL,
+	`transaction_date` varchar(255) NULL,
+	`transaction_time` varchar(255) NULL,
+	`original_invoice_number` varchar(255) NULL,
+	`invoice_number` varchar(255) NULL,
+	`merchant_info` varchar(255) NULL,
+	`card_issuer_name` varchar(255) NULL,
+	`masked_card_number` varchar(255) NULL,
+	`card_expiry_date` varchar(255) NULL,
+	`batch_number` varchar(255) NULL,
     `rrn` varchar(255) NULL,
-    `masked_card_number` varchar(255) NULL,
+	`card_issuer_id` varchar(255) NULL,
     `cardholder_name` varchar(255) NULL,
     `aid` varchar(255) NULL,
     `app_label` varchar(255) NULL,
     `tc` varchar(255) NULL,
     `terminal_verification_result` varchar(255) NULL,
-    `transaction_date` datetime NULL,
-    `original_trace_number` varchar(255) NULL,
-    `settlement_status` bigint(20) NOT NULL,
+	`original_trace_number` varchar(255) NULL,
+	`trace_number` varchar(255) NULL,
+	`qr_issuer_type` varchar(255) NULL,
+	`mpay_mid` varchar(255) NULL,
+	`mpay_tid` varchar(255) NULL,
+	`qr_ref_id` varchar(255) NULL,
+	`qr_user_id` varchar(255) NULL,
+	`qr_amount_myr` varchar(255) NULL,
+	`qr_amount_rmb` varchar(255) NULL,
     `settlement_id` bigint(20) NULL,
     PRIMARY KEY (`id`)
 );
@@ -327,10 +346,20 @@ create table `check_detail` (
 	`total_service_charge_amount` decimal(25, 4) NULL,
 	`total_amount` decimal(25, 4) NOT NULL,
     `check_detail_status` bigint(20) NOT NULL,
-	`transaction_detail_id` bigint(20) NULL,
+	`transaction_id` bigint(20) NULL,
 	`created_date` datetime NOT NULL,
     `updated_date` datetime NULL,
     PRIMARY KEY (`id`)
+);
+
+create table `terminal` (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`name` varchar(255) NOT NULL,
+	`serial_number` varchar(255) NOT NULL,
+	`is_active` bit NOT NULL, 
+	`wifi_IP` varchar(45) NOT NULL,
+	`wifi_Port` varchar(45) NOT NULL,
+	PRIMARY KEY (`id`)
 );
 
 insert into `master` values
@@ -355,7 +384,10 @@ insert into `payment_method` values
 (1, 'Cash'), (2, 'Card'), (3, 'QR');
 
 insert into `payment_type` values
-(1, 'Full Payment'), (2, 'Split Item'), (3, 'Split Payment');
+(1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Deposit Payment');
+
+insert into `nii_type` values
+(1, 'VISA/MASTER/JCB'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');
 
 insert into `staff` values
 (1, 1, 'admin', 'admin', 'admin', 1, '-', '-', 1, now(), now());

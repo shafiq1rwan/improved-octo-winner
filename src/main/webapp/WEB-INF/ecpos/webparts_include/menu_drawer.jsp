@@ -14,7 +14,7 @@
 					</a>
 				</li>
 				<li>
-					<a onclick="create_new_check()">
+					<a href="${pageContext.request.contextPath}/ecpos/#!take_away_order">
 						<i class="fa fa-shopping-bag"></i> 
 						<span>Take Away Order</span> 
 						<span class="pull-right-container"></span>

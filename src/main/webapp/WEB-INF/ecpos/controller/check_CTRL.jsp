@@ -1,18 +1,36 @@
 <script>
 	app.controller('check_CTRL', function($scope, $http, $routeParams, $window, $location, $route) {
-		$scope.tableNo = $routeParams.tableNo;
+		$scope.orderType = $routeParams.orderType;
 		$scope.checkNo = $routeParams.checkNo;
+		$scope.tableNo = $routeParams.tableNo;
 		
 		$scope.checkDetail = {};
+		
+		$('#menuWell').show();
+		$('#paymentWell').hide();
+		$('#checkActionButtons').show();
+		$('#cancelOrderButton').prop('disabled', true);
+		$('#paymentButton').prop('disabled', true);
+		$('#allGrandParentItemCheckbox').show();
+		$('input[name=grandParentItemCheckbox]').show();
+		$('#terminalList').hide();
 
 		$scope.initiation = function() {
 			$scope.getCheckDetails();
 		}
 		
 		$scope.getCheckDetails = function() {
-			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + $scope.tableNo + "/" + $scope.checkNo)
+			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + $scope.orderType + "/" + $scope.checkNo + "/" + $scope.tableNo)
 			.then(function(response) {
 				$scope.checkDetail = response.data;
+				
+				if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
+					$('#cancelOrderButton').prop('disabled', true);
+					$('#paymentButton').prop('disabled', true);
+				} else {
+					$('#cancelOrderButton').prop('disabled', false);
+					$('#paymentButton').prop('disabled', false);
+				}
 			},
 			function(response) {
 				alert("Session TIME OUT");
@@ -25,10 +43,14 @@
 		        $('[name=grandParentItemCheckbox]').each(function() {
 		            this.checked = true;                        
 		        });
+		        
+				$('#amount').html(parseFloat($scope.checkDetail.overdue).toFixed(2));
 		    } else {
 		        $('[name=grandParentItemCheckbox]').each(function() {
 		            this.checked = false;                       
 		        });
+		        
+		        $('#amount').html(parseFloat(0).toFixed(2));
 		    }
 		}
 		
@@ -37,6 +59,32 @@
 				allGrandParentItemCheckbox.checked = true;
 			} else {
 				allGrandParentItemCheckbox.checked = false;
+			}
+			
+			$scope.getAccumulatedAmount();
+		}
+		
+		$scope.getAccumulatedAmount = function() {
+			$scope.checkedValue = [];
+			$('#amount').html(parseFloat(0).toFixed(2));
+			
+			$("input[name=grandParentItemCheckbox]:checked").each(function(){
+				$scope.checkedValue.push($(this).val());
+			});
+			
+			if (!($scope.checkedValue === undefined || $scope.checkedValue == 0)) {
+				var jsonData = JSON.stringify({
+					"checkDetailIdArray" : $scope.checkedValue
+				});
+				
+				$http.post("${pageContext.request.contextPath}/rc/transaction/get_accumulated_amount/", jsonData)
+				.then(function(response) {
+					$('#amount').html(parseFloat(response.data.accumulatedAmount).toFixed(2));
+				},
+				function(response) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/ecpos";
+				});
 			}
 		}
 		
@@ -58,12 +106,13 @@
 					"checkDetailIdArray" : $scope.checkedValue
 				});
 				
-				$http.post("${pageContext.request.contextPath}/rc/check/cancelOrder", jsonData)
+				$http.post("${pageContext.request.contextPath}/rc/check/cancel_order", jsonData)
 				.then(function(response) {
 					if (response.data.response_code === "00") {
 						alert("Order has been cancelled.")
 						
 						$scope.getCheckDetails();
+						allGrandParentItemCheckbox.checked = false;
 					} else {
 						alert("Error Occured While Remove Order");
 						window.location.href = "${pageContext.request.contextPath}/ecpos";
@@ -76,9 +125,14 @@
 			}
 		}
 		
-		$scope.redirectPayment = function(type) {
-			var data = "/payment/" + $scope.checkNo;
-			$location.path(data);
+		$scope.redirectPayment = function() {
+			$('#menuWell').hide();
+			$('#paymentWell').show();
+			$('#checkActionButtons').hide();
+			$("#allGrandParentItemCheckbox").hide();
+			$("input[name=grandParentItemCheckbox]").hide();
+			
+			$('#amount').html(parseFloat($scope.checkDetail.overdue).toFixed(2));
 		}
 	});
 </script>

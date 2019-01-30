@@ -98,13 +98,6 @@ public class EcposManagerController {
 		return model;
 	}
 	
-	@RequestMapping(value = { "/views/payment" }, method = { RequestMethod.GET, RequestMethod.POST })
-	public ModelAndView ecpos_payment() {
-		ModelAndView model = new ModelAndView();
-		model.setViewName("ecpos/views/payment");
-		return model;
-	}
-	
 	@RequestMapping(value = {"/views/take_away_order"}, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecpos_take_away_order() {
 		ModelAndView model = new ModelAndView();

@@ -9,7 +9,7 @@
 		$scope.table_no ="";
 		
 		//Get table list
-		$http.get("${pageContext.request.contextPath}/rc/tableorder/get_table_list")
+		$http.get("${pageContext.request.contextPath}/rc/configuration/get_table_list")
 		.then(function(response) {
 			$scope.fields_TableInfo = response.data;
 			var table_list = $scope.fields_TableInfo.table_list;
@@ -62,7 +62,7 @@
 				"table_no" : $scope.table_no
 			});
 
-			$http.post("${pageContext.request.contextPath}/rc/tableorder/get_check_list", jsonData)
+			$http.post("${pageContext.request.contextPath}/rc/check/get_check_list", jsonData)
 			.then(function(response) {
 				$scope.check_list = response.data.check_list;
 			},
@@ -90,7 +90,8 @@
 				}
 			},
 			function(response) {
-				alert("Check Failed To Create");
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
 		}
 				
@@ -99,7 +100,7 @@
 			$("#modal_table_check_list").modal('hide');
 			$('.modal-backdrop').remove();
 
-			var data = "/check/" + $scope.table_no + "/" + chk_no;
+			var data = "/check/" + "table" + "/" + chk_no + "/" + $scope.table_no;
 			$location.path(data);
 		}
 	} ]);

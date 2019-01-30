@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,8 +19,8 @@ import mpay.my.ecpos_manager_v2.logger.Logger;
 import mpay.my.ecpos_manager_v2.property.Property;
 
 @RestController
-@RequestMapping("/rc/tableorder")
-public class RestC_table_order {
+@RequestMapping("/rc/configuration")
+public class RestC_configuration {
 
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 	
@@ -85,40 +84,28 @@ public class RestC_table_order {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String getChecklist(@RequestBody String data) {
+	@RequestMapping(value = { "/get_terminal_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String getTerminallist() {
 		JSONObject jsonResult = new JSONObject();
+		JSONArray JARY = new JSONArray();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
-			JSONObject jsonObj = new JSONObject(data);
+			connection = dataSource.getConnection();
 
-			if (jsonObj.has(Constant.TABLE_NO)) {
-				String table_no = jsonObj.getString(Constant.TABLE_NO);
-				
-				connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("select * from terminal where is_active = 1;");
+			rs = stmt.executeQuery();
 
-				stmt = connection.prepareStatement("SELECT * FROM `check` WHERE table_number = ? AND check_status IN (1,2);");
-				stmt.setString(1, table_no);
-				rs = (ResultSet) stmt.executeQuery();
-
-				JSONArray check_list = new JSONArray();
-				while (rs.next()) {
-					check_list.put(rs.getString("check_number"));
-				}
-				jsonResult.put("check_list", check_list);
-				Logger.writeActivity("Table Check List: " + check_list.toString(), ECPOS_FOLDER);
-				
-				jsonResult.put(Constant.RESPONSE_CODE, "00");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-			} else {
-				Logger.writeActivity("Invalid Request for Table Check List", ECPOS_FOLDER);
-				
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+			while (rs.next()) {
+				JSONObject jObject = new JSONObject();
+				jObject.put("id", rs.getString("id"));
+				jObject.put("name", rs.getString("name"));
+				jObject.put("serialNo", rs.getString("serial_number"));
+				JARY.put(jObject);
 			}
+			jsonResult.put("terminals", JARY);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();

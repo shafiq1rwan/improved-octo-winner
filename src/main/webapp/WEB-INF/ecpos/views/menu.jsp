@@ -37,11 +37,9 @@
 						<div class="item active">
 							<div id="category">
 								<div class="row" style="font-size: large">
-									<div class="col-sm-2"></div>
-									<div class="col-sm-8" style="text-align: center">
+									<div class="col-sm-12" style="text-align: center">
 										<label>Menu</label>
 									</div>
-									<div class="col-sm-2"></div>
 								</div>
 								<br>
 								<div class="row">
