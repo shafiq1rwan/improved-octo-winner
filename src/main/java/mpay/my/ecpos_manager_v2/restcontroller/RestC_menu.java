@@ -77,7 +77,7 @@ public class RestC_menu {
 
 		try {
 			connection = dataSource.getConnection();
-
+			
 			stmt = connection.prepareStatement("select cmi.category_menu_item_sequence, mi.* from category c " + 
 					"inner join category_menu_item cmi on cmi.category_id = c.id " + 
 					"inner join menu_item mi on mi.id = cmi.menu_item_id " + 
@@ -300,6 +300,90 @@ public class RestC_menu {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_menu_items_by_item_type/{itemType}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getMenuItemsByItemType(@PathVariable("itemType") String itemType) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select * from menu_item where is_active = 1 and menu_item_type = ? order by id asc;");
+			stmt.setString(1, itemType);
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				JSONObject menuItems = new JSONObject();
+				menuItems.put("id", rs.getString("id"));
+				menuItems.put("backendId", rs.getString("backend_id"));
+				menuItems.put("name", rs.getString("menu_item_name"));
+				menuItems.put("description", rs.getString("menu_item_description"));
+				menuItems.put("price", rs.getString("menu_item_base_price"));
+				menuItems.put("taxable", rs.getBoolean("is_taxable"));
+				menuItems.put("discountable", rs.getBoolean("is_discountable"));
+//				menuItems.put("imagePath", rs.getString("menu_item_image_path"));
+				menuItems.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				
+				jary.put(menuItems);
+			}
+			jsonResult.put("data", jary);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_modifier_group" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getModifierGroup() {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select * from modifier_group where is_active = 1;");
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				JSONObject modifierGroup = new JSONObject();
+				modifierGroup.put("id", rs.getString("id"));
+				modifierGroup.put("name", rs.getString("modifier_group_name"));
+				
+				jary.put(modifierGroup);
+			}
+			jsonResult.put("data", jary);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);

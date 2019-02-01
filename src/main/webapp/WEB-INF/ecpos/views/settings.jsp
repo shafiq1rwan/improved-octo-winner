@@ -97,118 +97,127 @@
 									</div>
 								</div>
 							</div>
-							
-							<div class="modal fade" data-backdrop="static" id="terminalModal" role="dialog">
-								<div class="modal-dialog">
-									<div class="modal-content">
-										<!-- <div class="modal-header"></div> -->
-										<div class="modal-body">
-											<form ng-submit="submitTerminalInfo()">
-												<button class="close" data-dismiss="modal">&times;</button>
-												<div class="row" style="font-size: large">
-													<div style="text-align: center">
-														<label ng-if="action=='create'">Add Terminal</label>
-														<label ng-if="action=='update'">Update Terminal</label>
-													</div>
-												</div>
-												<br>
-												<div class="row">
-													<div class="col-sm-6 form-group">
-														<label>Terminal Name</label> 
-														<input type="text" class="form-control" ng-model="terminal.name" required />
-													</div>
-												</div>
-												<div class="row">
-													<div class="col-sm-6 form-group">
-														<label>Serial Number</label> 
-														<input type="text" class="form-control" ng-model="terminal.serialNo" required />
-													</div>
-												</div>
-												<div class="row">
-													<div class="col-sm-4 form-group">
-														<label>WiFi IP</label> 
-														<input type="text" class="form-control" ng-model="terminal.wifiIP" required />
-													</div>
-												</div>
-												<div class="row">
-													<div class="col-sm-4 form-group">
-														<label>WiFi Port</label> 
-														<input type="text" class="form-control" ng-model="terminal.wifiPort" required />
-													</div>
-												</div>
-												<div class="row">
-													<div class="col-sm-12" >
-														<div class="pull-right">
-															<input ng-if="action=='create'" type="submit" class="btn btn-info" value="Create" />  
-															<input ng-if="action=='update'" type="submit" class="btn btn-info" value="Update" />  
-														</div>
-													</div>
-												</div>
-											</form>
-										</div>
-										<!-- <div class="modal-footer"></div> -->
-									</div>
-								</div>
-							</div>
-							
-							<div class="modal fade" data-backdrop="static" id="settlementModal" role="dialog">
-								<div class="modal-dialog">
-									<div class="modal-content">
-										<!-- <div class="modal-header"></div> -->
-										<div class="modal-body">
-											<form ng-submit="requestSettlement()">
-												<button class="close" data-dismiss="modal">&times;</button>
-												<div class="row" style="font-size: large">
-													<div style="text-align: center">
-														<label>Settlement</label>
-													</div>
-												</div>
-												<br>
-												<label>Kindly choose a settlement type:</label>
-												<br><br>
-												<div class="row" >
-													<div class="col-sm-6 form-group">
-														<label>
-															<input type="radio" ng-model="settlementType" value="NR" ng-required=!settlementType /> <b>VISA/MASTER/JCB</b>
-														</label>
-													</div>
-													<div class="col-sm-6 form-group">
-														<label> 
-															<input type="radio" ng-model="settlementType" value="AMEX" ng-required=!settlementType /> <b>AMEX</b>
-														</label>
-													</div>
-												</div>
-												<br>
-												<div class="row" >
-													<div class="col-sm-6 form-group">
-														<label>
-															<input type="radio" ng-model="settlementType" value="MCCS" ng-required=!settlementType /> <b>MCCS</b>
-														</label>
-													</div>
-													<div class="col-sm-6 form-group">
-														<label> 
-															<input type="radio" ng-model="settlementType" value="UNIONPAY" ng-required=!settlementType /> <b>UNIONPAY</b>
-														</label>
-													</div>
-												</div>
-												<br>
-												<div class="row">
-													<div class="col-sm-12" >
-														<div class="pull-right">
-															<input type="submit" class="btn btn-info" value="Proceed Settlement" />
-														</div>
-													</div>
-												</div>
-											</form>
-										</div>
-										<!-- <div class="modal-footer"></div> -->
-									</div>
-								</div>
-							</div>
-							
 						</div>	
 					</div>
 				</section>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="terminalModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+							<form ng-submit="submitTerminalInfo()">
+								<div class="row" style="font-size: large">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+										<div style="text-align: center">
+											<label ng-if="action=='create'">Add Terminal</label>
+											<label ng-if="action=='update'">Update Terminal</label>
+										</div>
+									</div>
+									<div class="col-sm-1">
+										<button class="close" data-dismiss="modal">&times;</button>
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Terminal Name</label> 
+										<input type="text" class="form-control" ng-model="terminal.name" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Serial Number</label> 
+										<input type="text" class="form-control" ng-model="terminal.serialNo" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-4 form-group">
+										<label>WiFi IP</label> 
+										<input type="text" class="form-control" ng-model="terminal.wifiIP" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-4 form-group">
+										<label>WiFi Port</label> 
+										<input type="text" class="form-control" ng-model="terminal.wifiPort" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<input ng-if="action=='create'" type="submit" class="btn btn-info" value="Create" />  
+											<input ng-if="action=='update'" type="submit" class="btn btn-info" value="Update" />  
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="settlementModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+							<form ng-submit="requestSettlement()">
+								<div class="row" style="font-size: large">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+										<div style="text-align: center">
+											<label>Settlement</label>
+										</div>
+									</div>
+									<div class="col-sm-1">
+										<button class="close" data-dismiss="modal">&times;</button>
+									</div>
+								</div>
+								<br>
+								<label>Kindly choose a settlement type:</label>
+								<br><br>
+								<div class="row" >
+									<div class="col-sm-6 form-group">
+										<label>
+											<input type="radio" ng-model="settlementType" value="NR" ng-required=!settlementType /> <b>VISA/MASTER/JCB</b>
+										</label>
+									</div>
+									<div class="col-sm-6 form-group">
+										<label> 
+											<input type="radio" ng-model="settlementType" value="AMEX" ng-required=!settlementType /> <b>AMEX</b>
+										</label>
+									</div>
+								</div>
+								<br>
+								<div class="row" >
+									<div class="col-sm-6 form-group">
+										<label>
+											<input type="radio" ng-model="settlementType" value="MCCS" ng-required=!settlementType /> <b>MCCS</b>
+										</label>
+									</div>
+									<div class="col-sm-6 form-group">
+										<label> 
+											<input type="radio" ng-model="settlementType" value="UNIONPAY" ng-required=!settlementType /> <b>UNIONPAY</b>
+										</label>
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<input type="submit" class="btn btn-info" value="Proceed Settlement" />
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

@@ -217,7 +217,7 @@
 		.when("/items",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items",
-				controller : "item_CTRL"
+				controller : "items_CTRL"
 			})
 		.when("/settings",
 			{

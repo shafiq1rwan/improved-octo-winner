@@ -244,85 +244,86 @@
 					</div>
 				</div>
 				
-				<div class="modal fade" data-backdrop="static" id="menuItemModal" role="dialog">
-					<div class="modal-dialog">
-						<div class="modal-content">
-							<!-- <div class="modal-header"></div> -->
-							<div class="modal-body">
-							
-								<div id="itemCarousel" class="carousel" data-interval="false">
-									<div class="carousel-inner">
-										<div class="item active">
-											<div id="tierItem">
-												<div class="row" style="font-size: large">
-													<div style="text-align: center">
-														<label id="tierName"></label>
-													</div>
-												</div>
-												<br>
-												<div class="row">
-													<div ng-repeat="tierItemDetail in tierItemDetails.jary">
-														<div class="col-sm-4 form-group">
-															<div style="text-align: center">
-																<label ng-click="getModifiers(tierItemDetail)">
-																	<div style="margin: auto; width: 150px; height: 150px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-																		<img ng-src="${pageContext.request.contextPath}{{tierItemDetail.imagePath}}" style="max-width: 150px; max-height: 150px;" />
-																	</div>
-																	<div>
-																		<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>
-																	</div>
-																</label>
-															</div>
-														</div>
-													</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="menuItemModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+						
+							<div id="itemCarousel" class="carousel" data-interval="false">
+								<div class="carousel-inner">
+									<div class="item active">
+										<div id="tierItem">
+											<div class="row" style="font-size: large">
+												<div style="text-align: center">
+													<label id="tierName"></label>
 												</div>
 											</div>
-										</div>
-											
-										<div class="item">
-											<div id="modifier">
-												<div class="row" style="font-size: large">
-													<div class="col-sm-2">
-														<a id="back" href="#itemCarousel" data-slide="prev">
-															<i class="fa fa-arrow-left" style="color: black;"></i>
-														</a>
-													</div>
-													<div class="col-sm-8" style="text-align: center">
-														<label id="tierItemDetailName"></label>
-													</div>
-													<div class="col-sm-2"></div>
-												</div>
-												<div ng-repeat="modifier in modifiers.jary" style="padding-left: 15px; padding-right: 15px;">
-													<br>
-													<div>
-														<label>{{modifier.name}}</label>
-													</div>
-													<div class="row">
-														<div ng-repeat="modifierDetail in modifier.jary">
-															<div class="col-sm-3">
-																<label>
-																	<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.backendId}}!!{{modifierDetail.name}}" required /> <b>{{modifierDetail.name}}</b>
-																</label>
-															</div>
+											<br>
+											<div class="row">
+												<div ng-repeat="tierItemDetail in tierItemDetails.jary">
+													<div class="col-sm-4 form-group">
+														<div style="text-align: center">
+															<label ng-click="getModifiers(tierItemDetail)">
+																<div style="margin: auto; width: 150px; height: 150px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+																	<img ng-src="${pageContext.request.contextPath}{{tierItemDetail.imagePath}}" style="max-width: 150px; max-height: 150px;" />
+																</div>
+																<div>
+																	<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>
+																</div>
+															</label>
 														</div>
 													</div>
-												</div>
-												<br>
-												<div>
-													<button class="btn btn-primary pull-right" ng-click="saveTemporaryArray()">Save</button>
 												</div>
 											</div>
 										</div>
 									</div>
+										
+									<div class="item">
+										<div id="modifier">
+											<div class="row" style="font-size: large">
+												<div class="col-sm-2">
+													<a id="back" href="#itemCarousel" data-slide="prev">
+														<i class="fa fa-arrow-left" style="color: black;"></i>
+													</a>
+												</div>
+												<div class="col-sm-8" style="text-align: center">
+													<label id="tierItemDetailName"></label>
+												</div>
+												<div class="col-sm-2"></div>
+											</div>
+											<div ng-repeat="modifier in modifiers.jary" style="padding-left: 15px; padding-right: 15px;">
+												<br>
+												<div>
+													<label>{{modifier.name}}</label>
+												</div>
+												<div class="row">
+													<div ng-repeat="modifierDetail in modifier.jary">
+														<div class="col-sm-3">
+															<label>
+																<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.backendId}}!!{{modifierDetail.name}}" required /> <b>{{modifierDetail.name}}</b>
+															</label>
+														</div>
+													</div>
+												</div>
+											</div>
+											<br>
+											<div>
+												<button class="btn btn-primary pull-right" ng-click="saveTemporaryArray()">Save</button>
+											</div>
+										</div>
+									</div>
 								</div>
-								
 							</div>
-							<!-- <div class="modal-footer"></div> -->
+							
 						</div>
+						<!-- <div class="modal-footer"></div> -->
 					</div>
 				</div>
-				
 			</div>
+			
 		</div>
 	</div>
 </body>
