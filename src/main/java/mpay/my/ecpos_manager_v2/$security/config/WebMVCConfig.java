@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class WebMVCConfig extends WebMvcConfigurerAdapter{
 	
-	@Value("${menu-image-path}")
+	@Value("${menu_image_path}")
 	private String menuImagePath;
 	
 	@Override

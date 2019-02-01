@@ -55,7 +55,7 @@ hr {
 													</div>
 												</div>
 												<div class="col-sm-6 form-group">
-													<button id="print_kitchen_receipt_btn" class="btn btn-social btn-sm pull-right btn-primary" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="printKitchenReceipt()">
+													<button id="printKitchenReceiptButton" class="btn btn-social btn-sm pull-right btn-primary" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="printKitchenReceipt()">
 														<i class="fa fa-print"></i> PRINT KITCHEN RECEIPT
 													</button>
 												</div>
@@ -149,7 +149,7 @@ hr {
 									<div id="checkActionButtons">
 										<div class="row" style="margin-bottom: 5px;">
 											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-												<button id="cancelOrderButton" class="btn btn-block btn-info" ng-click="cancelOrder()">VOID ORDER</button>
+												<button id="cancelItemButton" class="btn btn-block btn-info" ng-click="cancelItem()">CANCEL ITEM</button>
 											</div>
 											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 												<button id="paymentButton" class="btn btn-block btn-info" ng-click="redirectPayment()">PAYMENT</button>

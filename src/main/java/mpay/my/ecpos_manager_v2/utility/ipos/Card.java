@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import mpay.my.ecpos_manager_v2.constant.Constant;
 import mpay.my.ecpos_manager_v2.logger.Logger;
@@ -21,7 +22,8 @@ public class Card {
 	@Autowired
 	DataSource dataSource;
 	
-	private static final String IPOS_PATH = "C:\\IPOS\\ipos.exe ";
+	@Value("${ipos_exe}")
+	private String iposExe;
 	
 	public JSONObject pingTest(String tranType, JSONObject terminalWifiIPPort) {
 		JSONObject jsonResult = new JSONObject();
@@ -82,7 +84,7 @@ public class Card {
 		return jsonResult;
 	}
 	
-	public JSONObject cardSettlement(String storeId, String tranType, String niiName, JSONObject terminalWifiIPPort) {
+	public JSONObject cardSettlement(long settlementId, String storeId, String tranType, String niiName, JSONObject terminalWifiIPPort) {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
@@ -91,6 +93,7 @@ public class Card {
 					+ "\\\"wifiPort\\\":" + "\\\"" + terminalWifiIPPort.getString("wifi_Port") + "\\\"}";
 
 			jsonResult = submitIPOS(settlementRequest);
+			jsonResult.put("settlementId", settlementId);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
@@ -102,7 +105,7 @@ public class Card {
 		JSONObject response = new JSONObject();
 		
 		try {
-			Process executeIPOS = Runtime.getRuntime().exec(IPOS_PATH + request);
+			Process executeIPOS = Runtime.getRuntime().exec(iposExe + request);
 			executeIPOS.wait(150000);
 			BufferedReader input = new BufferedReader(new InputStreamReader(executeIPOS.getInputStream()));
 			

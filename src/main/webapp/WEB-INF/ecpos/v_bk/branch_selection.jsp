@@ -104,7 +104,7 @@
 	src="${pageContext.request.contextPath}/universal_lib/angular-1.6.6/angular.min.js"></script>
 <script
 	src="${pageContext.request.contextPath}/universal_lib/angular-1.6.6/angular-route.js"></script>
-<jsp:include page="/WEB-INF/member/controller/branch_selection_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/c_bk/branch_selection_CTRL.jsp" />
 
 
 </html>

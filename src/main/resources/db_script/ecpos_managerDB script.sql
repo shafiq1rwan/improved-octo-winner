@@ -256,8 +256,6 @@ create table `settlement` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
     `staff_id` bigint (20) NOT NULL,
 	`nii_type` bigint (20) NOT NULL,
-	`total_sale_count` int(20) NOT NULL,
-    `total_sale_amount` decimal(25, 4) NOT NULL,
 	`settlement_status` bigint(20) NOT NULL,
 	`created_date` datetime NOT NULL,
 	`response_code` varchar(255) NULL,
@@ -325,7 +323,6 @@ create table `transaction` (
 	`qr_user_id` varchar(255) NULL,
 	`qr_amount_myr` varchar(255) NULL,
 	`qr_amount_rmb` varchar(255) NULL,
-    `settlement_id` bigint(20) NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -356,10 +353,15 @@ create table `terminal` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 	`name` varchar(255) NOT NULL,
 	`serial_number` varchar(255) NOT NULL,
-	`is_active` bit NOT NULL, 
 	`wifi_IP` varchar(45) NOT NULL,
 	`wifi_Port` varchar(45) NOT NULL,
 	PRIMARY KEY (`id`)
+);
+
+create table `printer` (
+	`model_name` varchar(255) NOT NULL,
+	`port_name` varchar(255) NOT NULL,
+	`paper_size` INT default 1
 );
 
 insert into `master` values
@@ -384,7 +386,7 @@ insert into `payment_method` values
 (1, 'Cash'), (2, 'Card'), (3, 'QR');
 
 insert into `payment_type` values
-(1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Deposit Payment');
+(1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Split Payment'), (4, 'Deposit Payment');
 
 insert into `nii_type` values
 (1, 'VISA/MASTER/JCB'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');

@@ -22,12 +22,12 @@
 				$("input[name=grandParentItemCheckbox]").show();
 				
 				$('#amount').html(parseFloat($scope.fullPaymentAmount).toFixed(2));
-			} else if ($scope.paymentType == "partial") {
+			} else if ($scope.paymentType == "split") {
 				$("#allGrandParentItemCheckbox").show();
 				$("input[name=grandParentItemCheckbox]").show();
 				
 				$('#amount').html(parseFloat(0).toFixed(2));
-			} else if ($scope.paymentType == "deposit") {
+			} else {
 				$('#amount').html(parseFloat(0).toFixed(2));
 			}
 		}
@@ -42,7 +42,7 @@
 				$('#terminalList').show();
 				$('#terminal').val("");
 				
-				$http.get("${pageContext.request.contextPath}/rc/configuration/get_terminal_list/")
+				$http.get("${pageContext.request.contextPath}/rc/configuration/get_terminal_list/" + "all")
 				.then(function(response) {
 					$scope.terminalList = response.data;
 				},
@@ -89,7 +89,7 @@
 		$scope.submitPayment = function() {
 			$scope.checkedValue = [];
 			
-			if ($scope.paymentType == "partial") {				
+			if ($scope.paymentType == "split") {				
 				$("input[name=grandParentItemCheckbox]:checked").each(function(){
 					$scope.checkedValue.push($(this).val());
 				});
@@ -109,7 +109,7 @@
 				"checkNo" : $scope.checkNo
 			});
 
-			$http.post("${pageContext.request.contextPath}/rc/transaction/card_sale", jsonData)
+			$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
 					alert(response.data.response_message);

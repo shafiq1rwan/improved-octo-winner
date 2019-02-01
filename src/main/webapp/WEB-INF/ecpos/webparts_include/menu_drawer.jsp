@@ -43,22 +43,22 @@
 				</li>
 				
 				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">System Management</li>
-				<li>
+<%-- 				<li>
 					<a href="${pageContext.request.contextPath}/ecpos/#!connection_qr">
 						<i class="fa fa-qrcode"></i> 
 						<span>QR</span> 
 						<span class="pull-right-container"> </span>
 					</a>
-				</li>
+				</li> --%>
 				<li>
 					<a onclick="openDrawer()">
-						<i class="fa fa-print"></i>
-						<span>Open Drawer</span> 
+						<i class="fa fa-money"></i>
+						<span>Open Cash Drawer</span> 
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
 				<li>
-					<a href="${pageContext.request.contextPath}/ecpos/#!setting"> 
+					<a href="${pageContext.request.contextPath}/ecpos/#!settings"> 
 						<i class="fa fa-cog"></i>
 						<span>Settings</span> 
 						<span class="pull-right-container"> </span>
@@ -81,9 +81,11 @@
 	function openDrawer() {
 		$.ajax({
 			type : 'post',
-			url : '${pageContext.request.contextPath}/printerapi/open_cash_drawer',
-			success : function(data, textStatus, jQxhr) {
-				//To Do
+			url : '${pageContext.request.contextPath}/rc/configuration/open_cash_drawer',
+			success : function(data) {
+				if (data.response_code == 01) {
+					alert(data.response_message);
+				}
 			},
 			error : function() {
 				alert('Drawer cannot be open. Please kindly check your printer.');

@@ -1,15 +1,21 @@
 package mpay.my.ecpos_manager_v2.restcontroller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +32,9 @@ public class RestC_configuration {
 	
 	@Autowired
 	DataSource dataSource;
+	
+	@Value("${printer_exe}")
+	private String printerExe;
 	
 	@RequestMapping(value = { "/get_table_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String getTablelist() {
@@ -84,8 +93,8 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/get_terminal_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String getTerminallist() {
+	@RequestMapping(value = { "/get_terminal_list/{terminalId}" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String getTerminallist(@PathVariable("terminalId") String terminalId) {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray JARY = new JSONArray();
 		Connection connection = null;
@@ -94,8 +103,13 @@ public class RestC_configuration {
 
 		try {
 			connection = dataSource.getConnection();
-
-			stmt = connection.prepareStatement("select * from terminal where is_active = 1;");
+			
+			if (terminalId.equals("all")) {
+				stmt = connection.prepareStatement("select * from terminal;");
+			} else {				
+				stmt = connection.prepareStatement("select * from terminal where id = ?;");
+				stmt.setString(1, terminalId);
+			}
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
@@ -103,6 +117,8 @@ public class RestC_configuration {
 				jObject.put("id", rs.getString("id"));
 				jObject.put("name", rs.getString("name"));
 				jObject.put("serialNo", rs.getString("serial_number"));
+				jObject.put("wifiIP", rs.getString("wifi_IP"));
+				jObject.put("wifiPort", rs.getString("wifi_Port"));
 				JARY.put(jObject);
 			}
 			jsonResult.put("terminals", JARY);
@@ -120,5 +136,301 @@ public class RestC_configuration {
 			}
 		}
 		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_printer_detail" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String getPrinterList() {
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			String getPrinterListParams[] = { printerExe, "1", "2", "2", "2", "2" };
+			Process executePrinter = Runtime.getRuntime().exec(getPrinterListParams);
+			BufferedReader input = new BufferedReader(new InputStreamReader(executePrinter.getInputStream()));
+
+			StringBuilder responseString = new StringBuilder();
+
+			while (input.readLine() != null) {
+				responseString.append(input.readLine());
+			}
+
+			JSONObject jsonObj = new JSONObject(responseString.toString());
+
+			if (jsonObj.has("PortInfoList")) {
+				JSONArray portInfoList = jsonObj.getJSONArray("PortInfoList");
+//				JSONArray paperSizeList = jsonObj.getJSONArray("PaperSizeList");
+
+				jsonResult.put("portInfoList", portInfoList);
+//				jsonResult.put("PaperSizeList", paperSizeList);
+				
+				JSONObject selectedPrinter = getSelectedPrinter();
+				if (selectedPrinter.length() > 0) {
+					jsonResult.put("selectedPrinter", selectedPrinter.getString("portName"));
+				}
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/open_cash_drawer" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String openCashDrawer() {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+				
+			stmt = connection.prepareStatement("select * from printer;");
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				String openDrawerParams[] = { printerExe, "2", rs.getString("model_name"), rs.getString("paper_size"), rs.getString("port_name"), "2" };
+				Process openDrawer = Runtime.getRuntime().exec(openDrawerParams);
+				BufferedReader input = new BufferedReader(new InputStreamReader(openDrawer.getInputStream()));
+			
+				StringBuilder responseString = new StringBuilder();
+
+				while (input.readLine() != null) {
+					responseString.append(input.readLine());
+				}
+
+				JSONObject jsonObj = new JSONObject(responseString.toString());
+
+				if (jsonObj.has("ResponseCode") && jsonObj.has("ResponseMessage")) {
+					if (jsonObj.getInt("ResponseCode") == 1) {
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+					} else {
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Error Occur While Open Drawer");
+					}
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+				}
+			} else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "No Connected Printer Found");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/save_printer" }, method = { RequestMethod.POST }, produces = "application/json")
+	public void savePrinter(@RequestBody String data) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			JSONObject printer = new JSONObject(data);
+				
+			stmt = connection.prepareStatement("select * from printer;");
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				stmt.close();
+				stmt = connection.prepareStatement("update printer set model_name = ?, port_name = ?, paper_size = ?;");
+				stmt.setString(1, printer.getString("modelName"));
+				stmt.setString(2, printer.getString("portName"));
+				stmt.setString(3, printer.getString("paperSize"));
+				stmt.executeUpdate();
+			} else {
+				stmt.close();
+				stmt = connection.prepareStatement("insert into printer (model_name, port_name, paper_size) values (?,?,?)");
+				stmt.setString(1, printer.getString("modelName"));
+				stmt.setString(2, printer.getString("portName"));
+				stmt.setString(3, printer.getString("paperSize"));
+				stmt.executeUpdate();
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@RequestMapping(value = { "/save_terminal" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String saveTerminal(@RequestBody String data) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			JSONObject terminal = new JSONObject(data);
+			String action = terminal.getString("action");
+			String terminalName = terminal.getString("name");
+			String terminalSerialNo = terminal.getString("serialNo");
+			String terminalWifiIP = terminal.getString("wifiIP");
+			String terminalWifiPort = terminal.getString("wifiPort");
+			
+			String terminalId = null;
+			if (action.equals("create")) {
+				stmt = connection.prepareStatement("select * from terminal where name = ? or serial_number = ?;");
+				stmt.setString(1, terminalName);
+				stmt.setString(2, terminalSerialNo);
+			} else if (action.equals("update")) {
+				terminalId = terminal.getString("id");
+				
+				stmt = connection.prepareStatement("select * from terminal where (name = ? or serial_number = ?) and id != ?;");
+				stmt.setString(1, terminalName);
+				stmt.setString(2, terminalSerialNo);
+				stmt.setString(3, terminalId);
+			}
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				jsonResult.put("response_code", "01");
+				jsonResult.put("response_message", "Duplicate Terminal Information");
+				Logger.writeActivity("Duplicate Terminal Information", ECPOS_FOLDER);
+			} else {
+				stmt.close();
+				
+				if (action.equals("create")) {
+					stmt = connection.prepareStatement("insert into terminal (name,serial_number,wifi_IP,wifi_Port) values (?,?,?,?);");
+					stmt.setString(1, terminalName);
+					stmt.setString(2, terminalSerialNo);
+					stmt.setString(3, terminalWifiIP);
+					stmt.setString(4, terminalWifiPort);
+				} else if (action.equals("update")) {
+					stmt = connection.prepareStatement("update terminal set name = ?,serial_number = ?,wifi_IP = ?,wifi_Port = ? where id = ?;");
+					stmt.setString(1, terminalName);
+					stmt.setString(2, terminalSerialNo);
+					stmt.setString(3, terminalWifiIP);
+					stmt.setString(4, terminalWifiPort);
+					stmt.setString(5, terminalId);
+				}
+				int rs2 = stmt.executeUpdate();
+				
+				if (rs2 > 0) {
+					jsonResult.put("response_code", "00");
+					jsonResult.put("response_message", "Terminal Information has been saved");
+					Logger.writeActivity("Terminal Information has been saved", ECPOS_FOLDER);
+				} else {
+					jsonResult.put("response_code", "01");
+					jsonResult.put("response_message", "Terminal Information failed to save");
+					Logger.writeActivity("Terminal Information failed to save", ECPOS_FOLDER);
+				}
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/remove_terminal" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String removeTerminal(@RequestBody String data) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			String terminalId = new JSONObject(data).getString("id");
+			
+			stmt = connection.prepareStatement("select * from terminal where id = ?;");
+			stmt.setString(1, terminalId);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				stmt.close();
+				stmt = connection.prepareStatement("delete from terminal where id = ?;");
+				stmt.setString(1, terminalId);
+				int rs2 = stmt.executeUpdate();
+				
+				if (rs2 > 0) {
+					jsonResult.put("response_code", "00");
+					jsonResult.put("response_message", "Terminal has been removed");
+					Logger.writeActivity("Terminal has been removed", ECPOS_FOLDER);
+				} else {
+					jsonResult.put("response_code", "01");
+					jsonResult.put("response_message", "Terminal failed to remove");
+					Logger.writeActivity("Terminal failed to remove", ECPOS_FOLDER);
+				}
+			} else {
+				jsonResult.put("response_code", "01");
+				jsonResult.put("response_message", "Terminal Not Found");
+				Logger.writeActivity("Terminal NOT Found", ECPOS_FOLDER);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	public JSONObject getSelectedPrinter() {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+
+			stmt = connection.prepareStatement("SELECT * from printer;");
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				jsonResult.put("model", rs.getString("model"));
+				jsonResult.put("portName", rs.getString("port_name"));
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
 	}
 }

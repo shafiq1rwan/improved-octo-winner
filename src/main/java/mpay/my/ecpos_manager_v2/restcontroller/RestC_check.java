@@ -578,7 +578,7 @@ public class RestC_check {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/cancel_order" }, method = { RequestMethod.POST }, produces = "application/json")
+	@RequestMapping(value = { "/cancel_item" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String cancelOrder(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();

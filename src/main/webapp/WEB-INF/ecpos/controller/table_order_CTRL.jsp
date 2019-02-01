@@ -1,5 +1,5 @@
 <script>
-	app.controller('table_order_CTRL', ['$scope', '$http', '$window', '$routeParams', '$location', function($scope, $http, $window, $routeParams, $location) {
+	app.controller('table_order_CTRL', function($scope, $http, $window, $routeParams, $location) {
 		$scope.fields_TableInfo = {};
 		$scope.check_detail = {};
 		
@@ -103,5 +103,5 @@
 			var data = "/check/" + "table" + "/" + chk_no + "/" + $scope.table_no;
 			$location.path(data);
 		}
-	} ]);
+	});
 </script>

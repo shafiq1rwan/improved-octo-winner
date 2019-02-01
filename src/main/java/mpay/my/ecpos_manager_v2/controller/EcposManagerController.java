@@ -105,7 +105,19 @@ public class EcposManagerController {
 		return model;
 	}
 	
+	@RequestMapping(value = {"/views/items"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_item() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/items");
+		return model;
+	}
 	
+	@RequestMapping(value = {"/views/settings"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_settings() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/settings");
+		return model;
+	}
 	
 	
 	
@@ -132,12 +144,12 @@ public class EcposManagerController {
 		return model;
 	}
 
-	@RequestMapping(value = { "/views/items" }, method = { RequestMethod.GET, RequestMethod.POST })
-	public ModelAndView ecpos_items_data() {
-		ModelAndView model = new ModelAndView();
-		model.setViewName("ecpos/views/show_items");
-		return model;
-	}
+//	@RequestMapping(value = { "/views/items" }, method = { RequestMethod.GET, RequestMethod.POST })
+//	public ModelAndView ecpos_items_data() {
+//		ModelAndView model = new ModelAndView();
+//		model.setViewName("ecpos/views/show_items");
+//		return model;
+//	}
 
 	@RequestMapping(value = { "/views/dummy" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecpos_dummy_data() {

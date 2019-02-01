@@ -8,8 +8,9 @@
 		
 		$('#menuWell').show();
 		$('#paymentWell').hide();
+		$('#printKitchenReceiptButton').show();
 		$('#checkActionButtons').show();
-		$('#cancelOrderButton').prop('disabled', true);
+		$('#cancelItemButton').prop('disabled', true);
 		$('#paymentButton').prop('disabled', true);
 		$('#allGrandParentItemCheckbox').show();
 		$('input[name=grandParentItemCheckbox]').show();
@@ -25,10 +26,10 @@
 				$scope.checkDetail = response.data;
 				
 				if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
-					$('#cancelOrderButton').prop('disabled', true);
+					$('#cancelItemButton').prop('disabled', true);
 					$('#paymentButton').prop('disabled', true);
 				} else {
-					$('#cancelOrderButton').prop('disabled', false);
+					$('#cancelItemButton').prop('disabled', false);
 					$('#paymentButton').prop('disabled', false);
 				}
 			},
@@ -92,7 +93,7 @@
 			window.location.href = "${pageContext.request.contextPath}/ecpos/#!table_order";
 		}
 		
-		$scope.cancelOrder = function() {
+		$scope.cancelItem = function() {
 			$scope.checkedValue = [];
 			
 			$("input[name=grandParentItemCheckbox]:checked").each(function(){
@@ -106,7 +107,7 @@
 					"checkDetailIdArray" : $scope.checkedValue
 				});
 				
-				$http.post("${pageContext.request.contextPath}/rc/check/cancel_order", jsonData)
+				$http.post("${pageContext.request.contextPath}/rc/check/cancel_item", jsonData)
 				.then(function(response) {
 					if (response.data.response_code === "00") {
 						alert("Order has been cancelled.")
@@ -128,6 +129,7 @@
 		$scope.redirectPayment = function() {
 			$('#menuWell').hide();
 			$('#paymentWell').show();
+			$('#printKitchenReceiptButton').hide();
 			$('#checkActionButtons').hide();
 			$("#allGrandParentItemCheckbox").hide();
 			$("input[name=grandParentItemCheckbox]").hide();
