@@ -148,7 +148,7 @@
 								<div class="row">
 									<div class="col-sm-12" >
 										<div class="pull-right">
-											<input ng-if="action=='create'" type="submit" class="btn btn-info" value="Create" />  
+											<input ng-if="action=='create'" type="submit" class="btn btn-info" value="Add" />  
 											<input ng-if="action=='update'" type="submit" class="btn btn-info" value="Update" />  
 										</div>
 									</div>

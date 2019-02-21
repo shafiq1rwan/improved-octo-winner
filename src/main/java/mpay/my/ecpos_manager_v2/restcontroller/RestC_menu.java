@@ -49,7 +49,7 @@ public class RestC_menu {
 				
 				jary.put(category);
 			}
-			jsonResult.put("jary", jary);
+			jsonResult.put("data", jary);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -93,6 +93,9 @@ public class RestC_menu {
 				menuItems.put("name", rs.getString("menu_item_name"));
 				menuItems.put("type", rs.getString("menu_item_type"));
 				menuItems.put("description", rs.getString("menu_item_description"));
+				menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
+				menuItems.put("taxable", rs.getBoolean("is_taxable"));
+				menuItems.put("discountable", rs.getBoolean("is_discountable"));
 //				menuItems.put("imagePath", rs.getString("menu_item_image_path"));
 				menuItems.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
 				
@@ -116,7 +119,7 @@ public class RestC_menu {
 				
 				jary.put(menuItems);
 			}
-			jsonResult.put("jary", jary);
+			jsonResult.put("data", jary);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -157,11 +160,12 @@ public class RestC_menu {
 				JSONObject tiers = new JSONObject();
 				tiers.put("id", rs.getString("id"));
 				tiers.put("name", rs.getString("combo_detail_name"));
-				tiers.put("quantity", rs.getString("combo_detail_quantity"));				
+				tiers.put("quantity", rs.getString("combo_detail_quantity"));	
+				tiers.put("sequence", rs.getString("combo_detail_sequence"));	
 				
 				jary.put(tiers);
 			}
-			jsonResult.put("jary", jary);
+			jsonResult.put("data", jary);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -214,16 +218,22 @@ public class RestC_menu {
 				rs2 = stmt.executeQuery();
 				
 				while (rs2.next()) {
-					JSONObject menuItems = new JSONObject();
+					JSONObject menuItems = new JSONObject();					
 					menuItems.put("id", rs2.getString("id"));
 					menuItems.put("backendId", rs2.getString("backend_id"));
 					menuItems.put("name", rs2.getString("menu_item_name"));
-//					menuItems.put("image_path", rs2.getString("menu_item_image_path"));
+					menuItems.put("description", rs2.getString("menu_item_description"));
+					menuItems.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
+					menuItems.put("taxable", rs2.getBoolean("is_taxable"));
+					menuItems.put("discountable", rs2.getBoolean("is_discountable"));
+//					menuItems.put("imagePath", rs2.getString("menu_item_image_path"));
 					menuItems.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+					
+					menuItems.put("sequence", rs.getString("combo_item_detail_sequence"));
 					
 					jary.put(menuItems);
 				}
-				jsonResult.put("jary", jary);
+				jsonResult.put("data", jary);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -280,18 +290,21 @@ public class RestC_menu {
 				
 				while (rs2.next()) {
 					JSONObject modifierDetails = new JSONObject();
-					modifierDetails.put("id", rs2.getString("id"));
-					modifierDetails.put("backendId", rs2.getString("backend_id"));
-					modifierDetails.put("name", rs2.getString("menu_item_name"));
-//					modifierDetails.put("image_path", rs2.getString("menu_item_image_path"));
+					modifierDetails.put("id", rs.getString("id"));
+					modifierDetails.put("backendId", rs.getString("backend_id"));
+					modifierDetails.put("name", rs.getString("menu_item_name"));
+					modifierDetails.put("description", rs.getString("menu_item_description"));
+					modifierDetails.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
+					modifierDetails.put("taxable", rs.getBoolean("is_taxable"));
+//					modifierDetails.put("imagePath", rs.getString("menu_item_image_path"));
 					modifierDetails.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
 					
 					jary2.put(modifierDetails);
 				}
-				modifiers.put("jary", jary2);
+				modifiers.put("data", jary2);
 				jary.put(modifiers);
 			}
-			jsonResult.put("jary", jary);
+			jsonResult.put("data", jary);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -330,7 +343,7 @@ public class RestC_menu {
 				menuItems.put("backendId", rs.getString("backend_id"));
 				menuItems.put("name", rs.getString("menu_item_name"));
 				menuItems.put("description", rs.getString("menu_item_description"));
-				menuItems.put("price", rs.getString("menu_item_base_price"));
+				menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 				menuItems.put("taxable", rs.getBoolean("is_taxable"));
 				menuItems.put("discountable", rs.getBoolean("is_discountable"));
 //				menuItems.put("imagePath", rs.getString("menu_item_image_path"));
@@ -355,7 +368,49 @@ public class RestC_menu {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/get_modifier_group" }, method = { RequestMethod.GET }, produces = "application/json")
+	@RequestMapping(value = { "/get_menu_items/{itemId}/{itemBackendId}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getMenuItem(@PathVariable("itemId") String itemId, @PathVariable("itemBackendId") String itemBackendId) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select * from menu_item where is_active = 1 and id = ? and backend_id = ? order by id asc;");
+			stmt.setString(1, itemId);
+			stmt.setString(2, itemBackendId);
+			rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				jsonResult.put("id", rs.getString("id"));
+				jsonResult.put("backendId", rs.getString("backend_id"));
+				jsonResult.put("name", rs.getString("menu_item_name"));
+				jsonResult.put("description", rs.getString("menu_item_description"));
+				jsonResult.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
+				jsonResult.put("taxable", rs.getBoolean("is_taxable"));
+				jsonResult.put("discountable", rs.getBoolean("is_discountable"));
+//				jsonResult.put("imagePath", rs.getString("menu_item_image_path"));
+				jsonResult.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_modifier_groups" }, method = { RequestMethod.GET }, produces = "application/json")
 	public String getModifierGroup() {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray jary = new JSONArray();
@@ -375,6 +430,99 @@ public class RestC_menu {
 				modifierGroup.put("name", rs.getString("modifier_group_name"));
 				
 				jary.put(modifierGroup);
+			}
+			jsonResult.put("data", jary);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_modifier_items_list/{modifierGroupId}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getModifierItemList(@PathVariable("modifierGroupId") String modifierGroupId) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select mi.*, mis.modifier_item_sequence from modifier_group mg " + 
+					"inner join modifier_item_sequence mis on mis.modifier_group_id = mg.id " + 
+					"inner join menu_item mi on mi.id = mis.menu_item_id " + 
+					"where mg.id = ? and mg.is_active = 1 order by mis.modifier_item_sequence asc;");
+			stmt.setString(1, modifierGroupId);
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				JSONObject modifierItem = new JSONObject();
+				modifierItem.put("id", rs.getString("id"));
+				modifierItem.put("backendId", rs.getString("backend_id"));
+				modifierItem.put("name", rs.getString("menu_item_name"));
+				modifierItem.put("description", rs.getString("menu_item_description"));
+//				modifierItem.put("imagePath", rs.getString("menu_item_image_path"));
+				modifierItem.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				modifierItem.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
+				modifierItem.put("taxable", rs.getBoolean("is_taxable"));
+				modifierItem.put("sequence", rs.getString("modifier_item_sequence"));
+				
+				jary.put(modifierItem);
+			}
+			jsonResult.put("data", jary);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_modifier_groups_by_menu_item/{menuItemId}/{menuItemCode}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getModifierGroupsByMenuItem(@PathVariable("menuItemId") long menuItemId, @PathVariable("menuItemCode") String menuItemCode) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+
+			stmt = connection.prepareStatement("select mg.*, mimg.menu_item_modifier_group_sequence from menu_item mi " + 
+					"inner join menu_item_modifier_group mimg on mimg.menu_item_id = mi.id " + 
+					"inner join modifier_group mg on mg.id = mimg.modifier_group_id " + 
+					"where mi.id = ? and mi.backend_id = ? and mg.is_active = 1 " + 
+					"order by mimg.menu_item_modifier_group_sequence asc;");
+			stmt.setLong(1, menuItemId);
+			stmt.setString(2, menuItemCode);
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				JSONObject modifiers = new JSONObject();
+				modifiers.put("id", rs.getString("id"));
+				modifiers.put("name", rs.getString("modifier_group_name"));
+				modifiers.put("sequence", rs.getString("menu_item_modifier_group_sequence"));
+				jary.put(modifiers);
 			}
 			jsonResult.put("data", jary);
 		} catch (Exception e) {

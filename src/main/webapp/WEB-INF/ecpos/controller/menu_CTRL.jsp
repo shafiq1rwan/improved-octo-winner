@@ -78,7 +78,7 @@
 				$('#itemName').html($scope.item.name);
 				$('#menuCarousel').carousel(2);
 				
-				$scope.tierQuantityLoop($scope.tiers.jary[0]);
+				$scope.tierQuantityLoop($scope.tiers.data[0]);
 			},
 			function(response) {
 				alert("Session TIME OUT");
@@ -154,7 +154,7 @@
 			.then(function(response) {
 				$scope.modifiers = response.data;
 
-				if (!($scope.modifiers.jary === undefined || $scope.modifiers.jary == 0)) {
+				if (!($scope.modifiers.data === undefined || $scope.modifiers.data == 0)) {
 					$('#tierItemDetailName').html($scope.temporaryTierItem.name);
 					$('#itemCarousel').carousel(1);
 				} else {
@@ -209,17 +209,17 @@
 		$scope.saveTemporaryArray = function() {
 			$scope.temporaryModifiers = [];
 			
-			for (var i = 0; i < $scope.modifiers.jary.length; i++){
+			for (var i = 0; i < $scope.modifiers.data.length; i++){
 				$scope.temporaryModifier = {};
-				$scope.temporaryModifier.groupId = $scope.modifiers.jary[i].id;
-				$scope.temporaryModifier.groupName = $scope.modifiers.jary[i].name;
+				$scope.temporaryModifier.groupId = $scope.modifiers.data[i].id;
+				$scope.temporaryModifier.groupName = $scope.modifiers.data[i].name;
 				
-				var modifierValue = $("input[name='"+$scope.modifiers.jary[i].name+"']:checked").val();
+				var modifierValue = $("input[name='"+$scope.modifiers.data[i].name+"']:checked").val();
 				if (modifierValue == null) {
-					return alert($scope.modifiers.jary[i].name + " cannot be blank.");
+					return alert($scope.modifiers.data[i].name + " cannot be blank.");
 				}
 				
-				var modifierValueSplit = $("input[name='"+$scope.modifiers.jary[i].name+"']:checked").val().split("!!");
+				var modifierValueSplit = $("input[name='"+$scope.modifiers.data[i].name+"']:checked").val().split("!!");
 				$scope.temporaryModifier.id = modifierValueSplit[0];
 				$scope.temporaryModifier.backendId = modifierValueSplit[1];
 				$scope.temporaryModifier.name = modifierValueSplit[2];

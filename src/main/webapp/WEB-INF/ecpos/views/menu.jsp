@@ -43,7 +43,7 @@
 								</div>
 								<br>
 								<div class="row">
-									<div ng-repeat="category in categories.jary">
+									<div ng-repeat="category in categories.data">
 										<div class="col-sm-4 form-group" style="margin-bottom: 0px; padding: 15px; padding-top: 0px;">
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
 												<div style="margin: auto; width: 150px; height: 150px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
@@ -74,7 +74,7 @@
 								</div>
 								<br>
 								<div class="row">
-									<div ng-repeat="item in menuItems.jary">
+									<div ng-repeat="item in menuItems.data">
 										<div class="col-sm-4 form-group" style="margin-bottom: 0px; padding: 15px; padding-top: 0px;">
 											<div style="text-align: center" ng-click="action(item)">
 												<div style="margin: auto; width: 150px; height: 150px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
@@ -134,10 +134,10 @@
 								</div>
 								<br>
 								<ul class="nav nav-pills nav-justified" role="tablist" style="border-radius: 5px;">
-									<li ng-repeat="tier in tiers.jary | limitTo : 1" class="active">
+									<li ng-repeat="tier in tiers.data | limitTo : 1" class="active">
 										<a data-toggle="pill" ng-click="tierQuantityLoop(tier)" id="pillTab{{tier.id}}">{{tier.name}}</a>
 									</li>
-									<li ng-repeat="tier in tiers.jary | limitTo : 10 : 1" style="border-left: 1px solid #ddd;">
+									<li ng-repeat="tier in tiers.data | limitTo : 10 : 1" style="border-left: 1px solid #ddd;">
 										<a data-toggle="pill" ng-click="tierQuantityLoop(tier)" id="pillTab{{tier.id}}">{{tier.name}}</a>
 									</li>
 								</ul>
@@ -263,7 +263,7 @@
 											</div>
 											<br>
 											<div class="row">
-												<div ng-repeat="tierItemDetail in tierItemDetails.jary">
+												<div ng-repeat="tierItemDetail in tierItemDetails.data">
 													<div class="col-sm-4 form-group">
 														<div style="text-align: center">
 															<label ng-click="getModifiers(tierItemDetail)">
@@ -294,13 +294,13 @@
 												</div>
 												<div class="col-sm-2"></div>
 											</div>
-											<div ng-repeat="modifier in modifiers.jary" style="padding-left: 15px; padding-right: 15px;">
+											<div ng-repeat="modifier in modifiers.data" style="padding-left: 15px; padding-right: 15px;">
 												<br>
 												<div>
 													<label>{{modifier.name}}</label>
 												</div>
 												<div class="row">
-													<div ng-repeat="modifierDetail in modifier.jary">
+													<div ng-repeat="modifierDetail in modifier.data">
 														<div class="col-sm-3">
 															<label>
 																<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.backendId}}!!{{modifierDetail.name}}" required /> <b>{{modifierDetail.name}}</b>
