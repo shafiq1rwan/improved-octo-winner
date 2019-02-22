@@ -167,10 +167,10 @@
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/trans",
 				controller : "show_trans_CTRL"
 			})
-		.when("/items",
+/* 		.when("/items",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items"
-			})
+			}) */
 		.when("/reports",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/reports"
@@ -214,10 +214,15 @@
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/take_away_order",
 				controller : "take_away_order_CTRL"
 			})
-		.when("/items",
+		.when("/items_listing",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items",
-				controller : "items_CTRL"
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items_listing",
+				controller : "items_listing_CTRL"
+			})
+		.when("/transactions_listing",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/transactions_listing",
+				controller : "transactions_listing_CTRL"
 			})
 		.when("/settings",
 			{
@@ -232,7 +237,7 @@
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_checks_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_take_away_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_payment_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/show_trans_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/c_bk/show_trans_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/show_items_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/printer_configuration.jsp" />
 <jsp:include page="/WEB-INF/ecpos/c_bk/ecpos_manager_setting_CTRL.jsp" />
@@ -245,7 +250,8 @@
 <jsp:include page="/WEB-INF/ecpos/controller/menu_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/take_away_order_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/controller/items_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/items_listing_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/transactions_listing_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/settings_CTRL.jsp" />
 
 </html>

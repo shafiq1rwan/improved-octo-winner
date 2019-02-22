@@ -214,6 +214,9 @@ public class RestC_transaction {
 			if (rs.next()) {
 				long checkId = rs.getLong("id");
 				String checkNo = rs.getString("check_number");
+				BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
+				BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
+				BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 				
 				stmt.close();
 				stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
@@ -247,7 +250,7 @@ public class RestC_transaction {
 							terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
 							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
 							
-							if (terminalWifiIPPort.length() > 0 && !uniqueTranNumber.equals(null)) {
+							if (!uniqueTranNumber.equals(null)) {
 								transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort);
 								
 								if (transactionResult.getString("responseCode").equals("00")) {
@@ -270,11 +273,11 @@ public class RestC_transaction {
 							boolean updateCheckResult = false;
 							
 							if (paymentType == 1) {
-								updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId);
+								updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
 							} else if (paymentType == 3) {
-								updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount);
+								updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount, grandTotalAmount, depositAmount, tenderAmount);
 							} else {
-								updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId);
+								updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
 							}
 							
 							if (updateCheckResult) {
@@ -530,11 +533,11 @@ public class RestC_transaction {
 		
 		try {
 			connection = dataSource.getConnection();
-			
+
 			stmt = connection.prepareStatement("select * from terminal where serial_number = ?;");
 			stmt.setString(1, terminalSerialNumber);
 			rs = stmt.executeQuery();
-			
+
 			if (rs.next()) {
 				terminalWifiIPPort.put("wifi_IP",rs.getString("wifi_IP"));
 				terminalWifiIPPort.put("wifi_Port",rs.getString("wifi_Port"));
@@ -599,7 +602,7 @@ public class RestC_transaction {
 		return null;
 	}
 	
-	public boolean updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId) {
+	public boolean updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		boolean response = false;
@@ -607,10 +610,13 @@ public class RestC_transaction {
 		try {
 			connection = dataSource.getConnection();
 			
-			stmt = connection.prepareStatement("update `check` set tender_amount = ?, check_status = 3, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
-			stmt.setBigDecimal(1, paymentAmount);
-			stmt.setString(2, checkNo);
-			stmt.setInt(3, tableNo);
+			tenderAmount = tenderAmount.add(paymentAmount);
+			
+			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
+			stmt.setBigDecimal(1, tenderAmount);
+			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
+			stmt.setString(3, checkNo);
+			stmt.setInt(4, tableNo);
 			int updateCheck = stmt.executeUpdate();
 			
 			if (updateCheck > 0) {
@@ -642,7 +648,7 @@ public class RestC_transaction {
 		return response;
 	}
 	
-	public boolean updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId) {
+	public boolean updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		boolean response = false;
@@ -650,15 +656,24 @@ public class RestC_transaction {
 		try {
 			connection = dataSource.getConnection();
 			
-			String amountType = "tender_amount";
-			if (paymentType == 4) {
+			String amountType = null;
+			BigDecimal paidAmount = new BigDecimal("0.00");
+			BigDecimal overdueAmount = new BigDecimal("0.00");
+			if (paymentType == 2) {
+				amountType = "tender_amount";
+				paidAmount = tenderAmount.add(paymentAmount);
+				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(depositAmount);
+			} else if (paymentType == 4) {
 				amountType = "deposit_amount";
+				paidAmount = depositAmount.add(paymentAmount);
+				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(tenderAmount);
 			}
 			
-			stmt = connection.prepareStatement("update `check` set " + amountType + " = ?, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
-			stmt.setBigDecimal(1, paymentAmount);
-			stmt.setString(2, checkNo);
-			stmt.setInt(3, tableNo);
+			stmt = connection.prepareStatement("update `check` set " + amountType + " = ?, overdue_amount = ?, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
+			stmt.setBigDecimal(1, paidAmount);
+			stmt.setBigDecimal(2, overdueAmount);
+			stmt.setString(3, checkNo);
+			stmt.setInt(4, tableNo);
 			int updateCheck = stmt.executeUpdate();
 			
 			if (updateCheck > 0) {
@@ -679,7 +694,7 @@ public class RestC_transaction {
 		return response;
 	}
 	
-	public boolean updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount) {
+	public boolean updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -726,10 +741,13 @@ public class RestC_transaction {
 						checkStatusCondition = "check_status = 3, ";
 					}
 					
-					stmt = connection.prepareStatement("update `check` set tender_amount = ?, " + checkStatusCondition + "updated_date = now() where id = ? and check_number = ? and check_status in (1, 2);");
-					stmt.setBigDecimal(1, paymentAmount);
-					stmt.setLong(2, rs.getLong("check_id"));
-					stmt.setString(3, checkNo);
+					tenderAmount = tenderAmount.add(paymentAmount);
+					
+					stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, " + checkStatusCondition + "updated_date = now() where id = ? and check_number = ? and check_status in (1, 2);");
+					stmt.setBigDecimal(1, tenderAmount);
+					stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
+					stmt.setLong(3, rs.getLong("check_id"));
+					stmt.setString(4, checkNo);
 					int updateCheck = stmt.executeUpdate();
 					
 					if (updateCheck> 0) {

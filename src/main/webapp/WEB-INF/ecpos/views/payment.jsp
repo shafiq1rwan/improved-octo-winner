@@ -70,7 +70,7 @@
 							<div id="paymentMethod">
 								<div class="row" style="font-size: large">
 									<div class="col-sm-2">
-										<a href="#paymentCarousel" data-slide="prev">
+										<a id="paymentMethodBack" href="#paymentCarousel" data-slide="prev">
 											<i class="fa fa-arrow-left" style="color: black;"></i>
 										</a>
 									</div>
@@ -116,7 +116,7 @@
 										<label>Terminal</label>
 										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
 											<select class="select2" id="terminal" style="width: 100%;">
-											<option selected>----- Select -----</option>
+												<option value="" selected>----- Select -----</option>
 												<option ng-repeat="terminal in terminalList.terminals" value="{{terminal.serialNo}}">{{terminal.name}} ({{terminal.serialNo}})</option>
 											</select>
 										</div>
@@ -138,24 +138,24 @@
 											<table class="table table-borderless">
 												<tbody>
 													<tr style="border-top: 2px solid #eee;">
-														<td><input type="button" value="7" class="form-control btn" ng-click="enterCalculator('amount',7)" /></td>
-														<td><input type="button" value="8" class="form-control btn" ng-click="enterCalculator('amount',8)" /></td>
-														<td><input type="button" value="9" class="form-control btn" ng-click="enterCalculator('amount',9)" /></td>
+														<td><input id="seven" type="button" value="7" class="form-control btn" ng-click="enterCalculator('amount',7)" /></td>
+														<td><input id="eight" type="button" value="8" class="form-control btn" ng-click="enterCalculator('amount',8)" /></td>
+														<td><input id="nine" type="button" value="9" class="form-control btn" ng-click="enterCalculator('amount',9)" /></td>
 														<td rowspan=2 style="vertical-align: middle;">
-															<button value="removeButton" class="form-control btn" ng-click="enterCalculator('amount',-10)" style="height: 200%;">
+															<button id="remove"  value="removeButton" class="form-control btn" ng-click="enterCalculator('amount',-10)" style="height: 200%;">
 																<i class="fa fa-arrow-left" aria-hidden="true"></i>
 															</button>
 														</td>
 													</tr>
 													<tr>
-														<td><input type="button" value="4" class="form-control btn" ng-click="enterCalculator('amount',4)" /></td>
-														<td><input type="button" value="5" class="form-control btn" ng-click="enterCalculator('amount',5)" /></td>
-														<td><input type="button" value="6" class="form-control btn" ng-click="enterCalculator('amount',6)" /></td>
+														<td><input id="four" type="button" value="4" class="form-control btn" ng-click="enterCalculator('amount',4)" /></td>
+														<td><input id="five" type="button" value="5" class="form-control btn" ng-click="enterCalculator('amount',5)" /></td>
+														<td><input id="six" type="button" value="6" class="form-control btn" ng-click="enterCalculator('amount',6)" /></td>
 													</tr>
 													<tr>
-														<td><input type="button" value="1" class="form-control btn" ng-click="enterCalculator('amount',1)" /></td>
-														<td><input type="button" value="2" class="form-control btn" ng-click="enterCalculator('amount',2)" /></td>
-														<td><input type="button" value="3" class="form-control btn" ng-click="enterCalculator('amount',3)" /></td>
+														<td><input id="one" type="button" value="1" class="form-control btn" ng-click="enterCalculator('amount',1)" /></td>
+														<td><input id="two" type="button" value="2" class="form-control btn" ng-click="enterCalculator('amount',2)" /></td>
+														<td><input id="three" type="button" value="3" class="form-control btn" ng-click="enterCalculator('amount',3)" /></td>
 														<td rowspan="2" style="vertical-align: middle; border-bottom: 1px solid #f4f4f4;">
 															<button value="confirmButton" class="form-control btn" ng-click="submitPayment()" style="height: 200%;">
 																<i class="fa fa-check-square" aria-hidden="true"></i>
@@ -163,8 +163,8 @@
 														</td>
 													</tr>
 													<tr>
-														<td style="border-bottom: 1px solid #f4f4f4;"><input type="button" value="0" class="form-control btn" ng-click="enterCalculator('amount',0)" /></td>
-														<td colspan="2" style="border-bottom: 1px solid #f4f4f4;"><input value="00" type="button" class="form-control btn" ng-click="enterCalculator('amount',100)" /></td>
+														<td style="border-bottom: 1px solid #f4f4f4;"><input id="zero" type="button" value="0" class="form-control btn" ng-click="enterCalculator('amount',0)" /></td>
+														<td colspan="2" style="border-bottom: 1px solid #f4f4f4;"><input id="zerozero" value="00" type="button" class="form-control btn" ng-click="enterCalculator('amount',100)" /></td>
 													</tr>
 												</tbody>
 											</table>

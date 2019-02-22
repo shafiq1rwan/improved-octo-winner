@@ -13,7 +13,6 @@ CREATE TABLE group_category (
 CREATE TABLE category (
 	id bigInt PRIMARY KEY NOT NULL,
 	group_category_id bigInt NOT NULL,
-	backend_id nvarchar(50) NOT NULL UNIQUE,
 	category_name nvarchar(150) NOT NULL UNIQUE,
 	category_description nvarchar(255),
 	category_image_path text,
@@ -27,6 +26,7 @@ CREATE TABLE menu_item (
 	backend_id NVARCHAR(50) NOT NULL UNIQUE,
 	modifier_group_id BIGINT,
 	menu_item_name NVARCHAR(150) NOT NULL UNIQUE,
+	menu_item_alt_name NVARCHAR(50),
 	menu_item_description NVARCHAR(255),
 	menu_item_image_path text,
 	menu_item_base_price DECIMAL(10,2) DEFAULT 0.00,
@@ -45,7 +45,6 @@ CREATE TABLE category_menu_item (
 
 CREATE TABLE menu_item_group (
 	id BIGINT PRIMARY KEY NOT NULL,
-	backend_id NVARCHAR(50) NOT NULL UNIQUE,
 	menu_item_group_name NVARCHAR(150) NOT NULL UNIQUE,
 	is_active BIT DEFAULT 1,
 	created_date DATETIME NOT NULL
@@ -59,7 +58,6 @@ CREATE TABLE menu_item_group_sequence (
 
 CREATE TABLE modifier_group (
 	id BIGINT PRIMARY KEY NOT NULL,
-	backend_id NVARCHAR(50) NOT NULL UNIQUE,
 	modifier_group_name NVARCHAR(100) NOT NULL UNIQUE,
 	is_active BIT DEFAULT 1,
 	created_date DATETIME NOT NULL
@@ -97,7 +95,6 @@ CREATE TABLE combo_item_detail (
 
 CREATE TABLE store (
 		id BIGINT PRIMARY KEY NOT NULL,
-		group_category_id BIGINT DEFAULT 0,
 		tax_charge_id BIGINT DEFAULT 0,
 		backend_id NVARCHAR(50) NOT NULL UNIQUE,
 		store_name NVARCHAR(150) NOT NULL UNIQUE,
@@ -112,7 +109,6 @@ CREATE TABLE store (
 		store_end_operating_time time NOT NULL,
 		last_update_date datetime,
 		is_publish BIT DEFAULT 0,
-		ecpos BIT DEFAULT 0,
 		created_date DATETIME NOT NULL
 );
 
@@ -122,7 +118,6 @@ CREATE TABLE store_db_sync (
 
 CREATE TABLE staff  (
 		id BIGINT PRIMARY KEY NOT NULL,
-		store_id BIGINT DEFAULT 0,
 		staff_name NVARCHAR(150) NOT NULL,
 		staff_username NVARCHAR(100) NOT NULL UNIQUE,
 		staff_password NVARCHAR(200) NOT NULL,
@@ -213,8 +208,8 @@ create table `check` (
 	`total_amount` decimal(25, 4) NOT NULL,
 	`total_amount_rounding_adjustment` decimal(25, 4) NOT NULL,
 	`grand_total_amount` decimal(25, 4) NOT NULL,
-	`deposit_amount` decimal(25, 4) NULL,
-	`tender_amount` decimal(25, 4) NULL,
+	`deposit_amount` decimal(25, 4) NOT NULL,
+	`tender_amount` decimal(25, 4) NOT NULL,
 	`overdue_amount` decimal(25, 4) NOT NULL,
     `check_status` bigint(20) NOT NULL,
 	`created_date` datetime NOT NULL,
@@ -255,7 +250,7 @@ create table `nii_type` (
 create table `settlement` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
     `staff_id` bigint (20) NOT NULL,
-	`nii_type` bigint (20) NOT NULL,
+	`nii_type` varchar(255) NOT NULL,
 	`settlement_status` bigint(20) NOT NULL,
 	`created_date` datetime NOT NULL,
 	`response_code` varchar(255) NULL,
@@ -264,9 +259,9 @@ create table `settlement` (
 	`wifi_ip` varchar(255) NULL,
     `wifi_port` varchar(255) NULL,
 	`merchant_info` varchar(255) NULL,
-	`bank_mid` varchar(255) NOT NULL,
-    `bank_tid` varchar(255) NOT NULL,
-    `batch_number` varchar(255) NOT NULL,
+	`bank_mid` varchar(255) NULL,
+    `bank_tid` varchar(255) NULL,
+    `batch_number` varchar(255) NULL,
     `transaction_date` varchar(255) NULL,
 	`transaction_time` varchar(255) NULL,
 	`batch_total` varchar(255) NULL,
@@ -353,8 +348,8 @@ create table `terminal` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 	`name` varchar(255) NOT NULL,
 	`serial_number` varchar(255) NOT NULL,
-	`wifi_IP` varchar(45) NOT NULL,
-	`wifi_Port` varchar(45) NOT NULL,
+	`wifi_IP` varchar(45) NULL,
+	`wifi_Port` varchar(45) NULL,
 	PRIMARY KEY (`id`)
 );
 
@@ -363,6 +358,19 @@ create table `printer` (
 	`port_name` varchar(255) NOT NULL,
 	`paper_size` INT default 1
 );
+
+create table `general_configuration` (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`description` varchar(255) NOT NULL,
+	`parameter` varchar(255) NOT NULL,
+	`value` varchar(255) NOT NULL, 
+	PRIMARY KEY (`id`)
+);
+
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Brand ID', 'BRAND_ID', '');
 
 insert into `master` values
 ('check', 0, now());
@@ -392,16 +400,16 @@ insert into `nii_type` values
 (1, 'VISA/MASTER/JCB'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');
 
 insert into `staff` values
-(1, 1, 'admin', 'admin', 'admin', 1, '-', '-', 1, now(), now());
+(1, 'admin', 'admin', 'admin', 1, '-', '-', 1, now(), now());
 
 insert into `store` values
-(1, 0, 0, '-', 'test', '-', '-', 0.00, 0.00, 'Malaysia', 'RM', 24, '07:00:00.000', '06:59:59.999', now(), 1, 1, now());
+(1, 0, '-', 'test', '-', '-', 0.00, 0.00, 'Malaysia', 'RM', 24, '07:00:00.000', '06:59:59.999', now(), 1, now());
 
 
 
 insert into category 
-(`id`,`group_category_id`,`backend_id`,`category_name`,`category_description`,`category_image_path`,`category_sequence`,`is_active`,`created_date`)
-values (1,1,'C0001','Lunch Set','-','-',1,1,now());
+(`id`,`group_category_id`,`category_name`,`category_description`,`category_image_path`,`category_sequence`,`is_active`,`created_date`)
+values (1,1,'Lunch Set','-','-',1,1,now());
 
 insert into menu_item
 (`id`,`backend_id`,`modifier_group_id`,`menu_item_name`,`menu_item_description`,`menu_item_image_path`,`menu_item_base_price`,`menu_item_type`,`is_taxable`,`is_discountable`,`is_active`,`created_date`)
@@ -428,8 +436,8 @@ insert into combo_item_detail
 values (1,3,null,2,2,now()),(2,3,8,null,1,now()),(3,1,1,null,1,now()),(4,2,null,1,1,now());
 
 insert into menu_item_group
-(`id`,`backend_id`,`menu_item_group_name`,`is_active`,`created_date`)
-values (1,'MIG0001','Beverage',1,now()),(2,'MIG0002','Burger',1,now());
+(`id`,`menu_item_group_name`,`is_active`,`created_date`)
+values (1,'Beverage',1,now()),(2,'Burger',1,now());
 
 insert into menu_item_group_sequence
 (`menu_item_group_id`,`menu_item_id`,`menu_item_group_sequence`)
@@ -440,8 +448,8 @@ insert into menu_item_modifier_group
 values (3,1,1),(3,2,2);
 
 insert into modifier_group
-(id,backend_id,modifier_group_name,is_active,created_date)
-values (1,'MOD0001','Ice Level',1,now()),(2,'MOD0002','Sugar Level',1,now());
+(id,modifier_group_name,is_active,created_date)
+values (1,'Ice Level',1,now()),(2,'Sugar Level',1,now());
 
 insert into menu_item
 (`id`,`backend_id`,`modifier_group_id`,`menu_item_name`,`menu_item_description`,`menu_item_image_path`,`menu_item_base_price`,`menu_item_type`,`is_taxable`,`is_discountable`,`is_active`,`created_date`)

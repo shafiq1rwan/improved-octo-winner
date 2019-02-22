@@ -18,19 +18,49 @@
 			}
 			
 			if ($scope.paymentType == "full") {
-				$("#allGrandParentItemCheckbox").show();
-				$("input[name=grandParentItemCheckbox]").show();
-				
 				$('#amount').html(parseFloat($scope.fullPaymentAmount).toFixed(2));
-			} else if ($scope.paymentType == "split") {
-				$("#allGrandParentItemCheckbox").show();
-				$("input[name=grandParentItemCheckbox]").show();
 				
-				$('#amount').html(parseFloat(0).toFixed(2));
+				$("#one").prop('disabled', true);
+				$("#two").prop('disabled', true);
+				$("#three").prop('disabled', true);
+				$("#four").prop('disabled', true);
+				$("#five").prop('disabled', true);
+				$("#six").prop('disabled', true);
+				$("#seven").prop('disabled', true);
+				$("#eight").prop('disabled', true);
+				$("#nine").prop('disabled', true);
+				$("#zero").prop('disabled', true);
+				$("#zerozero").prop('disabled', true);
+				$("#remove").prop('disabled', true);
 			} else {
-				$('#amount').html(parseFloat(0).toFixed(2));
+				if ($scope.paymentType == "split") {
+					$("#allGrandParentItemCheckbox").show();
+					$("input[name=grandParentItemCheckbox]").show();
+					
+					$('#amount').html(parseFloat(0).toFixed(2));
+				} else {
+					$('#amount').html(parseFloat(0).toFixed(2));
+				}
+				
+				$("#one").prop('disabled', false);
+				$("#two").prop('disabled', false);
+				$("#three").prop('disabled', false);
+				$("#four").prop('disabled', false);
+				$("#five").prop('disabled', false);
+				$("#six").prop('disabled', false);
+				$("#seven").prop('disabled', false);
+				$("#eight").prop('disabled', false);
+				$("#nine").prop('disabled', false);
+				$("#zero").prop('disabled', false);
+				$("#zerozero").prop('disabled', false);
+				$("#remove").prop('disabled', false);
 			}
 		}
+		
+		$('#paymentMethodBack').click(function() {
+			$("#allGrandParentItemCheckbox").hide();
+			$("input[name=grandParentItemCheckbox]").hide();
+		})
 		
 		$scope.proceedPayment = function(method) {
 			$scope.paymentMethod = method;
@@ -97,6 +127,10 @@
 				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
 					return alert("Kindly tick at least an item to proceed");
 				}
+			} else if ($scope.paymentMethod == "Card" && $('#terminal').val() == "") {
+				return alert("Kindly select terminal");
+			} else if ($('#amount').text() == "0.00") {
+				return alert("Kindly enter payment amount");
 			}
 			
 			var jsonData = JSON.stringify({

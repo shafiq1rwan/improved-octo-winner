@@ -42,7 +42,6 @@ public class UtilWebComponents {
 					domainContainer.setName(rs.getString("staff_name"));
 					domainContainer.setUsername(rs.getString("staff_username"));
 					domainContainer.setRoleType(Integer.parseInt(rs.getString("staff_role")));
-					domainContainer.setStoreId(Integer.parseInt(rs.getString("store_id")));
 				}
 			}
 		} catch (Exception e) {

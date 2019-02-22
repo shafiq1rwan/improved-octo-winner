@@ -30,7 +30,7 @@
 				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-md-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="background-color: white; margin-bottom: 0px; height: 87vh; padding-top: 0px;">
+							<div class="well" style="background-color: white; margin-bottom: 0px; min-height: 87vh; padding-top: 0px;">
 								<div class="row">
 									<div class="col-sm-12" style="text-align: center">
 										<h3>Settings</h3>
@@ -88,9 +88,9 @@
 											<div class='col-sm-2 text-center' style="margin-top: 7px;">{{terminal.wifiIP}}</div>
 											<div class='col-sm-2 text-center' style="margin-top: 7px;">{{terminal.wifiPort}}</div>
 											<div class='col-sm-3 text-left'>
-												<button class="btn btn-info" ng-click="showSettlementModal(terminal.id)">Settlement</button>
+												<button class="btn btn-info" ng-click="showSettlementModal(terminal.serialNo)">Settlement</button>
 												<button class="btn btn-primary" style="margin-left: 12%; margin-right: 12%;" ng-click="showTerminalModal('update', terminal.id)"><i class="fa fa-edit"></i></button>
-												<button class="btn btn-danger" ng-click="removeTerminal(terminal.serialNo)"><i class="fa fa-trash-o"></i></button>
+												<button class="btn btn-danger" ng-click="removeTerminal(terminal.id)"><i class="fa fa-trash-o"></i></button>
 											</div>
 										</div>
 										<hr style="margin-top: 5px; margin-bottom: 5px;">
@@ -136,13 +136,13 @@
 								<div class="row">
 									<div class="col-sm-4 form-group">
 										<label>WiFi IP</label> 
-										<input type="text" class="form-control" ng-model="terminal.wifiIP" required />
+										<input type="text" class="form-control" ng-model="terminal.wifiIP" />
 									</div>
 								</div>
 								<div class="row">
 									<div class="col-sm-4 form-group">
 										<label>WiFi Port</label> 
-										<input type="text" class="form-control" ng-model="terminal.wifiPort" required />
+										<input type="text" class="form-control" ng-model="terminal.wifiPort" />
 									</div>
 								</div>
 								<div class="row">

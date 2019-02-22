@@ -44,7 +44,7 @@
 </head>
 
 <body>
-	<div ng-controller="items_CTRL">
+	<div ng-controller="items_listing_CTRL">
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
 				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">

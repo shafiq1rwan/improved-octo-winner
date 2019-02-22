@@ -1,5 +1,5 @@
 <script>
-	app.controller('items_CTRL', function($scope, $http, $window, $routeParams, $location, $compile) {
+	app.controller('items_listing_CTRL', function($scope, $http, $window, $routeParams, $location, $compile) {
 		$scope.itemType = "";
 		$scope.previousPage;
 		
@@ -26,6 +26,7 @@
 						window.location.href = "${pageContext.request.contextPath}/ecpos";
 					}
 				},
+				"pageLength": 7,
 				"order" : [ [ 0, "asc" ] ],
 				destroy : true,
 				"columns" : [{"data" : "id", "width": "5%"}, 
@@ -58,6 +59,7 @@
 						window.location.href = "${pageContext.request.contextPath}/ecpos";
 					}
 				},
+				"pageLength": 7,
 				"order" : [ [ 0, "asc" ] ],
 				destroy : true,
 				"columns" : [{"data" : "id", "width": "5%"},

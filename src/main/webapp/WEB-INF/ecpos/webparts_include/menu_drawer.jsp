@@ -20,17 +20,19 @@
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
+				
+				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Record Management</li>
 				<li>
-					<a href="${pageContext.request.contextPath}/ecpos/#!trans">
-						<i class="fa fa-exchange"></i> 
-						<span>Transactions</span> 
+					<a href="${pageContext.request.contextPath}/ecpos/#!items_listing">
+						<i class="fa fa-object-group"></i> 
+						<span>Items Listing</span> 
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>
 				<li>
-					<a href="${pageContext.request.contextPath}/ecpos/#!items">
-						<i class="fa fa-object-group"></i> 
-						<span>Items</span> 
+					<a href="${pageContext.request.contextPath}/ecpos/#!transactions_listing">
+						<i class="fa fa-exchange"></i> 
+						<span>Transactions Listing</span> 
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>

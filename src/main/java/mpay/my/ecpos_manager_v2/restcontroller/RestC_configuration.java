@@ -282,8 +282,16 @@ public class RestC_configuration {
 			String action = terminal.getString("action");
 			String terminalName = terminal.getString("name");
 			String terminalSerialNo = terminal.getString("serialNo");
-			String terminalWifiIP = terminal.getString("wifiIP");
-			String terminalWifiPort = terminal.getString("wifiPort");
+			
+			String terminalWifiIP = null;
+			if (terminal.has("wifiIP")) {
+				terminalWifiIP = terminal.getString("wifiIP");
+			}
+			
+			String terminalWifiPort = null;
+			if (terminal.has("wifiPort")) {
+				terminalWifiPort = terminal.getString("wifiPort");
+			}
 			
 			String terminalId = null;
 			if (action.equals("create")) {
