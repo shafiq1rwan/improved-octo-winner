@@ -72,7 +72,7 @@ public class RestC_transaction {
 				transaction.put("transactionType", rs.getString("transaction_type"));
 				transaction.put("paymentMethod", rs.getString("payment_method"));
 				transaction.put("paymentType", rs.getString("payment_type"));
-				transaction.put("terminalName", rs.getString("terminal_name"));
+				transaction.put("terminal", rs.getString("terminal"));
 				transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
 				transaction.put("transactionStatus", rs.getString("transaction_status"));
 				transaction.put("transactionDate", rs.getString("transaction_date"));

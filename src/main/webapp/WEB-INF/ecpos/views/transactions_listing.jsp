@@ -40,7 +40,7 @@
 											<th>Transaction Type</th>
 											<th>Payment Method</th>
 											<th>Payment Type</th>
-											<th>Terminal Name</th>
+											<th>Terminal</th>
 											<th>Transaction Amount</th>
 											<th>Transaction Status</th>
 											<th></th>

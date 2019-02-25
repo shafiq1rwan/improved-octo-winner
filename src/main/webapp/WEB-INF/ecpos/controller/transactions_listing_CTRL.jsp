@@ -24,7 +24,7 @@
 					{"data" : "transactionType"},
 					{"data" : "paymentMethod"},
 					{"data" : "paymentType"},
-					{"data" : "terminalName"},
+					{"data" : "terminal"},
 					{"data" : "transactionAmount"},
 					{"data" : "transactionStatus"},
 					{"render" : function(data, type, full, meta) {
