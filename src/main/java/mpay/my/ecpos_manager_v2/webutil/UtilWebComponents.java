@@ -24,7 +24,7 @@ public class UtilWebComponents {
 	DataSource dataSource;
 	
 	public UserAuthenticationModel performEcposAuthentication(String username, String password, DataSource dataSource) {
-		UserAuthenticationModel domainContainer = new UserAuthenticationModel();
+		UserAuthenticationModel domainContainer = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -43,6 +43,7 @@ public class UtilWebComponents {
 				String private_password = pass_encode.encode(rs.getString("staff_password"));
 
 				if (pass_encode.matches(public_password, private_password)) {
+					domainContainer = new UserAuthenticationModel();
 					domainContainer.setUserLoginId(Integer.parseInt(rs.getString("id")));
 					domainContainer.setName(rs.getString("staff_name"));
 					domainContainer.setUsername(rs.getString("staff_username"));
