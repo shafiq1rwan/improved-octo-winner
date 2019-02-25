@@ -119,8 +119,6 @@
 		$scope.submitPayment = function() {
 			$scope.checkedValue = [];
 			
-			$('#loading_modal').modal('show');
-			
 			if ($scope.paymentType == "split") {				
 				$("input[name=grandParentItemCheckbox]:checked").each(function(){
 					$scope.checkedValue.push($(this).val());
@@ -144,7 +142,9 @@
 				"tableNo" : $scope.tableNo,
 				"checkNo" : $scope.checkNo
 			});
-
+			
+			$('#loading_modal').modal('show');
+			
 			$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
@@ -152,10 +152,12 @@
 					alert(response.data.response_message);
 					window.location.href = "${pageContext.request.contextPath}/ecpos";
 				} else {
+					$('#loading_modal').modal('hide');
 					alert(response.data.response_message);
 				}
 			},
 			function(response) {
+				$('#loading_modal').modal('hide');
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
