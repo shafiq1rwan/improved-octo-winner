@@ -26,7 +26,8 @@
 						window.location.href = "${pageContext.request.contextPath}/ecpos";
 					}
 				},
-				"pageLength": 7,
+				"pageLength": 8,
+				"bLengthChange": false,
 				"order" : [ [ 0, "asc" ] ],
 				destroy : true,
 				"columns" : [{"data" : "id", "width": "5%"}, 
@@ -41,8 +42,8 @@
 							buttonValue = "Combo Details";
 						}
 						
-						return '<div class="col-xs-3"><button class="btn btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button></div>' +
-						'<div class="col-xs-9"><button class="btn btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button></div>';
+						return '<div class="col-xs-3"><button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button></div>' +
+						'<div class="col-xs-9"><button class="btn btn-sm btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button></div>';
 					}, "width": "30%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -59,13 +60,14 @@
 						window.location.href = "${pageContext.request.contextPath}/ecpos";
 					}
 				},
-				"pageLength": 7,
+				"pageLength": 8,
+				"bLengthChange": false,
 				"order" : [ [ 0, "asc" ] ],
 				destroy : true,
 				"columns" : [{"data" : "id", "width": "5%"},
 					{"data" : "name", "width": "67%"},
 					{"render" : function(data, type, full, meta) {
-						return '<div><button class="btn btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\', -1)">Details</button></div>';
+						return '<div><button class="btn btn-sm btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\', -1)">Details</button></div>';
 					}, "width": "28%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -103,13 +105,14 @@
 						window.location.href = "${pageContext.request.contextPath}/ecpos";
 					}
 				},
+				"bLengthChange": false,
 				"order" : [ [ 0, "asc" ] ],
 				destroy : true,
 				"columns" : [{"data" : "sequence", "width": "5%"}, 
 					{"data" : "backendId", "width": "10%"}, 
 					{"data" : "name", "width": "55%"},
 					{"render" : function(data, type, full, meta) {
-						return '<div><button class="btn btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 1)">Details</button></div>';
+						return '<div><button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 1)">Details</button></div>';
 					}, "width": "30%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -138,12 +141,13 @@
 							window.location.href = "${pageContext.request.contextPath}/ecpos";
 						}
 					},
+					"bLengthChange": false,
 					"order" : [ [ 0, "asc" ] ],
 					destroy : true,
 					"columns" : [{"data" : "sequence", "width": "5%"},
 						{"data" : "name", "width": "67%"},
 						{"render" : function(data, type, full, meta) {
-							return '<div><button class="btn btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button></div>';
+							return '<div><button class="btn btn-sm btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button></div>';
 						}, "width": "28%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
@@ -169,13 +173,14 @@
 							window.location.href = "${pageContext.request.contextPath}/ecpos";
 						}
 					},
+					"bLengthChange": false,
 					"order" : [ [ 0, "asc" ] ],
 					destroy : true,
 					"columns" : [{"data" : "sequence", "width": "5%"}, 
 						{"data" : "name", "width": "60%"}, 
 						{"data" : "quantity", "width": "5%"},
 						{"render" : function(data, type, full, meta) {
-							return '<div><button class="btn btn-info" ng-click="getComboItemTierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button></div>';
+							return '<div><button class="btn btn-sm btn-info" ng-click="getComboItemTierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button></div>';
 						}, "width": "30%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
@@ -203,8 +208,8 @@
 				"columns" : [{"data" : "backendId", "width": "10%"}, 
 					{"data" : "name", "width": "49%"},
 					{"render" : function(data, type, full, meta) {
-						return '<button class="btn btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 4)">Details</button>' +
-						'<button class="btn btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A; margin-left: 7px;" ng-click="redirectItemCarousel(0, \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\')">Modifier Groups</button>';
+						return '<button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 4)">Details</button>' +
+						'<button class="btn btn-sm btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A; margin-left: 7px;" ng-click="redirectItemCarousel(0, \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\')">Modifier Groups</button>';
 					}, "width": "41%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);

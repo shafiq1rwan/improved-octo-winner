@@ -53,7 +53,7 @@
 							<div class="well" style="background-color: white; min-height: 87vh; margin-bottom: 0px; padding-top: 0px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<h3>Items</h3>
+										<h3>Items Listing</h3>
 									</div>
 								</div>
 								<ul class="nav nav-pills nav-justified" role="tablist" style="border-radius: 5px;">

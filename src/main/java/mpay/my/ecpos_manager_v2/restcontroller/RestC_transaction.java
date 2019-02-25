@@ -38,6 +38,64 @@ public class RestC_transaction {
 	@Autowired
 	Card iposCard;
 	
+	@RequestMapping(value = { "/get_transaction_list" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getTransactionList() {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, " + 
+					"pt.name as payment_type,case when terminal.name is null then '-' else terminal.name end as terminal, " + 
+					"t.transaction_amount,ts.name as transaction_status, " + 
+					"case when t.transaction_date is null then t.created_date else t.transaction_date end as transaction_date  " + 
+					"from transaction t " + 
+					"inner join staff s on s.id = t.staff_id " + 
+					"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
+					"inner join transaction_type tt on tt.id = t.transaction_type " + 
+					"inner join payment_method pm on pm.id = t.payment_method " + 
+					"inner join payment_type pt on pt.id = t.payment_type " + 
+					"left join terminal on terminal.serial_number = t.terminal_serial_number " + 
+					"inner join transaction_status ts on ts.id = t.transaction_status " + 
+					"order by t.transaction_date desc;");
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				JSONObject transaction = new JSONObject();
+				transaction.put("id", rs.getString("id"));
+				transaction.put("staffName", rs.getString("staff_name"));
+				transaction.put("checkNumber", rs.getString("check_number"));
+				transaction.put("transactionType", rs.getString("transaction_type"));
+				transaction.put("paymentMethod", rs.getString("payment_method"));
+				transaction.put("paymentType", rs.getString("payment_type"));
+				transaction.put("terminalName", rs.getString("terminal_name"));
+				transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
+				transaction.put("transactionStatus", rs.getString("transaction_status"));
+				transaction.put("transactionDate", rs.getString("transaction_date"));
+				
+				jary.put(transaction);
+			}
+			jsonResult.put("data", jary);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/get_accumulated_amount" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String getAccumulatedAmount(@RequestBody String data) {
 		JSONObject jsonResult = new JSONObject();

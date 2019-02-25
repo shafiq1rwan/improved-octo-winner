@@ -119,6 +119,8 @@
 		$scope.submitPayment = function() {
 			$scope.checkedValue = [];
 			
+			$('#loading_modal').modal('show');
+			
 			if ($scope.paymentType == "split") {				
 				$("input[name=grandParentItemCheckbox]:checked").each(function(){
 					$scope.checkedValue.push($(this).val());
@@ -146,6 +148,7 @@
 			$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
+					$('#loading_modal').modal('hide');
 					alert(response.data.response_message);
 					window.location.href = "${pageContext.request.contextPath}/ecpos";
 				} else {

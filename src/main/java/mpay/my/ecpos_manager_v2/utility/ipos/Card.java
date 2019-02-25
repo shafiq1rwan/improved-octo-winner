@@ -29,19 +29,19 @@ public class Card {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
+			String pingRequest = "\\\"tranType\\\":" + "\\\"" + tranType + "\\\"";
+			
 			String terminalWifiIP = "";
 			String terminalWifiPort = "";
 			
 			if (terminalWifiIPPort.length() != 0) {
 				terminalWifiIP = terminalWifiIPPort.getString("wifi_IP");
 				terminalWifiPort = terminalWifiIPPort.getString("wifi_Port");
+				
+				pingRequest = pingRequest + "," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"";
 			}
 			
-			String pingRequest = "{\\\"tranType\\\":" + "\\\"" + tranType + "\\\"," 
-					+ "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," 
-					+ "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"}";
-
-			JSONObject response = submitIPOS(pingRequest);
+			JSONObject response = submitIPOS("{"+pingRequest+"}");
 
 			if (response.getString("responseCode").equals("00")) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -63,20 +63,21 @@ public class Card {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
+			String saleRequest = "\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType
+					+ "\\\"," + "\\\"amount\\\":" + "\\\"" + amount + "\\\"," + "\\\"tips\\\":" + "\\\"" + tips
+					+ "\\\"," + "\\\"uniqueTranNumber\\\":" + "\\\"" + uniqueTranNumber + "\\\"";
+			
 			String terminalWifiIP = "";
 			String terminalWifiPort = "";
 			
 			if (terminalWifiIPPort.length() != 0) {
 				terminalWifiIP = terminalWifiIPPort.getString("wifi_IP");
 				terminalWifiPort = terminalWifiIPPort.getString("wifi_Port");
+				
+				saleRequest = saleRequest + "," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"";
 			}
-			
-			String saleRequest = "{\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType
-					+ "\\\"," + "\\\"amount\\\":" + "\\\"" + amount + "\\\"," + "\\\"tips\\\":" + "\\\"" + tips
-					+ "\\\"," + "\\\"uniqueTranNumber\\\":" + "\\\"" + uniqueTranNumber + "\\\"," + "\\\"wifiIP\\\":" + "\\\"" 
-					+ terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"}";
 
-			jsonResult = submitIPOS(saleRequest);
+			jsonResult = submitIPOS("{"+saleRequest+"}");
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
@@ -88,19 +89,20 @@ public class Card {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
+			String voidRequest = "\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType + "\\\"," 
+					+ "\\\"invoiceNumber\\\":" + "\\\"" + invoiceNo + "\\\"";
+			
 			String terminalWifiIP = "";
 			String terminalWifiPort = "";
 			
 			if (terminalWifiIPPort.length() != 0) {
 				terminalWifiIP = terminalWifiIPPort.getString("wifi_IP");
 				terminalWifiPort = terminalWifiIPPort.getString("wifi_Port");
+				
+				voidRequest = voidRequest + "," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"";
 			}
-			
-			String voidRequest = "{\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType + "\\\"," 
-					+ "\\\"invoiceNumber\\\":" + "\\\"" + invoiceNo + "\\\"," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," 
-					+ "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"}";
 
-			jsonResult = submitIPOS(voidRequest);
+			jsonResult = submitIPOS("{"+voidRequest+"}");
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
@@ -112,19 +114,20 @@ public class Card {
 		JSONObject jsonResult = new JSONObject();
 		
 		try {
+			String settlementRequest = "\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType + "\\\"," 
+					+ "\\\"niiName\\\":" + "\\\"" + niiName + "\\\"";
+			
 			String terminalWifiIP = "";
 			String terminalWifiPort = "";
 			
 			if (terminalWifiIPPort.length() != 0) {
 				terminalWifiIP = terminalWifiIPPort.getString("wifi_IP");
 				terminalWifiPort = terminalWifiIPPort.getString("wifi_Port");
+				
+				settlementRequest = settlementRequest + "," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"";
 			}
-			
-			String settlementRequest = "{\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType + "\\\"," 
-					+ "\\\"niiName\\\":" + "\\\"" + niiName + "\\\"," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," 
-					+ "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"}";
 
-			jsonResult = submitIPOS(settlementRequest);
+			jsonResult = submitIPOS("{"+settlementRequest+"}");
 			jsonResult.put("settlementId", settlementId);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
