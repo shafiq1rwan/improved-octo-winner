@@ -324,18 +324,18 @@ input[type=checkbox]:checked ~ input.hiddenDIV {
 }
 
 /* The Modal (background) */
-.modal {
-	display: none; /* Hidden by default */
-	position: fixed; /* Stay in place */
-	z-index: 1; /* Sit on top */
+/* .modal {
+	display: none; Hidden by default
+	position: fixed; Stay in place
+	z-index: 1; Sit on top
 	left: 0;
 	top: 0;
-	width: 100%; /* Full width */
-	height: 100%; /* Full height */
-	overflow: auto; /* Enable scroll if needed */
-	background-color: rgb(0, 0, 0); /* Fallback color */
-	background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-	-webkit-animation-name: fadeIn; /* Fade in the background */
+	width: 100%; Full width
+	height: 100%; Full height
+	overflow: auto; Enable scroll if needed
+	background-color: rgb(0, 0, 0); Fallback color
+	background-color: rgba(0, 0, 0, 0.4); Black w/ opacity
+	-webkit-animation-name: fadeIn; Fade in the background
 	-webkit-animation-duration: 0.4s;
 	animation-name: fadeIn;
 	animation-duration: 0.4s
@@ -352,25 +352,25 @@ input[type=checkbox]:checked ~ input.hiddenDIV {
 	width: 320px;
 }
 
-/* Modal Header */
+Modal Header
 .modal-header {
 	padding: 2px 16px;
 	background-color: #1A9BCC;
 	color: white;
 }
 
-/* Modal Body */
+Modal Body
 .modal-body {
 	padding: 2px 16px;
 }
 
-/* Modal Footer */
+Modal Footer
 .modal-footer {
 	float: right;
 	padding: 2px 16px;
 	margin: 5px;
 	color: white;
-}
+} */
 
 .DetailsModal {
 	display: none; /* Hidden by default */

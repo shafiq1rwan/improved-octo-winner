@@ -25,8 +25,8 @@ CREATE TABLE menu_item (
 	id BIGINT PRIMARY KEY NOT NULL,
 	backend_id NVARCHAR(50) NOT NULL UNIQUE,
 	modifier_group_id BIGINT,
-	menu_item_name NVARCHAR(150) NOT NULL UNIQUE,
-	menu_item_alt_name NVARCHAR(50),
+	menu_item_name NVARCHAR(150) NOT NULL,
+    menu_item_alt_name NVARCHAR(50),
 	menu_item_description NVARCHAR(255),
 	menu_item_image_path text,
 	menu_item_base_price DECIMAL(10,2) DEFAULT 0.00,
@@ -371,6 +371,7 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Activ
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Brand ID', 'BRAND_ID', '');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Version Number', 'VERSION_NUMBER', '');
 
 insert into `master` values
 ('check', 0, now());

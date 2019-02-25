@@ -42,7 +42,7 @@
 										<label style="font-size: medium; margin-top: 6px;">Cloud Synchronization</label>
 									</div>
 									<div class="col-md-2 form-group">
-										<button class="btn btn-block btn-info">Sync</button>
+										<button class="btn btn-block btn-info" ng-click="submitSync()">Sync</button>
 									</div>
 								</div>
 								<hr style="margin-top: 5px; margin-bottom: 18px;">
@@ -218,6 +218,45 @@
 						<!-- <div class="modal-footer"></div> -->
 					</div>
 				</div>
+			</div>
+			
+			<!-- Loading Modal [START] -->
+			<div class="modal fade" data-backdrop="static" id="loading_modal" role="dialog">
+				<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-body">
+						<div class="text-center">
+							<img style="width:75%" src="${pageContext.request.contextPath}/img/gif/loading.gif"><br>
+								<span>Synchronizing Data...</span>
+						</div>
+					</div>
+				</div>
+				</div>
+			</div>
+			<!-- Loading Modal [END] -->
+		
+			<div class="modal fade" id="modal-dialog" tabindex="-1" role="dialog"
+				aria-hidden="true">
+				<div class="modal-dialog modal-sm">
+					<div class="modal-content">
+						<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"
+								aria-label="Close">
+								&times;
+							</button>
+							<h4 class="modal-title"
+								ng-show="dialogData.title != ''">{{dialogData.title}}</h4>
+						</div>
+						<div class="modal-body"
+							ng-show="dialogData.message != ''">{{dialogData.message}}</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary btn-main"
+								ng-click="dialogData.button1.fn()" ng-show="dialogData.isButton1">{{dialogData.button1.name}}</button>
+							<button type="button" class="btn btn-primary btn-main"
+								ng-click="dialogData.button2.fn()" ng-show="dialogData.isButton2">{{dialogData.button2.name}}</button>
+						</div>
+					</div>
+					</div>
 			</div>
 		</div>
 	</div>

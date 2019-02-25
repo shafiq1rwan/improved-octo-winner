@@ -155,5 +155,75 @@
 				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
 		}
+
+		$scope.submitSync = function() {
+			$('#loading_modal').modal('show');
+			$http({
+				method : 'POST',
+				headers : {
+					'Content-Type' : 'application/json'
+				},
+				/*  params : {
+					brandId : $scope.syncData.brand_id,
+					activationId : $scope.syncData.act_id,
+					activationKey : $scope.syncData.key
+				}, */
+				url : '${pageContext.request.contextPath}/syncMenu'
+			}).then(
+					function(response) {
+						if (response != null && response.data != null
+								&& response.data.resultCode != null) {
+							if (response.data.resultCode == "00") {						
+								$scope.syncSuccess(response.data.resultMessage);
+							} else {
+								$scope.syncFailed(response.data.resultMessage);
+							}
+						} else {
+							$scope.syncFailed("Invalid server response!");
+						}
+					}, function(error) {
+						$scope.syncFailed("Unable to connect to server!");
+					});
+		}
+		
+		$scope.syncFailed = function(message) {
+			$('#loading_modal').modal('hide');
+			var dialogOption = {};
+			dialogOption.title = "Sync Failed!";
+			dialogOption.message = message;
+			dialogOption.button1 = {
+					name: "OK",
+					fn: function() {
+						$("div#modal-dialog").modal("hide");
+					}
+			}
+			$scope.displayDialog(dialogOption);
+		}
+
+		$scope.syncSuccess = function(message) {
+			$('#loading_modal').modal('hide');
+			var dialogOption = {};
+			dialogOption.title = "Sync Success!";
+			dialogOption.message = message;
+			dialogOption.button1 = {
+					name: "OK",
+					fn: function() {
+						$("div#modal-dialog").modal("hide");
+						location.reload();
+					}
+			}
+			$scope.displayDialog(dialogOption);
+		}
+		
+		$scope.displayDialog = function(dialogOption) {
+			$scope.dialogData = {};
+			$scope.dialogData.title = dialogOption.title;
+			$scope.dialogData.message = dialogOption.message;
+			$scope.dialogData.button1 = dialogOption.button1;
+			$scope.dialogData.button2 = dialogOption.button2;
+			$scope.dialogData.isButton1 = typeof $scope.dialogData.button1 !== "undefined";
+			$scope.dialogData.isButton2 = typeof $scope.dialogData.button2 !== "undefined";
+			$('#modal-dialog').modal({backdrop: 'static', keyboard: false});
+		}
 	});
 </script>
