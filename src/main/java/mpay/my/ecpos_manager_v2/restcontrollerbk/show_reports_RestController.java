@@ -41,94 +41,94 @@ import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 @RequestMapping("/report")
 public class show_reports_RestController {
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private DataSource dataSource;
-
-	@PostMapping("monthlysalesreport")
-	public ResponseEntity<?> getSalesReport(@RequestBody String jsonData,HttpServletResponse response) {
-		
-/*		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType("application/pdf")); */
-		ServletOutputStream outputStream = null;
-		
-		try {
-			JSONObject dateData = new JSONObject(jsonData);
-
-			// parse date
-			SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-			Date convertedDate = formatter1.parse(dateData.getString("date"));
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(convertedDate);
-			int month = cal.get(Calendar.MONTH) + 1;
-			int year = cal.get(Calendar.YEAR);
-
-			// called jasperreport engine to generate the report pdf
-			Map<String, Object> parameters = new HashMap<>();
-			parameters.put("month", month);
-			parameters.put("year", year);
-
-			System.out.println("Parameters Length: " + parameters.size());
-
-			File file = new ClassPathResource("reports/EcposSalesReport.jrxml").getFile();
-			InputStream monthlySalesReportStream = new FileInputStream(file);
-
-			// InputStream monthlySalesReportStream =
-			// getClass().getResourceAsStream("/EcposSalesReport.jrxml");
-			JasperReport jasperReport = JasperCompileManager.compileReport(monthlySalesReportStream);
-			JRSaver.saveObject(jasperReport, "EcposSalesReport.jasper");
-
-			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
-					dataSource.getConnection());
-			
-			String filename = "EcposReport" +"_"+month+"_" + ".pdf";
-
-        	response.setContentType("application/pdf");
-        	response.addHeader("Content-disposition", "filename=" + filename);
-        	outputStream = response.getOutputStream();
-        	
-        	JasperExportManager.exportReportToPdfStream(jasperPrint, outputStream);
-			outputStream.flush();
-		    outputStream.close();
-		    
-			// Expost file as pdf
-			JRPdfExporter exporter = new JRPdfExporter();
-			File outputFolder = createEcposReportFolder();
-			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-			exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(
-					new FileOutputStream(outputFolder + "/" + filename)));
-
-			SimplePdfReportConfiguration reportConfig = new SimplePdfReportConfiguration();
-			reportConfig.setSizePageToContent(true);
-			reportConfig.setForceLineBreakPolicy(false);
-
-			SimplePdfExporterConfiguration exportConfig = new SimplePdfExporterConfiguration();
-			exportConfig.setEncrypted(true);
-			exportConfig.setAllowedPermissionsHint("PRINTING");
-
-			exporter.setConfiguration(reportConfig);
-			exporter.setConfiguration(exportConfig);
-
-			exporter.exportReport();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new ResponseEntity<>(HttpStatus.OK);
-		//return ResponseEntity.ok().headers(headers).body(null);
-	}
-
-	private File createEcposReportFolder() {
-		File file = new File("C:/EcposReport");
-		if (!file.exists()) {
-			try {
-				file.mkdirs();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return file;
-	}
+//	@Autowired
+//	private JdbcTemplate jdbcTemplate;
+//
+//	@Autowired
+//	private DataSource dataSource;
+//
+//	@PostMapping("monthlysalesreport")
+//	public ResponseEntity<?> getSalesReport(@RequestBody String jsonData,HttpServletResponse response) {
+//		
+///*		HttpHeaders headers = new HttpHeaders();
+//		headers.setContentType(MediaType.parseMediaType("application/pdf")); */
+//		ServletOutputStream outputStream = null;
+//		
+//		try {
+//			JSONObject dateData = new JSONObject(jsonData);
+//
+//			// parse date
+//			SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
+//			Date convertedDate = formatter1.parse(dateData.getString("date"));
+//			Calendar cal = Calendar.getInstance();
+//			cal.setTime(convertedDate);
+//			int month = cal.get(Calendar.MONTH) + 1;
+//			int year = cal.get(Calendar.YEAR);
+//
+//			// called jasperreport engine to generate the report pdf
+//			Map<String, Object> parameters = new HashMap<>();
+//			parameters.put("month", month);
+//			parameters.put("year", year);
+//
+//			System.out.println("Parameters Length: " + parameters.size());
+//
+//			File file = new ClassPathResource("reports/EcposSalesReport.jrxml").getFile();
+//			InputStream monthlySalesReportStream = new FileInputStream(file);
+//
+//			// InputStream monthlySalesReportStream =
+//			// getClass().getResourceAsStream("/EcposSalesReport.jrxml");
+//			JasperReport jasperReport = JasperCompileManager.compileReport(monthlySalesReportStream);
+//			JRSaver.saveObject(jasperReport, "EcposSalesReport.jasper");
+//
+//			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
+//					dataSource.getConnection());
+//			
+//			String filename = "EcposReport" +"_"+month+"_" + ".pdf";
+//
+//        	response.setContentType("application/pdf");
+//        	response.addHeader("Content-disposition", "filename=" + filename);
+//        	outputStream = response.getOutputStream();
+//        	
+//        	JasperExportManager.exportReportToPdfStream(jasperPrint, outputStream);
+//			outputStream.flush();
+//		    outputStream.close();
+//		    
+//			// Expost file as pdf
+//			JRPdfExporter exporter = new JRPdfExporter();
+//			File outputFolder = createEcposReportFolder();
+//			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+//			exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(
+//					new FileOutputStream(outputFolder + "/" + filename)));
+//
+//			SimplePdfReportConfiguration reportConfig = new SimplePdfReportConfiguration();
+//			reportConfig.setSizePageToContent(true);
+//			reportConfig.setForceLineBreakPolicy(false);
+//
+//			SimplePdfExporterConfiguration exportConfig = new SimplePdfExporterConfiguration();
+//			exportConfig.setEncrypted(true);
+//			exportConfig.setAllowedPermissionsHint("PRINTING");
+//
+//			exporter.setConfiguration(reportConfig);
+//			exporter.setConfiguration(exportConfig);
+//
+//			exporter.exportReport();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return new ResponseEntity<>(HttpStatus.OK);
+//		//return ResponseEntity.ok().headers(headers).body(null);
+//	}
+//
+//	private File createEcposReportFolder() {
+//		File file = new File("C:/EcposReport");
+//		if (!file.exists()) {
+//			try {
+//				file.mkdirs();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		return file;
+//	}
 
 }

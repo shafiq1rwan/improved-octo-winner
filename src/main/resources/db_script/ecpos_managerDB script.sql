@@ -122,8 +122,8 @@ CREATE TABLE staff  (
 		staff_username NVARCHAR(100) NOT NULL UNIQUE,
 		staff_password NVARCHAR(200) NOT NULL,
 		staff_role INT NOT NULL,
-		staff_contact_hp_number NVARCHAR(50) NOT NULL UNIQUE,
-		staff_contact_email VARCHAR(320) NOT NULL UNIQUE,
+		staff_contact_hp_number NVARCHAR(50) NOT NULL,
+		staff_contact_email VARCHAR(320) NOT NULL,
 		is_active BIT DEFAULT 1 NOT NULL,
 		created_date DATETIME NOT NULL,
 		last_update_date DATETIME
