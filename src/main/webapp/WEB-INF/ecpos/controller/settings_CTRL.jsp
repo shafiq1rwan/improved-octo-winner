@@ -156,7 +156,7 @@
 			});
 		}
 
-		$scope.submitSync = function() {
+		$scope.submitSyncMenu = function() {
 			$('#loading_modal').modal('show');
 			$http({
 				method : 'POST',
@@ -169,6 +169,36 @@
 					activationKey : $scope.syncData.key
 				}, */
 				url : '${pageContext.request.contextPath}/syncMenu'
+			}).then(
+					function(response) {
+						if (response != null && response.data != null
+								&& response.data.resultCode != null) {
+							if (response.data.resultCode == "00") {						
+								$scope.syncSuccess(response.data.resultMessage);
+							} else {
+								$scope.syncFailed(response.data.resultMessage);
+							}
+						} else {
+							$scope.syncFailed("Invalid server response!");
+						}
+					}, function(error) {
+						$scope.syncFailed("Unable to connect to server!");
+					});
+		}
+		
+		$scope.submitSyncStore = function() {
+			$('#loading_modal').modal('show');
+			$http({
+				method : 'POST',
+				headers : {
+					'Content-Type' : 'application/json'
+				},
+				/*  params : {
+					brandId : $scope.syncData.brand_id,
+					activationId : $scope.syncData.act_id,
+					activationKey : $scope.syncData.key
+				}, */
+				url : '${pageContext.request.contextPath}/syncStore'
 			}).then(
 					function(response) {
 						if (response != null && response.data != null
@@ -209,7 +239,8 @@
 					name: "OK",
 					fn: function() {
 						$("div#modal-dialog").modal("hide");
-						location.reload();
+						$scope.getPrinterList();
+						$scope.getTerminalList();
 					}
 			}
 			$scope.displayDialog(dialogOption);
