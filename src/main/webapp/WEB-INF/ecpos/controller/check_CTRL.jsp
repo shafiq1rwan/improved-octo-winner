@@ -39,6 +39,35 @@
 			});
 		}
 		
+		$scope.generateQR = function () {
+			var jsonData = JSON.stringify({
+				"tableNo" : $scope.tableNo,
+				"checkNo" : $scope.checkNo
+			});
+			
+			$http.post("${pageContext.request.contextPath}/rc/configuration/generate_qr/", jsonData)
+			.then(function(response) {
+				if (response.data.response_code == "00") {
+					$('#QRImage').attr('src', response.data.QRImage);
+					$('#QRImageModal').modal('show');
+				} else {
+					alert(response.data.response_message);
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/ecpos";
+			});
+		}
+		
+		$scope.printQR = function () {
+			alert("This function is currently not available");
+		}
+		
+		$scope.printKitchenReceipt = function () {
+			alert("This function is currently not available");
+		}
+		
 		$scope.allGrandParentItemCheckbox = function () {
 			if(allGrandParentItemCheckbox.checked) {
 		        $('[name=grandParentItemCheckbox]').each(function() {

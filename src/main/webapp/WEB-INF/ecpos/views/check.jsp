@@ -18,10 +18,6 @@ hr {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
-
-#printKitchenReceiptButton:hover {
-	background-color: #3CB371!important;
-}
 </style>
 </head>
 
@@ -59,9 +55,14 @@ hr {
 													</div>
 												</div>
 												<div class="col-sm-6 form-group">
-													<button id="printKitchenReceiptButton" class="btn btn-social btn-sm pull-right btn-primary" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="printKitchenReceipt()">
-														<i class="fa fa-print"></i> PRINT KITCHEN RECEIPT
+													<button class="btn btn-social btn-sm pull-right bg-maroon" style="width: 81%;" ng-click="generateQR()">
+														<i class="fa fa-qrcode"></i> Generate QR
 													</button>
+													<br>
+													<br>
+<!-- 													<button id="printKitchenReceiptButton" class="btn btn-social btn-sm pull-right bg-olive" style="width: 81%;" ng-click="printKitchenReceipt()">
+														<i class="fa fa-print"></i> PRINT KITCHEN RECEIPT
+													</button> -->
 												</div>
 											</div>
 											<div style="margin-right: 3px;">
@@ -175,6 +176,33 @@ hr {
 						
 					</div>
 				</section>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="QRImageModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+							<div class="row" style="font-size: large">
+								<div class="col-sm-11"></div>
+								<div class="col-sm-1">
+									<button class="close" data-dismiss="modal">&times;</button>
+								</div>
+							</div>
+							<div class="row" style="text-align: center;">
+								<img id="QRImage" style="height: 50%; width: 50%;" />
+							</div>
+<!-- 							<div class="row">
+								<div class="col-sm-12" >
+									<div class="pull-right">
+										<input type="button" class="btn bg-maroon" ng-click="printQR()" value="Print" />
+									</div>
+								</div>
+							</div> -->
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

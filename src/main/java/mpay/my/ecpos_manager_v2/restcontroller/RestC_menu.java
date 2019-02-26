@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,6 +26,9 @@ public class RestC_menu {
 	
 	@Autowired
 	DataSource dataSource;
+	
+	@Value("${menu_image_path}")
+	private String menuImagePath;
 	
 	@RequestMapping(value = { "/get_categories" }, method = { RequestMethod.GET }, produces = "application/json")
 	public String getCategories() {
@@ -44,8 +48,7 @@ public class RestC_menu {
 				JSONObject category = new JSONObject();
 				category.put("id", rs.getString("id"));
 				category.put("name", rs.getString("category_name"));
-//				category.put("imagePath", rs.getString("category_image_path"));
-				category.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				category.put("imagePath", menuImagePath + rs.getString("category_image_path"));
 				
 				jary.put(category);
 			}
@@ -96,8 +99,7 @@ public class RestC_menu {
 				menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 				menuItems.put("taxable", rs.getBoolean("is_taxable"));
 				menuItems.put("discountable", rs.getBoolean("is_discountable"));
-//				menuItems.put("imagePath", rs.getString("menu_item_image_path"));
-				menuItems.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
 				
 				if (menuItems.getString("type").equals("0")) {
 					stmt = connection.prepareStatement("select count(mg.id) as count from menu_item mi " + 
@@ -226,8 +228,7 @@ public class RestC_menu {
 					menuItems.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
 					menuItems.put("taxable", rs2.getBoolean("is_taxable"));
 					menuItems.put("discountable", rs2.getBoolean("is_discountable"));
-//					menuItems.put("imagePath", rs2.getString("menu_item_image_path"));
-					menuItems.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+					menuItems.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
 					
 					menuItems.put("sequence", rs.getString("combo_item_detail_sequence"));
 					
@@ -296,8 +297,7 @@ public class RestC_menu {
 					modifierDetails.put("description", rs2.getString("menu_item_description"));
 					modifierDetails.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
 					modifierDetails.put("taxable", rs2.getBoolean("is_taxable"));
-//					modifierDetails.put("imagePath", rs2.getString("menu_item_image_path"));
-					modifierDetails.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+					modifierDetails.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
 					
 					jary2.put(modifierDetails);
 				}
@@ -346,8 +346,7 @@ public class RestC_menu {
 				menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 				menuItems.put("taxable", rs.getBoolean("is_taxable"));
 				menuItems.put("discountable", rs.getBoolean("is_discountable"));
-//				menuItems.put("imagePath", rs.getString("menu_item_image_path"));
-				menuItems.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
 				
 				jary.put(menuItems);
 			}
@@ -391,8 +390,7 @@ public class RestC_menu {
 				jsonResult.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 				jsonResult.put("taxable", rs.getBoolean("is_taxable"));
 				jsonResult.put("discountable", rs.getBoolean("is_discountable"));
-//				jsonResult.put("imagePath", rs.getString("menu_item_image_path"));
-				jsonResult.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				jsonResult.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -472,8 +470,7 @@ public class RestC_menu {
 				modifierItem.put("backendId", rs.getString("backend_id"));
 				modifierItem.put("name", rs.getString("menu_item_name"));
 				modifierItem.put("description", rs.getString("menu_item_description"));
-//				modifierItem.put("imagePath", rs.getString("menu_item_image_path"));
-				modifierItem.put("imagePath", "/jakarta-tomcat/webapps/ecposmanager/menuimage/2pc-combo.png");
+				modifierItem.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
 				modifierItem.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 				modifierItem.put("taxable", rs.getBoolean("is_taxable"));
 				modifierItem.put("sequence", rs.getString("modifier_item_sequence"));

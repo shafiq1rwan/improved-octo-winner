@@ -6,10 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import mpay.my.ecpos_manager_v2.constant.Constant;
 import mpay.my.ecpos_manager_v2.logger.Logger;
 import mpay.my.ecpos_manager_v2.property.Property;
+import mpay.my.ecpos_manager_v2.webutil.AesEncryption;
+import mpay.my.ecpos_manager_v2.webutil.QRGenerate;
 
 @RestController
 @RequestMapping("/rc/configuration")
@@ -35,6 +36,9 @@ public class RestC_configuration {
 	
 	@Value("${printer_exe}")
 	private String printerExe;
+	
+	@Value("${CLOUD_BASE_URL}")
+	private String cloudUrl;
 	
 	@RequestMapping(value = { "/get_table_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String getTablelist() {
@@ -401,6 +405,89 @@ public class RestC_configuration {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+
+	@RequestMapping(value = { "/generate_qr" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String generateQR(@RequestBody String data) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			String tableNo = new JSONObject(data).getString("tableNo");
+			String checkNo = new JSONObject(data).getString("checkNo");
+			String brandId = null;
+			String storeId = null;
+			
+			stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BRAND_ID';");
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				brandId = rs.getString("value");
+				
+				stmt.close();
+				stmt = connection.prepareStatement("select * from store order by id desc;");
+				rs2 = stmt.executeQuery();
+				
+				if (rs2.next()) {
+					storeId = rs2.getString("id");
+					
+					stmt.close();
+					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'ACTIVATION_KEY';");
+					rs3 = stmt.executeQuery();
+					
+					if (rs3.next()) {
+						String activationKey = rs3.getString("value");
+						
+						String delimiter = "C!G@H#T$";
+						String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo;
+						
+						String token = AesEncryption.encrypt(activationKey, tokenValue);
+						
+						String QRUrl = cloudUrl + "order/tk/" + token;
+						byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
+						Base64 codec = new Base64();
+						byte[] encoded = codec.encode(QRImageByte);
+						String QRImage = "data:image/jpg;base64," + new String(encoded);
+						jsonResult.put("QRImage", QRImage);
+						
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "QR image is generated");
+						Logger.writeActivity("QR image is generated", ECPOS_FOLDER);
+						Logger.writeActivity(QRImage, ECPOS_FOLDER);
+					}
+				} else {
+					jsonResult.put("response_code", "01");
+					jsonResult.put("response_message", "Store Id Not Found");
+					Logger.writeActivity("Store Id Not Found", ECPOS_FOLDER);
+				}
+			} else {
+				jsonResult.put("response_code", "01");
+				jsonResult.put("response_message", "Brand Id Not Found");
+				Logger.writeActivity("Brand Id Not Found", ECPOS_FOLDER);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
