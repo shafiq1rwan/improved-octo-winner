@@ -3,6 +3,7 @@ package mpay.my.ecpos_manager_v2.utility.ipos;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -140,18 +141,28 @@ public class Card {
 		JSONObject response = new JSONObject();
 		
 		try {
-			Process executeIPOS = Runtime.getRuntime().exec(iposExe + request);
-			executeIPOS.wait(150000);
+			Process executeIPOS = Runtime.getRuntime().exec(iposExe + " " + request);
+			//executeIPOS.waitFor();
+					
+			if(!executeIPOS.waitFor(2, TimeUnit.MINUTES)) {
+				//destroy the process if exceed  timeout
+				executeIPOS.destroyForcibly();
+				System.out.println("terminate ipos process");
+			}
 			BufferedReader input = new BufferedReader(new InputStreamReader(executeIPOS.getInputStream()));
 			
 			StringBuilder responseString = new StringBuilder();
 
-			while (input.readLine() != null) {
-				responseString.append(input.readLine());
+			String line;
+			while ((line = input.readLine()) != null) {
+				responseString.append(line);
+				System.out.println(responseString);
 			}
+			
+			input.close();
 	
 			if (responseString.toString().contains("[IPOS-RESPONSE]")) {
-				response = new JSONObject(responseString.toString().substring(responseString.toString().indexOf("[IPOS-RESPONSE]")+1));
+				response = new JSONObject(responseString.toString().substring(responseString.toString().indexOf("[IPOS-RESPONSE]")+15));
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);

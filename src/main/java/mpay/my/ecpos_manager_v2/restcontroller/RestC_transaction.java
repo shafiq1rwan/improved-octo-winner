@@ -327,6 +327,7 @@ public class RestC_transaction {
 //TO DO									
 						}
 						
+if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
 						if (updateTransactionResult.getString(Constant.RESPONSE_CODE).equals("00")) {
 							boolean updateCheckResult = false;
 							
@@ -351,6 +352,11 @@ public class RestC_transaction {
 							Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), ECPOS_FOLDER);
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, updateTransactionResult.getString(Constant.RESPONSE_MESSAGE));
+						}
+					} else {
+							Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
 						}
 					} else {
 						Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
