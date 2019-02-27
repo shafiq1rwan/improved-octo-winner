@@ -400,6 +400,11 @@ insert into `payment_type` values
 insert into `nii_type` values
 (1, 'VISA/MASTER/JCB'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');
 
+insert into general_configuration (description, parameter, value)
+values ('BYOD_QR_Encrypt_Key', 'BYOD QR ENCRYPT KEY', '8y0DtH3s3Cr3Tk3Y');
+
+
+
 insert into `staff` values
 (1, 'admin', 'admin', 'admin', 1, '-', '-', 1, now(), now());
 

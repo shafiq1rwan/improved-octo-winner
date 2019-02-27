@@ -1,5 +1,6 @@
 package mpay.my.ecpos_manager_v2.webutil;
 
+import java.security.Security;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
@@ -15,24 +16,25 @@ import mpay.my.ecpos_manager_v2.property.Property;
 
 public class AesEncryption {
 
-	public final static String initVector = "RandomInitVector";
-	
-	public final static String salt = "RandomSalt";
+	public final static String INIT_VECTOR = "1234567890123456";
+
+	public final static String SALT = "AbCdEfgH1@3$5^7*";
 	
 	final static String foldername = Property.getECPOS_FOLDER_NAME();
 
 	public static String encrypt(String key, String value) {
 		try {
-			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
-			
+			Security.setProperty("crypto.policy", "unlimited");
+			IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes());
+
 			SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-	        KeySpec spec = new PBEKeySpec(key.toCharArray(), salt.getBytes(), 65536, 256);
-	        SecretKey tmp = factory.generateSecret(spec);
-	        SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-	         
-	        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-	        cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-	        return Base64.getUrlEncoder().encodeToString(cipher.doFinal(value.getBytes("UTF-8")));
+			KeySpec spec = new PBEKeySpec(key.toCharArray(), SALT.getBytes(), 65536, 256);
+			SecretKey tmp = factory.generateSecret(spec);
+			SecretKeySpec genSecretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			cipher.init(Cipher.ENCRYPT_MODE, genSecretKey, iv);
+			return Base64.getUrlEncoder().encodeToString(cipher.doFinal(value.getBytes("UTF-8")));
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception :", foldername);
 			e.printStackTrace();
@@ -41,33 +43,31 @@ public class AesEncryption {
 	}
 
 	public static String decrypt(String key, String encrypted) {
-		try
-	    {
-	        IvParameterSpec ivspec = new IvParameterSpec(initVector.getBytes("UTF-8"));
-	         
-	        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-	        KeySpec spec = new PBEKeySpec(key.toCharArray(), salt.getBytes(), 65536, 256);
-	        SecretKey tmp = factory.generateSecret(spec);
-	        SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-	         
-	        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-	        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
-	        return new String(cipher.doFinal(Base64.getUrlDecoder().decode(encrypted)));
-	    }
-	    catch (Exception e) {
-	    	Logger.writeError(e, "Exception :", foldername);
+		try {
+			Security.setProperty("crypto.policy", "unlimited");
+			IvParameterSpec ivspec = new IvParameterSpec(INIT_VECTOR.getBytes());
+
+			SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+			KeySpec spec = new PBEKeySpec(key.toCharArray(), SALT.getBytes(), 65536, 256);
+			SecretKey tmp = factory.generateSecret(spec);
+			SecretKeySpec genSecretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.DECRYPT_MODE, genSecretKey, ivspec);
+			return new String(cipher.doFinal(Base64.getUrlDecoder().decode(encrypted)));
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", foldername);
 			e.printStackTrace();
-	    }
-	    return null;
+		}
+		return null;
 	}
-	
+
 //	public static void main(String[] args) {
 //		String value = "Hello World!!!";
-//		String key = "5216444430761517";
-//		
-//		String encrypt = encrypt(key, value);
+//
+//		String encrypt = encrypt(value);
 //		System.out.println(encrypt);
-//		String decrypt = decrypt(key, encrypt);
+//		String decrypt = decrypt(encrypt);
 //		System.out.println(decrypt);
-//	} 
+//	}
 }

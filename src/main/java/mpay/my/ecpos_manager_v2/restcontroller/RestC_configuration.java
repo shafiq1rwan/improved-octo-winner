@@ -6,6 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.codec.binary.Base64;
@@ -446,16 +449,18 @@ public class RestC_configuration {
 					storeId = rs2.getString("id");
 					
 					stmt.close();
-					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'ACTIVATION_KEY';");
+					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD_QR_ENCRYPT_KEY';");
 					rs3 = stmt.executeQuery();
 					
 					if (rs3.next()) {
-						String activationKey = rs3.getString("value");
+						String encryptKey = rs3.getString("value");
 						
-						String delimiter = "C!G@H#T$";
-						String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo;
+						String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
 						
-						String token = AesEncryption.encrypt(activationKey, tokenValue);
+						String delimiter = "|;";
+						String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp;
+						
+						String token = AesEncryption.encrypt(encryptKey, tokenValue);
 						
 						String QRUrl = cloudUrl + "order/tk/" + token;
 						byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
