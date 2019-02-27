@@ -122,7 +122,7 @@ public class DataSync {
 			ps1.setString(count++, storeInfo.getString("tableCount"));
 			ps1.setString(count++, storeInfo.getString("startOperatingTime"));
 			ps1.setString(count++, storeInfo.getString("endOperatingTime"));
-			ps1.setString(count++, storeInfo.getString("lastUpdateDate"));
+			ps1.setString(count++, storeInfo.has("lastUpdateDate")?storeInfo.getString("lastUpdateDate"):null);
 			ps1.setLong(count++, storeInfo.getLong("isPublish"));
 			ps1.setString(count++, storeInfo.getString("createdDate"));
 			int rowAffected = ps1.executeUpdate();
