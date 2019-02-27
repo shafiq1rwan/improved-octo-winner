@@ -220,16 +220,37 @@ public class RestC_activation {
 				}
 				
 			} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("01")) {
-				if (responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo")) {
+				if (responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole")) {
 					// successful
 					connection = dataSource.getConnection();
+					connection.setAutoCommit(false);
 					DataSync.resetDBStoreData(connection);
 					DataSync.resetDBMenuData(connection);
+					
 					JSONObject storeInfo = responseData.getJSONObject("storeInfo");
 					if(storeInfo!=null) {
-						DataSync.insertStoreInfo(connection, storeInfo, imagePath);
-						DataSync.updateSyncDate(connection);
+						if(DataSync.insertStoreInfo(connection, storeInfo, imagePath)) {					
+							JSONArray staffRole = responseData.getJSONArray("staffRole");
+							JSONArray staffInfo = responseData.getJSONArray("staffInfo");
+							
+							if(staffRole.length()!=0) {
+								// insert staff role
+								DataSync.insertStaffRole(connection, staffRole);
+							}
+							
+							if(staffInfo.length()!=0) {
+								// insert staff info
+								DataSync.insertStaffInfo(connection, staffInfo);
+							}
+							
+							DataSync.updateSyncDate(connection);
+							connection.commit();
+						}
+						else {
+							connection.rollback();
+						}
 					}
+					connection.setAutoCommit(true);
 					
 					UtilWebComponents webComponent = new UtilWebComponents();
 					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);

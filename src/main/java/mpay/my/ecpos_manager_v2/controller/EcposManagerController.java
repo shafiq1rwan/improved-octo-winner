@@ -73,15 +73,22 @@ public class EcposManagerController {
 			model.setViewName("ecpos/home");
 		} else {
 			UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource);
-			
-			if (loginUser != null) {
-				Logger.writeActivity("LOGIN SUCCESSFULLY, FORWARD " + loginUser.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
-				session.setAttribute("session_user", loginUser);
-				model.setViewName("redirect:" + "/ecpos/#");
-			} else {
-				Logger.writeActivity("INVALID LOGIN ID / PASSWORD, FORWARD " + username + " TO LOGIN PAGE", ECPOS_FOLDER);
-				model.addObject("http_message", "User Account Does Not Exist.");
-				model.setViewName("ecpos/login");
+			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			try {
+				if (loginUser != null) {
+					Logger.writeActivity("LOGIN SUCCESSFULLY, FORWARD " + loginUser.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
+					session.setAttribute("session_user", loginUser);
+					model.setViewName("redirect:" + "/ecpos/#");
+				} else if(activationInfo.has("activationId") && activationInfo.getString("activationId").equals("")) {
+					model.addObject("http_message", "Activation is required");
+					model.setViewName("ecpos/activation");
+				} else {
+					Logger.writeActivity("INVALID LOGIN ID / PASSWORD, FORWARD " + username + " TO LOGIN PAGE", ECPOS_FOLDER);
+					model.addObject("http_message", "User Account Does Not Exist.");
+					model.setViewName("ecpos/login");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return model;
