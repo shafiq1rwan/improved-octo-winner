@@ -449,7 +449,7 @@ public class RestC_configuration {
 					storeId = rs2.getString("id");
 					
 					stmt.close();
-					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD_QR_ENCRYPT_KEY';");
+					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD QR ENCRYPT KEY';");
 					rs3 = stmt.executeQuery();
 					
 					if (rs3.next()) {
@@ -462,7 +462,7 @@ public class RestC_configuration {
 						
 						String token = AesEncryption.encrypt(encryptKey, tokenValue);
 						
-						String QRUrl = cloudUrl + "order/tk/" + token;
+						String QRUrl = cloudUrl + "order#!/tk/" + token;
 						byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
 						Base64 codec = new Base64();
 						byte[] encoded = codec.encode(QRImageByte);
@@ -473,6 +473,10 @@ public class RestC_configuration {
 						jsonResult.put("response_message", "QR image is generated");
 						Logger.writeActivity("QR image is generated", ECPOS_FOLDER);
 						Logger.writeActivity(QRImage, ECPOS_FOLDER);
+					} else {
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "BYOD QR Encrypt Key Not Found");
+						Logger.writeActivity("BYOD QR Encrypt Key Not Found", ECPOS_FOLDER);
 					}
 				} else {
 					jsonResult.put("response_code", "01");
