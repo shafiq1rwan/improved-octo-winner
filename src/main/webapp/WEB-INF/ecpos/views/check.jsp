@@ -18,6 +18,10 @@ hr {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
+
+.green-button:hover {
+	background-color: #3CB371!important;
+}
 </style>
 </head>
 
@@ -55,12 +59,12 @@ hr {
 													</div>
 												</div>
 												<div class="col-sm-6 form-group">
-													<button class="btn btn-social btn-sm pull-right bg-maroon" style="width: 81%;" ng-click="generateQR()">
+													<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 81%;" ng-click="generateQR()">
 														<i class="fa fa-qrcode"></i> Generate QR
 													</button>
 													<br>
 													<br>
-<!-- 													<button id="printKitchenReceiptButton" class="btn btn-social btn-sm pull-right bg-olive" style="width: 81%;" ng-click="printKitchenReceipt()">
+<!-- 													<button id="printKitchenReceiptButton" class="btn btn-social btn-sm pull-right green-button" style="width: 81%; background-color: #00FA9A; border-color: #00FA9A;" ng-click="printKitchenReceipt()">
 														<i class="fa fa-print"></i> PRINT KITCHEN RECEIPT
 													</button> -->
 												</div>

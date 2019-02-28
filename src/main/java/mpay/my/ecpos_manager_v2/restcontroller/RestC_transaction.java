@@ -264,7 +264,7 @@ public class RestC_transaction {
 			}
 			long storeId = storeDetail.getLong("id");
 
-			stmt = connection.prepareStatement("select * from `check` where table_number = ? and check_number = ? and device_type = 2 and check_status in (1, 2);");
+			stmt = connection.prepareStatement("select * from `check` where table_number = ? and check_number = ? and device_type = 1 and check_status in (1, 2);");
 			stmt.setInt(1, jsonObj.getInt("tableNo"));
 			stmt.setString(2, jsonObj.getString("checkNo"));
 			rs = stmt.executeQuery();

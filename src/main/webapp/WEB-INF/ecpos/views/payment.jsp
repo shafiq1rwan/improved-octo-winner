@@ -142,7 +142,7 @@
 													<td><input id="eight" type="button" value="8" class="form-control btn" ng-click="enterCalculator('amount',8)" /></td>
 													<td><input id="nine" type="button" value="9" class="form-control btn" ng-click="enterCalculator('amount',9)" /></td>
 													<td rowspan=2 style="vertical-align: middle;">
-														<button id="remove"  value="removeButton" class="form-control btn" ng-click="enterCalculator('amount',-10)" style="height: 200%;">
+														<button id="remove" value="removeButton" class="form-control btn" ng-click="enterCalculator('amount',-10)" style="height: 200%;">
 															<i class="fa fa-arrow-left" aria-hidden="true"></i>
 														</button>
 													</td>

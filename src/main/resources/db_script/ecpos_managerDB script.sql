@@ -196,7 +196,7 @@ create table `order_type` (
 
 create table `check` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
-	`check_number` bigint(20) NOT NULL,
+	`check_number` bigint (20) NOT NULL,
     `device_type` bigint (20) NOT NULL,
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
@@ -217,7 +217,7 @@ create table `check` (
     PRIMARY KEY (`id`)
 );
 
-create table `transaction_status` (
+create table `transaction_settlement_status` (
 	`id` bigint(20) NOT NULL,
     `name` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
@@ -250,7 +250,7 @@ create table `nii_type` (
 create table `settlement` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
     `staff_id` bigint (20) NOT NULL,
-	`nii_type` varchar(255) NOT NULL,
+	`nii_type` bigint (20) NOT NULL,
 	`settlement_status` bigint(20) NOT NULL,
 	`created_date` datetime NOT NULL,
 	`response_code` varchar(255) NULL,
@@ -380,12 +380,12 @@ insert into `check_status` values
 (1, 'New'), (2, 'Pending'), (3, 'Closed'), (4, 'Cancelled');
 
 insert into `device_type` values
-(1, 'BYOD'), (2, 'ECPOS'), (3, 'Kiosk');
+(1, 'ECPOS'), (2, 'BYOD'), (3, 'KIOSK');
 
 insert into `order_type` values
 (1, 'table'), (2, 'take away');
 
-insert into `transaction_status` values
+insert into `transaction_settlement_status` values
 (1, 'New'), (2, 'Pending'), (3, 'Approved'), (4, 'Declined'), (5, 'Voided'), (6, 'Refunded'), (7, 'Reversed');
 
 insert into `transaction_type` values

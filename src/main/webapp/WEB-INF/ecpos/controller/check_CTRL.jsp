@@ -8,6 +8,7 @@
 		
 		$('#menuWell').show();
 		$('#paymentWell').hide();
+		$('#generateQRButton').show();
 		$('#printKitchenReceiptButton').show();
 		$('#checkActionButtons').show();
 		$('#cancelItemButton').prop('disabled', true);
@@ -158,6 +159,7 @@
 		$scope.redirectPayment = function() {
 			$('#menuWell').hide();
 			$('#paymentWell').show();
+			$('#generateQRButton').hide();
 			$('#printKitchenReceiptButton').hide();
 			$('#checkActionButtons').hide();
 			$("#allGrandParentItemCheckbox").hide();

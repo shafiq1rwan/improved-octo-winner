@@ -107,7 +107,7 @@ public class RestC_check {
 			
 			stmt = connection.prepareStatement("select * from `check` c "
 					+ "inner join check_status cs on cs.id = c.check_status "
-					+ "where " + tableNoCondition + " and check_number = ? and device_type = 2 and check_status in (1, 2);");
+					+ "where " + tableNoCondition + " and check_number = ? and device_type = 1 and check_status in (1, 2);");
 			stmt.setString(1, checkNo);
 			rs = stmt.executeQuery();
 			
@@ -288,7 +288,7 @@ public class RestC_check {
 						if (rs3 > 0) {
 							stmt.close();
 							stmt = connection.prepareStatement("insert into `check` (check_number,device_type,staff_id,order_type,table_number,total_item_quantity,subtotal_amount,total_tax_amount,total_service_charge_amount,total_amount,total_amount_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-									"values (?,2,?,?,?,0,0,0,0,0,0,0,0,0,0,1,now());");
+									"values (?,1,?,?,?,0,0,0,0,0,0,0,0,0,0,1,now());");
 							stmt.setString(1, Integer.toString(newCheckNo));
 							stmt.setLong(2, staffId);
 							stmt.setInt(3, orderType);

@@ -334,7 +334,7 @@
 			}
 			
 			var jsonData = JSON.stringify({
-				"deviceType" : 2,
+				"deviceType" : 1,
 				"orderType" : orderType,
 				"tableNo" : $scope.tableNo,
 				"checkNo" : $scope.checkNo,
