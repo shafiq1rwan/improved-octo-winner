@@ -23,7 +23,7 @@ public class UtilWebComponents {
 	@Autowired
 	DataSource dataSource;
 	
-	public UserAuthenticationModel performEcposAuthentication(String username, String password, DataSource dataSource) {
+	public UserAuthenticationModel performEcposAuthentication(String username, String password, DataSource dataSource, String key) {
 		UserAuthenticationModel domainContainer = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -40,7 +40,7 @@ public class UtilWebComponents {
 			if (rs.next()) {
 				BCryptPasswordEncoder pass_encode = new BCryptPasswordEncoder();
 				String public_password = password;
-				String private_password = pass_encode.encode(rs.getString("staff_password"));
+				String private_password = pass_encode.encode(AesEncryption.decrypt(key, rs.getString("staff_password")));
 
 				if (pass_encode.matches(public_password, private_password)) {
 					domainContainer = new UserAuthenticationModel();

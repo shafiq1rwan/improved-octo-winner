@@ -1,6 +1,9 @@
 package mpay.my.ecpos_manager_v2.controller;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
@@ -72,9 +75,11 @@ public class EcposManagerController {
 			Logger.writeActivity("SESSION NOT EXPIRED, FORWARD " + user.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
 			model.setViewName("ecpos/home");
 		} else {
-			UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource);
-			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			Connection connection = null;
 			try {
+				connection = dataSource.getConnection();
+				UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(connection, "BYOD QR ENCRYPT KEY"));
+				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
 				if (loginUser != null) {
 					Logger.writeActivity("LOGIN SUCCESSFULLY, FORWARD " + loginUser.getUsername() + " TO MAIN PAGE", ECPOS_FOLDER);
 					session.setAttribute("session_user", loginUser);
@@ -89,6 +94,15 @@ public class EcposManagerController {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+			} finally {
+				if(connection!=null) {
+					try {
+						connection.close();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 		return model;

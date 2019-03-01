@@ -124,7 +124,10 @@ public class RestC_syncmenu {
 				} else if (responseData.has("resultCode") && (responseData.getString("resultCode").equals("E06"))) {
 					resultCode = "E02";
 					resultMessage = "Current store is not published at cloud. Please contact support.";
-				} else if (responseData.has("resultCode") && (responseData.getString("resultCode").equals("E04") || responseData.getString("resultCode").equals("E05"))) {
+				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E04")) {
+					resultCode = "E02";
+					resultMessage = "There is no menu published at cloud. Please contact support.";
+				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E05")) {
 					resultCode = "00";
 					resultMessage = "Version is up-to-date.";
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("00")) {
