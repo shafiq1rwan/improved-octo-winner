@@ -39,7 +39,7 @@ import mpay.my.ecpos_manager_v2.webutil.ZipTool;
 @RestController
 public class RestC_syncmenu {
 
-	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
+	private static String SYNC_FOLDER = Property.getSYNC_FOLDER_NAME();
 	
 	@Value("${query-path}")
 	private String queryPath;
@@ -63,7 +63,7 @@ public class RestC_syncmenu {
 	
 	@RequestMapping(value = "/syncMenu", method = { RequestMethod.POST })
 	public String syncMenu(HttpServletRequest request, HttpServletResponse response) {
-		Logger.writeActivity("----------- SYNC MENU BEGIN ---------", ECPOS_FOLDER);
+		Logger.writeActivity("----------- SYNC MENU BEGIN ---------", SYNC_FOLDER);
 		Connection connection = null;
 
 		JSONObject result = new JSONObject();
@@ -88,7 +88,7 @@ public class RestC_syncmenu {
 				params.put("brandId", activationInfo.getString("brandId"));
 				params.put("authToken", SecureHashTool.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
-				Logger.writeActivity("Request: " + params.toString(), ECPOS_FOLDER);
+				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
 				System.out.println("params:" + params.toString());
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
 
@@ -112,7 +112,7 @@ public class RestC_syncmenu {
 				br.close();
 				
 				System.out.println("Response:" + inputBuffer.toString());
-				Logger.writeActivity("Response: " + inputBuffer.toString(), ECPOS_FOLDER);
+				Logger.writeActivity("Response: " + inputBuffer.toString(), SYNC_FOLDER);
 
 				JSONObject responseData = new JSONObject(inputBuffer.toString());
 				if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E02")) {
@@ -169,7 +169,7 @@ public class RestC_syncmenu {
 						}
 						br2.close();
 					} catch (Exception e) {
-						Logger.writeActivity("Error: SQL Exception occured.", ECPOS_FOLDER);
+						Logger.writeActivity("Error: SQL Exception occured.", SYNC_FOLDER);
 						throw e;
 					}		
 					
@@ -293,10 +293,10 @@ public class RestC_syncmenu {
 			} catch (Exception ex) {
 			}
 			e.printStackTrace();
-			Logger.writeActivity("Error occurred. Refer error log.", ECPOS_FOLDER);
-			Logger.writeError(e, "Error", ECPOS_FOLDER);
+			Logger.writeActivity("Error occurred. Refer error log.", SYNC_FOLDER);
+			Logger.writeError(e, "Error", SYNC_FOLDER);
 		} finally {
-			Logger.writeActivity("----------- SYNC MENU END ---------", ECPOS_FOLDER);
+			Logger.writeActivity("----------- SYNC MENU END ---------", SYNC_FOLDER);
 			
 			try {
 				if (connection != null) {
@@ -318,7 +318,7 @@ public class RestC_syncmenu {
 	
 	@RequestMapping(value = "/syncStore", method = { RequestMethod.POST })
 	public String syncStore(HttpServletRequest request, HttpServletResponse response) {
-		Logger.writeActivity("----------- SYNC STORE BEGIN ---------", ECPOS_FOLDER);
+		Logger.writeActivity("----------- SYNC STORE BEGIN ---------", SYNC_FOLDER);
 		Connection connection = null;
 
 		JSONObject result = new JSONObject();
@@ -342,7 +342,7 @@ public class RestC_syncmenu {
 				params.put("brandId", activationInfo.getString("brandId"));
 				params.put("authToken", SecureHashTool.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
-				Logger.writeActivity("Request: " + params.toString(), ECPOS_FOLDER);
+				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
 				System.out.println("params:" + params.toString());
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
 
@@ -366,7 +366,7 @@ public class RestC_syncmenu {
 				br.close();
 				
 				System.out.println("Response:" + inputBuffer.toString());
-				Logger.writeActivity("Response: " + inputBuffer.toString(), ECPOS_FOLDER);
+				Logger.writeActivity("Response: " + inputBuffer.toString(), SYNC_FOLDER);
 
 				JSONObject responseData = new JSONObject(inputBuffer.toString());
 				if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E02")) {
@@ -428,10 +428,10 @@ public class RestC_syncmenu {
 			} catch (Exception ex) {
 			}
 			e.printStackTrace();
-			Logger.writeActivity("Error occurred. Refer error log.", ECPOS_FOLDER);
-			Logger.writeError(e, "Error", ECPOS_FOLDER);
+			Logger.writeActivity("Error occurred. Refer error log.", SYNC_FOLDER);
+			Logger.writeError(e, "Error", SYNC_FOLDER);
 		} finally {
-			Logger.writeActivity("----------- SYNC MENU END ---------", ECPOS_FOLDER);
+			Logger.writeActivity("----------- SYNC MENU END ---------", SYNC_FOLDER);
 			
 			try {
 				if (connection != null) {

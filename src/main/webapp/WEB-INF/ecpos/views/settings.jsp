@@ -44,6 +44,14 @@
 									<div class="col-md-2 form-group">
 										<button class="btn btn-block btn-info" ng-click="submitSyncMenu()">Synchronize</button>
 									</div>
+									<div class="col-md-1 form-group"></div>
+									<div class="col-md-3 form-group" style="margin: 0px;">
+										<label style="font-size: medium; margin-top: 6px;">ECPOS - Check, Transaction & Settlement Info</label>
+									</div>
+									<div class="col-md-2 form-group">
+										<button class="btn btn-block btn-info" ng-click="submitSyncTransaction()">Synchronize</button>
+									</div>
+									<div class="col-md-1 form-group"></div>
 								</div>
 								<div class="row">
 									<div class="col-md-3 form-group" style="margin: 0px;">
@@ -52,6 +60,7 @@
 									<div class="col-md-2 form-group">
 										<button class="btn btn-block btn-info" ng-click="submitSyncStore()">Synchronize</button>
 									</div>
+									<div class="col-md-1 form-group"></div>
 								</div>
 								<hr style="margin-top: 5px; margin-bottom: 18px;">
 								<div class="row">
@@ -191,12 +200,12 @@
 								<div class="row" >
 									<div class="col-sm-6 form-group">
 										<label>
-											<input type="radio" ng-model="settlementType" value="NR" ng-required=!settlementType /> <b>VISA/MASTER/JCB</b>
+											<input type="radio" ng-model="settlementType" value="1" ng-required=!settlementType /> <b>VISA/MASTER/JCB</b>
 										</label>
 									</div>
 									<div class="col-sm-6 form-group">
 										<label> 
-											<input type="radio" ng-model="settlementType" value="AMEX" ng-required=!settlementType /> <b>AMEX</b>
+											<input type="radio" ng-model="settlementType" value="2" ng-required=!settlementType /> <b>AMEX</b>
 										</label>
 									</div>
 								</div>
@@ -204,12 +213,12 @@
 								<div class="row" >
 									<div class="col-sm-6 form-group">
 										<label>
-											<input type="radio" ng-model="settlementType" value="MCCS" ng-required=!settlementType /> <b>MCCS</b>
+											<input type="radio" ng-model="settlementType" value="3" ng-required=!settlementType /> <b>MCCS</b>
 										</label>
 									</div>
 									<div class="col-sm-6 form-group">
 										<label> 
-											<input type="radio" ng-model="settlementType" value="UNIONPAY" ng-required=!settlementType /> <b>UNIONPAY</b>
+											<input type="radio" ng-model="settlementType" value="4" ng-required=!settlementType /> <b>UNIONPAY</b>
 										</label>
 									</div>
 								</div>

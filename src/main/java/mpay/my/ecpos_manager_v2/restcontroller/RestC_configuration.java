@@ -430,63 +430,76 @@ public class RestC_configuration {
 		try {
 			connection = dataSource.getConnection();
 			
-			String tableNo = new JSONObject(data).getString("tableNo");
-			String checkNo = new JSONObject(data).getString("checkNo");
-			String brandId = null;
-			String storeId = null;
+			JSONObject jsonRequest = new JSONObject(data); 
 			
-			stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BRAND_ID';");
-			rs = stmt.executeQuery();
-			
-			if (rs.next()) {
-				brandId = rs.getString("value");
+			if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo")) {
+				String tableNo = jsonRequest.getString("tableNo");
+				String checkNo = jsonRequest.getString("checkNo");
+				String brandId = null;
+				String storeId = null;
 				
-				stmt.close();
-				stmt = connection.prepareStatement("select * from store order by id desc;");
-				rs2 = stmt.executeQuery();
+				stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BRAND_ID';");
+				rs = stmt.executeQuery();
 				
-				if (rs2.next()) {
-					storeId = rs2.getString("id");
+				if (rs.next()) {
+					brandId = rs.getString("value");
 					
 					stmt.close();
-					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD QR ENCRYPT KEY';");
-					rs3 = stmt.executeQuery();
+					stmt = connection.prepareStatement("select * from store order by id desc;");
+					rs2 = stmt.executeQuery();
 					
-					if (rs3.next()) {
-						String encryptKey = rs3.getString("value");
+					if (rs2.next()) {
+						storeId = rs2.getString("id");
 						
-						String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+						stmt.close();
+						stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD QR ENCRYPT KEY';");
+						rs3 = stmt.executeQuery();
 						
-						String delimiter = "|;";
-						String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp;
-						
-						String token = AesEncryption.encrypt(encryptKey, tokenValue);
-						
-						String QRUrl = cloudUrl + "order#!/tk/" + token;
-						byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
-						Base64 codec = new Base64();
-						byte[] encoded = codec.encode(QRImageByte);
-						String QRImage = "data:image/jpg;base64," + new String(encoded);
-						jsonResult.put("QRImage", QRImage);
-						
-						jsonResult.put("response_code", "00");
-						jsonResult.put("response_message", "QR image is generated");
-						Logger.writeActivity("QR image is generated", ECPOS_FOLDER);
-						Logger.writeActivity(QRImage, ECPOS_FOLDER);
+						if (rs3.next()) {
+							String encryptKey = rs3.getString("value");
+							
+							String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+							
+							String delimiter = "|;";
+							String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp;
+							
+							String token = AesEncryption.encrypt(encryptKey, tokenValue);
+							
+							if (!token.equals(null)) {
+								String QRUrl = cloudUrl + "order#!/tk/" + token;
+								byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
+								byte[] encoded = new Base64().encode(QRImageByte);
+								String QRImage = "data:image/jpg;base64," + new String(encoded);
+								jsonResult.put("QRImage", QRImage);
+								
+								jsonResult.put("response_code", "00");
+								jsonResult.put("response_message", "QR image is generated");
+								Logger.writeActivity("QR image is generated", ECPOS_FOLDER);
+								Logger.writeActivity(QRImage, ECPOS_FOLDER);
+							} else {
+								jsonResult.put("response_code", "01");
+								jsonResult.put("response_message", "Token Failed To Generate");
+								Logger.writeActivity("Token Failed To Generate", ECPOS_FOLDER);
+							}
+						} else {
+							jsonResult.put("response_code", "01");
+							jsonResult.put("response_message", "BYOD QR Encrypt Key Not Found");
+							Logger.writeActivity("BYOD QR Encrypt Key Not Found", ECPOS_FOLDER);
+						}
 					} else {
 						jsonResult.put("response_code", "01");
-						jsonResult.put("response_message", "BYOD QR Encrypt Key Not Found");
-						Logger.writeActivity("BYOD QR Encrypt Key Not Found", ECPOS_FOLDER);
+						jsonResult.put("response_message", "Store Id Not Found");
+						Logger.writeActivity("Store Id Not Found", ECPOS_FOLDER);
 					}
 				} else {
 					jsonResult.put("response_code", "01");
-					jsonResult.put("response_message", "Store Id Not Found");
-					Logger.writeActivity("Store Id Not Found", ECPOS_FOLDER);
+					jsonResult.put("response_message", "Brand Id Not Found");
+					Logger.writeActivity("Brand Id Not Found", ECPOS_FOLDER);
 				}
 			} else {
 				jsonResult.put("response_code", "01");
-				jsonResult.put("response_message", "Brand Id Not Found");
-				Logger.writeActivity("Brand Id Not Found", ECPOS_FOLDER);
+				jsonResult.put("response_message", "Table No or Check No Not Found");
+				Logger.writeActivity("Table No or Check No Not Found", ECPOS_FOLDER);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);

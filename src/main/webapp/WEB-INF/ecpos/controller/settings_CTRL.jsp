@@ -160,60 +160,76 @@
 			$('#loading_modal').modal('show');
 			$http({
 				method : 'POST',
-				headers : {
-					'Content-Type' : 'application/json'
-				},
+				headers : {'Content-Type' : 'application/json'},
 				/*  params : {
 					brandId : $scope.syncData.brand_id,
 					activationId : $scope.syncData.act_id,
 					activationKey : $scope.syncData.key
 				}, */
 				url : '${pageContext.request.contextPath}/syncMenu'
-			}).then(
-					function(response) {
-						if (response != null && response.data != null
-								&& response.data.resultCode != null) {
-							if (response.data.resultCode == "00") {						
-								$scope.syncSuccess(response.data.resultMessage);
-							} else {
-								$scope.syncFailed(response.data.resultMessage);
-							}
-						} else {
-							$scope.syncFailed("Invalid server response!");
-						}
-					}, function(error) {
-						$scope.syncFailed("Unable to connect to server!");
-					});
+			}).then(function(response) {
+				if (response != null && response.data != null && response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage);
+					} else {
+						$scope.syncFailed(response.data.resultMessage);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!");
+				}
+			}, 
+			function(error) {
+				$scope.syncFailed("Unable to connect to server!");
+			});
 		}
 		
 		$scope.submitSyncStore = function() {
 			$('#loading_modal').modal('show');
 			$http({
 				method : 'POST',
-				headers : {
-					'Content-Type' : 'application/json'
-				},
+				headers : {'Content-Type' : 'application/json'},
 				/*  params : {
 					brandId : $scope.syncData.brand_id,
 					activationId : $scope.syncData.act_id,
 					activationKey : $scope.syncData.key
 				}, */
 				url : '${pageContext.request.contextPath}/syncStore'
-			}).then(
-					function(response) {
-						if (response != null && response.data != null
-								&& response.data.resultCode != null) {
-							if (response.data.resultCode == "00") {						
-								$scope.syncSuccess(response.data.resultMessage);
-							} else {
-								$scope.syncFailed(response.data.resultMessage);
-							}
-						} else {
-							$scope.syncFailed("Invalid server response!");
-						}
-					}, function(error) {
-						$scope.syncFailed("Unable to connect to server!");
-					});
+			}).then(function(response) {
+				if (response != null && response.data != null && response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage);
+					} else {
+						$scope.syncFailed(response.data.resultMessage);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!");
+				}
+			}, 
+			function(error) {
+				$scope.syncFailed("Unable to connect to server!");
+			});
+		}
+		
+		$scope.submitSyncTransaction = function() {
+			$('#loading_modal').modal('show');
+			$http({
+				method : 'POST',
+				headers : {'Content-Type' : 'application/json'},
+				url : '${pageContext.request.contextPath}/syncTransaction'
+			}).then(function(response) {
+				if (response != null && response.data != null && response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage);
+					} else {
+						$scope.syncFailed(response.data.resultMessage);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!");
+				}
+			}, 
+			function(error) {
+				$scope.syncFailed("Unable to connect to server!");
+			});
 		}
 		
 		$scope.syncFailed = function(message) {
@@ -222,10 +238,10 @@
 			dialogOption.title = "Sync Failed!";
 			dialogOption.message = message;
 			dialogOption.button1 = {
-					name: "OK",
-					fn: function() {
-						$("div#modal-dialog").modal("hide");
-					}
+				name: "OK",
+				fn: function() {
+					$("div#modal-dialog").modal("hide");
+				}
 			}
 			$scope.displayDialog(dialogOption);
 		}
@@ -236,12 +252,12 @@
 			dialogOption.title = "Sync Success!";
 			dialogOption.message = message;
 			dialogOption.button1 = {
-					name: "OK",
-					fn: function() {
-						$("div#modal-dialog").modal("hide");
-						$scope.getPrinterList();
-						$scope.getTerminalList();
-					}
+				name: "OK",
+				fn: function() {
+					$("div#modal-dialog").modal("hide");
+					$scope.getPrinterList();
+					$scope.getTerminalList();
+				}
 			}
 			$scope.displayDialog(dialogOption);
 		}

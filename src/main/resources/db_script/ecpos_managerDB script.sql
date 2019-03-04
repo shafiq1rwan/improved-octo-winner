@@ -367,6 +367,14 @@ create table `general_configuration` (
 	PRIMARY KEY (`id`)
 );
 
+CREATE TABLE check_transaction_settlement_cloud_sync (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`sync_date` datetime not null,
+	`response_code` varchar(255) NULL,
+    `response_message` varchar(255) NULL,
+	PRIMARY KEY (`id`)
+);
+
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
