@@ -39,7 +39,7 @@
 				<li>
 					<a href="${pageContext.request.contextPath}/ecpos/#!reports"> 
 						<i class="fa fa-file"></i> 
-						<span>Report</span> 
+						<span>Reports</span> 
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>

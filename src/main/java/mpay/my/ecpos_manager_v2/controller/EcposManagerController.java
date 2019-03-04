@@ -166,6 +166,13 @@ public class EcposManagerController {
 		return model;
 	}
 	
+	@RequestMapping(value = {"/views/reports"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_reports() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/reports");
+		return model;
+	}
+	
 	@RequestMapping(value = {"/views/settings"}, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecpos_settings() {
 		ModelAndView model = new ModelAndView();
@@ -253,13 +260,13 @@ public class EcposManagerController {
 //		model.setViewName("ecpos/views/show_payment");
 //		return model;
 //	}
-
-	@GetMapping("/views/reports")
-	public ModelAndView ecpos_report() {
-		ModelAndView model = new ModelAndView();
-		model.setViewName("ecpos/views/show_reports");
-		return model;
-	}
+//
+//	@GetMapping("/views/reports")
+//	public ModelAndView ecpos_report() {
+//		ModelAndView model = new ModelAndView();
+//		model.setViewName("ecpos/views/show_reports");
+//		return model;
+//	}
 //
 //	@GetMapping("/views/qr_scan")
 //	public ModelAndView ecpos_connection_qr() {

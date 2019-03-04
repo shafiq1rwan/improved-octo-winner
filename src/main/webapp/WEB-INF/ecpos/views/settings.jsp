@@ -273,7 +273,7 @@
 								ng-click="dialogData.button2.fn()" ng-show="dialogData.isButton2">{{dialogData.button2.name}}</button>
 						</div>
 					</div>
-					</div>
+				</div>
 			</div>
 		</div>
 	</div>

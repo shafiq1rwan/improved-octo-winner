@@ -51,7 +51,7 @@ public class RestC_transaction {
 			
 			stmt = connection.prepareStatement("select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, " + 
 					"pt.name as payment_type,case when terminal.name is null then '-' else terminal.name end as terminal, " + 
-					"t.transaction_amount,ts.name as transaction_status, " + 
+					"t.transaction_amount,tss.name as transaction_status, " + 
 					"case when t.transaction_date is null then t.created_date else t.transaction_date end as transaction_date  " + 
 					"from transaction t " + 
 					"inner join staff s on s.id = t.staff_id " + 
@@ -60,7 +60,7 @@ public class RestC_transaction {
 					"inner join payment_method pm on pm.id = t.payment_method " + 
 					"inner join payment_type pt on pt.id = t.payment_type " + 
 					"left join terminal on terminal.serial_number = t.terminal_serial_number " + 
-					"inner join transaction_status ts on ts.id = t.transaction_status " + 
+					"inner join transaction_settlement_status tss on tss.id = t.transaction_status " + 
 					"order by t.transaction_date desc;");
 			rs = stmt.executeQuery();
 
