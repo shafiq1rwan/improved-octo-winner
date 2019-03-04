@@ -160,13 +160,18 @@ public class RestC_syncmenu {
 					connection.setAutoCommit(false);
 					DataSync.resetDBMenuData(connection);
 
-					Statement statement = connection.createStatement();
-					BufferedReader br2 = new BufferedReader(new FileReader(queryFile));
-					String readLine = null;
-					while ((readLine = br2.readLine()) != null) {
-						statement.execute(readLine);
-					}
-					br2.close();
+					Statement statement = connection.createStatement();		
+					try {
+						BufferedReader br2 = new BufferedReader(new FileReader(queryFile));
+						String readLine = null;
+						while ((readLine = br2.readLine()) != null) {
+							statement.execute(readLine);
+						}
+						br2.close();
+					} catch (Exception e) {
+						Logger.writeActivity("Error: SQL Exception occured.", ECPOS_FOLDER);
+						throw e;
+					}		
 					
 					connection.commit();
 					connection.setAutoCommit(true);
