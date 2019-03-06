@@ -52,7 +52,7 @@ public class RestC_check {
 
 				stmt = connection.prepareStatement("SELECT * FROM `check` WHERE table_number = ? AND check_status IN (1,2);");
 				stmt.setString(1, table_no);
-				rs = (ResultSet) stmt.executeQuery();
+				rs = stmt.executeQuery();
 
 				JSONArray check_list = new JSONArray();
 				while (rs.next()) {

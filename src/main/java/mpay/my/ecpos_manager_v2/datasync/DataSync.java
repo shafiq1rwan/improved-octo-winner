@@ -13,7 +13,13 @@ import java.sql.Timestamp;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import mpay.my.ecpos_manager_v2.logger.Logger;
+import mpay.my.ecpos_manager_v2.property.Property;
+
 public class DataSync {
+	
+	private static String SYNC_FOLDER = Property.getSYNC_FOLDER_NAME();
+	
 	public static void resetDBMenuData(Connection connection) throws Exception {
 		String sqlStatement = "DELETE FROM category;";
 		PreparedStatement ps1 = connection.prepareStatement(sqlStatement);
@@ -134,6 +140,7 @@ public class DataSync {
 			}
 			
 		} catch (Exception ex) {
+			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
 			throw ex;
 		} finally {
 			if (ps1 != null) {
@@ -155,6 +162,7 @@ public class DataSync {
 			}
 			
 		} catch (Exception ex) {
+			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
 			throw ex;
 		} finally {
 			if (ps1 != null) {
@@ -188,6 +196,7 @@ public class DataSync {
 				flag = true;
 			}	
 		} catch (Exception ex) {
+			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
 			throw ex;
 		} finally {
 			if (ps1 != null) {
@@ -229,6 +238,7 @@ public class DataSync {
 				flag = true;
 			}	
 		} catch (Exception ex) {
+			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
 			throw ex;
 		} finally {
 			if (ps1 != null) {
@@ -274,12 +284,14 @@ public class DataSync {
 				jary.put(check);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -321,12 +333,14 @@ public class DataSync {
 				jary.put(checkDetail);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -397,12 +411,14 @@ public class DataSync {
 				jary.put(transaction);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -443,12 +459,14 @@ public class DataSync {
 				jary.put(settlement);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -491,12 +509,14 @@ public class DataSync {
 				jary.put(check);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -538,12 +558,14 @@ public class DataSync {
 				jary.put(checkDetail);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -614,12 +636,14 @@ public class DataSync {
 				jary.put(transaction);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -660,12 +684,14 @@ public class DataSync {
 				jary.put(settlement);
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -686,11 +712,13 @@ public class DataSync {
 				flag = true;
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 			} catch (SQLException e) {
+				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
 			}
 		}

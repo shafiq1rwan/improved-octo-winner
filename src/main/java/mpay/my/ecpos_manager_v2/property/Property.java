@@ -11,6 +11,7 @@ public class Property {
 	private static String ECPOS_FOLDER_NAME = res.getString("ECPOS_FOLDER_NAME");
 	private static String IPOS_FOLDER_NAME = res.getString("IPOS_FOLDER_NAME");
 	private static String SYNC_FOLDER_NAME = res.getString("SYNC_FOLDER_NAME");
+	private static String DEVICECALL_FOLDER_NAME = res.getString("DEVICECALL_FOLDER_NAME");
 
 	public static String getPROJECT_LOG_PATH() {
 		return PROJECT_LOG_PATH;
@@ -26,5 +27,9 @@ public class Property {
 
 	public static String getSYNC_FOLDER_NAME() {
 		return SYNC_FOLDER_NAME;
+	}
+	
+	public static String getDEVICECALL_FOLDER_NAME() {
+		return DEVICECALL_FOLDER_NAME;
 	}
 }
