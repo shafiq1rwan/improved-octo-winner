@@ -78,6 +78,41 @@
 			$("#settlementModal").modal("show");
 		}
 		
+		$scope.showReactivationModal = function() {
+			$scope.reactivate = {};
+			$("#reactivationModal").modal("show");
+		}
+		
+		$scope.submitReactivation = function() {
+			$('#loading_modal').modal('show');
+			$http({
+				method : 'POST',
+				headers : {
+					'Content-Type' : 'application/json'
+				},
+				params : {
+					brandId : $scope.reactivate.brandId,
+					activationId : $scope.reactivate.activationId,
+					activationKey : $scope.reactivate.activationKey
+				},
+				url : '${pageContext.request.contextPath}/activation'
+			}).then(
+					function(response) {
+						if (response != null && response.data != null
+								&& response.data.resultCode != null) {
+							if (response.data.resultCode == "00") {						
+								$scope.syncSuccess(response.data.resultMessage, 1);							
+							} else {
+								$scope.syncFailed(response.data.resultMessage,  1);
+							}
+						} else {
+							$scope.syncFailed("Invalid server response!", 1);
+						}
+					}, function(error) {
+						$scope.syncFailed("Unable to connect to server!", 1);
+					});
+		}
+		
 		$scope.savePrinter = function() {
 			$scope.printer = {};
 			
@@ -232,10 +267,13 @@
 			});
 		}
 		
-		$scope.syncFailed = function(message) {
+		$scope.syncFailed = function(message, type) {
 			$('#loading_modal').modal('hide');
 			var dialogOption = {};
 			dialogOption.title = "Sync Failed!";
+			if(type==1){
+				dialogOption.title = "Reactivation Failed!";
+			}
 			dialogOption.message = message;
 			dialogOption.button1 = {
 				name: "OK",
@@ -246,15 +284,22 @@
 			$scope.displayDialog(dialogOption);
 		}
 
-		$scope.syncSuccess = function(message) {
+		$scope.syncSuccess = function(message, type) {
+			// type = 1, reactivate
 			$('#loading_modal').modal('hide');
 			var dialogOption = {};
 			dialogOption.title = "Sync Success!";
+			if(type==1){
+				dialogOption.title = "Reactivation Success!"
+			}
 			dialogOption.message = message;
 			dialogOption.button1 = {
 				name: "OK",
 				fn: function() {
 					$("div#modal-dialog").modal("hide");
+					if(type==1){
+						window.location.href = "${pageContext.request.contextPath}/ecpos";
+					}
 					$scope.getPrinterList();
 					$scope.getTerminalList();
 				}

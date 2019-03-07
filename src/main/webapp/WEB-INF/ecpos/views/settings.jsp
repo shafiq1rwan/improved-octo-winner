@@ -61,6 +61,13 @@
 										<button class="btn btn-block btn-info" ng-click="submitSyncStore()">Synchronize</button>
 									</div>
 									<div class="col-md-1 form-group"></div>
+									<div class="col-md-3 form-group" style="margin: 0px;">
+										<label style="font-size: medium; margin-top: 6px;">ECPOS - Reactivation</label>
+									</div>
+									<div class="col-md-2 form-group">
+										<button class="btn btn-block btn-danger" ng-click="showReactivationModal()">Reactivate</button>
+									</div>
+									<div class="col-md-1 form-group"></div>
 								</div>
 								<hr style="margin-top: 5px; margin-bottom: 18px;">
 								<div class="row">
@@ -124,7 +131,7 @@
 					<div class="modal-content">
 						<!-- <div class="modal-header"></div> -->
 						<div class="modal-body">
-							<form ng-submit="submitTerminalInfo()">
+							<form ng-submit="submitReactivation()">
 								<div class="row" style="font-size: large">
 									<div class="col-sm-1"></div>
 									<div class="col-sm-10">
@@ -167,6 +174,49 @@
 										<div class="pull-right">
 											<input ng-if="action=='create'" type="submit" class="btn btn-info" value="Add" />  
 											<input ng-if="action=='update'" type="submit" class="btn btn-info" value="Update" />  
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="reactivationModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title text-center">Reactivation</h4>
+						</div>
+						<div class="modal-body">
+							<form ng-submit="submitTerminalInfo()">
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Brand ID</label> 
+										<input type="text" class="form-control" ng-model="reactivate.brandId" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Activation ID</label> 
+										<input type="text" class="form-control" ng-model="reactivate.activationId" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Activation Key</label> 
+										<input type="text" class="form-control" ng-model="reactivate.activationKey" />
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<button class="btn btn-danger" data-dismiss="modal">Cancel</button>
+											<input type="submit" ng-click="submitReactivation()" class="btn btn-info" value="Reactivate" />  
 										</div>
 									</div>
 								</div>
@@ -244,7 +294,7 @@
 					<div class="modal-body">
 						<div class="text-center">
 							<img style="width:75%" src="${pageContext.request.contextPath}/img/gif/loading.gif"><br>
-								<span>Synchronizing Data...</span>
+								<span>Loading Data...</span>
 						</div>
 					</div>
 				</div>

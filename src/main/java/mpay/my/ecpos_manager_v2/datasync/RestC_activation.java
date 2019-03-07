@@ -29,6 +29,7 @@ import mpay.my.ecpos_manager_v2.logger.Logger;
 import mpay.my.ecpos_manager_v2.property.Property;
 import mpay.my.ecpos_manager_v2.webutil.NetworkAddressTool;
 import mpay.my.ecpos_manager_v2.webutil.URLTool;
+import mpay.my.ecpos_manager_v2.webutil.UserAuthenticationModel;
 import mpay.my.ecpos_manager_v2.webutil.UtilWebComponents;
 import mpay.my.ecpos_manager_v2.webutil.ZipTool;
 
@@ -214,6 +215,9 @@ public class RestC_activation {
 					
 					resultCode = "00";
 					resultMessage = "Success";
+					
+					// clear session
+					webComponent.clearEcposSession(request);
 				} else {
 					resultCode = "E03";
 					resultMessage = "Corrupted data. Please try again later.";
@@ -261,6 +265,8 @@ public class RestC_activation {
 
 					resultCode = "00";
 					resultMessage = "Success";
+					// clear session
+					webComponent.clearEcposSession(request);
 				} else {
 					resultCode = "E03";
 					resultMessage = "Corrupted data. Please try again later.";
@@ -291,6 +297,8 @@ public class RestC_activation {
 			}
 
 			try {
+				Logger.writeActivity("resultCode: " + resultCode, ECPOS_FOLDER);
+				Logger.writeActivity("resultMessage: " + resultMessage, ECPOS_FOLDER);
 				result.put("resultCode", resultCode);
 				result.put("resultMessage", resultMessage);
 			} catch (Exception e) {
