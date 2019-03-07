@@ -32,15 +32,26 @@
 				$("#zero").prop('disabled', true);
 				$("#zerozero").prop('disabled', true);
 				$("#remove").prop('disabled', true);
+			} else if ($scope.paymentType == "split") {
+				$("#allGrandParentItemCheckbox").show();
+				$("input[name=grandParentItemCheckbox]").show();
+				
+				$('#amount').html(parseFloat(0).toFixed(2));
+				
+				$("#one").prop('disabled', true);
+				$("#two").prop('disabled', true);
+				$("#three").prop('disabled', true);
+				$("#four").prop('disabled', true);
+				$("#five").prop('disabled', true);
+				$("#six").prop('disabled', true);
+				$("#seven").prop('disabled', true);
+				$("#eight").prop('disabled', true);
+				$("#nine").prop('disabled', true);
+				$("#zero").prop('disabled', true);
+				$("#zerozero").prop('disabled', true);
+				$("#remove").prop('disabled', true);
 			} else {
-				if ($scope.paymentType == "split") {
-					$("#allGrandParentItemCheckbox").show();
-					$("input[name=grandParentItemCheckbox]").show();
-					
-					$('#amount').html(parseFloat(0).toFixed(2));
-				} else {
-					$('#amount').html(parseFloat(0).toFixed(2));
-				}
+				$('#amount').html(parseFloat(0).toFixed(2));
 				
 				$("#one").prop('disabled', false);
 				$("#two").prop('disabled', false);
