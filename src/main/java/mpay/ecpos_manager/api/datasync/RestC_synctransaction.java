@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.LRC;
-import mpay.ecpos_manager.general.utility.SecureHashTool;
+import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.URLTool;
 import mpay.ecpos_manager.general.utility.UtilWebComponents;
 
@@ -84,7 +84,6 @@ public class RestC_synctransaction {
 				params.put("activationId", activationInfo.getString("activationId"));
 				params.put("timeStamp", date.toString());
 				params.put("brandId", activationInfo.getString("brandId"));
-				params.put("authToken", SecureHashTool.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
 				JSONObject json = new JSONObject();
 				json.put("check", DataSync.getCheckData(connection, currentDate, lastSyncDate));
@@ -99,9 +98,7 @@ public class RestC_synctransaction {
 				
 				params.put("data", json);
 				
-				String delimiter = "|;";
-				String lrcBody = params.get("storeId")+delimiter+params.get("activationId")+delimiter+params.get("timeStamp")+delimiter+params.get("brandId")+delimiter+params.get("authToken")+delimiter+params.get("data");
-				params.put("data", LRC.generateLRC(lrcBody));
+				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString()).concat(params.get("data").toString())));
 
 				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");

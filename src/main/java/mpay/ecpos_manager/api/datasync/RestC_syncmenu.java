@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
-import mpay.ecpos_manager.general.utility.SecureHashTool;
+import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.URLTool;
 import mpay.ecpos_manager.general.utility.UtilWebComponents;
 import mpay.ecpos_manager.general.utility.ZipTool;
@@ -86,7 +86,7 @@ public class RestC_syncmenu {
 				params.put("activationId", activationInfo.getString("activationId"));
 				params.put("timeStamp", date.toString());
 				params.put("brandId", activationInfo.getString("brandId"));
-				params.put("authToken", SecureHashTool.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
+				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
 				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
 				System.out.println("params:" + params.toString());
@@ -340,7 +340,7 @@ public class RestC_syncmenu {
 				params.put("activationId", activationInfo.getString("activationId"));
 				params.put("timeStamp", date.toString());
 				params.put("brandId", activationInfo.getString("brandId"));
-				params.put("authToken", SecureHashTool.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
+				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
 				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
 				System.out.println("params:" + params.toString());

@@ -2,7 +2,7 @@ package mpay.ecpos_manager.general.utility;
 
 import java.security.MessageDigest;
 
-public class SecureHashTool {
+public class SecureHash {
 	private static final char[] HEX_TABLE = new char[] {
 			'0', '1', '2', '3', '4', '5', '6', '7', 
 			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
