@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.LRC;
 import mpay.ecpos_manager.general.utility.SecureHashTool;
 import mpay.ecpos_manager.general.utility.URLTool;
 import mpay.ecpos_manager.general.utility.UtilWebComponents;
@@ -97,6 +98,10 @@ public class RestC_synctransaction {
 				json.put("updatedSettlement", DataSync.getUpdatedSettlementData(connection, currentDate, lastSyncDate));
 				
 				params.put("data", json);
+				
+				String delimiter = "|;";
+				String lrcBody = params.get("storeId")+delimiter+params.get("activationId")+delimiter+params.get("timeStamp")+delimiter+params.get("brandId")+delimiter+params.get("authToken")+delimiter+params.get("data");
+				params.put("data", LRC.generateLRC(lrcBody));
 
 				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
