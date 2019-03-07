@@ -633,11 +633,25 @@ if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
 			
 			Calendar calendar = Calendar.getInstance();
 			String year = Integer.toString(calendar.get(Calendar.YEAR));
-			String month = Integer.toString(calendar.get(Calendar.MONTH) + 1);
-			String date = Integer.toString(calendar.get(Calendar.DATE));
+			//String month = Integer.toString(calendar.get(Calendar.MONTH) + 1);
+			//String date = Integer.toString(calendar.get(Calendar.DATE));
+			String month = "";
+			String date = "";
 
 			String posId = "01";
 			
+			
+			if(Integer.toString(calendar.get(Calendar.MONTH) + 1).length()==1) {
+				month = "0"+ Integer.toString(calendar.get(Calendar.MONTH) + 1);
+			} else {
+				month = Integer.toString(calendar.get(Calendar.MONTH) + 1);
+			}
+			
+			if(Integer.toString(calendar.get(Calendar.DATE)).length()==1) {
+				date = "0"+ Integer.toString(calendar.get(Calendar.DATE));
+			} else {
+				date = Integer.toString(calendar.get(Calendar.DATE));
+			}
 			uniqueTranNumber = year + month + date + String.format("%04d", storeId) + posId + String.format("%07d", transactionId);
 			
 			stmt = connection.prepareStatement("update transaction set unique_trans_number = ?, transaction_status = 2 where id = ?;");
