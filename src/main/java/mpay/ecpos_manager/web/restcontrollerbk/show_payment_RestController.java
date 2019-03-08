@@ -33,7 +33,7 @@ import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @RequestMapping("/payment")
 @RestController

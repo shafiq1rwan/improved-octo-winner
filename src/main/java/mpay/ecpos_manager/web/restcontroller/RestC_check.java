@@ -24,7 +24,7 @@ import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @RestController
 @RequestMapping("/rc/check")
@@ -225,7 +225,7 @@ public class RestC_check {
 		int rs3 = -1;
 		int rs4 = -1;
 		
-		UtilWebComponents webComponent = new UtilWebComponents();
+		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 
 		try {

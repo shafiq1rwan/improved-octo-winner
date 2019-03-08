@@ -33,7 +33,7 @@ import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.URLTool;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 import mpay.ecpos_manager.general.utility.ZipTool;
 
 @RestController
@@ -72,7 +72,7 @@ public class RestC_syncmenu {
 
 		try {
 			connection = dataSource.getConnection();
-			UtilWebComponents webComponent = new UtilWebComponents();
+			WebComponents webComponent = new WebComponents();
 			String sqlStatement = "SELECT id FROM store;";
 			PreparedStatement ps1 = connection.prepareStatement(sqlStatement);
 			ResultSet rs1 = ps1.executeQuery();
@@ -200,7 +200,7 @@ public class RestC_syncmenu {
 
 					imageFile.delete();
 					
-					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(currentVersion));
+					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(currentVersion));
 					DataSync.updateSyncDate(connection);
 					resultCode = "00";
 					resultMessage = "Updated to latest version.";
@@ -272,7 +272,7 @@ public class RestC_syncmenu {
 					}
 					connection.commit();
 					connection.setAutoCommit(true);
-					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(currentVersion));
+					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(currentVersion));
 					DataSync.updateSyncDate(connection);		
 					resultCode = "00";
 					resultMessage = "Updated to latest version.";
@@ -327,7 +327,7 @@ public class RestC_syncmenu {
 
 		try {
 			connection = dataSource.getConnection();
-			UtilWebComponents webComponent = new UtilWebComponents();
+			WebComponents webComponent = new WebComponents();
 			String sqlStatement = "SELECT id FROM store;";
 			PreparedStatement ps1 = connection.prepareStatement(sqlStatement);
 			ResultSet rs1 = ps1.executeQuery();

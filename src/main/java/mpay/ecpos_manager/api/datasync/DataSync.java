@@ -298,7 +298,7 @@ public class DataSync {
 		return jary.toString();
 	}
 	
-	public static String getCheckDetailData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
+	public static JSONArray getCheckDetailData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
 		JSONArray jary = new JSONArray();
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -344,7 +344,7 @@ public class DataSync {
 				e.printStackTrace();
 			}
 		}
-		return jary.toString();
+		return jary;
 	}
 	
 	public static String getTransactionData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
@@ -710,6 +710,7 @@ public class DataSync {
 			
 			if(rs > 0) {
 				flag = true;
+				Logger.writeActivity("Transaction Sync DB Record Inserted", SYNC_FOLDER);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", SYNC_FOLDER);

@@ -23,7 +23,7 @@ import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 import mpay.ecpos_manager.general.utility.ipos.Card;
 
 @RestController
@@ -170,7 +170,7 @@ public class RestC_transaction {
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 
-		UtilWebComponents webComponent = new UtilWebComponents();
+		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {
@@ -398,7 +398,7 @@ if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
-		UtilWebComponents webComponent = new UtilWebComponents();
+		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {

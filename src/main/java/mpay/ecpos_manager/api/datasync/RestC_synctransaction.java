@@ -26,10 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
-import mpay.ecpos_manager.general.utility.LRC;
 import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.URLTool;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @RestController
 public class RestC_synctransaction {
@@ -40,16 +39,17 @@ public class RestC_synctransaction {
 	@Value("${CLOUD_BASE_URL}")
 	private String cloudUrl;
 	
-	private static final int API_TIMEOUT = 120 * 1000;
+	private static final int API_TIMEOUT = 300 * 1000;
 
 	private static String SYNC_FOLDER = Property.getSYNC_FOLDER_NAME();
 	
 	@RequestMapping(value = "/syncTransaction", method = { RequestMethod.POST })
 	public String syncTransaction(HttpServletRequest request, HttpServletResponse response) {
-		Logger.writeActivity("----------- SYNC TRANSACTION BEGIN ---------", SYNC_FOLDER);
+		Logger.writeActivity("----------- SYNC TRANSACTION START ---------", SYNC_FOLDER);
 		JSONObject result = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 
@@ -71,13 +71,13 @@ public class RestC_synctransaction {
 				lastSyncDate = rs.getTimestamp("sync_date");	
 			}
 			
-			stmt.close();
-			stmt = connection.prepareStatement("SELECT id FROM store;");
-			rs2 = stmt.executeQuery();
+			stmt2 = connection.prepareStatement("SELECT id FROM store;");
+			rs2 = stmt2.executeQuery();
 			
 			if (rs2.next()) {
-				UtilWebComponents webComponent = new UtilWebComponents();
+				WebComponents webComponent = new WebComponents();
 				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				Logger.writeActivity("activationInfo: " + activationInfo, SYNC_FOLDER);
 				
 				Map<String, Object> params = new LinkedHashMap<>();
 				params.put("storeId", rs2.getInt("id"));
@@ -100,7 +100,7 @@ public class RestC_synctransaction {
 				
 				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString()).concat(params.get("data").toString())));
 
-				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
+				Logger.writeActivity("requestParams: " + params, SYNC_FOLDER);
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
 				
 				URL url = new URL(cloudUrl + "api/device/syncTransaction");
@@ -122,26 +122,34 @@ public class RestC_synctransaction {
 					inputBuffer.append(nextLine);
 				}
 				br.close();
-				Logger.writeActivity("Response: " + inputBuffer.toString(), SYNC_FOLDER);
+				Logger.writeActivity("response: " + inputBuffer, SYNC_FOLDER);
 				
 				JSONObject responseData = new JSONObject(inputBuffer.toString());
-				if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E02")) {
-					resultCode = "E02";
-					resultMessage = "Device has been deactivated.";
-				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E03")) {
-					resultCode = "E02";
-					resultMessage = "Invalid access token. Please contact support.";
-				} else if (responseData.has("resultCode") && (responseData.getString("resultCode").equals("E04"))) {
-					resultCode = "E02";
-					resultMessage = "Current store is not published at cloud. Please contact support.";
-				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("00")) {
-					resultCode = "00";
-					resultMessage = "Check, transaction and settlement data have been sync to cloud.";
+				if (responseData.has("resultCode")) {
+					if (responseData.getString("resultCode").equals("E02")) {
+						resultCode = "E02";
+						resultMessage = "Device has been deactivated.";
+						Logger.writeActivity(resultCode + ": " + resultMessage, SYNC_FOLDER);
+					} else if (responseData.getString("resultCode").equals("E03")) {
+						resultCode = "E02";
+						resultMessage = "Invalid access token. Please contact support.";
+						Logger.writeActivity(resultCode + ": " + resultMessage, SYNC_FOLDER);
+					} else if (responseData.getString("resultCode").equals("E04")) {
+						resultCode = "E02";
+						resultMessage = "Current store is not published at cloud. Please contact support.";
+						Logger.writeActivity(resultCode + ": " + resultMessage, SYNC_FOLDER);
+					} else if (responseData.getString("resultCode").equals("00")) {
+						resultCode = "00";
+						resultMessage = "Check, transaction and settlement data have been sync to cloud.";
+						Logger.writeActivity(resultCode + ": " + resultMessage, SYNC_FOLDER);
+					}
 				} else {
 					resultCode = "E03";
 					resultMessage = responseData.has("resultMessage") && !responseData.getString("resultMessage").isEmpty() ? responseData.getString("resultMessage") : "Unknown error. Please try again later.";
+					Logger.writeActivity(resultCode + ": " + resultMessage, SYNC_FOLDER);
 				}
 			} else {
+				Logger.writeActivity("Store ID Not Found", SYNC_FOLDER);
 				// perform reactivation or sync store info
 			}
 			
@@ -165,6 +173,7 @@ public class RestC_synctransaction {
 					connection.close();
 				}
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
 			} catch (SQLException e) {

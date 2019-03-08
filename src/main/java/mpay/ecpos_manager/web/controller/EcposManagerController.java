@@ -1,9 +1,5 @@
 package mpay.ecpos_manager.web.controller;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
@@ -18,61 +14,69 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import mpay.ecpos_manager.general.logger.Logger;
+import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @Controller
 @RequestMapping("/ecpos")
 public class EcposManagerController {
-
+	
+	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
+	
 	@Autowired
-	private DataSource dataSource;
+	DataSource dataSource;
 	
 	// Landing Page
 	@RequestMapping(value = { "" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecposLandingPage(HttpServletRequest request) {
+		Logger.writeActivity("----------- ECPOS LANDING START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();
-		UtilWebComponents webComponent = new UtilWebComponents();
+		WebComponents webComponent = new WebComponents();
 		
 		// check for activation info
 		try {
 			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
+			
 			if(activationInfo.getString("activationId").equals("")) {
 				model.addObject("http_message", "Activation is required");
 				model.setViewName("ecpos/activation");
-				return model;
+			} else {
+				UserAuthenticationModel user = webComponent.getEcposSession(request);
+				
+				if (user != null) {
+					model.setViewName("ecpos/home");
+				} else {
+					model.setViewName("ecpos/login");
+				}
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-		}			
-		
-		UserAuthenticationModel user = webComponent.getEcposSession(request);
-		
-		if (user != null)
-			model.setViewName("ecpos/home");
-		else
-			model.setViewName("ecpos/login");
-
+		}
+		Logger.writeActivity("----------- ECPOS LANDING END ---------", ECPOS_FOLDER);
 		return model;
 	}
 
 	// Login page
 	@PostMapping("/authentication")
-	public ModelAndView ecposLogin(@RequestParam(value = "username", required = false) String username, @RequestParam(value = "password", required = false) String password, HttpServletRequest request) throws IOException {
+	public ModelAndView ecposLogin(@RequestParam(value = "username", required = false) String username, @RequestParam(value = "password", required = false) String password, HttpServletRequest request) {
+		Logger.writeActivity("----------- ECPOS AUTHENTICATION START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();
 		HttpSession session = request.getSession();
-
-		UtilWebComponents webComponent = new UtilWebComponents();
-		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
 
 		if (user != null) {
 			model.setViewName("ecpos/home");
 		} else {
-			Connection connection = null;
 			try {
-				connection = dataSource.getConnection();
-				UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(connection, "BYOD QR ENCRYPT KEY"));
+				WebComponents webComponent = new WebComponents();
+				UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
 				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
+				
 				if (loginUser != null) {
 					session.setAttribute("session_user", loginUser);
 					model.setViewName("redirect:" + "/ecpos/#");
@@ -84,41 +88,38 @@ public class EcposManagerController {
 					model.setViewName("ecpos/login");
 				}
 			} catch (Exception e) {
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 				e.printStackTrace();
-			} finally {
-				if(connection!=null) {
-					try {
-						connection.close();
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
 			}
 		}
+		Logger.writeActivity("----------- ECPOS AUTHENTICATION END ---------", ECPOS_FOLDER);
 		return model;
 	}
 	
 	// Logout
 	@GetMapping("/logout")
 	public ModelAndView ecposSessionInvalidate(HttpServletRequest request) {
+		Logger.writeActivity("----------- ECPOS LOGOUT START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();
-		UtilWebComponents webComponent = new UtilWebComponents();
+		WebComponents webComponent = new WebComponents();
 		webComponent.clearEcposSession(request);
 		
 		// check for activation info
 		try {
 			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
+			
 			if(activationInfo.getString("activationId").equals("")) {
 				model.addObject("http_message", "Activation is required");
 				model.setViewName("ecpos/activation");
-				return model;
+			} else {
+				model.setViewName("ecpos/login");
 			}
 		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 		}
-		
-		model.setViewName("ecpos/login");
+		Logger.writeActivity("----------- ECPOS LOGOUT END ---------", ECPOS_FOLDER);
 		return model;
 	}
 

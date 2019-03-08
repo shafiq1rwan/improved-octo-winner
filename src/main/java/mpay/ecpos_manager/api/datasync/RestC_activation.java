@@ -30,7 +30,7 @@ import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.NetworkAddressTool;
 import mpay.ecpos_manager.general.utility.URLTool;
-import mpay.ecpos_manager.general.utility.UtilWebComponents;
+import mpay.ecpos_manager.general.utility.WebComponents;
 import mpay.ecpos_manager.general.utility.ZipTool;
 
 @RestController
@@ -206,12 +206,12 @@ public class RestC_activation {
 					}
 					connection.setAutoCommit(true);	
 					
-					UtilWebComponents webComponent = new UtilWebComponents();
-					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);
-					webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", activationId);
-					webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", activationKey);
-					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
-					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));
+					WebComponents webComponent = new WebComponents();
+					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", brandId);
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", activationId);
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", activationKey);
+					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
+					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));
 					
 					resultCode = "00";
 					resultMessage = "Success";
@@ -256,12 +256,12 @@ public class RestC_activation {
 					}
 					connection.setAutoCommit(true);
 					
-					UtilWebComponents webComponent = new UtilWebComponents();
-					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);
-					webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", activationId);
-					webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", activationKey);
-					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
-					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));			
+					WebComponents webComponent = new WebComponents();
+					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", brandId);
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", activationId);
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", activationKey);
+					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
+					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));			
 
 					resultCode = "00";
 					resultMessage = "Success";
