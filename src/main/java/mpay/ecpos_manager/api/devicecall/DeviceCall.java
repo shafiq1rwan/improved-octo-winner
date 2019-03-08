@@ -24,7 +24,58 @@ public class DeviceCall {
 	@Autowired
 	DataSource dataSource;
 	
-	public JSONObject checkOrderItem(JSONArray jsonData) {
+	public JSONObject getCheck(String checkNo) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			String responseCode = "";
+			String responseMessage = "";
+			
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select * from `check` where check_number = ?;");
+			stmt.setString(1, checkNo);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				String checkStatus = rs.getString("check_status");
+				
+				if (checkStatus.equals("1") || checkStatus.equals("2")) {
+					responseCode = "00";
+					responseMessage = "Check is in pending";
+				} else if (checkStatus.equals("3")) {
+					responseCode = "EA4";
+					responseMessage = "Check is Closed";
+				} else if (checkStatus.equals("4")) {
+					responseCode = "EA5";
+					responseMessage = "Check is Cancelled";
+				}
+			} else {
+				responseCode = "EA3";
+				responseMessage = "Check Not Found";
+			}
+			jsonResult.put("resultCode", responseCode);
+			jsonResult.put("resultMessage", responseMessage);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
+	}
+	
+	public JSONObject checkOrderItem(JSONArray orderData) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -46,8 +97,8 @@ public class DeviceCall {
 			
 			DecimalFormat df = new DecimalFormat("#0.00");
 			
-			for (int i = 0; i < jsonData.length(); i++) {
-				JSONObject jsonObj = jsonData.getJSONObject(i);
+			main: for (int i = 0; i < orderData.length(); i++) {
+				JSONObject jsonObj = orderData.getJSONObject(i);
 				
 				if (jsonObj.has("id") && !jsonObj.isNull("id") && !jsonObj.getString("id").isEmpty()) {
 					connection = dataSource.getConnection();
@@ -90,39 +141,39 @@ public class DeviceCall {
 																	} else {
 																		responseCode = "E05";
 																		responseMessage = "Modifier Item Price Not Match (modifier id = " + rs3.getString("id") + ")";
-																		break;
+																		break main;
 																	}
 																} else {
 																	responseCode = "E04";
 																	responseMessage = "Modifier Item Type Not Match (modifier id = " + rs3.getString("id") + ")";
-																	break;
+																	break main;
 																}
 															} else {
 																responseCode = "E03";
 																responseMessage = "Modifier Item Not Active (modifier id = " + rs3.getString("id") + ")";
-																break;
+																break main;
 															}
 														} else {
 															responseCode = "E02";
 															responseMessage = "Modifier Item Not Exist (id = " + jsonObj.getString("id") + ")";
-															break;
+															break main;
 														}
 													} else {
 														responseCode = "E06";
 														responseMessage = "Modifier Item Not Found In Request (id = " + jsonObj.getString("id") + ")";
-														break;
+														break main;
 													}
 												}
 											} else {
 												responseCode = "E06";
 												responseMessage = "Item Modifier Not Found In Request (id = " + jsonObj.getString("id") + ")";
-												break;
+												break main;
 											}
 										} else {
 											if (jsonObj.has("sub") && !jsonObj.isNull("sub") && jsonObj.getJSONArray("sub").length() > 0) {
 												responseCode = "E06";
 												responseMessage = "Item Modifier Not Found In Database (id = " + jsonObj.getString("id") + ")";
-												break;
+												break main;
 											} else {
 												responseCode = "00";
 												responseMessage = "Item Details Matched";
@@ -191,7 +242,7 @@ public class DeviceCall {
 																						"inner join modifier_item_sequence mis on mis.modifier_group_id = mg.id " + 
 																						"inner join menu_item mi on mi.id = mis.menu_item_id " + 
 																						"where mimg.menu_item_id = ? and mi.backend_id = ?;");
-																				stmt6.setString(1, comboItem.getString("id"));
+																				stmt6.setString(1, rs4.getString("id"));
 																				stmt6.setString(2, modifier.getString("id"));
 																				rs6 = stmt6.executeQuery();
 																			
@@ -204,39 +255,39 @@ public class DeviceCall {
 																							} else {
 																								responseCode = "E05";
 																								responseMessage = "Combo Modifier Item Price Not Match (modifier id = " + rs6.getString("id") + ")";
-																								break;
+																								break main;
 																							}
 																						} else {
 																							responseCode = "E04";
 																							responseMessage = "Combo Modifier Item Type Not Match (modifier id = " + rs6.getString("id") + ")";
-																							break;
+																							break main;
 																						}
 																					} else {
 																						responseCode = "E03";
 																						responseMessage = "Combo Modifier Item Not Active (modifier id = " + rs6.getString("id") + ")";
-																						break;
+																						break main;
 																					}
 																				} else {
 																					responseCode = "E02";
 																					responseMessage = "Combo Modifier Item Not Exist (id = " + jsonObj.getString("id") + ")";
-																					break;
+																					break main;
 																				}
 																			} else {
 																				responseCode = "E06";
 																				responseMessage = "Combo Modifier Item Not Found In Request (id = " + jsonObj.getString("id") + ")";
-																				break;
+																				break main;
 																			}
 																		}
 																	} else {
 																		responseCode = "E06";
 																		responseMessage = "Combo Item Modifier Not Found In Request (id = " + jsonObj.getString("id") + ")";
-																		break;
+																		break main;
 																	}
 																} else {
 																	if (comboItem.has("sub") && !comboItem.isNull("sub") && comboItem.getJSONArray("sub").length() > 0) {
 																		responseCode = "E06";
 																		responseMessage = "Combo Item Modifier Not Found In Database (id = " + jsonObj.getString("id") + ")";
-																		break;
+																		break main;
 																	} else {
 																		responseCode = "00";
 																		responseMessage = "Combo Item Details Matched";
@@ -245,27 +296,27 @@ public class DeviceCall {
 															} else {
 																responseCode = "E05";
 																responseMessage = "Combo Item Price Not Match (id = " + jsonObj.getString("id") + ")";
-																break;
+																break main;
 															}
 														} else {
 															responseCode = "E03";
 															responseMessage = "Combo Item Not Active (combo id = " + jsonObj.getString("id") + ")";
-															break;
+															break main;
 														}
 													} else {
 														responseCode = "E06";
 														responseMessage = "Combo Item Not Found (combo id = " + jsonObj.getString("id") + ")";
-														break;
+														break main;
 													}
 												} else {
 													responseCode = "E06";
 													responseMessage = "Combo Item Not Found (combo id = " + jsonObj.getString("id") + ")";
-													break;
+													break main;
 												}
 											} else {
 												responseCode = "E06";
 												responseMessage = "Combo Item Not Found In Request (combo id = " + jsonObj.getString("id") + ")";
-												break;
+												break main;
 											}
 											//deduct tier quantity
 											for (int k = 0; k < comboTiers.length(); k++) {
@@ -285,39 +336,39 @@ public class DeviceCall {
 												if (comboTierInfo.getInt("combo_detail_quantity") != 0) {
 													responseCode = "E07";
 													responseMessage = "Combo Item Quantity Not Match (combo id = " + jsonObj.getString("id") + ")";
-													break;
+													break main;
 												}
 											}
 										}
 									} else {
 										responseCode = "E04";
 										responseMessage = "Item Type Not Match (id = " + jsonObj.getString("id") + ")";
-										break;
+										break main;
 									}
 								} else {
 									responseCode = "E05";
 									responseMessage = "Item Price Not Match (id = " + jsonObj.getString("id") + ")";
-									break;
+									break main;
 								}
 							} else {
 								responseCode = "E04";
 								responseMessage = "Item Type Not Match (id = " + jsonObj.getString("id") + ")";
-								break;
+								break main;
 							}
 						} else {
 							responseCode = "E03";
 							responseMessage = "Item Not Active (id = " + jsonObj.getString("id") + ")";
-							break;
+							break main;
 						}
 					} else {
 						responseCode = "E02";
 						responseMessage = "Item Not Exist (id = " + jsonObj.getString("id") + ")";
-						break;
+						break main;
 					}
 				} else {
 					responseCode = "E06";
 					responseMessage = "Item Not Found In Request";
-					break;
+					break main;
 				}
 			}
 			jsonResult.put("resultCode", responseCode);

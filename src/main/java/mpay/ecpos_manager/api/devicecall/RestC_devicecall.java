@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.SecureHash;
 
 @RestController
 @RequestMapping("/device")
@@ -22,21 +23,57 @@ public class RestC_devicecall {
 
 	@RequestMapping(value = { "/order/checking" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public String orderCheck(@RequestBody String data) {
+		Logger.writeActivity("----------- DEVICE CALLING ORDER CHECKING START ---------", DEVICECALL_FOLDER);
+		Logger.writeActivity("request: " + data, DEVICECALL_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		
+		String responseCode = "E01";
+		String responseMessage = "Server error. Please try again later.";
+		
 		try {
-			JSONArray jsonData = new JSONArray(data);
+			JSONObject jsonData = new JSONObject(data);
 			
-			jsonResult = deviceCall.checkOrderItem(jsonData);
+			if (jsonData.has("checkNumber") && jsonData.has("hashData") && jsonData.has("order")) {
+				String newHashData = SecureHash.generateSecureHash("SHA-256", "CheckOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber"))));
+				
+				if (newHashData.equals(jsonData.getString("hashData"))) {
+					JSONObject getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"));
+					
+					if (getCheck.getString("resultCode").equals("00")) {
+						jsonResult = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));
+						Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+					} else {
+						jsonResult = new JSONObject(getCheck.toString());
+						Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+					}
+				} else {
+					responseCode = "EA2";
+					responseMessage = "SecureHash Not Match";
+					Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+					
+					jsonResult.put("resultCode", responseCode);
+					jsonResult.put("resultMessage", responseMessage);
+				}
+			} else {
+				responseCode = "EA1";
+				responseMessage = "Request Received Not Complete";
+				Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+				
+				jsonResult.put("resultCode", responseCode);
+				jsonResult.put("resultMessage", responseMessage);
+			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
 		}
+		Logger.writeActivity("----------- DEVICE CALLING ORDER CHECKING END ---------", DEVICECALL_FOLDER);
 		return jsonResult.toString();
 	}
 	
 	@RequestMapping(value = { "/order/submit" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public String orderOrder(@RequestBody String data) {
+		Logger.writeActivity("----------- DEVICE CALLING ORDER SUBMIT START ---------", DEVICECALL_FOLDER);
+		Logger.writeActivity("request: " + data, DEVICECALL_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		
 		String responseCode = "E01";
@@ -47,7 +84,7 @@ public class RestC_devicecall {
 			
 			jsonResult = deviceCall.checkOrderItem(jsonData);
 			
-			if (jsonResult.getString("responseCode").equals("00")) {
+			if (jsonResult.getString("resultCode").equals("00")) {
 //To Do				
 			} else {
 				responseCode = jsonResult.getString("responseCode");
@@ -59,6 +96,7 @@ public class RestC_devicecall {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
 		}
+		Logger.writeActivity("----------- DEVICE CALLING ORDER SUBMIT END ---------", DEVICECALL_FOLDER);
 		return jsonResult.toString();
 	}
 }
