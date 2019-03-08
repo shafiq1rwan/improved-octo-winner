@@ -248,38 +248,40 @@ public class DataSync {
 		return flag;
 	}
 	
-	public static String getCheckData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
+	public static JSONArray getCheckData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
 		JSONArray jary = new JSONArray();
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
-			stmt = connection.prepareStatement("select * from `check` where created_date >= ? and created_date < ?;");
+			stmt = connection.prepareStatement("select * from `check` where (created_date >= ? and created_date < ?) or (updated_date >= ? and updated_date < ?);");
 			stmt.setTimestamp(1, lastSyncDate);
 			stmt.setTimestamp(2, currentDate);
+			stmt.setTimestamp(3, lastSyncDate);
+			stmt.setTimestamp(4, currentDate);
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				JSONObject check = new JSONObject();
-				check.put("check_id", rs.getString("id"));
-				check.put("check_number", rs.getString("check_number"));
-				check.put("device_type", rs.getString("device_type"));
-				check.put("staff_id", rs.getString("staff_id"));
-				check.put("order_type", rs.getString("order_type"));
-				check.put("table_number", rs.getString("table_number"));
-				check.put("total_item_quantity", rs.getString("total_item_quantity"));
-				check.put("subtotal_amount", rs.getString("subtotal_amount"));
-				check.put("total_tax_amount", rs.getString("total_tax_amount"));
-				check.put("total_service_charge_amount", rs.getString("total_service_charge_amount"));
-				check.put("total_amount", rs.getString("total_amount"));
-				check.put("total_amount_rounding_adjustment", rs.getString("total_amount_rounding_adjustment"));
-				check.put("grand_total_amount", rs.getString("grand_total_amount"));
-				check.put("deposit_amount", rs.getString("deposit_amount"));
-				check.put("tender_amount", rs.getString("tender_amount"));
-				check.put("overdue_amount", rs.getString("overdue_amount"));
-				check.put("check_status", rs.getString("check_status"));
-				check.put("created_date", rs.getString("created_date"));
-				check.put("updated_date", rs.getString("updated_date"));
+				check.put("check_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				check.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
+				check.put("device_type", rs.getString("device_type") == null ? JSONObject.NULL : rs.getString("device_type"));
+				check.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
+				check.put("order_type", rs.getString("order_type") == null ? JSONObject.NULL : rs.getString("order_type"));
+				check.put("table_number", rs.getString("table_number") == null ? JSONObject.NULL : rs.getString("table_number"));
+				check.put("total_item_quantity", rs.getString("total_item_quantity") == null ? JSONObject.NULL : rs.getString("total_item_quantity"));
+				check.put("subtotal_amount", rs.getString("subtotal_amount") == null ? JSONObject.NULL : rs.getString("subtotal_amount"));
+				check.put("total_tax_amount", rs.getString("total_tax_amount") == null ? JSONObject.NULL : rs.getString("total_tax_amount"));
+				check.put("total_service_charge_amount", rs.getString("total_service_charge_amount") == null ? JSONObject.NULL : rs.getString("total_service_charge_amount"));
+				check.put("total_amount", rs.getString("total_amount") == null ? JSONObject.NULL : rs.getString("total_amount"));
+				check.put("total_amount_rounding_adjustment", rs.getString("total_amount_rounding_adjustment") == null ? JSONObject.NULL : rs.getString("total_amount_rounding_adjustment"));
+				check.put("grand_total_amount", rs.getString("grand_total_amount") == null ? JSONObject.NULL : rs.getString("grand_total_amount"));
+				check.put("deposit_amount", rs.getString("deposit_amount") == null ? JSONObject.NULL : rs.getString("deposit_amount"));
+				check.put("tender_amount", rs.getString("tender_amount") == null ? JSONObject.NULL : rs.getString("tender_amount"));
+				check.put("overdue_amount", rs.getString("overdue_amount") == null ? JSONObject.NULL : rs.getString("overdue_amount"));
+				check.put("check_status", rs.getString("check_status") == null ? JSONObject.NULL : rs.getString("check_status"));
+				check.put("created_date", rs.getString("created_date") == null ? JSONObject.NULL : rs.getString("created_date"));
+				check.put("updated_date", rs.getString("updated_date") == null ? JSONObject.NULL : rs.getString("updated_date"));
 				
 				jary.put(check);
 			}
@@ -295,7 +297,7 @@ public class DataSync {
 				e.printStackTrace();
 			}
 		}
-		return jary.toString();
+		return jary;
 	}
 	
 	public static JSONArray getCheckDetailData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
@@ -304,31 +306,34 @@ public class DataSync {
 		ResultSet rs = null;
 
 		try {
-			stmt = connection.prepareStatement("select * from check_detail where created_date >= ? and created_date < ?;");
+			stmt = connection.prepareStatement("select * from check_detail where (created_date >= ? and created_date < ?) or (updated_date >= ? and updated_date < ?);");
 			stmt.setTimestamp(1, lastSyncDate);
 			stmt.setTimestamp(2, currentDate);
+			stmt.setTimestamp(3, lastSyncDate);
+			stmt.setTimestamp(4, currentDate);
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				JSONObject checkDetail = new JSONObject();
-				checkDetail.put("check_id", rs.getString("check_id"));
-				checkDetail.put("check_number", rs.getString("check_number"));
-				checkDetail.put("parent_check_detail_id", rs.getString("parent_check_detail_id"));
-				checkDetail.put("menu_item_id", rs.getString("menu_item_id"));
-				checkDetail.put("menu_item_code", rs.getString("menu_item_code"));
-				checkDetail.put("menu_item_name", rs.getString("menu_item_name"));
-				checkDetail.put("menu_item_price", rs.getString("menu_item_price"));
-				checkDetail.put("tax_rate", rs.getString("tax_rate"));
-				checkDetail.put("service_charge_rate", rs.getString("service_charge_rate"));
-				checkDetail.put("quantity", rs.getString("quantity"));
-				checkDetail.put("subtotal_amount", rs.getString("subtotal_amount"));
-				checkDetail.put("total_tax_amount", rs.getString("total_tax_amount"));
-				checkDetail.put("total_service_charge_amount", rs.getString("total_service_charge_amount"));
-				checkDetail.put("total_amount", rs.getString("total_amount"));
-				checkDetail.put("check_detail_status", rs.getString("check_detail_status"));
-				checkDetail.put("transaction_id", rs.getString("transaction_id"));
-				checkDetail.put("created_date", rs.getString("created_date"));
-				checkDetail.put("updated_date", rs.getString("updated_date"));
+				checkDetail.put("check_detail_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				checkDetail.put("check_id", rs.getString("check_id") == null ? JSONObject.NULL : rs.getString("check_id"));
+				checkDetail.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
+				checkDetail.put("parent_check_detail_id", rs.getString("parent_check_detail_id") == null ? JSONObject.NULL : rs.getString("parent_check_detail_id"));
+				checkDetail.put("menu_item_id", rs.getString("menu_item_id") == null ? JSONObject.NULL : rs.getString("menu_item_id"));
+				checkDetail.put("menu_item_code", rs.getString("menu_item_code") == null ? JSONObject.NULL : rs.getString("menu_item_code"));
+				checkDetail.put("menu_item_name", rs.getString("menu_item_name") == null ? JSONObject.NULL : rs.getString("menu_item_name"));
+				checkDetail.put("menu_item_price", rs.getString("menu_item_price") == null ? JSONObject.NULL : rs.getString("menu_item_price"));
+				checkDetail.put("tax_rate", rs.getString("tax_rate") == null ? JSONObject.NULL : rs.getString("tax_rate"));
+				checkDetail.put("service_charge_rate", rs.getString("service_charge_rate") == null ? JSONObject.NULL : rs.getString("service_charge_rate"));
+				checkDetail.put("quantity", rs.getString("quantity") == null ? JSONObject.NULL : rs.getString("quantity"));
+				checkDetail.put("subtotal_amount", rs.getString("subtotal_amount") == null ? JSONObject.NULL : rs.getString("subtotal_amount"));
+				checkDetail.put("total_tax_amount", rs.getString("total_tax_amount") == null ? JSONObject.NULL : rs.getString("total_tax_amount"));
+				checkDetail.put("total_service_charge_amount", rs.getString("total_service_charge_amount") == null ? JSONObject.NULL : rs.getString("total_service_charge_amount"));
+				checkDetail.put("total_amount", rs.getString("total_amount") == null ? JSONObject.NULL : rs.getString("total_amount"));
+				checkDetail.put("check_detail_status", rs.getString("check_detail_status") == null ? JSONObject.NULL : rs.getString("check_detail_status"));
+				checkDetail.put("transaction_id", rs.getString("transaction_id") == null ? JSONObject.NULL : rs.getString("transaction_id"));
+				checkDetail.put("created_date", rs.getString("created_date") == null ? JSONObject.NULL : rs.getString("created_date"));
+				checkDetail.put("updated_date", rs.getString("updated_date") == null ? JSONObject.NULL : rs.getString("updated_date"));
 				
 				jary.put(checkDetail);
 			}
@@ -347,66 +352,69 @@ public class DataSync {
 		return jary;
 	}
 	
-	public static String getTransactionData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
+	public static JSONArray getTransactionData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
 		JSONArray jary = new JSONArray();
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
-			stmt = connection.prepareStatement("select * from transaction where created_date >= ? and created_date < ?;");
+			stmt = connection.prepareStatement("select * from transaction where (created_date >= ? and created_date < ?) or (updated_date >= ? and updated_date < ?);");
 			stmt.setTimestamp(1, lastSyncDate);
 			stmt.setTimestamp(2, currentDate);
+			stmt.setTimestamp(3, lastSyncDate);
+			stmt.setTimestamp(4, currentDate);
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				JSONObject transaction = new JSONObject();
-				transaction.put("staff_id", rs.getString("staff_id"));
-				transaction.put("check_id", rs.getString("check_id"));
-				transaction.put("check_number", rs.getString("check_number"));
-				transaction.put("transaction_type", rs.getString("transaction_type"));
-				transaction.put("payment_method", rs.getString("payment_method"));
-				transaction.put("payment_type", rs.getString("payment_type"));
-				transaction.put("terminal_serial_number", rs.getString("terminal_serial_number"));
-				transaction.put("transaction_currency", rs.getString("transaction_currency"));
-				transaction.put("transaction_amount", rs.getString("transaction_amount"));
-				transaction.put("transaction_tips", rs.getString("transaction_tips"));
-				transaction.put("transaction_status", rs.getString("transaction_status"));
-				transaction.put("unique_trans_number", rs.getString("unique_trans_number"));
-				transaction.put("qr_content", rs.getString("qr_content"));
-				transaction.put("created_date", rs.getString("created_date"));
-				transaction.put("response_code", rs.getString("response_code"));
-				transaction.put("response_message", rs.getString("response_message"));
-				transaction.put("updated_date", rs.getString("updated_date"));
-				transaction.put("wifi_ip", rs.getString("wifi_ip"));
-				transaction.put("wifi_port", rs.getString("wifi_port"));
-				transaction.put("approval_code", rs.getString("approval_code"));
-				transaction.put("bank_mid", rs.getString("bank_mid"));
-				transaction.put("bank_tid", rs.getString("bank_tid"));
-				transaction.put("transaction_date", rs.getString("transaction_date"));
-				transaction.put("transaction_time", rs.getString("transaction_time"));
-				transaction.put("original_invoice_number", rs.getString("original_invoice_number"));
-				transaction.put("invoice_number", rs.getString("invoice_number"));
-				transaction.put("merchant_info", rs.getString("merchant_info"));
-				transaction.put("card_issuer_name", rs.getString("card_issuer_name"));
-				transaction.put("masked_card_number", rs.getString("masked_card_number"));
-				transaction.put("card_expiry_date", rs.getString("card_expiry_date"));
-				transaction.put("batch_number", rs.getString("batch_number"));
-				transaction.put("rrn", rs.getString("rrn"));
-				transaction.put("card_issuer_id", rs.getString("card_issuer_id"));
-				transaction.put("cardholder_name", rs.getString("cardholder_name"));
-				transaction.put("aid", rs.getString("aid"));
-				transaction.put("app_label", rs.getString("app_label"));
-				transaction.put("tc", rs.getString("tc"));
-				transaction.put("terminal_verification_result", rs.getString("terminal_verification_result"));
-				transaction.put("original_trace_number", rs.getString("original_trace_number"));
-				transaction.put("trace_number", rs.getString("trace_number"));
-				transaction.put("qr_issuer_type", rs.getString("qr_issuer_type"));
-				transaction.put("mpay_mid", rs.getString("mpay_mid"));
-				transaction.put("mpay_tid", rs.getString("mpay_tid"));
-				transaction.put("qr_ref_id", rs.getString("qr_ref_id"));
-				transaction.put("qr_user_id", rs.getString("qr_user_id"));
-				transaction.put("qr_amount_myr", rs.getString("qr_amount_myr"));
-				transaction.put("qr_amount_rmb", rs.getString("qr_amount_rmb"));
+				transaction.put("transaction_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				transaction.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
+				transaction.put("check_id", rs.getString("check_id") == null ? JSONObject.NULL : rs.getString("check_id"));
+				transaction.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
+				transaction.put("transaction_type", rs.getString("transaction_type") == null ? JSONObject.NULL : rs.getString("transaction_type"));
+				transaction.put("payment_method", rs.getString("payment_method") == null ? JSONObject.NULL : rs.getString("payment_method"));
+				transaction.put("payment_type", rs.getString("payment_type") == null ? JSONObject.NULL : rs.getString("payment_type"));
+				transaction.put("terminal_serial_number", rs.getString("terminal_serial_number") == null ? JSONObject.NULL : rs.getString("terminal_serial_number"));
+				transaction.put("transaction_currency", rs.getString("transaction_currency") == null ? JSONObject.NULL : rs.getString("transaction_currency"));
+				transaction.put("transaction_amount", rs.getString("transaction_amount") == null ? JSONObject.NULL : rs.getString("transaction_amount"));
+				transaction.put("transaction_tips", rs.getString("transaction_tips") == null ? JSONObject.NULL : rs.getString("transaction_tips"));
+				transaction.put("transaction_status", rs.getString("transaction_status") == null ? JSONObject.NULL : rs.getString("transaction_status"));
+				transaction.put("unique_trans_number", rs.getString("unique_trans_number") == null ? JSONObject.NULL : rs.getString("unique_trans_number"));
+				transaction.put("qr_content", rs.getString("qr_content") == null ? JSONObject.NULL : rs.getString("qr_content"));
+				transaction.put("created_date", rs.getString("created_date") == null ? JSONObject.NULL : rs.getString("created_date"));
+				transaction.put("response_code", rs.getString("response_code") == null ? JSONObject.NULL : rs.getString("response_code"));
+				transaction.put("response_message", rs.getString("response_message") == null ? JSONObject.NULL : rs.getString("response_message"));
+				transaction.put("updated_date", rs.getString("updated_date") == null ? JSONObject.NULL : rs.getString("updated_date"));
+				transaction.put("wifi_ip", rs.getString("wifi_ip") == null ? JSONObject.NULL : rs.getString("wifi_ip"));
+				transaction.put("wifi_port", rs.getString("wifi_port") == null ? JSONObject.NULL : rs.getString("wifi_port"));
+				transaction.put("approval_code", rs.getString("approval_code") == null ? JSONObject.NULL : rs.getString("approval_code"));
+				transaction.put("bank_mid", rs.getString("bank_mid") == null ? JSONObject.NULL : rs.getString("bank_mid"));
+				transaction.put("bank_tid", rs.getString("bank_tid") == null ? JSONObject.NULL : rs.getString("bank_tid"));
+				transaction.put("transaction_date", rs.getString("transaction_date") == null ? JSONObject.NULL : rs.getString("transaction_date"));
+				transaction.put("transaction_time", rs.getString("transaction_time") == null ? JSONObject.NULL : rs.getString("transaction_time"));
+				transaction.put("original_invoice_number", rs.getString("original_invoice_number") == null ? JSONObject.NULL : rs.getString("original_invoice_number"));
+				transaction.put("invoice_number", rs.getString("invoice_number") == null ? JSONObject.NULL : rs.getString("invoice_number"));
+				transaction.put("merchant_info", rs.getString("merchant_info") == null ? JSONObject.NULL : rs.getString("merchant_info"));
+				transaction.put("card_issuer_name", rs.getString("card_issuer_name") == null ? JSONObject.NULL : rs.getString("card_issuer_name"));
+				transaction.put("masked_card_number", rs.getString("masked_card_number") == null ? JSONObject.NULL : rs.getString("masked_card_number"));
+				transaction.put("card_expiry_date", rs.getString("card_expiry_date") == null ? JSONObject.NULL : rs.getString("card_expiry_date"));
+				transaction.put("batch_number", rs.getString("batch_number") == null ? JSONObject.NULL : rs.getString("batch_number"));
+				transaction.put("rrn", rs.getString("rrn") == null ? JSONObject.NULL : rs.getString("rrn"));
+				transaction.put("card_issuer_id", rs.getString("card_issuer_id") == null ? JSONObject.NULL : rs.getString("card_issuer_id"));
+				transaction.put("cardholder_name", rs.getString("cardholder_name") == null ? JSONObject.NULL : rs.getString("cardholder_name"));
+				transaction.put("aid", rs.getString("aid") == null ? JSONObject.NULL : rs.getString("aid"));
+				transaction.put("app_label", rs.getString("app_label") == null ? JSONObject.NULL : rs.getString("app_label"));
+				transaction.put("tc", rs.getString("tc") == null ? JSONObject.NULL : rs.getString("tc"));
+				transaction.put("terminal_verification_result", rs.getString("terminal_verification_result") == null ? JSONObject.NULL : rs.getString("terminal_verification_result"));
+				transaction.put("original_trace_number", rs.getString("original_trace_number") == null ? JSONObject.NULL : rs.getString("original_trace_number"));
+				transaction.put("trace_number", rs.getString("trace_number") == null ? JSONObject.NULL : rs.getString("trace_number"));
+				transaction.put("qr_issuer_type", rs.getString("qr_issuer_type") == null ? JSONObject.NULL : rs.getString("qr_issuer_type"));
+				transaction.put("mpay_mid", rs.getString("mpay_mid") == null ? JSONObject.NULL : rs.getString("mpay_mid"));
+				transaction.put("mpay_tid", rs.getString("mpay_tid") == null ? JSONObject.NULL : rs.getString("mpay_tid"));
+				transaction.put("qr_ref_id", rs.getString("qr_ref_id") == null ? JSONObject.NULL : rs.getString("qr_ref_id"));
+				transaction.put("qr_user_id", rs.getString("qr_user_id") == null ? JSONObject.NULL : rs.getString("qr_user_id"));
+				transaction.put("qr_amount_myr", rs.getString("qr_amount_myr") == null ? JSONObject.NULL : rs.getString("qr_amount_myr"));
+				transaction.put("qr_amount_rmb", rs.getString("qr_amount_rmb") == null ? JSONObject.NULL : rs.getString("qr_amount_rmb"));
 				
 				jary.put(transaction);
 			}
@@ -422,39 +430,42 @@ public class DataSync {
 				e.printStackTrace();
 			}
 		}
-		return jary.toString();
+		return jary;
 	}
 	
-	public static String getSettlementData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
+	public static JSONArray getSettlementData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
 		JSONArray jary = new JSONArray();
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
-			stmt = connection.prepareStatement("select * from settlement where created_date >= ? and created_date < ?;");
+			stmt = connection.prepareStatement("select * from settlement where (created_date >= ? and created_date < ?) or (updated_date >= ? and updated_date < ?);");
 			stmt.setTimestamp(1, lastSyncDate);
 			stmt.setTimestamp(2, currentDate);
+			stmt.setTimestamp(3, lastSyncDate);
+			stmt.setTimestamp(4, currentDate);
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				JSONObject settlement = new JSONObject();
-				settlement.put("staff_id", rs.getString("staff_id"));
-				settlement.put("nii_type", rs.getString("nii_type"));
-				settlement.put("settlement_status", rs.getString("settlement_status"));
-				settlement.put("created_date", rs.getString("created_date"));
-				settlement.put("response_code", rs.getString("response_code"));
-				settlement.put("response_message", rs.getString("response_message"));
-				settlement.put("updated_date", rs.getString("updated_date"));
-				settlement.put("wifi_ip", rs.getString("wifi_ip"));
-				settlement.put("wifi_port", rs.getString("wifi_port"));
-				settlement.put("merchant_info", rs.getString("merchant_info"));
-				settlement.put("bank_mid", rs.getString("bank_mid"));
-				settlement.put("bank_tid", rs.getString("bank_tid"));
-				settlement.put("batch_number", rs.getString("batch_number"));
-				settlement.put("transaction_date", rs.getString("transaction_date"));
-				settlement.put("transaction_time", rs.getString("transaction_time"));
-				settlement.put("batch_total", rs.getString("batch_total"));
-				settlement.put("nii", rs.getString("nii"));
+				settlement.put("settlement_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				settlement.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
+				settlement.put("nii_type", rs.getString("nii_type") == null ? JSONObject.NULL : rs.getString("nii_type"));
+				settlement.put("settlement_status", rs.getString("settlement_status") == null ? JSONObject.NULL : rs.getString("settlement_status"));
+				settlement.put("created_date", rs.getString("created_date") == null ? JSONObject.NULL : rs.getString("created_date"));
+				settlement.put("response_code", rs.getString("response_code") == null ? JSONObject.NULL : rs.getString("response_code"));
+				settlement.put("response_message", rs.getString("response_message") == null ? JSONObject.NULL : rs.getString("response_message"));
+				settlement.put("updated_date", rs.getString("updated_date") == null ? JSONObject.NULL : rs.getString("updated_date"));
+				settlement.put("wifi_ip", rs.getString("wifi_ip") == null ? JSONObject.NULL : rs.getString("wifi_ip"));
+				settlement.put("wifi_port", rs.getString("wifi_port") == null ? JSONObject.NULL : rs.getString("wifi_port"));
+				settlement.put("merchant_info", rs.getString("merchant_info") == null ? JSONObject.NULL : rs.getString("merchant_info"));
+				settlement.put("bank_mid", rs.getString("bank_mid") == null ? JSONObject.NULL : rs.getString("bank_mid"));
+				settlement.put("bank_tid", rs.getString("bank_tid") == null ? JSONObject.NULL : rs.getString("bank_tid"));
+				settlement.put("batch_number", rs.getString("batch_number") == null ? JSONObject.NULL : rs.getString("batch_number"));
+				settlement.put("transaction_date", rs.getString("transaction_date") == null ? JSONObject.NULL : rs.getString("transaction_date"));
+				settlement.put("transaction_time", rs.getString("transaction_time") == null ? JSONObject.NULL : rs.getString("transaction_time"));
+				settlement.put("batch_total", rs.getString("batch_total") == null ? JSONObject.NULL : rs.getString("batch_total"));
+				settlement.put("nii", rs.getString("nii") == null ? JSONObject.NULL : rs.getString("nii"));
 				
 				jary.put(settlement);
 			}
@@ -470,232 +481,7 @@ public class DataSync {
 				e.printStackTrace();
 			}
 		}
-		return jary.toString();
-	}
-	
-	public static String getUpdatedCheckData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
-		JSONArray jary = new JSONArray();
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = connection.prepareStatement("select * from `check` where updated_date >= ? and updated_date < ?;");
-			stmt.setTimestamp(1, lastSyncDate);
-			stmt.setTimestamp(2, currentDate);
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject check = new JSONObject();
-				check.put("check_id", rs.getString("id"));
-				check.put("check_number", rs.getString("check_number"));
-				check.put("device_type", rs.getString("device_type"));
-				check.put("staff_id", rs.getString("staff_id"));
-				check.put("order_type", rs.getString("order_type"));
-				check.put("table_number", rs.getString("table_number"));
-				check.put("total_item_quantity", rs.getString("total_item_quantity"));
-				check.put("subtotal_amount", rs.getString("subtotal_amount"));
-				check.put("total_tax_amount", rs.getString("total_tax_amount"));
-				check.put("total_service_charge_amount", rs.getString("total_service_charge_amount"));
-				check.put("total_amount", rs.getString("total_amount"));
-				check.put("total_amount_rounding_adjustment", rs.getString("total_amount_rounding_adjustment"));
-				check.put("grand_total_amount", rs.getString("grand_total_amount"));
-				check.put("deposit_amount", rs.getString("deposit_amount"));
-				check.put("tender_amount", rs.getString("tender_amount"));
-				check.put("overdue_amount", rs.getString("overdue_amount"));
-				check.put("check_status", rs.getString("check_status"));
-				check.put("created_date", rs.getString("created_date"));
-				check.put("updated_date", rs.getString("updated_date"));
-				
-				jary.put(check);
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-			} catch (SQLException e) {
-				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jary.toString();
-	}
-	
-	public static String getUpdatedCheckDetailData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
-		JSONArray jary = new JSONArray();
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = connection.prepareStatement("select * from check_detail where updated_date >= ? and updated_date < ?;");
-			stmt.setTimestamp(1, lastSyncDate);
-			stmt.setTimestamp(2, currentDate);
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject checkDetail = new JSONObject();
-				checkDetail.put("check_id", rs.getString("check_id"));
-				checkDetail.put("check_number", rs.getString("check_number"));
-				checkDetail.put("parent_check_detail_id", rs.getString("parent_check_detail_id"));
-				checkDetail.put("menu_item_id", rs.getString("menu_item_id"));
-				checkDetail.put("menu_item_code", rs.getString("menu_item_code"));
-				checkDetail.put("menu_item_name", rs.getString("menu_item_name"));
-				checkDetail.put("menu_item_price", rs.getString("menu_item_price"));
-				checkDetail.put("tax_rate", rs.getString("tax_rate"));
-				checkDetail.put("service_charge_rate", rs.getString("service_charge_rate"));
-				checkDetail.put("quantity", rs.getString("quantity"));
-				checkDetail.put("subtotal_amount", rs.getString("subtotal_amount"));
-				checkDetail.put("total_tax_amount", rs.getString("total_tax_amount"));
-				checkDetail.put("total_service_charge_amount", rs.getString("total_service_charge_amount"));
-				checkDetail.put("total_amount", rs.getString("total_amount"));
-				checkDetail.put("check_detail_status", rs.getString("check_detail_status"));
-				checkDetail.put("transaction_id", rs.getString("transaction_id"));
-				checkDetail.put("created_date", rs.getString("created_date"));
-				checkDetail.put("updated_date", rs.getString("updated_date"));
-				
-				jary.put(checkDetail);
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-			} catch (SQLException e) {
-				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jary.toString();
-	}
-	
-	public static String getUpdatedTransactionData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
-		JSONArray jary = new JSONArray();
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = connection.prepareStatement("select * from transaction where updated_date >= ? and updated_date < ?;");
-			stmt.setTimestamp(1, lastSyncDate);
-			stmt.setTimestamp(2, currentDate);
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject transaction = new JSONObject();
-				transaction.put("staff_id", rs.getString("staff_id"));
-				transaction.put("check_id", rs.getString("check_id"));
-				transaction.put("check_number", rs.getString("check_number"));
-				transaction.put("transaction_type", rs.getString("transaction_type"));
-				transaction.put("payment_method", rs.getString("payment_method"));
-				transaction.put("payment_type", rs.getString("payment_type"));
-				transaction.put("terminal_serial_number", rs.getString("terminal_serial_number"));
-				transaction.put("transaction_currency", rs.getString("transaction_currency"));
-				transaction.put("transaction_amount", rs.getString("transaction_amount"));
-				transaction.put("transaction_tips", rs.getString("transaction_tips"));
-				transaction.put("transaction_status", rs.getString("transaction_status"));
-				transaction.put("unique_trans_number", rs.getString("unique_trans_number"));
-				transaction.put("qr_content", rs.getString("qr_content"));
-				transaction.put("created_date", rs.getString("created_date"));
-				transaction.put("response_code", rs.getString("response_code"));
-				transaction.put("response_message", rs.getString("response_message"));
-				transaction.put("updated_date", rs.getString("updated_date"));
-				transaction.put("wifi_ip", rs.getString("wifi_ip"));
-				transaction.put("wifi_port", rs.getString("wifi_port"));
-				transaction.put("approval_code", rs.getString("approval_code"));
-				transaction.put("bank_mid", rs.getString("bank_mid"));
-				transaction.put("bank_tid", rs.getString("bank_tid"));
-				transaction.put("transaction_date", rs.getString("transaction_date"));
-				transaction.put("transaction_time", rs.getString("transaction_time"));
-				transaction.put("original_invoice_number", rs.getString("original_invoice_number"));
-				transaction.put("invoice_number", rs.getString("invoice_number"));
-				transaction.put("merchant_info", rs.getString("merchant_info"));
-				transaction.put("card_issuer_name", rs.getString("card_issuer_name"));
-				transaction.put("masked_card_number", rs.getString("masked_card_number"));
-				transaction.put("card_expiry_date", rs.getString("card_expiry_date"));
-				transaction.put("batch_number", rs.getString("batch_number"));
-				transaction.put("rrn", rs.getString("rrn"));
-				transaction.put("card_issuer_id", rs.getString("card_issuer_id"));
-				transaction.put("cardholder_name", rs.getString("cardholder_name"));
-				transaction.put("aid", rs.getString("aid"));
-				transaction.put("app_label", rs.getString("app_label"));
-				transaction.put("tc", rs.getString("tc"));
-				transaction.put("terminal_verification_result", rs.getString("terminal_verification_result"));
-				transaction.put("original_trace_number", rs.getString("original_trace_number"));
-				transaction.put("trace_number", rs.getString("trace_number"));
-				transaction.put("qr_issuer_type", rs.getString("qr_issuer_type"));
-				transaction.put("mpay_mid", rs.getString("mpay_mid"));
-				transaction.put("mpay_tid", rs.getString("mpay_tid"));
-				transaction.put("qr_ref_id", rs.getString("qr_ref_id"));
-				transaction.put("qr_user_id", rs.getString("qr_user_id"));
-				transaction.put("qr_amount_myr", rs.getString("qr_amount_myr"));
-				transaction.put("qr_amount_rmb", rs.getString("qr_amount_rmb"));
-				
-				jary.put(transaction);
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-			} catch (SQLException e) {
-				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jary.toString();
-	}
-	
-	public static String getUpdatedSettlementData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
-		JSONArray jary = new JSONArray();
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = connection.prepareStatement("select * from settlement where updated_date >= ? and updated_date < ?;");
-			stmt.setTimestamp(1, lastSyncDate);
-			stmt.setTimestamp(2, currentDate);
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject settlement = new JSONObject();
-				settlement.put("staff_id", rs.getString("staff_id"));
-				settlement.put("nii_type", rs.getString("nii_type"));
-				settlement.put("settlement_status", rs.getString("settlement_status"));
-				settlement.put("created_date", rs.getString("created_date"));
-				settlement.put("response_code", rs.getString("response_code"));
-				settlement.put("response_message", rs.getString("response_message"));
-				settlement.put("updated_date", rs.getString("updated_date"));
-				settlement.put("wifi_ip", rs.getString("wifi_ip"));
-				settlement.put("wifi_port", rs.getString("wifi_port"));
-				settlement.put("merchant_info", rs.getString("merchant_info"));
-				settlement.put("bank_mid", rs.getString("bank_mid"));
-				settlement.put("bank_tid", rs.getString("bank_tid"));
-				settlement.put("batch_number", rs.getString("batch_number"));
-				settlement.put("transaction_date", rs.getString("transaction_date"));
-				settlement.put("transaction_time", rs.getString("transaction_time"));
-				settlement.put("batch_total", rs.getString("batch_total"));
-				settlement.put("nii", rs.getString("nii"));
-				
-				jary.put(settlement);
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-			} catch (SQLException e) {
-				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jary.toString();
+		return jary;
 	}
 	
 	public static boolean insertTransactionSyncRecord(Connection connection, String resultCode, String resultMessage) {

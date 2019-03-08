@@ -91,11 +91,6 @@ public class RestC_synctransaction {
 				json.put("transaction", DataSync.getTransactionData(connection, currentDate, lastSyncDate));
 				json.put("settlement", DataSync.getSettlementData(connection, currentDate, lastSyncDate));
 				
-				json.put("updatedCheck", DataSync.getUpdatedCheckData(connection, currentDate, lastSyncDate));
-				json.put("updatedCheckDetail", DataSync.getUpdatedCheckDetailData(connection, currentDate, lastSyncDate));
-				json.put("updatedTransaction", DataSync.getUpdatedTransactionData(connection, currentDate, lastSyncDate));
-				json.put("updatedSettlement", DataSync.getUpdatedSettlementData(connection, currentDate, lastSyncDate));
-				
 				params.put("data", json);
 				
 				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString()).concat(params.get("data").toString())));
