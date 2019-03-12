@@ -11,6 +11,7 @@ import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 
 public class QRGenerate {
+	
 	final static String foldername = Property.getECPOS_FOLDER_NAME();
 	
 	public static byte[] generateQRImage(String content, int width, int height){

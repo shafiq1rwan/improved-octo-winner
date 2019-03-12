@@ -1,6 +1,7 @@
 package mpay.ecpos_manager.general.utility;
 
 public class LRC {
+	
 	public static String generateLRC(String data) {
 		long lrc = data.toCharArray()[0];
 

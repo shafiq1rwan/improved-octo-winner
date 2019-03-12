@@ -214,7 +214,8 @@
 				}
 			}, 
 			function(error) {
-				$scope.syncFailed("Unable to connect to server!");
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
 		}
 		
@@ -241,7 +242,8 @@
 				}
 			}, 
 			function(error) {
-				$scope.syncFailed("Unable to connect to server!");
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
 		}
 		
@@ -263,7 +265,8 @@
 				}
 			}, 
 			function(error) {
-				$scope.syncFailed("Unable to connect to server!");
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/ecpos";
 			});
 		}
 		

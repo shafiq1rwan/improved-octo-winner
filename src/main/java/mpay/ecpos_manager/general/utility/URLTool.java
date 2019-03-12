@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 public class URLTool {
+	
 	public static String BuildStringParam(Map<String, Object> params) throws UnsupportedEncodingException {
 		StringBuilder postData = new StringBuilder();
 		for (Map.Entry<String, Object> param : params.entrySet()) {
