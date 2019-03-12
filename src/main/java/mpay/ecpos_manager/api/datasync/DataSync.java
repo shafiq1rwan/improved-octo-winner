@@ -265,7 +265,6 @@ public class DataSync {
 				JSONObject check = new JSONObject();
 				check.put("check_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
 				check.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
-				check.put("device_type", rs.getString("device_type") == null ? JSONObject.NULL : rs.getString("device_type"));
 				check.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
 				check.put("order_type", rs.getString("order_type") == null ? JSONObject.NULL : rs.getString("order_type"));
 				check.put("table_number", rs.getString("table_number") == null ? JSONObject.NULL : rs.getString("table_number"));
@@ -318,6 +317,7 @@ public class DataSync {
 				checkDetail.put("check_detail_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
 				checkDetail.put("check_id", rs.getString("check_id") == null ? JSONObject.NULL : rs.getString("check_id"));
 				checkDetail.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
+				checkDetail.put("device_type", rs.getString("device_type") == null ? JSONObject.NULL : rs.getString("device_type"));
 				checkDetail.put("parent_check_detail_id", rs.getString("parent_check_detail_id") == null ? JSONObject.NULL : rs.getString("parent_check_detail_id"));
 				checkDetail.put("menu_item_id", rs.getString("menu_item_id") == null ? JSONObject.NULL : rs.getString("menu_item_id"));
 				checkDetail.put("menu_item_code", rs.getString("menu_item_code") == null ? JSONObject.NULL : rs.getString("menu_item_code"));

@@ -6,6 +6,7 @@
 		
 		$scope.create_new_check = function() {
 			var jsonData = JSON.stringify({
+				"table_no" :  null,
 				"order_type" : "take away"
 			});
 			

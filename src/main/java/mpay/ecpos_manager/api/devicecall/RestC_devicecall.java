@@ -1,6 +1,5 @@
 package mpay.ecpos_manager.api.devicecall;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,11 +32,13 @@ public class RestC_devicecall {
 		try {
 			JSONObject jsonData = new JSONObject(data);
 			
-			if (jsonData.has("checkNumber") && jsonData.has("hashData") && jsonData.has("order")) {
+			if ((jsonData.has("checkNumber") && !jsonData.isNull("checkNumber") && !jsonData.getString("checkNumber").isEmpty())
+					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
+					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
 				String newHashData = SecureHash.generateSecureHash("SHA-256", "CheckOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber"))));
-				
+
 				if (newHashData.equals(jsonData.getString("hashData"))) {
-					JSONObject getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"));
+					JSONObject getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), "", 0);
 					
 					if (getCheck.getString("resultCode").equals("00")) {
 						jsonResult = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));
@@ -80,18 +81,50 @@ public class RestC_devicecall {
 		String responseMessage = "Server error. Please try again later.";
 		
 		try {
-			JSONArray jsonData = new JSONArray(data);
+			JSONObject jsonData = new JSONObject(data);
 			
-			jsonResult = deviceCall.checkOrderItem(jsonData);
-			
-			if (jsonResult.getString("resultCode").equals("00")) {
-//To Do				
+			if ((jsonData.has("deviceType") && !jsonData.isNull("deviceType") && !jsonData.getString("deviceType").isEmpty())
+					&& (jsonData.has("orderType") && !jsonData.isNull("orderType") && jsonData.getInt("orderType") > 0)
+					&& (jsonData.has("checkNumber") && !jsonData.isNull("checkNumber") && !jsonData.getString("checkNumber").isEmpty())
+					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
+					&& (jsonData.has("tableNumber") && !jsonData.isNull("tableNumber") && !jsonData.getString("tableNumber").isEmpty())
+					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
+				String newHashData = SecureHash.generateSecureHash("SHA-256", "SendOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber").concat(jsonData.getString("tableNumber")))));
+				
+				if (newHashData.equals(jsonData.getString("hashData"))) {
+					JSONObject getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), jsonData.getString("tableNumber"), jsonData.getInt("orderType"));
+					
+					if (getCheck.getString("resultCode").equals("00")) {
+						JSONObject checkOrder = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));
+						Logger.writeActivity(checkOrder.getString("resultCode") + ": " + checkOrder.getString("resultMessage"), DEVICECALL_FOLDER);
+						
+						if (checkOrder.getString("resultCode").equals("00")) {
+							jsonResult = deviceCall.submitOrderItem(getCheck.getString("checkId"), getCheck.getString("checkNo"), jsonData.getString("deviceType"), jsonData.getJSONArray("order"));
+							Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+						} else {
+							jsonResult = new JSONObject(checkOrder.toString());
+							Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+						}
+					} else {
+						jsonResult = new JSONObject(getCheck.toString());
+						Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+					}
+				} else {
+					responseCode = "EA2";
+					responseMessage = "SecureHash Not Match";
+					Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+					
+					jsonResult.put("resultCode", responseCode);
+					jsonResult.put("resultMessage", responseMessage);
+				}
 			} else {
-				responseCode = jsonResult.getString("responseCode");
-				responseMessage = "Checking failed (" + jsonResult.getString("responseMessage") + ")";
+				responseCode = "EA1";
+				responseMessage = "Request Received Not Complete";
+				Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+				
+				jsonResult.put("resultCode", responseCode);
+				jsonResult.put("resultMessage", responseMessage);
 			}
-			jsonResult.put("resultCode", responseCode);
-			jsonResult.put("resultMessage", responseMessage);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();

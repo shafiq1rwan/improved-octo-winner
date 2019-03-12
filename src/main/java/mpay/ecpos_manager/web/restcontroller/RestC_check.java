@@ -104,7 +104,7 @@ public class RestC_check {
 			
 			stmt = connection.prepareStatement("select * from `check` c "
 					+ "inner join check_status cs on cs.id = c.check_status "
-					+ "where " + tableNoCondition + " and check_number = ? and device_type = 1 and check_status in (1, 2);");
+					+ "where " + tableNoCondition + " and check_number = ? and check_status in (1, 2);");
 			stmt.setString(1, checkNo);
 			rs = stmt.executeQuery();
 			
@@ -283,8 +283,8 @@ public class RestC_check {
 						rs3 = stmt3.executeUpdate();
 	
 						if (rs3 > 0) {
-							stmt4 = connection.prepareStatement("insert into `check` (check_number,device_type,staff_id,order_type,table_number,total_item_quantity,subtotal_amount,total_tax_amount,total_service_charge_amount,total_amount,total_amount_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-									"values (?,1,?,?,?,0,0,0,0,0,0,0,0,0,0,1,now());");
+							stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,subtotal_amount,total_tax_amount,total_service_charge_amount,total_amount,total_amount_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+									"values (?,?,?,?,0,0,0,0,0,0,0,0,0,0,1,now());");
 							stmt4.setString(1, Integer.toString(newCheckNo));
 							stmt4.setLong(2, staffId);
 							stmt4.setInt(3, orderType);
@@ -383,10 +383,9 @@ public class RestC_check {
 						tableNoCondition = "table_number = " + order.getInt("tableNo");
 					}
 
-					stmt = connection.prepareStatement("select * from `check` where check_number = ? and " + tableNoCondition + " and order_type = ? and device_type = ? and check_status in (1, 2);");
+					stmt = connection.prepareStatement("select * from `check` where check_number = ? and " + tableNoCondition + " and order_type = ? and check_status in (1, 2);");
 					stmt.setString(1, order.getString("checkNo"));
 					stmt.setInt(2, order.getInt("orderType"));
-					stmt.setInt(3, order.getInt("deviceType"));
 					rs = stmt.executeQuery();
 
 					if (rs.next()) {
@@ -426,17 +425,18 @@ public class RestC_check {
 											Logger.writeActivity("isItemTaxable: " + isItemTaxable, ECPOS_FOLDER);
 											Logger.writeActivity("taxCharges: " + taxCharges, ECPOS_FOLDER);
 
-											stmt4 = connection.prepareStatement("insert into check_detail (check_id,check_number,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) "
-															+ "values (?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
+											stmt4 = connection.prepareStatement("insert into check_detail (check_id,check_number,device_type,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) "
+															+ "values (?,?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
 											stmt4.setLong(1, checkId);
 											stmt4.setString(2, checkNo);
-											stmt4.setLong(3, rs2.getLong("id"));
-											stmt4.setString(4, rs2.getString("backend_id"));
-											stmt4.setString(5, rs2.getString("menu_item_name"));
-											stmt4.setString(6, rs2.getString("menu_item_base_price"));
-											stmt4.setInt(7, orderQuantity);
-											stmt4.setBigDecimal(8, rs2.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(orderQuantity)));
+											stmt4.setInt(3, order.getInt("deviceType"));  
+											stmt4.setLong(4, rs2.getLong("id"));
+											stmt4.setString(5, rs2.getString("backend_id"));
+											stmt4.setString(6, rs2.getString("menu_item_name"));
+											stmt4.setString(7, rs2.getString("menu_item_base_price"));
+											stmt4.setInt(8, orderQuantity);
 											stmt4.setBigDecimal(9, rs2.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(orderQuantity)));
+											stmt4.setBigDecimal(10, rs2.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(orderQuantity)));
 											int insert1stCheckDetail = stmt4.executeUpdate();
 
 											if (insert1stCheckDetail > 0) {
@@ -477,7 +477,7 @@ public class RestC_check {
 																			if (rs6.next()) {
 																				if (rs6.getBoolean("mg_is_active") == true && rs6.getBoolean("is_active") == true) {
 																					if (rs6.getString("menu_item_type").equals("2")) {
-																						long modifierCheckDetailId = insertChildCheckDetail(checkId, checkNo, parentCheckDetailId, modifier, orderQuantity);
+																						long modifierCheckDetailId = insertChildCheckDetail(order.getInt("deviceType"), checkId, checkNo, parentCheckDetailId, modifier, orderQuantity);
 
 																						if (modifierCheckDetailId > 0) {
 																							if (isItemTaxable) {
@@ -608,7 +608,7 @@ public class RestC_check {
 
 																						if (rs7.next()) {
 																							if (rs7.getBoolean("is_active") == true) {
-																								long childCheckDetailId = insertChildCheckDetail(checkId, checkNo, parentCheckDetailId, tierItem, orderQuantity);
+																								long childCheckDetailId = insertChildCheckDetail(order.getInt("deviceType"), checkId, checkNo, parentCheckDetailId, tierItem, orderQuantity);
 
 																								if (childCheckDetailId > 0) {
 																									if (isItemTaxable) {
@@ -640,7 +640,7 @@ public class RestC_check {
 																														if (rs9.next()) {
 																															if (rs9.getBoolean("mg_is_active") == true&& rs9.getBoolean("is_active") == true) {
 																																if (rs9.getString("menu_item_type").equals("2")) {
-																																	long modifierCheckDetailId = insertChildCheckDetail(checkId, checkNo, childCheckDetailId, modifier, orderQuantity);
+																																	long modifierCheckDetailId = insertChildCheckDetail(order.getInt("deviceType"), checkId, checkNo, childCheckDetailId, modifier, orderQuantity);
 																																	
 																																	if (modifierCheckDetailId > 0) {
 																																		if (isItemTaxable) {
@@ -1099,7 +1099,7 @@ public class RestC_check {
 		return result;
 	}
 	
-	public long insertChildCheckDetail(long checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
+	public long insertChildCheckDetail(int deviceType, long checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
@@ -1116,18 +1116,19 @@ public class RestC_check {
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
-				stmt1 = connection.prepareStatement("insert into check_detail (check_id,check_number,parent_check_detail_id,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) " + 
-						"values (?,?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
+				stmt1 = connection.prepareStatement("insert into check_detail (check_id,check_number,device_type,parent_check_detail_id,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) " + 
+						"values (?,?,?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
 				stmt1.setLong(1, checkId);
 				stmt1.setString(2, checkNo);
-				stmt1.setLong(3, parentCheckDetailId);
-				stmt1.setString(4, rs.getString("id"));
-				stmt1.setString(5, rs.getString("backend_id"));
-				stmt1.setString(6, rs.getString("menu_item_name"));
-				stmt1.setString(7, rs.getString("menu_item_base_price"));
-				stmt1.setInt(8, orderQuantity);
-				stmt1.setBigDecimal(9, rs.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(orderQuantity)));
+				stmt1.setInt(3, deviceType);
+				stmt1.setLong(4, parentCheckDetailId);
+				stmt1.setString(5, rs.getString("id"));
+				stmt1.setString(6, rs.getString("backend_id"));
+				stmt1.setString(7, rs.getString("menu_item_name"));
+				stmt1.setString(8, rs.getString("menu_item_base_price"));
+				stmt1.setInt(9, orderQuantity);
 				stmt1.setBigDecimal(10, rs.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(orderQuantity)));
+				stmt1.setBigDecimal(11, rs.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(orderQuantity)));
 				int insertCheckDetail = stmt1.executeUpdate();
 				
 				if (insertCheckDetail > 0) {

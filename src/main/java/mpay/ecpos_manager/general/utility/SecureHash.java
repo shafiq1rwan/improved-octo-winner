@@ -16,7 +16,6 @@ public class SecureHash {
 			md = MessageDigest.getInstance(mdInstance);
 			ba = md.digest(originalString.getBytes("ISO-8859-1"));
 		} catch (Exception e) {
-
 			e.printStackTrace();
 		}
 	    return hex(ba);   

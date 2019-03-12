@@ -197,7 +197,6 @@ create table `order_type` (
 create table `check` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 	`check_number` bigint (20) NOT NULL,
-    `device_type` bigint (20) NOT NULL,
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
     `table_number` int(20) NULL,
@@ -325,6 +324,7 @@ create table `check_detail` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
     `check_id` bigint(20) NOT NULL,
 	`check_number` bigint(20) NOT NULL,
+    `device_type` bigint (20) NOT NULL,
 	`parent_check_detail_id` bigint(20) NULL,
     `menu_item_id` bigint(20) NOT NULL,
 	`menu_item_code` nvarchar(50) NOT NULL,
