@@ -849,7 +849,7 @@ public class DeviceCall {
 			
 			if (responseCode.equals("00")) {
 				//UPDATE CHECK
-				boolean updateCheck = updateCheck(checkId, checkNo);
+				boolean updateCheck = updateCheck(connection, checkId, checkNo);
 				
 				if (updateCheck) {
 					connection.commit();
@@ -997,16 +997,13 @@ public class DeviceCall {
 		return checkDetailId;
 	}
 
-	public boolean updateCheck(String checkId, String checkNo) {
-		Connection connection = null;
+	public boolean updateCheck(Connection connection, String checkId, String checkNo) {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
 		ResultSet rs = null;
 		boolean result = false;
 		
 		try {
-			connection = dataSource.getConnection();
-			
 			stmt = connection.prepareStatement("select sum(subtotal_amount) as 'subtotal_amount',sum(total_tax_amount) as 'total_tax_amount',sum(total_service_charge_amount) as 'total_service_charge_amount',sum(total_amount) as 'total_amount', " + 
 					"(select sum(quantity) as 'quantity' from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2, 3)) as 'quantity', " + 
 					"(select sum(total_amount) from check_detail where check_id = ? and check_number = ? and check_detail_status = 3) as 'amount_paid' " + 
@@ -1024,7 +1021,7 @@ public class DeviceCall {
 				BigDecimal grandTotalAmount = totalAmount.setScale(2, BigDecimal.ROUND_HALF_UP);
 				BigDecimal totalAmountRoundingAdjustment = grandTotalAmount.subtract(totalAmount);
 				BigDecimal amountPaid = rs.getBigDecimal("amount_paid") == null ? new BigDecimal("0.00") : rs.getBigDecimal("amount_paid");
-				
+
 				stmt1 = connection.prepareStatement("update `check` set total_item_quantity = ?,subtotal_amount = ?,total_tax_amount = ?,total_service_charge_amount = ?,total_amount = ?,total_amount_rounding_adjustment = ?,grand_total_amount = ?,tender_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
 				stmt1.setInt(1, rs.getInt("quantity"));
 				stmt1.setBigDecimal(2, rs.getBigDecimal("subtotal_amount") == null ? new BigDecimal("0.00") : rs.getBigDecimal("subtotal_amount"));
@@ -1051,7 +1048,6 @@ public class DeviceCall {
 				if (stmt != null) stmt.close();
 				if (stmt1 != null) stmt1.close();
 				if (rs != null) {rs.close();rs = null;}
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
