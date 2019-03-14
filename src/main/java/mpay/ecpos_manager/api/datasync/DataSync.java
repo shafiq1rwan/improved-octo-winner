@@ -114,8 +114,8 @@ public class DataSync {
 			}
 			
 			String sqlStatement = "INSERT INTO store (id, tax_charge_id, backend_id, store_name, store_logo_path, store_address, store_longitude, store_latitude, "
-					+ "store_country, store_currency, store_table_count, store_start_operating_time, store_end_operating_time, last_update_date, is_publish, created_date) "
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+					+ "store_country, store_currency, store_table_count, store_start_operating_time, store_end_operating_time, last_update_date, is_publish, created_date, store_contact_person, store_contact_hp_number, store_contact_email) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 			ps1 = connection.prepareStatement(sqlStatement);
 			int count = 1;
 			ps1.setLong(count++, storeInfo.getLong("storeId"));
@@ -134,6 +134,9 @@ public class DataSync {
 			ps1.setString(count++, storeInfo.has("lastUpdateDate")?storeInfo.getString("lastUpdateDate"):null);
 			ps1.setLong(count++, storeInfo.getLong("isPublish"));
 			ps1.setString(count++, storeInfo.getString("createdDate"));
+			ps1.setString(count++, storeInfo.getString("contactPerson"));
+			ps1.setString(count++, storeInfo.getString("mobileNumber"));
+			ps1.setString(count++, storeInfo.getString("email"));
 			int rowAffected = ps1.executeUpdate();
 			if(rowAffected != 0) {
 				flag = true;
