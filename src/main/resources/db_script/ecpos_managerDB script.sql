@@ -27,6 +27,7 @@ CREATE TABLE menu_item (
 	modifier_group_id BIGINT,
 	menu_item_name NVARCHAR(150) NOT NULL,
     menu_item_alt_name NVARCHAR(50),
+    menu_item_barcode NVARCHAR(100) NULL UNIQUE,
 	menu_item_description NVARCHAR(255),
 	menu_item_image_path text,
 	menu_item_base_price DECIMAL(10,2) DEFAULT 0.00,
