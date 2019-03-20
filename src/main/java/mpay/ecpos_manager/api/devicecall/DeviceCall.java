@@ -7,13 +7,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+
 import javax.sql.DataSource;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 
@@ -436,6 +436,9 @@ public class DeviceCall {
 			String responseCode = "E01";
 			String responseMessage = "Server error. Please try again later.";
 			
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
+			
 			DecimalFormat df = new DecimalFormat("#0.00");
 			
 			int deviceId = -1;
@@ -445,13 +448,12 @@ public class DeviceCall {
 				deviceId = 3;
 			}
 			
+			
+			
 			main: for (int i = 0; i < orderData.length(); i++) {
 				JSONObject jsonObj = orderData.getJSONObject(i);
 				
-				if (jsonObj.has("id") && !jsonObj.isNull("id") && !jsonObj.getString("id").isEmpty()) {
-					connection = dataSource.getConnection();
-					connection.setAutoCommit(false);
-					
+				if (jsonObj.has("id") && !jsonObj.isNull("id") && !jsonObj.getString("id").isEmpty()) {			
 					int orderQuantity = jsonObj.getInt("quantity");
 					
 					stmt = connection.prepareStatement("select * from menu_item where backend_id = ?;");
@@ -1054,5 +1056,90 @@ public class DeviceCall {
 			}
 		}
 		return result;
+	}
+	
+	public JSONObject createCheck(int orderType) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		ResultSet rs = null;
+		ResultSet rs4 = null;
+		
+		try {
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
+
+			stmt = connection.prepareStatement("select * from master where type = 'check';");
+			rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				int currentCheckNo = rs.getInt("count");
+				int newCheckNo = currentCheckNo + 1;
+				
+				stmt2 = connection.prepareStatement("update master set count = ? where type = 'check';");
+				stmt2.setString(1, Integer.toString(newCheckNo));
+				int rs2 = stmt2.executeUpdate();
+
+				if (rs2 > 0) {
+					stmt3 = connection.prepareStatement("insert into `check` (check_number,order_type,total_item_quantity,subtotal_amount,total_tax_amount,total_service_charge_amount,total_amount,total_amount_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+							"values (?,?,0,0,0,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
+					stmt3.setString(1, Integer.toString(newCheckNo));
+					stmt3.setInt(2, orderType);
+					int rs3 = stmt3.executeUpdate();
+
+					if (rs3 > 0) {
+						rs4 = stmt3.getGeneratedKeys();
+
+						if (rs4.next()) {
+							connection.commit();
+							Logger.writeActivity("checkNo: " + newCheckNo, DEVICECALL_FOLDER);
+							jsonResult.put("checkId", rs4.getLong(1));
+							jsonResult.put("checkNo", newCheckNo);
+							jsonResult.put("resultCode", "00");
+							jsonResult.put("resultMessage", "Success");
+						} else {
+							connection.rollback();
+							Logger.writeActivity("Check Id Failed To Return", DEVICECALL_FOLDER);
+							jsonResult.put("resultCode", "01");
+							jsonResult.put("resultMessage", "Check Id Failed To Return");
+						}
+					} else {
+						connection.rollback();
+						Logger.writeActivity("Check Master Failed To Insert", DEVICECALL_FOLDER);
+						jsonResult.put("resultCode", "01");
+						jsonResult.put("resultMessage", "Check Master Failed To Insert");
+					}
+				} else {
+					connection.rollback();
+					Logger.writeActivity("Check Count Failed To Update", DEVICECALL_FOLDER);
+					jsonResult.put("resultCode", "01");
+					jsonResult.put("resultMessage", "Check Count Failed To Update");
+				}
+			} else {
+				connection.rollback();
+				Logger.writeActivity("Check Count Not Found", DEVICECALL_FOLDER);
+				jsonResult.put("resultCode", "01");
+				jsonResult.put("resultMessage", "Check Count Not Found");
+			}
+			connection.setAutoCommit(true);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
 	}
 }

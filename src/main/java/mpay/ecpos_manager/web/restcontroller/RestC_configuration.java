@@ -230,6 +230,7 @@ public class RestC_configuration {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 
 		try {
@@ -241,19 +242,17 @@ public class RestC_configuration {
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
-				stmt.close();
-				stmt = connection.prepareStatement("update printer set model_name = ?, port_name = ?, paper_size = ?;");
-				stmt.setString(1, printer.getString("modelName"));
-				stmt.setString(2, printer.getString("portName"));
-				stmt.setString(3, printer.getString("paperSize"));
-				stmt.executeUpdate();
+				stmt2 = connection.prepareStatement("update printer set model_name = ?, port_name = ?, paper_size = ?;");
+				stmt2.setString(1, printer.getString("modelName"));
+				stmt2.setString(2, printer.getString("portName"));
+				stmt2.setString(3, printer.getString("paperSize"));
+				stmt2.executeUpdate();
 			} else {
-				stmt.close();
-				stmt = connection.prepareStatement("insert into printer (model_name, port_name, paper_size) values (?,?,?)");
-				stmt.setString(1, printer.getString("modelName"));
-				stmt.setString(2, printer.getString("portName"));
-				stmt.setString(3, printer.getString("paperSize"));
-				stmt.executeUpdate();
+				stmt2 = connection.prepareStatement("insert into printer (model_name, port_name, paper_size) values (?,?,?)");
+				stmt2.setString(1, printer.getString("modelName"));
+				stmt2.setString(2, printer.getString("portName"));
+				stmt2.setString(3, printer.getString("paperSize"));
+				stmt2.executeUpdate();
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -261,6 +260,7 @@ public class RestC_configuration {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
@@ -276,10 +276,12 @@ public class RestC_configuration {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 
 		try {
 			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
 			
 			JSONObject terminal = new JSONObject(data);
 			String action = terminal.getString("action");
@@ -315,41 +317,43 @@ public class RestC_configuration {
 				jsonResult.put("response_code", "01");
 				jsonResult.put("response_message", "Duplicate Terminal Information");
 				Logger.writeActivity("Duplicate Terminal Information", ECPOS_FOLDER);
-			} else {
-				stmt.close();
-				
+			} else {				
 				if (action.equals("create")) {
-					stmt = connection.prepareStatement("insert into terminal (name,serial_number,wifi_IP,wifi_Port) values (?,?,?,?);");
-					stmt.setString(1, terminalName);
-					stmt.setString(2, terminalSerialNo);
-					stmt.setString(3, terminalWifiIP);
-					stmt.setString(4, terminalWifiPort);
+					stmt2 = connection.prepareStatement("insert into terminal (name,serial_number,wifi_IP,wifi_Port) values (?,?,?,?);");
+					stmt2.setString(1, terminalName);
+					stmt2.setString(2, terminalSerialNo);
+					stmt2.setString(3, terminalWifiIP);
+					stmt2.setString(4, terminalWifiPort);
 				} else if (action.equals("update")) {
-					stmt = connection.prepareStatement("update terminal set name = ?,serial_number = ?,wifi_IP = ?,wifi_Port = ? where id = ?;");
-					stmt.setString(1, terminalName);
-					stmt.setString(2, terminalSerialNo);
-					stmt.setString(3, terminalWifiIP);
-					stmt.setString(4, terminalWifiPort);
-					stmt.setString(5, terminalId);
+					stmt2 = connection.prepareStatement("update terminal set name = ?,serial_number = ?,wifi_IP = ?,wifi_Port = ? where id = ?;");
+					stmt2.setString(1, terminalName);
+					stmt2.setString(2, terminalSerialNo);
+					stmt2.setString(3, terminalWifiIP);
+					stmt2.setString(4, terminalWifiPort);
+					stmt2.setString(5, terminalId);
 				}
-				int rs2 = stmt.executeUpdate();
+				int rs2 = stmt2.executeUpdate();
 				
 				if (rs2 > 0) {
+					connection.commit();
 					jsonResult.put("response_code", "00");
 					jsonResult.put("response_message", "Terminal Information has been saved");
 					Logger.writeActivity("Terminal Information has been saved", ECPOS_FOLDER);
 				} else {
+					connection.rollback();
 					jsonResult.put("response_code", "01");
 					jsonResult.put("response_message", "Terminal Information failed to save");
 					Logger.writeActivity("Terminal Information failed to save", ECPOS_FOLDER);
 				}
 			}
+			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
@@ -366,10 +370,12 @@ public class RestC_configuration {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 
 		try {
 			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
 			
 			String terminalId = new JSONObject(data).getString("id");
 			
@@ -378,31 +384,35 @@ public class RestC_configuration {
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
-				stmt.close();
-				stmt = connection.prepareStatement("delete from terminal where id = ?;");
-				stmt.setString(1, terminalId);
-				int rs2 = stmt.executeUpdate();
+				stmt2 = connection.prepareStatement("delete from terminal where id = ?;");
+				stmt2.setString(1, terminalId);
+				int rs2 = stmt2.executeUpdate();
 				
 				if (rs2 > 0) {
+					connection.commit();
 					jsonResult.put("response_code", "00");
 					jsonResult.put("response_message", "Terminal has been removed");
 					Logger.writeActivity("Terminal has been removed", ECPOS_FOLDER);
 				} else {
+					connection.rollback();
 					jsonResult.put("response_code", "01");
 					jsonResult.put("response_message", "Terminal failed to remove");
 					Logger.writeActivity("Terminal failed to remove", ECPOS_FOLDER);
 				}
 			} else {
+				connection.rollback();
 				jsonResult.put("response_code", "01");
 				jsonResult.put("response_message", "Terminal Not Found");
 				Logger.writeActivity("Terminal NOT Found", ECPOS_FOLDER);
 			}
+			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {

@@ -32,13 +32,20 @@ public class RestC_devicecall {
 		try {
 			JSONObject jsonData = new JSONObject(data);
 			
-			if ((jsonData.has("checkNumber") && !jsonData.isNull("checkNumber") && !jsonData.getString("checkNumber").isEmpty())
+			if ((jsonData.has("checkNumber") && !jsonData.isNull("checkNumber"))
 					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
 					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
 				String newHashData = SecureHash.generateSecureHash("SHA-256", "CheckOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber"))));
 
 				if (newHashData.equals(jsonData.getString("hashData"))) {
-					JSONObject getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), "", 0);
+					JSONObject getCheck = new JSONObject();
+					
+					if (jsonData.getString("checkNumber").isEmpty()) {
+						responseCode = "00";
+						responseMessage = "Empty check number received";
+					} else {
+						getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), "", 0);	
+					}
 					
 					if (getCheck.getString("resultCode").equals("00")) {
 						jsonResult = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));
@@ -85,14 +92,30 @@ public class RestC_devicecall {
 			
 			if ((jsonData.has("deviceType") && !jsonData.isNull("deviceType") && !jsonData.getString("deviceType").isEmpty())
 					&& (jsonData.has("orderType") && !jsonData.isNull("orderType") && jsonData.getInt("orderType") > 0)
-					&& (jsonData.has("checkNumber") && !jsonData.isNull("checkNumber") && !jsonData.getString("checkNumber").isEmpty())
+					&& (jsonData.has("checkNumber") && !jsonData.isNull("checkNumber"))
 					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
-					&& (jsonData.has("tableNumber") && !jsonData.isNull("tableNumber") && !jsonData.getString("tableNumber").isEmpty())
+					&& (jsonData.has("tableNumber") && !jsonData.isNull("tableNumber"))
 					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
+				if (!(jsonData.getString("deviceType").equals("kiosk") && jsonData.getString("checkNumber").isEmpty() && jsonData.getString("tableNumber").isEmpty())) {
+					responseCode = "EA6";
+					responseMessage = "Device Type Not Match (Check No & Table No Not Empty)";
+					Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+					
+					jsonResult.put("resultCode", responseCode);
+					jsonResult.put("resultMessage", responseMessage);
+					return jsonResult.toString();
+				}
+				
 				String newHashData = SecureHash.generateSecureHash("SHA-256", "SendOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber").concat(jsonData.getString("tableNumber")))));
 				
 				if (newHashData.equals(jsonData.getString("hashData"))) {
-					JSONObject getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), jsonData.getString("tableNumber"), jsonData.getInt("orderType"));
+					JSONObject getCheck = new JSONObject();
+					
+					if (jsonData.getString("checkNumber").isEmpty()) {
+						getCheck = deviceCall.createCheck(jsonData.getInt("orderType"));
+					} else {
+						getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), jsonData.getString("tableNumber"), jsonData.getInt("orderType"));
+					}
 					
 					if (getCheck.getString("resultCode").equals("00")) {
 						JSONObject checkOrder = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));

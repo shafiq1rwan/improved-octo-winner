@@ -361,8 +361,11 @@
 					$("#alaCarteModifier").show();
 					$("#back").show();
 				} else {
-					alert("Error Occured While Submit Order");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					if (response.data.response_message != null) {
+						alert(response.data.response_message);
+					} else {
+						alert("Error Occured While Submit Order");
+					}
 				}
 			},
 			function(response) {

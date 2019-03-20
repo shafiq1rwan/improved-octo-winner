@@ -9,7 +9,7 @@
 		$('#menuWell').show();
 		$('#paymentWell').hide();
 		$('#generateQRButton').show();
-		$('#printKitchenReceiptButton').show();
+		$('#barcodeOrderButton').show();
 		$('#checkActionButtons').show();
 		$('#cancelItemButton').prop('disabled', true);
 		$('#paymentButton').prop('disabled', true);
@@ -61,12 +61,52 @@
 			});
 		}
 		
-		$scope.printQR = function () {
-			alert("This function is currently not available");
+		$scope.openBarcodeModal = function () {
+			$('#barcodeModal').modal('show');
 		}
 		
-		$scope.printKitchenReceipt = function () {
-			alert("This function is currently not available");
+		$( "#barcodeModal" ).on('shown.bs.modal', function(){
+			$('#barcode_input').focus();
+		});
+		
+		$scope.barcodeOrder = function() {
+			if ($scope.barcode) {
+				if ($scope.orderType == "table") {
+					orderType = 1;
+				} else if ($scope.orderType == "take_away") {
+					orderType = 2;
+				}
+			
+				var jsonData = JSON.stringify({
+					"deviceType" : 1,
+					"orderType" : orderType,
+					"tableNo" : $scope.tableNo,
+					"checkNo" : $scope.checkNo,
+					"barcode" : $scope.barcode
+				});
+	
+				$http.post("${pageContext.request.contextPath}/rc/check/barcode_order", jsonData)
+				.then(function(response) {
+					if (response.data.response_code === "00") {
+						$scope.getCheckDetails();
+						
+						$scope.barcode = "";
+						$('#barcodeModal').modal('hide');
+					} else {
+						if (response.data.response_message != null) {
+							alert(response.data.response_message);
+						} else {
+							alert("Error Occured While Submit Order");
+						}
+					}
+				},
+				function(response) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/ecpos";
+				});
+			} else {
+				alert("Barcode value is empty");
+			}
 		}
 		
 		$scope.allGrandParentItemCheckbox = function () {
@@ -124,29 +164,63 @@
 		}
 		
 		$scope.cancelItem = function() {
-			$scope.checkedValue = [];
-			
-			$("input[name=grandParentItemCheckbox]:checked").each(function(){
-				$scope.checkedValue.push($(this).val());
-			});
-			
-			if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
-				alert("Kindly tick at least an item to proceed");
-			} else {
-				var jsonData = JSON.stringify({
-					"checkDetailIdArray" : $scope.checkedValue
+			var confirmation = confirm("Confirm to cancel ordered item?");
+			if (confirmation == true) {
+				$scope.checkedValue = [];
+				
+				$("input[name=grandParentItemCheckbox]:checked").each(function(){
+					$scope.checkedValue.push($(this).val());
 				});
 				
-				$http.post("${pageContext.request.contextPath}/rc/check/cancel_item", jsonData)
+				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
+					alert("Kindly tick at least an item to proceed");
+				} else {
+					var jsonData = JSON.stringify({
+						"checkDetailIdArray" : $scope.checkedValue
+					});
+					
+					$http.post("${pageContext.request.contextPath}/rc/check/cancel_item", jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							alert("Order has been cancelled.")
+							
+							$scope.getCheckDetails();
+							allGrandParentItemCheckbox.checked = false;
+						} else {
+							if (response.data.response_message != null) {
+								alert(response.data.response_message);
+							} else {
+								alert("Error Occured While Remove Order");
+							}
+						}
+					},
+					function(response) {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/ecpos";
+					});
+				}
+			}
+		}
+		
+		$scope.cancelCheck = function() {
+			var confirmation = confirm("Confirm to cancel check?");
+			if (confirmation == true) {
+				var jsonData = JSON.stringify({
+					"checkNo" : $scope.checkNo
+				});
+				
+				$http.post("${pageContext.request.contextPath}/rc/check/cancel_check", jsonData)
 				.then(function(response) {
 					if (response.data.response_code === "00") {
-						alert("Order has been cancelled.")
-						
-						$scope.getCheckDetails();
-						allGrandParentItemCheckbox.checked = false;
+						alert("Check has been cancelled.")
+
+						window.location.href = "${pageContext.request.contextPath}/ecpos/#!table_order";
 					} else {
-						alert("Error Occured While Remove Order");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						if (response.data.response_message != null) {
+							alert(response.data.response_message);
+						} else {
+							alert("Error Occured While Remove Check");
+						}
 					}
 				},
 				function(response) {
@@ -160,7 +234,7 @@
 			$('#menuWell').hide();
 			$('#paymentWell').show();
 			$('#generateQRButton').hide();
-			$('#printKitchenReceiptButton').hide();
+			$('#barcodeOrderButton').hide();
 			$('#checkActionButtons').hide();
 			$("#allGrandParentItemCheckbox").hide();
 			$("input[name=grandParentItemCheckbox]").hide();

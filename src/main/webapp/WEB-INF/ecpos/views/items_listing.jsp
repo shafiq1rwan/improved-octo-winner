@@ -152,6 +152,18 @@
 													</div>
 													<div class="row">
 														<div class="col-sm-12 form-group">
+															<label>Shortened Name</label> 
+															<input type="text" class="form-control" ng-model="itemDetails.alternativeName" disabled />
+														</div>
+													</div>
+													<div class="row">
+														<div class="col-sm-12 form-group">
+															<label>Barcode</label> 
+															<input type="text" class="form-control" ng-model="itemDetails.barcode" disabled />
+														</div>
+													</div>
+													<div class="row">
+														<div class="col-sm-12 form-group">
 															<label>Price</label> 
 															<input type="text" class="form-control" ng-model="itemDetails.price" disabled />
 														</div>

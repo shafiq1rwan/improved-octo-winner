@@ -43,8 +43,8 @@ hr {
 						<!-- START of check well -->
 						<div id="checkWell">
 							<div class="col-md-6" style="padding-right: 2px; padding-left: 2px;">
-								<div class="well" style="background-color: white; margin-bottom: 0px;">
-									<div class="box box-success">
+								<div class="well" style="background-color: white; margin-bottom: 0px; padding-bottom: 10px;">
+									<div class="box box-success" style="margin-bottom: 10px;">
 										<div class="box-body">
 											<div class="row">
 												<div class="col-sm-6 form-group">
@@ -64,9 +64,9 @@ hr {
 													</button>
 													<br>
 													<br>
-<!-- 													<button id="printKitchenReceiptButton" class="btn btn-social btn-sm pull-right green-button" style="width: 81%; background-color: #00FA9A; border-color: #00FA9A;" ng-click="printKitchenReceipt()">
-														<i class="fa fa-print"></i> PRINT KITCHEN RECEIPT
-													</button> -->
+													<button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 81%;" ng-click="openBarcodeModal()">
+														<i class="fa fa-barcode"></i> Barcode Order
+													</button>
 												</div>
 											</div>
 											<div style="margin-right: 3px;">
@@ -78,7 +78,7 @@ hr {
 													<div class='col-sm-2 text-right'><b>Price</b></div>
 												</div>
 												<hr>
-												<div style="padding-right: 15px; max-height: 30vh; overflow-y: auto; height: 30vh;">
+												<div style="padding-right: 15px; max-height: 25vh; overflow-y: auto; height: 25vh;">
 													<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
 														<div>
 															<div class="row">
@@ -164,6 +164,11 @@ hr {
 												<button id="paymentButton" class="btn btn-block btn-info" ng-click="redirectPayment()">PAYMENT</button>
 											</div>
 										</div>
+										<div class="row">
+											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+												<button id="cancelCheckButton" class="btn btn-block btn-info" ng-click="cancelCheck()">CANCEL CHECK</button>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -203,6 +208,31 @@ hr {
 									</div>
 								</div>
 							</div> -->
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="barcodeModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+							<div class="row" style="font-size: large">
+								<div class="col-sm-11"></div>
+								<div class="col-sm-1">
+									<button class="close" data-dismiss="modal">&times;</button>
+								</div>
+							</div>
+							<div style="height: 30vh; display: flex; align-items: center;">
+								<div class="col-sm-1 form-group"></div>
+								<div class="col-sm-10 form-group">
+									<label>Please scan item's barcode:</label> 
+									<input type="text" class="form-control" ng-model="barcode" ng-click="barcodeOrder()" ng-keydown="$event.keyCode === 13 && barcodeOrder()" id = "barcode_input" required/>
+								</div>
+								<div class="col-sm-1 form-group"></div>
+							</div>
 						</div>
 						<!-- <div class="modal-footer"></div> -->
 					</div>

@@ -15,8 +15,11 @@
 				if (response.data.response_code === "00") {
 					$scope.redirect_to_check_detail(response.data.check_no);
 				} else {
-					alert("Error Occured While Create Check");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					if (response.data.response_message != null) {
+						alert(response.data.response_message);
+					} else {
+						alert("Error Occured While Create Check");
+					}
 				}
 			},
 			function(response) {
