@@ -46,7 +46,7 @@ public class DeviceCall {
 				String checkStatus = rs.getString("check_status");
 				
 				if (checkStatus.equals("1") || checkStatus.equals("2")) {
-					jsonResult.put("checkId", rs.getString("id"));
+					jsonResult.put("checkId", rs.getLong("id"));
 					jsonResult.put("checkNo", rs.getString("check_number"));
 					responseCode = "00";
 					responseMessage = "Check is in pending";
@@ -398,7 +398,7 @@ public class DeviceCall {
 		return jsonResult;
 	}
 	
-	public JSONObject submitOrderItem(Connection connection, String checkId, String checkNo, String deviceType, JSONArray orderData) {
+	public JSONObject submitOrderItem(Connection connection, long checkId, String checkNo, String deviceType, JSONArray orderData) {
 		JSONObject jsonResult = new JSONObject();
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
@@ -468,7 +468,7 @@ public class DeviceCall {
 
 									stmtB = connection.prepareStatement("insert into check_detail (check_id,check_number,device_type,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) "
 													+ "values (?,?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
-									stmtB.setString(1, checkId);
+									stmtB.setLong(1, checkId);
 									stmtB.setString(2, checkNo);
 									stmtB.setInt(3, deviceId);  
 									stmtB.setLong(4, rs.getLong("id"));
@@ -914,7 +914,7 @@ public class DeviceCall {
 		return result;
 	}
 	
-	public long insertChildCheckDetail(Connection connection, int deviceType, String checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
+	public long insertChildCheckDetail(Connection connection, int deviceType, long checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
 		ResultSet rs = null;
@@ -929,7 +929,7 @@ public class DeviceCall {
 			if (rs.next()) {
 				stmt1 = connection.prepareStatement("insert into check_detail (check_id,check_number,device_type,parent_check_detail_id,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,subtotal_amount,total_amount,check_detail_status,created_date) " + 
 						"values (?,?,?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
-				stmt1.setString(1, checkId);
+				stmt1.setLong(1, checkId);
 				stmt1.setString(2, checkNo);
 				stmt1.setInt(3, deviceType);
 				stmt1.setLong(4, parentCheckDetailId);
@@ -967,7 +967,7 @@ public class DeviceCall {
 		return checkDetailId;
 	}
 
-	public boolean updateCheck(Connection connection, String checkId, String checkNo) {
+	public boolean updateCheck(Connection connection, long checkId, String checkNo) {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
 		ResultSet rs = null;
@@ -978,11 +978,11 @@ public class DeviceCall {
 					"(select sum(quantity) as 'quantity' from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2, 3)) as 'quantity', " + 
 					"(select sum(total_amount) from check_detail where check_id = ? and check_number = ? and check_detail_status = 3) as 'amount_paid' " + 
 					"from check_detail where check_id = ? and check_number = ? and check_detail_status in (1, 2, 3);");
-			stmt.setString(1, checkId);
+			stmt.setLong(1, checkId);
 			stmt.setString(2, checkNo);
-			stmt.setString(3, checkId);
+			stmt.setLong(3, checkId);
 			stmt.setString(4, checkNo);
-			stmt.setString(5, checkId);
+			stmt.setLong(5, checkId);
 			stmt.setString(6, checkNo);
 			rs = stmt.executeQuery();
 
@@ -1002,7 +1002,7 @@ public class DeviceCall {
 				stmt1.setBigDecimal(7, grandTotalAmount);
 				stmt1.setBigDecimal(8, amountPaid);
 				stmt1.setBigDecimal(9, grandTotalAmount.subtract(amountPaid));
-				stmt1.setString(10, checkId);
+				stmt1.setLong(10, checkId);
 				stmt1.setString(11, checkNo);
 				int rs2 = stmt1.executeUpdate();
 				
@@ -1059,7 +1059,7 @@ public class DeviceCall {
 						if (rs4.next()) {
 							Logger.writeActivity("checkNo: " + newCheckNo, DEVICECALL_FOLDER);
 							jsonResult.put("checkId", rs4.getLong(1));
-							jsonResult.put("checkNo", newCheckNo);
+							jsonResult.put("checkNo", Integer.toString(newCheckNo));
 							jsonResult.put("resultCode", "00");
 							jsonResult.put("resultMessage", "Success");
 						} else {

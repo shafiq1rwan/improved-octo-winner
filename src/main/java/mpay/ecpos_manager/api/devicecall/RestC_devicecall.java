@@ -53,8 +53,8 @@ public class RestC_devicecall {
 					JSONObject getCheck = new JSONObject();
 					
 					if (jsonData.getString("checkNumber").isEmpty()) {
-						responseCode = "00";
-						responseMessage = "Empty check number received";
+						getCheck.put("resultCode", "00");
+						getCheck.put("resultMessage", "Empty check number received");
 					} else {
 						getCheck = deviceCall.getCheck(connection, jsonData.getString("checkNumber"), "", 0);	
 					}
@@ -131,7 +131,7 @@ public class RestC_devicecall {
 				}
 				
 				String newHashData = SecureHash.generateSecureHash("SHA-256", "SendOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber").concat(jsonData.getString("tableNumber")))));
-				
+
 				if (newHashData.equals(jsonData.getString("hashData"))) {
 					JSONObject getCheck = new JSONObject();
 					
@@ -146,12 +146,12 @@ public class RestC_devicecall {
 						Logger.writeActivity(checkOrder.getString("resultCode") + ": " + checkOrder.getString("resultMessage"), DEVICECALL_FOLDER);
 						
 						if (checkOrder.getString("resultCode").equals("00")) {
-							jsonResult = deviceCall.submitOrderItem(connection, getCheck.getString("checkId"), getCheck.getString("checkNo"), jsonData.getString("deviceType"), jsonData.getJSONArray("order"));
+							jsonResult = deviceCall.submitOrderItem(connection, getCheck.getLong("checkId"), getCheck.getString("checkNo"), jsonData.getString("deviceType"), jsonData.getJSONArray("order"));
 							Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
 							
 							if (jsonResult.getString("resultCode").equals("00")) {
 								connection.commit();
-								jsonResult.put("checkId", getCheck.getString("checkId"));
+								jsonResult.put("checkNo", getCheck.getString("checkNo"));
 							}
 						} else {
 							jsonResult = new JSONObject(checkOrder.toString());
