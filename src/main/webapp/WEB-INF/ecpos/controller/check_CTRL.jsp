@@ -90,8 +90,7 @@
 					if (response.data.response_code === "00") {
 						$scope.getCheckDetails();
 						
-						$scope.barcode = "";
-						$('#barcodeModal').modal('hide');
+						$scope.barcode = null;
 					} else {
 						if (response.data.response_message != null) {
 							alert(response.data.response_message);

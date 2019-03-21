@@ -8,11 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 
-import javax.sql.DataSource;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
@@ -22,20 +19,14 @@ public class DeviceCall {
 
 	private static String DEVICECALL_FOLDER = Property.getDEVICECALL_FOLDER_NAME();
 	
-	@Autowired
-	DataSource dataSource;
-	
-	public JSONObject getCheck(String checkNo, String tableNo, int orderType) {
+	public JSONObject getCheck(Connection connection, String checkNo, String tableNo, int orderType) {
 		JSONObject jsonResult = new JSONObject();
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		
 		try {
 			String responseCode = "";
 			String responseMessage = "";
-			
-			connection = dataSource.getConnection();
 			
 			String tableNoCondition = "";
 			if (!tableNo.isEmpty()) {
@@ -79,7 +70,6 @@ public class DeviceCall {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
@@ -88,9 +78,8 @@ public class DeviceCall {
 		return jsonResult;
 	}
 	
-	public JSONObject checkOrderItem(JSONArray orderData) {
+	public JSONObject checkOrderItem(Connection connection, JSONArray orderData) {
 		JSONObject jsonResult = new JSONObject();
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
@@ -113,9 +102,7 @@ public class DeviceCall {
 			main: for (int i = 0; i < orderData.length(); i++) {
 				JSONObject jsonObj = orderData.getJSONObject(i);
 				
-				if (jsonObj.has("id") && !jsonObj.isNull("id") && !jsonObj.getString("id").isEmpty()) {
-					connection = dataSource.getConnection();
-					
+				if (jsonObj.has("id") && !jsonObj.isNull("id") && !jsonObj.getString("id").isEmpty()) {				
 					stmt = connection.prepareStatement("select * from menu_item where backend_id = ?;");
 					stmt.setString(1, jsonObj.getString("id"));
 					rs = stmt.executeQuery();
@@ -403,7 +390,6 @@ public class DeviceCall {
 				if (rs4 != null) {rs4.close();rs4 = null;}
 				if (rs5 != null) {rs5.close();rs5 = null;}
 				if (rs6 != null) {rs6.close();rs6 = null;}
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
@@ -412,9 +398,8 @@ public class DeviceCall {
 		return jsonResult;
 	}
 	
-	public JSONObject submitOrderItem(String checkId, String checkNo, String deviceType, JSONArray orderData) {
+	public JSONObject submitOrderItem(Connection connection, String checkId, String checkNo, String deviceType, JSONArray orderData) {
 		JSONObject jsonResult = new JSONObject();
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
@@ -436,9 +421,6 @@ public class DeviceCall {
 			String responseCode = "E01";
 			String responseMessage = "Server error. Please try again later.";
 			
-			connection = dataSource.getConnection();
-			connection.setAutoCommit(false);
-			
 			DecimalFormat df = new DecimalFormat("#0.00");
 			
 			int deviceId = -1;
@@ -447,9 +429,7 @@ public class DeviceCall {
 			} else if (deviceType.equals("kiosk")) {
 				deviceId = 3;
 			}
-			
-			
-			
+
 			main: for (int i = 0; i < orderData.length(); i++) {
 				JSONObject jsonObj = orderData.getJSONObject(i);
 				
@@ -509,7 +489,7 @@ public class DeviceCall {
 											boolean updateTaxChargeResult = false;
 
 											if (isItemTaxable) {
-												updateTaxChargeResult = updateTaxCharge(parentCheckDetailId, orderQuantity, taxCharges);
+												updateTaxChargeResult = updateTaxCharge(connection, parentCheckDetailId, orderQuantity, taxCharges);
 											}
 
 											if (!isItemTaxable || updateTaxChargeResult) {
@@ -538,11 +518,11 @@ public class DeviceCall {
 																		if (rs3.getBoolean("mg_is_active") == true && rs3.getBoolean("is_active") == true) {
 																			if (rs3.getString("menu_item_type").equals("2")) {
 																				if (modifier.has("price") && !modifier.isNull("price") && df.format(rs3.getBigDecimal("menu_item_base_price")).equals(df.format(new BigDecimal(modifier.getDouble("price"))))) {
-																					long modifierCheckDetailId = insertChildCheckDetail(deviceId, checkId, checkNo, parentCheckDetailId, modifier, orderQuantity);
+																					long modifierCheckDetailId = insertChildCheckDetail(connection, deviceId, checkId, checkNo, parentCheckDetailId, modifier, orderQuantity);
 
 																					if (modifierCheckDetailId > 0) {
 																						if (isItemTaxable) {
-																							updateTaxChargeResult = updateTaxCharge(modifierCheckDetailId, orderQuantity, taxCharges);
+																							updateTaxChargeResult = updateTaxCharge(connection, modifierCheckDetailId, orderQuantity, taxCharges);
 
 																							if (updateTaxChargeResult) {
 																								responseCode = "00";
@@ -650,11 +630,11 @@ public class DeviceCall {
 																if (rs4.next()) {
 																	if (rs4.getBoolean("is_active") == true) {
 																		if (jsonObj.has("price") && !jsonObj.isNull("price") && df.format(rs.getBigDecimal("menu_item_base_price")).equals(df.format(new BigDecimal(jsonObj.getDouble("price"))))) {
-																			long childCheckDetailId = insertChildCheckDetail(deviceId, checkId, checkNo, parentCheckDetailId, comboItem, orderQuantity);
+																			long childCheckDetailId = insertChildCheckDetail(connection, deviceId, checkId, checkNo, parentCheckDetailId, comboItem, orderQuantity);
 
 																			if (childCheckDetailId > 0) {
 																				if (isItemTaxable) {
-																					updateTaxChargeResult = updateTaxCharge(childCheckDetailId, orderQuantity, taxCharges);
+																					updateTaxChargeResult = updateTaxCharge(connection, childCheckDetailId, orderQuantity, taxCharges);
 																				}
 
 																				if (!isItemTaxable || updateTaxChargeResult) {
@@ -681,11 +661,11 @@ public class DeviceCall {
 																										if (rs6.getBoolean("mg_is_active") == true && rs6.getBoolean("is_active") == true) {
 																											if (rs6.getString("menu_item_type").equals("2")) {
 																												if (modifier.has("price") && !modifier.isNull("price") && df.format(rs6.getBigDecimal("menu_item_base_price")).equals(df.format(new BigDecimal(modifier.getDouble("price"))))) {
-																													long modifierCheckDetailId = insertChildCheckDetail(deviceId, checkId, checkNo, childCheckDetailId, modifier, orderQuantity);
+																													long modifierCheckDetailId = insertChildCheckDetail(connection, deviceId, checkId, checkNo, childCheckDetailId, modifier, orderQuantity);
 																													
 																													if (modifierCheckDetailId > 0) {
 																														if (isItemTaxable) {
-																															updateTaxChargeResult = updateTaxCharge(modifierCheckDetailId, orderQuantity, taxCharges);
+																															updateTaxChargeResult = updateTaxCharge(connection, modifierCheckDetailId, orderQuantity, taxCharges);
 
 																															if (updateTaxChargeResult) {
 																																responseCode = "00";
@@ -854,7 +834,6 @@ public class DeviceCall {
 				boolean updateCheck = updateCheck(connection, checkId, checkNo);
 				
 				if (updateCheck) {
-					connection.commit();
 					Logger.writeActivity("Check Successfully Updated", DEVICECALL_FOLDER);
 					responseCode = "00";
 					responseMessage = "Item/s Successfully Ordered";
@@ -869,8 +848,6 @@ public class DeviceCall {
 			}
 			jsonResult.put("resultCode", responseCode);
 			jsonResult.put("resultMessage", responseMessage);
-			
-			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
@@ -888,7 +865,6 @@ public class DeviceCall {
 				if (rs4 != null) {rs4.close();rs4 = null;}
 				if (rs5 != null) {rs5.close();rs5 = null;}
 				if (rs6 != null) {rs6.close();rs6 = null;}
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
@@ -897,14 +873,11 @@ public class DeviceCall {
 		return jsonResult;
 	}
 				
-	public boolean updateTaxCharge(long checkDetailId, int orderQuantity, JSONArray taxCharges) {
-		Connection connection = null;
+	public boolean updateTaxCharge(Connection connection, long checkDetailId, int orderQuantity, JSONArray taxCharges) {
 		PreparedStatement stmt = null;
 		boolean result = false;
 		
-		try {
-			connection = dataSource.getConnection();
-			
+		try {			
 			for (int i = 0; i < taxCharges.length(); i++) {
 				JSONObject taxCharge = taxCharges.getJSONObject(i);
 				
@@ -933,7 +906,6 @@ public class DeviceCall {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
@@ -942,8 +914,7 @@ public class DeviceCall {
 		return result;
 	}
 	
-	public long insertChildCheckDetail(int deviceType, String checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
-		Connection connection = null;
+	public long insertChildCheckDetail(Connection connection, int deviceType, String checkId, String checkNo, long parentCheckDetailId, JSONObject childItem, int orderQuantity) {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
 		ResultSet rs = null;
@@ -951,8 +922,6 @@ public class DeviceCall {
 		long checkDetailId = 0;
 		
 		try {
-			connection = dataSource.getConnection();
-			
 			stmt = connection.prepareStatement("select * from menu_item where backend_id = ?;");
 			stmt.setString(1, childItem.getString("id"));
 			rs = stmt.executeQuery();
@@ -990,7 +959,6 @@ public class DeviceCall {
 				if (stmt1 != null) stmt1.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
@@ -1058,9 +1026,8 @@ public class DeviceCall {
 		return result;
 	}
 	
-	public JSONObject createCheck(int orderType) {
+	public JSONObject createCheck(Connection connection, int orderType) {
 		JSONObject jsonResult = new JSONObject();
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
@@ -1068,9 +1035,6 @@ public class DeviceCall {
 		ResultSet rs4 = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			connection.setAutoCommit(false);
-
 			stmt = connection.prepareStatement("select * from master where type = 'check';");
 			rs = stmt.executeQuery();
 
@@ -1093,7 +1057,6 @@ public class DeviceCall {
 						rs4 = stmt3.getGeneratedKeys();
 
 						if (rs4.next()) {
-							connection.commit();
 							Logger.writeActivity("checkNo: " + newCheckNo, DEVICECALL_FOLDER);
 							jsonResult.put("checkId", rs4.getLong(1));
 							jsonResult.put("checkNo", newCheckNo);
@@ -1123,7 +1086,6 @@ public class DeviceCall {
 				jsonResult.put("resultCode", "01");
 				jsonResult.put("resultMessage", "Check Count Not Found");
 			}
-			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
@@ -1134,7 +1096,6 @@ public class DeviceCall {
 				if (stmt3 != null) stmt3.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs4 != null) {rs4.close();rs4 = null;}
-				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();

@@ -1,5 +1,10 @@
 package mpay.ecpos_manager.api.devicecall;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +23,9 @@ public class RestC_devicecall {
 	private static String DEVICECALL_FOLDER = Property.getDEVICECALL_FOLDER_NAME();
 	
 	@Autowired
+	DataSource dataSource;
+	
+	@Autowired
 	DeviceCall deviceCall;
 
 	@RequestMapping(value = { "/order/checking" }, method = { RequestMethod.GET, RequestMethod.POST })
@@ -25,12 +33,16 @@ public class RestC_devicecall {
 		Logger.writeActivity("----------- DEVICE CALLING ORDER CHECKING START ---------", DEVICECALL_FOLDER);
 		Logger.writeActivity("request: " + data, DEVICECALL_FOLDER);
 		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
 		
 		String responseCode = "E01";
 		String responseMessage = "Server error. Please try again later.";
 		
 		try {
 			JSONObject jsonData = new JSONObject(data);
+			
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
 			
 			if ((jsonData.has("checkNumber") && !jsonData.isNull("checkNumber"))
 					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
@@ -44,11 +56,11 @@ public class RestC_devicecall {
 						responseCode = "00";
 						responseMessage = "Empty check number received";
 					} else {
-						getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), "", 0);	
+						getCheck = deviceCall.getCheck(connection, jsonData.getString("checkNumber"), "", 0);	
 					}
 					
 					if (getCheck.getString("resultCode").equals("00")) {
-						jsonResult = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));
+						jsonResult = deviceCall.checkOrderItem(connection, jsonData.getJSONArray("order"));
 						Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
 					} else {
 						jsonResult = new JSONObject(getCheck.toString());
@@ -70,9 +82,17 @@ public class RestC_devicecall {
 				jsonResult.put("resultCode", responseCode);
 				jsonResult.put("resultMessage", responseMessage);
 			}
+			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
+				e.printStackTrace();
+			}
 		}
 		Logger.writeActivity("----------- DEVICE CALLING ORDER CHECKING END ---------", DEVICECALL_FOLDER);
 		return jsonResult.toString();
@@ -83,12 +103,16 @@ public class RestC_devicecall {
 		Logger.writeActivity("----------- DEVICE CALLING ORDER SUBMIT START ---------", DEVICECALL_FOLDER);
 		Logger.writeActivity("request: " + data, DEVICECALL_FOLDER);
 		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
 		
 		String responseCode = "E01";
 		String responseMessage = "Server error. Please try again later.";
 		
 		try {
 			JSONObject jsonData = new JSONObject(data);
+			
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
 			
 			if ((jsonData.has("deviceType") && !jsonData.isNull("deviceType") && !jsonData.getString("deviceType").isEmpty())
 					&& (jsonData.has("orderType") && !jsonData.isNull("orderType") && jsonData.getInt("orderType") > 0)
@@ -112,18 +136,23 @@ public class RestC_devicecall {
 					JSONObject getCheck = new JSONObject();
 					
 					if (jsonData.getString("checkNumber").isEmpty()) {
-						getCheck = deviceCall.createCheck(jsonData.getInt("orderType"));
+						getCheck = deviceCall.createCheck(connection, jsonData.getInt("orderType"));
 					} else {
-						getCheck = deviceCall.getCheck(jsonData.getString("checkNumber"), jsonData.getString("tableNumber"), jsonData.getInt("orderType"));
+						getCheck = deviceCall.getCheck(connection, jsonData.getString("checkNumber"), jsonData.getString("tableNumber"), jsonData.getInt("orderType"));
 					}
 					
 					if (getCheck.getString("resultCode").equals("00")) {
-						JSONObject checkOrder = deviceCall.checkOrderItem(jsonData.getJSONArray("order"));
+						JSONObject checkOrder = deviceCall.checkOrderItem(connection, jsonData.getJSONArray("order"));
 						Logger.writeActivity(checkOrder.getString("resultCode") + ": " + checkOrder.getString("resultMessage"), DEVICECALL_FOLDER);
 						
 						if (checkOrder.getString("resultCode").equals("00")) {
-							jsonResult = deviceCall.submitOrderItem(getCheck.getString("checkId"), getCheck.getString("checkNo"), jsonData.getString("deviceType"), jsonData.getJSONArray("order"));
+							jsonResult = deviceCall.submitOrderItem(connection, getCheck.getString("checkId"), getCheck.getString("checkNo"), jsonData.getString("deviceType"), jsonData.getJSONArray("order"));
 							Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+							
+							if (jsonResult.getString("resultCode").equals("00")) {
+								connection.commit();
+								jsonResult.put("checkId", getCheck.getString("checkId"));
+							}
 						} else {
 							jsonResult = new JSONObject(checkOrder.toString());
 							Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
@@ -148,9 +177,17 @@ public class RestC_devicecall {
 				jsonResult.put("resultCode", responseCode);
 				jsonResult.put("resultMessage", responseMessage);
 			}
+			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
+				e.printStackTrace();
+			}
 		}
 		Logger.writeActivity("----------- DEVICE CALLING ORDER SUBMIT END ---------", DEVICECALL_FOLDER);
 		return jsonResult.toString();
