@@ -120,7 +120,8 @@ public class RestC_devicecall {
 					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
 					&& (jsonData.has("tableNumber") && !jsonData.isNull("tableNumber"))
 					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
-				if (!(jsonData.getString("deviceType").equals("kiosk") && jsonData.getString("checkNumber").isEmpty() && jsonData.getString("tableNumber").isEmpty())) {
+				if (!(jsonData.getString("deviceType").equals("byod") && !jsonData.getString("checkNumber").isEmpty() && !jsonData.getString("tableNumber").isEmpty())
+						&& !(jsonData.getString("deviceType").equals("kiosk") && jsonData.getString("checkNumber").isEmpty() && jsonData.getString("tableNumber").isEmpty())) {
 					responseCode = "EA6";
 					responseMessage = "Device Type Not Match (Check No & Table No Not Empty)";
 					Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
