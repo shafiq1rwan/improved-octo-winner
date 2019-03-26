@@ -131,7 +131,7 @@
 					<div class="modal-content">
 						<!-- <div class="modal-header"></div> -->
 						<div class="modal-body">
-							<form ng-submit="submitReactivation()">
+							<form ng-submit="submitTerminalInfo()">
 								<div class="row" style="font-size: large">
 									<div class="col-sm-1"></div>
 									<div class="col-sm-10">
@@ -191,7 +191,7 @@
 							<h4 class="modal-title text-center">Reactivation</h4>
 						</div>
 						<div class="modal-body">
-							<form ng-submit="submitTerminalInfo()">
+							<form>
 								<div class="row">
 									<div class="col-sm-6 form-group">
 										<label>Brand ID</label> 
