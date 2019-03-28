@@ -146,7 +146,7 @@ INSERT INTO role_lookup VALUES (1, 'Admin'),(2, 'Store Manager');
 CREATE TABLE tax_charge
 (
 	id BIGINT PRIMARY KEY NOT NULL,
-	tax_charge_name NVARCHAR(100) NOT NULL UNIQUE,
+	tax_charge_name NVARCHAR(100) NOT NULL,
 	rate INT DEFAULT 0,
 	charge_type INT DEFAULT 1,
 	is_active BIT DEFAULT 0,
@@ -157,12 +157,6 @@ CREATE TABLE charge_type_lookup
 (
 	charge_type_number INT UNIQUE NOT NULL, 
 	charge_type_name NVARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE group_category_tax_charge
-(
-	group_category_id BIGINT NOT NULL,
-	tax_charge_id BIGINT NOT NULL
 );
 
 CREATE TABLE store_type_lookup

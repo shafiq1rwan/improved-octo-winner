@@ -75,11 +75,6 @@ public class DataSync {
 		ps1 = connection.prepareStatement(sqlStatement);
 		ps1.executeUpdate();
 		ps1.close();
-		
-		sqlStatement = "DELETE FROM group_category_tax_charge;";
-		ps1 = connection.prepareStatement(sqlStatement);
-		ps1.executeUpdate();
-		ps1.close();
 	}
 	
 	public static void resetDBStoreData(Connection connection) throws Exception {
