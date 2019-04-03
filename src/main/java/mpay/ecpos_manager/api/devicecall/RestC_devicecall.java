@@ -48,7 +48,7 @@ public class RestC_devicecall {
 					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
 					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
 				String newHashData = SecureHash.generateSecureHash("SHA-256", "CheckOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber"))));
-
+System.out.println(newHashData);
 				if (newHashData.equals(jsonData.getString("hashData"))) {
 					JSONObject getCheck = new JSONObject();
 					
