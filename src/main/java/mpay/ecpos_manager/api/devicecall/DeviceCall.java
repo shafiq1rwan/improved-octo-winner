@@ -72,6 +72,11 @@ public class DeviceCall {
 			jsonResult.put("resultCode", responseCode);
 			jsonResult.put("resultMessage", responseMessage);
 		} catch (Exception e) {
+			try {
+				jsonResult = new JSONObject();
+				jsonResult.put("resultCode", "01");
+				jsonResult.put("resultMessage", "Host Error");
+			} catch (Exception ex) {}
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
 		} finally {
@@ -213,6 +218,11 @@ public class DeviceCall {
 				jsonResult.put("resultMessage", "Check Not Found");
 			}
 		} catch (Exception e) {
+			try {
+				jsonResult = new JSONObject();
+				jsonResult.put("resultCode", "01");
+				jsonResult.put("resultMessage", "Host Error");
+			} catch (Exception ex) {}
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
 		} finally {
@@ -538,6 +548,11 @@ public class DeviceCall {
 			jsonResult.put("resultCode", responseCode);
 			jsonResult.put("resultMessage", responseMessage);
 		} catch (Exception e) {
+			try {
+				jsonResult = new JSONObject();
+				jsonResult.put("resultCode", "01");
+				jsonResult.put("resultMessage", "Host Error");
+			} catch (Exception ex) {}
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
 		} finally {
@@ -972,6 +987,11 @@ public class DeviceCall {
 			jsonResult.put("resultCode", responseCode);
 			jsonResult.put("resultMessage", responseMessage);
 		} catch (Exception e) {
+			try {
+				jsonResult = new JSONObject();
+				jsonResult.put("resultCode", "01");
+				jsonResult.put("resultMessage", "Host Error");
+			} catch (Exception ex) {}
 			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
 			e.printStackTrace();
 		} finally {

@@ -3,6 +3,7 @@ package mpay.ecpos_manager.api.datasync;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -261,7 +262,9 @@ public class DataSync {
 	public static JSONArray getCheckData(Connection connection, Timestamp currentDate, Timestamp lastSyncDate) {
 		JSONArray jary = new JSONArray();
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
+		ResultSet rs2 = null;
 
 		try {
 			stmt = connection.prepareStatement("select * from `check` where (created_date >= ? and created_date < ?) or (updated_date >= ? and updated_date < ?);");
@@ -279,11 +282,9 @@ public class DataSync {
 				check.put("order_type", rs.getString("order_type") == null ? JSONObject.NULL : rs.getString("order_type"));
 				check.put("table_number", rs.getString("table_number") == null ? JSONObject.NULL : rs.getString("table_number"));
 				check.put("total_item_quantity", rs.getString("total_item_quantity") == null ? JSONObject.NULL : rs.getString("total_item_quantity"));
-				check.put("subtotal_amount", rs.getString("subtotal_amount") == null ? JSONObject.NULL : rs.getString("subtotal_amount"));
-				check.put("total_tax_amount", rs.getString("total_tax_amount") == null ? JSONObject.NULL : rs.getString("total_tax_amount"));
-				check.put("total_service_charge_amount", rs.getString("total_service_charge_amount") == null ? JSONObject.NULL : rs.getString("total_service_charge_amount"));
 				check.put("total_amount", rs.getString("total_amount") == null ? JSONObject.NULL : rs.getString("total_amount"));
-				check.put("total_amount_rounding_adjustment", rs.getString("total_amount_rounding_adjustment") == null ? JSONObject.NULL : rs.getString("total_amount_rounding_adjustment"));
+				check.put("total_amount_with_tax", rs.getString("total_amount_with_tax") == null ? JSONObject.NULL : rs.getString("total_amount_with_tax"));
+				check.put("total_amount_with_tax_rounding_adjustment", rs.getString("total_amount_with_tax_rounding_adjustment") == null ? JSONObject.NULL : rs.getString("total_amount_with_tax_rounding_adjustment"));
 				check.put("grand_total_amount", rs.getString("grand_total_amount") == null ? JSONObject.NULL : rs.getString("grand_total_amount"));
 				check.put("deposit_amount", rs.getString("deposit_amount") == null ? JSONObject.NULL : rs.getString("deposit_amount"));
 				check.put("tender_amount", rs.getString("tender_amount") == null ? JSONObject.NULL : rs.getString("tender_amount"));
@@ -291,6 +292,26 @@ public class DataSync {
 				check.put("check_status", rs.getString("check_status") == null ? JSONObject.NULL : rs.getString("check_status"));
 				check.put("created_date", rs.getString("created_date") == null ? JSONObject.NULL : rs.getString("created_date"));
 				check.put("updated_date", rs.getString("updated_date") == null ? JSONObject.NULL : rs.getString("updated_date"));
+				
+				stmt2 = connection.prepareStatement("select * from tax_charge tc " + 
+						"inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id " + 
+						"where ctc.check_id = ? and ctc.check_number = ?" + 
+						"order by tc.charge_type;");
+				stmt2.setLong(1, rs.getLong("id"));
+				stmt2.setString(2, rs.getString("check_number"));
+				rs2 = stmt2.executeQuery();
+				
+				JSONArray taxCharges = new JSONArray();
+				while (rs2.next()) {
+					JSONObject taxCharge = new JSONObject();
+					taxCharge.put("check_id", rs2.getString("check_id"));
+					taxCharge.put("check_number", rs2.getString("check_number"));
+					taxCharge.put("tax_charge_id", rs2.getString("tax_charge_id"));
+					taxCharge.put("total_charge_amount", new BigDecimal(rs2.getString("total_charge_amount")));
+					
+					taxCharges.put(taxCharge);
+				}
+				check.put("taxCharges", taxCharges);
 				
 				jary.put(check);
 			}
@@ -300,7 +321,9 @@ public class DataSync {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
 			} catch (SQLException e) {
 				Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 				e.printStackTrace();
@@ -333,12 +356,7 @@ public class DataSync {
 				checkDetail.put("menu_item_code", rs.getString("menu_item_code") == null ? JSONObject.NULL : rs.getString("menu_item_code"));
 				checkDetail.put("menu_item_name", rs.getString("menu_item_name") == null ? JSONObject.NULL : rs.getString("menu_item_name"));
 				checkDetail.put("menu_item_price", rs.getString("menu_item_price") == null ? JSONObject.NULL : rs.getString("menu_item_price"));
-				checkDetail.put("tax_rate", rs.getString("tax_rate") == null ? JSONObject.NULL : rs.getString("tax_rate"));
-				checkDetail.put("service_charge_rate", rs.getString("service_charge_rate") == null ? JSONObject.NULL : rs.getString("service_charge_rate"));
 				checkDetail.put("quantity", rs.getString("quantity") == null ? JSONObject.NULL : rs.getString("quantity"));
-				checkDetail.put("subtotal_amount", rs.getString("subtotal_amount") == null ? JSONObject.NULL : rs.getString("subtotal_amount"));
-				checkDetail.put("total_tax_amount", rs.getString("total_tax_amount") == null ? JSONObject.NULL : rs.getString("total_tax_amount"));
-				checkDetail.put("total_service_charge_amount", rs.getString("total_service_charge_amount") == null ? JSONObject.NULL : rs.getString("total_service_charge_amount"));
 				checkDetail.put("total_amount", rs.getString("total_amount") == null ? JSONObject.NULL : rs.getString("total_amount"));
 				checkDetail.put("check_detail_status", rs.getString("check_detail_status") == null ? JSONObject.NULL : rs.getString("check_detail_status"));
 				checkDetail.put("transaction_id", rs.getString("transaction_id") == null ? JSONObject.NULL : rs.getString("transaction_id"));
