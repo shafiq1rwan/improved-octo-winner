@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 
@@ -18,6 +19,13 @@ import mpay.ecpos_manager.general.property.Property;
 public class DeviceCall {
 
 	private static String DEVICECALL_FOLDER = Property.getDEVICECALL_FOLDER_NAME();
+	
+	public BigDecimal roundToNearest(BigDecimal value) {
+		double d = value.doubleValue();
+		double rounded = Math.round(d * 20.0) / 20.0;
+		
+		return BigDecimal.valueOf(rounded);
+	}
 	
 	public JSONObject getCheck(Connection connection, String checkNo, String tableNo, int orderType) {
 		JSONObject jsonResult = new JSONObject();
@@ -70,6 +78,155 @@ public class DeviceCall {
 			try {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
+	}
+	
+	public JSONObject getOrderInfo(Connection connection, String checkNo) {
+		JSONObject jsonResult = new JSONObject();
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
+		
+		try {
+			stmt = connection.prepareStatement("select * from `check` c "
+					+ "inner join check_status cs on cs.id = c.check_status "
+					+ "where check_number = ?;");
+			stmt.setString(1, checkNo);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				long id = rs.getLong("id");
+				
+				jsonResult.put("checkNo", rs.getString("check_number"));
+				jsonResult.put("totalItemQuantity", rs.getInt("total_item_quantity"));
+				jsonResult.put("totalAmount", new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
+				jsonResult.put("totalAmountWithTax", new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00" : rs.getString("total_amount_with_tax")));
+				jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));
+				jsonResult.put("grandTotalAmount", new BigDecimal(rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
+				jsonResult.put("status", rs.getString("name"));
+				jsonResult.put("depositAmount", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
+				jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
+				jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
+				
+				stmt2 = connection.prepareStatement("select * from tax_charge tc " + 
+						"inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id " + 
+						"where ctc.check_id = ? and ctc.check_number = ?" + 
+						"order by tc.charge_type;");
+				stmt2.setLong(1, id);
+				stmt2.setString(2, checkNo);
+				rs2 = stmt2.executeQuery();
+				
+				JSONArray taxCharges = new JSONArray();
+				while (rs2.next()) {
+					JSONObject taxCharge = new JSONObject();
+					taxCharge.put("name", rs2.getString("tax_charge_name"));
+					taxCharge.put("rate", rs2.getBigDecimal("rate"));
+					taxCharge.put("type", rs2.getBigDecimal("charge_type"));
+					taxCharge.put("chargeAmount", new BigDecimal(rs2.getString("total_charge_amount")));
+					
+					taxCharges.put(taxCharge);
+				}
+				jsonResult.put("taxCharges", taxCharges);
+
+				stmt3 = connection.prepareStatement("select * from check_detail cd "
+						+ "inner join check_status cs on cs.id = cd.check_detail_status "
+						+ "where check_id = ? and check_number = ? and parent_check_detail_id is null order by cd.id asc;");
+				stmt3.setLong(1, id);
+				stmt3.setString(2, checkNo);
+				rs3 = stmt3.executeQuery();
+				
+				JSONArray grandParentItemArray = new JSONArray();
+				while (rs3.next()) {
+					long grandParentId = rs3.getLong(1);
+					
+					JSONObject grandParentItem = new JSONObject();
+					grandParentItem.put("id", rs3.getString("menu_item_code"));
+					grandParentItem.put("quantity", rs3.getString("quantity"));
+					grandParentItem.put("price", rs3.getString("menu_item_price"));
+					grandParentItem.put("totalPrice", rs3.getString("total_amount"));
+					grandParentItem.put("status", rs3.getString("name"));
+					
+					stmt4 = connection.prepareStatement("select * from check_detail cd "
+							+ "inner join check_status cs on cs.id = cd.check_detail_status "
+							+ "where check_id = ? and check_number = ? and parent_check_detail_id = ? order by cd.id asc;");
+					stmt4.setLong(1, id);
+					stmt4.setString(2, checkNo);
+					stmt4.setLong(3, grandParentId);
+					rs4 = stmt4.executeQuery();
+					
+					JSONArray parentItemArray = new JSONArray();
+					while (rs4.next()) {
+						long parentId = rs4.getLong(1);
+						
+						JSONObject parentItem = new JSONObject();
+						parentItem.put("id", rs4.getString("menu_item_code"));
+						parentItem.put("quantity", rs4.getString("quantity"));
+						parentItem.put("price", rs4.getString("menu_item_price"));
+						parentItem.put("totalPrice", rs4.getString("total_amount"));
+						parentItem.put("status", rs4.getString("name"));
+						
+						stmt5 = connection.prepareStatement("select * from check_detail cd "
+								+ "inner join check_status cs on cs.id = cd.check_detail_status "
+								+ "where check_id = ? and check_number = ? and parent_check_detail_id = ? order by cd.id asc;");
+						stmt5.setLong(1, id);
+						stmt5.setString(2, checkNo);
+						stmt5.setLong(3, parentId);
+						rs5 = stmt5.executeQuery();
+						
+						JSONArray childItemArray = new JSONArray();
+						while (rs5.next()) {
+							JSONObject childItem = new JSONObject();
+							childItem.put("id", rs5.getString("menu_item_code"));
+							childItem.put("quantity", rs5.getString("quantity"));
+							childItem.put("price", rs5.getString("menu_item_price"));
+							childItem.put("totalPrice", rs5.getString("total_amount"));
+							childItem.put("status", rs5.getString("name"));
+							
+							childItemArray.put(childItem);
+						}
+						parentItem.put("items", childItemArray);
+						parentItemArray.put(parentItem);
+					}
+					grandParentItem.put("items", parentItemArray);
+					grandParentItemArray.put(grandParentItem);
+				}
+				jsonResult.put("items", grandParentItemArray);
+				
+				jsonResult.put("resultCode", "00");
+				jsonResult.put("resultMessage", "SUCCESS");
+			} else {
+				Logger.writeActivity("Check Not Found", DEVICECALL_FOLDER);
+				
+				jsonResult.put("resultCode", "01");
+				jsonResult.put("resultMessage", "Check Not Found");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (rs5 != null) {rs5.close();rs5 = null;}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
 				e.printStackTrace();
@@ -1132,12 +1289,5 @@ public class DeviceCall {
 			}
 		}
 		return result;
-	}
-	
-	public BigDecimal roundToNearest(BigDecimal value) {
-		double d = value.doubleValue();
-		double rounded = Math.round(d * 20.0) / 20.0;
-		
-		return BigDecimal.valueOf(rounded);
 	}
 }

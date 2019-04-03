@@ -48,7 +48,7 @@ public class RestC_devicecall {
 					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty()) 
 					&& (jsonData.has("order") && !jsonData.isNull("order") && jsonData.getJSONArray("order").length() > 0)) {
 				String newHashData = SecureHash.generateSecureHash("SHA-256", "CheckOrder".concat(jsonData.getJSONArray("order").toString().concat(jsonData.getString("checkNumber"))));
-System.out.println(newHashData);
+
 				if (newHashData.equals(jsonData.getString("hashData"))) {
 					JSONObject getCheck = new JSONObject();
 					
@@ -191,6 +191,66 @@ System.out.println(newHashData);
 			}
 		}
 		Logger.writeActivity("----------- DEVICE CALLING ORDER SUBMIT END ---------", DEVICECALL_FOLDER);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/order/info" }, method = { RequestMethod.GET, RequestMethod.POST })
+	public String orderInfo(@RequestBody String data) {
+		Logger.writeActivity("----------- DEVICE CALLING ORDER INFO START ---------", DEVICECALL_FOLDER);
+		Logger.writeActivity("request: " + data, DEVICECALL_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		
+		String responseCode = "E01";
+		String responseMessage = "Server error. Please try again later.";
+		
+		try {
+			JSONObject jsonData = new JSONObject(data);
+			
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
+			
+			if ((jsonData.has("checkNumber") && !jsonData.isNull("checkNumber"))
+					&& (jsonData.has("hashData") && !jsonData.isNull("hashData") && !jsonData.getString("hashData").isEmpty())) {
+				String newHashData = SecureHash.generateSecureHash("SHA-256", "OrderInfo".concat(jsonData.getString("checkNumber")));
+
+				if (newHashData.equals(jsonData.getString("hashData"))) {
+					if (jsonData.getString("checkNumber").isEmpty()) {
+						jsonResult.put("resultCode", "00");
+						jsonResult.put("resultMessage", "Empty check number received");
+					} else {
+						jsonResult = deviceCall.getOrderInfo(connection, jsonData.getString("checkNumber"));
+						Logger.writeActivity(jsonResult.getString("resultCode") + ": " + jsonResult.getString("resultMessage"), DEVICECALL_FOLDER);
+					}
+				} else {
+					responseCode = "EA2";
+					responseMessage = "SecureHash Not Match";
+					Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+					
+					jsonResult.put("resultCode", responseCode);
+					jsonResult.put("resultMessage", responseMessage);
+				}
+			} else {
+				responseCode = "EA1";
+				responseMessage = "Request Received Not Complete";
+				Logger.writeActivity(responseCode + ": " + responseMessage, DEVICECALL_FOLDER);
+				
+				jsonResult.put("resultCode", responseCode);
+				jsonResult.put("resultMessage", responseMessage);
+			}
+			connection.setAutoCommit(true);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", DEVICECALL_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", DEVICECALL_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- DEVICE CALLING ORDER INFO END ---------", DEVICECALL_FOLDER);
 		return jsonResult.toString();
 	}
 }
