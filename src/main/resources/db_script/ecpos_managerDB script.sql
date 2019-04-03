@@ -215,11 +215,9 @@ create table `check` (
 	`order_type` bigint (20) NOT NULL,
     `table_number` int(20) NULL,
 	`total_item_quantity` int(20) NOT NULL,
-	`subtotal_amount` decimal(25, 4) NOT NULL,
-	`total_tax_amount` decimal(25, 4) NULL,
-	`total_service_charge_amount` decimal(25, 4) NULL,
 	`total_amount` decimal(25, 4) NOT NULL,
-	`total_amount_rounding_adjustment` decimal(25, 4) NOT NULL,
+	`total_amount_with_tax` decimal(25, 4) NOT NULL,
+	`total_amount_with_tax_rounding_adjustment` decimal(25, 4) NOT NULL,
 	`grand_total_amount` decimal(25, 4) NOT NULL,
 	`deposit_amount` decimal(25, 4) NOT NULL,
 	`tender_amount` decimal(25, 4) NOT NULL,
@@ -228,6 +226,13 @@ create table `check` (
 	`created_date` datetime NOT NULL,
     `updated_date` datetime NULL,
     PRIMARY KEY (`id`)
+);
+
+create table `check_tax_charge` (
+	`check_id` bigint(20) NOT NULL,
+	`check_number` bigint (20) NOT NULL,
+    `tax_charge_id` varchar(255) NOT NULL,
+	`total_charge_amount` decimal(25, 4) NOT NULL
 );
 
 create table `transaction_settlement_status` (
@@ -344,12 +349,7 @@ create table `check_detail` (
 	`menu_item_code` nvarchar(50) NOT NULL,
 	`menu_item_name` nvarchar(150) NOT NULL,
     `menu_item_price` decimal(25, 4) NOT NULL,
-	`tax_rate` INT NULL,
-	`service_charge_rate` INT NULL,
 	`quantity` int(20) NOT NULL,
-	`subtotal_amount` decimal(25, 4) NOT NULL,
-	`total_tax_amount` decimal(25, 4) NULL,
-	`total_service_charge_amount` decimal(25, 4) NULL,
 	`total_amount` decimal(25, 4) NOT NULL,
     `check_detail_status` bigint(20) NOT NULL,
 	`transaction_id` bigint(20) NULL,

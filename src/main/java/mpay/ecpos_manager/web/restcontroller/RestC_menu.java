@@ -226,8 +226,8 @@ public class RestC_menu {
 					menuItems.put("id", rs2.getString("id"));
 					menuItems.put("backendId", rs2.getString("backend_id"));
 					menuItems.put("name", rs2.getString("menu_item_name"));
-					menuItems.put("alternativeName", rs.getString("menu_item_alt_name"));
-					menuItems.put("barcode", rs.getString("menu_item_barcode"));
+					menuItems.put("alternativeName", rs2.getString("menu_item_alt_name"));
+					menuItems.put("barcode", rs2.getString("menu_item_barcode"));
 					menuItems.put("description", rs2.getString("menu_item_description"));
 					menuItems.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
 					menuItems.put("taxable", rs2.getBoolean("is_taxable"));
@@ -298,8 +298,8 @@ public class RestC_menu {
 					modifierDetails.put("id", rs2.getString("id"));
 					modifierDetails.put("backendId", rs2.getString("backend_id"));
 					modifierDetails.put("name", rs2.getString("menu_item_name"));
-					modifierDetails.put("alternativeName", rs.getString("menu_item_alt_name"));
-					modifierDetails.put("barcode", rs.getString("menu_item_barcode"));
+					modifierDetails.put("alternativeName", rs2.getString("menu_item_alt_name"));
+					modifierDetails.put("barcode", rs2.getString("menu_item_barcode"));
 					modifierDetails.put("description", rs2.getString("menu_item_description"));
 					modifierDetails.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
 					modifierDetails.put("taxable", rs2.getBoolean("is_taxable"));

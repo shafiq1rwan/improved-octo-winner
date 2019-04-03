@@ -86,7 +86,7 @@ hr {
 																<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
 																<div class='col-sm-5 text-left'>{{grandParentItem.itemName}}</div>
 																<div class='col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
-																<div class='col-sm-2 text-right'>{{grandParentItem.subtotal| number:2}}</div>
+																<div class='col-sm-2 text-right'>{{grandParentItem.totalAmount| number:2}}</div>
 															</div>
 															<div ng-repeat="parentItem in grandParentItem.parentItemArray">
 																<div class="row">
@@ -94,7 +94,7 @@ hr {
 																	<div class='col-sm-2 text-left'>{{parentItem.itemCode}}</div>
 																	<div class='col-sm-5 text-left'>*{{parentItem.itemName}}*</div>
 																	<div class='col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
-																	<div class='col-sm-2 text-right'>{{parentItem.subtotal| number:2}}</div>										
+																	<div class='col-sm-2 text-right'>{{parentItem.totalAmount| number:2}}</div>										
 																</div>
 																<div ng-repeat="childItem in parentItem.childItemArray">
 																	<div class="row">
@@ -102,7 +102,7 @@ hr {
 																		<div class='col-sm-2 text-left'>{{childItem.itemCode}}</div>
 																		<div class='col-sm-5 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;:{{childItem.itemName}}</div>
 																		<div class='col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
-																		<div class='col-sm-2 text-right'>{{childItem.subtotal| number:2}}</div>										
+																		<div class='col-sm-2 text-right'>{{childItem.totalAmount| number:2}}</div>										
 																	</div>
 																</div>
 															</div>
@@ -114,43 +114,40 @@ hr {
 												<div class="row" style="padding-right: 23px;">
 													<div class='col-sm-1 text-center'></div>
 													<div class='col-sm-9 text-left'><b>Subtotal</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.subtotal| number:2}}</b></div>
+													<div class='col-sm-2 text-right'><b>{{checkDetail.totalAmount| number:2}}</b></div>
 												</div>
-												<div class="row" style="padding-right: 23px;">
-													<div class='col-sm-1 text-center'></div>
-													<div class='col-sm-9 text-left'><b>Goods & Services Tax</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.tax| number:2}}</b></div>
-												</div>
-												<div class="row" style="padding-right: 23px;">
-													<div class='col-sm-1 text-center'></div>
-													<div class='col-sm-9 text-left'><b>Service Charge</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.serviceCharge| number:2}}</b></div>
+												<div ng-repeat="taxCharge in checkDetail.taxCharges">
+													<div class="row" style="padding-right: 23px;">
+														<div class='col-sm-1 text-center'></div>
+														<div class='col-sm-9 text-left'><b>{{taxCharge.name}} {{taxCharge.rate}}%</b></div>
+														<div class='col-sm-2 text-right'><b>{{taxCharge.chargeAmount| number:2}}</b></div>
+													</div>
 												</div>
 												<div class="row" style="padding-right: 23px;">
 													<div class='col-sm-1 text-center'></div>
 													<div class='col-sm-9 text-left'><b>Rounding Adjustment</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.roundingAdjustment| number:2}}</b></div>
+													<div class='col-sm-2 text-right'><b>{{checkDetail.totalAmountWithTaxRoundingAdjustment| number:2}}</b></div>
 												</div>
 												<div class="row" style="padding-right: 23px;">
 													<div class='col-sm-1 text-center'></div>
 													<div class='col-sm-9 text-left'><b>Grand Total</b></div>
-													<div class='col-sm-2 text-right' style="border-top: solid; border-top-width: thin; border-bottom: 3px double;"><b>{{checkDetail.grandTotal| number:2}}</b></div>
+													<div class='col-sm-2 text-right' style="border-top: solid; border-top-width: thin; border-bottom: 3px double;"><b>{{checkDetail.grandTotalAmount| number:2}}</b></div>
 												</div>
 												<hr>
 												<div class="row" style="padding-right: 23px;">
 													<div class='col-sm-1 text-center'></div>
 													<div class='col-sm-9 text-left'><b>Deposit Amount</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.deposit| number:2}}</b></div>
+													<div class='col-sm-2 text-right'><b>{{checkDetail.depositAmount| number:2}}</b></div>
 												</div>
 												<div class="row" style="padding-right: 23px;">
 													<div class='col-sm-1 text-center'></div>
 													<div class='col-sm-9 text-left'><b>Tender Amount</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.tender| number:2}}</b></div>
+													<div class='col-sm-2 text-right'><b>{{checkDetail.tenderAmount| number:2}}</b></div>
 												</div>
 												<div class="row" style="padding-right: 23px;">
 													<div class='col-sm-1 text-center'></div>
 													<div class='col-sm-9 text-left'><b>Overdue Amount</b></div>
-													<div class='col-sm-2 text-right'><b>{{checkDetail.overdue| number:2}}</b></div>
+													<div class='col-sm-2 text-right'><b>{{checkDetail.overdueAmount| number:2}}</b></div>
 												</div>
 											</div>
 										</div>
