@@ -147,7 +147,7 @@ public class DeviceCall {
 
 				stmt3 = connection.prepareStatement("select * from check_detail cd "
 						+ "inner join check_status cs on cs.id = cd.check_detail_status "
-						+ "where check_id = ? and check_number = ? and parent_check_detail_id is null order by cd.id asc;");
+						+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status != 4 order by cd.id asc;");
 				stmt3.setLong(1, id);
 				stmt3.setString(2, checkNo);
 				rs3 = stmt3.executeQuery();
@@ -162,10 +162,11 @@ public class DeviceCall {
 					grandParentItem.put("price", rs3.getString("menu_item_price"));
 					grandParentItem.put("totalPrice", rs3.getString("total_amount"));
 					grandParentItem.put("status", rs3.getString("name"));
+					grandParentItem.put("orderDate", rs3.getTimestamp("created_date"));
 					
 					stmt4 = connection.prepareStatement("select * from check_detail cd "
 							+ "inner join check_status cs on cs.id = cd.check_detail_status "
-							+ "where check_id = ? and check_number = ? and parent_check_detail_id = ? order by cd.id asc;");
+							+ "where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status != 4 order by cd.id asc;");
 					stmt4.setLong(1, id);
 					stmt4.setString(2, checkNo);
 					stmt4.setLong(3, grandParentId);
@@ -184,7 +185,7 @@ public class DeviceCall {
 						
 						stmt5 = connection.prepareStatement("select * from check_detail cd "
 								+ "inner join check_status cs on cs.id = cd.check_detail_status "
-								+ "where check_id = ? and check_number = ? and parent_check_detail_id = ? order by cd.id asc;");
+								+ "where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status != 4 order by cd.id asc;");
 						stmt5.setLong(1, id);
 						stmt5.setString(2, checkNo);
 						stmt5.setLong(3, parentId);

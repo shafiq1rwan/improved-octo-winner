@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/select2/select2.min.css">
-<script src="${pageContext.request.contextPath}/select2/select2.full.min.js"></script>
-
-<script>
-	$(".select2").select2();
-</script>
 
 <style>
 .sectioncalibrator {
@@ -40,20 +34,27 @@
 								<div class="row">
 									<div class="col-sm-3 form-group">
 										<label>Start Date</label> 
-										<input type="datetime-local" class="form-control" ng-model="date.start" ng-model-options="{timezone: 'UTC'}" required />
+										<input type="datetime-local" class="form-control" ng-model="date.start" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>
 									<div class="col-sm-3 form-group">
 										<label>End Date</label> 
-										<input type="datetime-local" class="form-control" ng-model="date.end" ng-model-options="{timezone: 'UTC'}" required />
+										<input type="datetime-local" class="form-control" ng-model="date.end" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>
 								</div>
-								<br><br>
-								<div class="row">
-									<div class="col-sm-12">
-										<div style="position: absolute; padding-right: 15px; bottom: 0; right: 0;">
-											<button class="btn btn-block btn-info" ng-click="generateMonthlySalesReport()">Generate</button>
-										</div>
-									</div>
+								<br>
+								<div>
+									<table id="datatable_salesSummary" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>Device Type</th>
+												<th>Payment Method</th>
+												<th>Total Sales</th>
+												<th>Total Amount</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+										<tfoot></tfoot>
+									</table>
 								</div>
 							</div>
 						</div>	
