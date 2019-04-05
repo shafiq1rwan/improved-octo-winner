@@ -1,6 +1,7 @@
 package mpay.ecpos_manager.web.restcontroller;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,9 +104,15 @@ public class RestC_transaction {
 		BigDecimal itemAmount = new BigDecimal("0.00");
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
 		
 		try {
 			connection = dataSource.getConnection();
@@ -122,26 +129,67 @@ public class RestC_transaction {
 				if (rs.next()) {
 					itemAmount = rs.getBigDecimal("total_amount");
 					
-					stmt.close();
-					stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-					stmt.setLong(1, checkDetailId);
-					rs2 = stmt.executeQuery();
+					stmt2 = connection.prepareStatement("select * from menu_item where id = ? and backend_id = ?");
+					stmt2.setLong(1, rs.getLong("menu_item_id"));
+					stmt2.setString(2, rs.getString("menu_item_code"));
+					rs2 = stmt2.executeQuery();
 					
-					while (rs2.next()) {
-						itemAmount = itemAmount.add(rs2.getBigDecimal("total_amount"));
+					if (rs2.next()) {
+						boolean isItemTaxable = rs2.getBoolean("is_taxable");
 						
-						stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-						stmt.setLong(1, rs2.getLong("id"));
-						rs3 = stmt.executeQuery();
+						JSONObject charges = new JSONObject();
+						JSONArray totalTaxes = new JSONArray();
+						JSONArray overallTaxes = new JSONArray();
+
+						if (isItemTaxable) {
+							stmt3 = connection.prepareStatement("select tc.* from tax_charge tc " + 
+									"inner join charge_type_lookup ctlu on ctlu.charge_type_number = tc.charge_type " + 
+									"where tc.is_active = 1;");
+							rs3 = stmt3.executeQuery();
+
+							while (rs3.next()) {
+								JSONObject taxInfo = new JSONObject();
+								
+								if (rs3.getInt("charge_type") == 1) {
+									taxInfo.put("id", rs3.getString("id"));
+									taxInfo.put("rate", rs3.getString("rate"));
+									
+									totalTaxes.put(taxInfo);
+								} else if (rs3.getInt("charge_type") == 2) {
+									taxInfo.put("id", rs3.getString("id"));
+									taxInfo.put("rate", rs3.getString("rate"));
+									
+									overallTaxes.put(taxInfo);
+								}
+							}
+							charges.put("totalTaxes", totalTaxes);
+							charges.put("overallTaxes", overallTaxes);
+						}
+						Logger.writeActivity("isItemTaxable: " + isItemTaxable, ECPOS_FOLDER);
+						Logger.writeActivity("charges: " + charges, ECPOS_FOLDER);
 						
-						while (rs3.next()) {
-							itemAmount = itemAmount.add(rs3.getBigDecimal("total_amount"));
+						accumulatedAmount = accumulatedAmount.add(getItemTaxCharge(itemAmount, isItemTaxable, charges));
+						
+						stmt4 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+						stmt4.setLong(1, checkDetailId);
+						rs4 = stmt4.executeQuery();
+						
+						while (rs4.next()) {
+							itemAmount = rs4.getBigDecimal("total_amount");
+							accumulatedAmount = accumulatedAmount.add(getItemTaxCharge(itemAmount, isItemTaxable, charges));
+							
+							stmt5 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+							stmt5.setLong(1, rs4.getLong("id"));
+							rs5 = stmt5.executeQuery();
+							
+							while (rs5.next()) {
+								itemAmount = rs5.getBigDecimal("total_amount");
+								accumulatedAmount = accumulatedAmount.add(getItemTaxCharge(itemAmount, isItemTaxable, charges));
+							}
 						}
 					}
 				}
-				accumulatedAmount = accumulatedAmount.add(itemAmount);
 			}
-			
 			jsonResult.put("accumulatedAmount", accumulatedAmount);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -149,9 +197,15 @@ public class RestC_transaction {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (rs5 != null) {rs5.close();rs5 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
@@ -922,5 +976,42 @@ if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
 			}
 		}
 		return jsonResult;
+	}
+	
+	public BigDecimal getItemTaxCharge(BigDecimal itemAmount, boolean isItemTaxable, JSONObject charges) {
+		BigDecimal amountWithAllTaxes = itemAmount;
+	
+		try {
+			if (isItemTaxable) {
+				BigDecimal amountWithTotalTax = itemAmount;
+				
+				if (charges.has("totalTaxes") && !charges.isNull("totalTaxes") && charges.getJSONArray("totalTaxes").length() > 0) {
+					JSONArray totalTaxes = charges.getJSONArray("totalTaxes");
+					
+					for (int i = 0; i < totalTaxes.length(); i++) {
+						JSONObject totalTax = totalTaxes.getJSONObject(i);
+						BigDecimal chargeAmount = itemAmount.multiply(new BigDecimal(totalTax.getString("rate")).divide(new BigDecimal("100")));
+						BigDecimal grandTotalChargeAmount = chargeAmount.setScale(2, RoundingMode.HALF_UP);
+						amountWithTotalTax = amountWithTotalTax.add(grandTotalChargeAmount);
+						amountWithAllTaxes = amountWithAllTaxes.add(grandTotalChargeAmount);
+					}
+				}
+				
+				if (charges.has("overallTaxes") && !charges.isNull("overallTaxes") && charges.getJSONArray("overallTaxes").length() > 0) {
+					JSONArray overallTaxes = charges.getJSONArray("overallTaxes");
+					
+					for (int i = 0; i < overallTaxes.length(); i++) {
+						JSONObject overallTax = overallTaxes.getJSONObject(i);
+						BigDecimal chargeAmount = amountWithTotalTax.multiply(new BigDecimal(overallTax.getString("rate")).divide(new BigDecimal("100")));
+						BigDecimal grandTotalChargeAmount = chargeAmount.setScale(2, RoundingMode.HALF_UP);
+						amountWithAllTaxes = amountWithAllTaxes.add(grandTotalChargeAmount);
+					}
+				}
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+		return amountWithAllTaxes;
 	}
 }

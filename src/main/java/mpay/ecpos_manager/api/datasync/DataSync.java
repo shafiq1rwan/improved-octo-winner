@@ -308,6 +308,8 @@ public class DataSync {
 					taxCharge.put("check_number", rs2.getString("check_number"));
 					taxCharge.put("tax_charge_id", rs2.getString("tax_charge_id"));
 					taxCharge.put("total_charge_amount", new BigDecimal(rs2.getString("total_charge_amount")));
+					taxCharge.put("total_charge_amount_rounding_adjustment", new BigDecimal(rs2.getString("total_charge_amount_rounding_adjustment")));
+					taxCharge.put("grand_total_charge_amount", new BigDecimal(rs2.getString("grand_total_charge_amount")));
 					
 					taxCharges.put(taxCharge);
 				}

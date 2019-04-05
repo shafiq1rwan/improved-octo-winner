@@ -1,6 +1,7 @@
 package mpay.ecpos_manager.web.restcontroller;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -141,7 +142,7 @@ public class RestC_check {
 					JSONObject taxCharge = new JSONObject();
 					taxCharge.put("name", rs2.getString("tax_charge_name"));
 					taxCharge.put("rate", rs2.getBigDecimal("rate"));
-					taxCharge.put("chargeAmount", new BigDecimal(rs2.getString("total_charge_amount")));
+					taxCharge.put("chargeAmount", new BigDecimal(rs2.getString("grand_total_charge_amount")));
 					
 					taxCharges.put(taxCharge);
 				}
@@ -995,8 +996,8 @@ public class RestC_check {
 												overallTaxes.put(taxInfo);
 											}
 										}
-										charges.put("totalTax", totalTaxes);
-										charges.put("overallTax", overallTaxes);
+										charges.put("totalTaxes", totalTaxes);
+										charges.put("overallTaxes", overallTaxes);
 									}
 									Logger.writeActivity("isItemTaxable: " + isItemTaxable, ECPOS_FOLDER);
 									Logger.writeActivity("charges: " + charges, ECPOS_FOLDER);
@@ -1540,120 +1541,132 @@ public class RestC_check {
 		boolean result = false;
 	
 		try {
-			BigDecimal amountWithCharge = amount;
-
-			boolean proceedUpdateCheck = false;
-			if (isItemTaxable) {				
-				boolean proceed = false;
-				if (!(charges.has("totalTaxes") && !charges.isNull("totalTaxes") && charges.getJSONArray("totalTaxes").length() > 0)) {
-					proceed = true;
-				} else {
-					JSONArray totalTaxes = charges.getJSONArray("totalTaxes");
-					
-					loop: for (int i = 0; i < totalTaxes.length(); i++) {
-						JSONObject totalTax = totalTaxes.getJSONObject(i);
-						BigDecimal chargeAmount = amount.multiply(new BigDecimal(totalTax.getString("rate")).divide(new BigDecimal("100")));
+			stmt = connection.prepareStatement("select * from `check` where id = ? and check_number = ?;");
+			stmt.setLong(1, checkId);
+			stmt.setString(2, checkNo);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				int totalQuantity = rs.getInt("total_item_quantity");
+				BigDecimal totalAmount = rs.getBigDecimal("total_amount");
+				BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
+				
+				BigDecimal newTotalAmount = totalAmount.add(amount);
+				
+				BigDecimal newTotalAmountWithTax = newTotalAmount;
+				
+				boolean proceedUpdateCheck = false;
+				if (isItemTaxable) {
+					boolean proceed = false;
+					BigDecimal amountWithTotalTax = newTotalAmount;
+					if (!(charges.has("totalTaxes") && !charges.isNull("totalTaxes") && charges.getJSONArray("totalTaxes").length() > 0)) {
+						proceed = true;
+					} else {
+						JSONArray totalTaxes = charges.getJSONArray("totalTaxes");
 						
-						stmt = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
-						stmt.setLong(1, checkId);
-						stmt.setString(2, checkNo);
-						stmt.setLong(3, totalTax.getLong("id"));
-						rs = stmt.executeQuery();
-						
-						int updateCharge = -1;
-						if (rs.next()) {
-							stmt2 = connection.prepareStatement("update check_tax_charge set total_charge_amount = total_charge_amount + ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
-							stmt2.setBigDecimal(1, chargeAmount);
-							stmt2.setLong(2, checkId);
-							stmt2.setString(3, checkNo);
-							stmt2.setLong(4, totalTax.getLong("id"));
-						} else {
-							stmt2 = connection.prepareStatement("insert into check_tax_charge (check_id,check_number,tax_charge_id,total_charge_amount) values (?,?,?,?);");
+						loop: for (int i = 0; i < totalTaxes.length(); i++) {
+							JSONObject totalTax = totalTaxes.getJSONObject(i);
+							BigDecimal totalChargeAmount = newTotalAmount.multiply(new BigDecimal(totalTax.getString("rate")).divide(new BigDecimal("100")));
+							BigDecimal grandTotalChargeAmount = totalChargeAmount.setScale(2, RoundingMode.HALF_UP);
+							BigDecimal totalChargeAmountRoundingAdjustment = grandTotalChargeAmount.subtract(totalChargeAmount);
+							
+							stmt2 = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
 							stmt2.setLong(1, checkId);
 							stmt2.setString(2, checkNo);
 							stmt2.setLong(3, totalTax.getLong("id"));
-							stmt2.setBigDecimal(4, chargeAmount);
-						}
-						updateCharge = stmt2.executeUpdate();
-						
-						if (updateCharge > 0) {
-							proceed = true;
-							amountWithCharge = amountWithCharge.add(chargeAmount);
-						} else {
-							proceed = false;
-							break loop;
-						}
-					}
-				}
-				
-				if (proceed) {
-					if (!(charges.has("overallTaxes") && !charges.isNull("overallTaxes") && charges.getJSONArray("overallTaxes").length() > 0)) {
-						proceedUpdateCheck = true;
-					} else {
-						JSONArray overallTaxes = charges.getJSONArray("overallTaxes");
-						
-						loop: for (int i = 0; i < overallTaxes.length(); i++) {
-							JSONObject overallTax = overallTaxes.getJSONObject(i);
-							BigDecimal chargeAmount = amountWithCharge.multiply(new BigDecimal(overallTax.getString("rate")).divide(new BigDecimal("100")));
-							
-							stmt3 = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
-							stmt3.setLong(1, checkId);
-							stmt3.setString(2, checkNo);
-							stmt3.setLong(3, overallTax.getLong("id"));
-							rs2 = stmt3.executeQuery();
+							rs2 = stmt2.executeQuery();
 							
 							int updateCharge = -1;
 							if (rs2.next()) {
-								stmt4 = connection.prepareStatement("update check_tax_charge set total_charge_amount = total_charge_amount + ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
-								stmt4.setBigDecimal(1, chargeAmount);
-								stmt4.setLong(2, checkId);
-								stmt4.setString(3, checkNo);
-								stmt4.setLong(4, overallTax.getLong("id"));
+								stmt3 = connection.prepareStatement("update check_tax_charge set total_charge_amount = ?,total_charge_amount_rounding_adjustment = ?,grand_total_charge_amount = ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
+								stmt3.setBigDecimal(1, totalChargeAmount);
+								stmt3.setBigDecimal(2, totalChargeAmountRoundingAdjustment);
+								stmt3.setBigDecimal(3, grandTotalChargeAmount);
+								stmt3.setLong(4, checkId);
+								stmt3.setString(5, checkNo);
+								stmt3.setLong(6, totalTax.getLong("id"));
 							} else {
-								stmt4 = connection.prepareStatement("insert into check_tax_charge (check_id,check_number,tax_charge_id,total_charge_amount) values (?,?,?,?);");
-								stmt4.setLong(1, checkId);
-								stmt4.setString(2, checkNo);
-								stmt4.setLong(3, overallTax.getLong("id"));
-								stmt4.setBigDecimal(4, chargeAmount);
+								stmt3 = connection.prepareStatement("insert into check_tax_charge (check_id,check_number,tax_charge_id,total_charge_amount,total_charge_amount_rounding_adjustment,grand_total_charge_amount) values (?,?,?,?,?,?);");
+								stmt3.setLong(1, checkId);
+								stmt3.setString(2, checkNo);
+								stmt3.setLong(3, totalTax.getLong("id"));
+								stmt3.setBigDecimal(4, totalChargeAmount);
+								stmt3.setBigDecimal(5, totalChargeAmountRoundingAdjustment);
+								stmt3.setBigDecimal(6, grandTotalChargeAmount);
 							}
-							updateCharge = stmt4.executeUpdate();
+							updateCharge = stmt3.executeUpdate();
 							
 							if (updateCharge > 0) {
-								proceedUpdateCheck = true;
-								amountWithCharge = amountWithCharge.add(chargeAmount);
+								proceed = true;
+								amountWithTotalTax = amountWithTotalTax.add(grandTotalChargeAmount);
+								newTotalAmountWithTax = newTotalAmountWithTax.add(grandTotalChargeAmount);
 							} else {
-								proceedUpdateCheck = false;
+								proceed = false;
 								break loop;
 							}
 						}
 					}
-				}
-			} else {
-				proceedUpdateCheck = true;
-			}
-			
-			if (proceedUpdateCheck) {
-				stmt5 = connection.prepareStatement("select * from `check` where id = ? and check_number = ?;");
-				stmt5.setLong(1, checkId);
-				stmt5.setString(2, checkNo);
-				rs3 = stmt5.executeQuery();
 				
-				if (rs3.next()) {
-					int totalQuantity = rs3.getInt("total_item_quantity");
-					BigDecimal totalAmount = rs3.getBigDecimal("total_amount");
-					BigDecimal totalAmountWithTax = rs3.getBigDecimal("total_amount_with_tax");
-					BigDecimal totalAmountWithTaxRoundingAdjustment = rs3.getBigDecimal("total_amount_with_tax_rounding_adjustment");
-					BigDecimal grandTotalAmount = rs3.getBigDecimal("grand_total_amount");
-					BigDecimal tenderAmount = rs3.getBigDecimal("tender_amount");
-					
-					BigDecimal newTotalAmountWithTax = totalAmountWithTax.add(amountWithCharge);
-					BigDecimal newGrandTotalAmount = roundToNearest(grandTotalAmount.add(amountWithCharge).subtract(totalAmountWithTaxRoundingAdjustment));
+					if (proceed) {
+						if (!(charges.has("overallTaxes") && !charges.isNull("overallTaxes") && charges.getJSONArray("overallTaxes").length() > 0)) {
+							proceedUpdateCheck = true;
+						} else {
+							JSONArray overallTaxes = charges.getJSONArray("overallTaxes");
+							
+							loop: for (int i = 0; i < overallTaxes.length(); i++) {
+								JSONObject overallTax = overallTaxes.getJSONObject(i);
+								BigDecimal totalChargeAmount = amountWithTotalTax.multiply(new BigDecimal(overallTax.getString("rate")).divide(new BigDecimal("100")));
+								BigDecimal grandTotalChargeAmount = totalChargeAmount.setScale(2, RoundingMode.HALF_UP);
+								BigDecimal totalChargeAmountRoundingAdjustment = grandTotalChargeAmount.subtract(totalChargeAmount);
+								
+								stmt4 = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
+								stmt4.setLong(1, checkId);
+								stmt4.setString(2, checkNo);
+								stmt4.setLong(3, overallTax.getLong("id"));
+								rs3 = stmt4.executeQuery();
+								
+								int updateCharge = -1;
+								if (rs3.next()) {
+									stmt5 = connection.prepareStatement("update check_tax_charge set total_charge_amount = ?,total_charge_amount_rounding_adjustment = ?,grand_total_charge_amount = ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
+									stmt5.setBigDecimal(1, totalChargeAmount);
+									stmt5.setBigDecimal(2, totalChargeAmountRoundingAdjustment);
+									stmt5.setBigDecimal(3, grandTotalChargeAmount);
+									stmt5.setLong(4, checkId);
+									stmt5.setString(5, checkNo);
+									stmt5.setLong(6, overallTax.getLong("id"));
+								} else {
+									stmt5 = connection.prepareStatement("insert into check_tax_charge (check_id,check_number,tax_charge_id,total_charge_amount,total_charge_amount_rounding_adjustment,grand_total_charge_amount) values (?,?,?,?,?,?);");
+									stmt5.setLong(1, checkId);
+									stmt5.setString(2, checkNo);
+									stmt5.setLong(3, overallTax.getLong("id"));
+									stmt5.setBigDecimal(4, totalChargeAmount);
+									stmt5.setBigDecimal(5, totalChargeAmountRoundingAdjustment);
+									stmt5.setBigDecimal(6, grandTotalChargeAmount);
+								}
+								updateCharge = stmt5.executeUpdate();
+								
+								if (updateCharge > 0) {
+									proceedUpdateCheck = true;
+									newTotalAmountWithTax = newTotalAmountWithTax.add(grandTotalChargeAmount);
+								} else {
+									proceedUpdateCheck = false;
+									break loop;
+								}
+							}
+						}
+					}
+				} else {
+					proceedUpdateCheck = true;
+				}
+				
+				if (proceedUpdateCheck) {
+					BigDecimal newGrandTotalAmount = roundToNearest(newTotalAmountWithTax);
 					BigDecimal newTotalAmountWithTaxRoundingAdjustment = newGrandTotalAmount.subtract(newTotalAmountWithTax);
 					BigDecimal newOverdueAmount = newGrandTotalAmount.subtract(tenderAmount);
 					
 					stmt6 = connection.prepareStatement("update `check` set total_item_quantity = ?,total_amount = ?,total_amount_with_tax = ?,total_amount_with_tax_rounding_adjustment = ?,grand_total_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
 					stmt6.setInt(1, totalQuantity + orderQuantity);
-					stmt6.setBigDecimal(2, totalAmount.add(amount));
+					stmt6.setBigDecimal(2, newTotalAmount);
 					stmt6.setBigDecimal(3, newTotalAmountWithTax);
 					stmt6.setBigDecimal(4, newTotalAmountWithTaxRoundingAdjustment);
 					stmt6.setBigDecimal(5, newGrandTotalAmount);
@@ -1676,8 +1689,11 @@ public class RestC_check {
 				if (stmt2 != null) stmt2.close();
 				if (stmt3 != null) stmt3.close();
 				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
 				e.printStackTrace();
@@ -1699,113 +1715,114 @@ public class RestC_check {
 		boolean result = false;
 	
 		try {
-			BigDecimal amountWithCharge = amount;
+			stmt = connection.prepareStatement("select * from `check` where id = ? and check_number = ?;");
+			stmt.setLong(1, checkId);
+			stmt.setString(2, checkNo);
+			rs = stmt.executeQuery();
 			
-			boolean proceedUpdateCheck = false;
-			if (isItemTaxable) {				
-				boolean proceed = false;
-				if (!(charges.has("totalTaxes") && !charges.isNull("totalTaxes") && charges.getJSONArray("totalTaxes").length() > 0)) {
-					proceed = true;
-				} else {
-					JSONArray totalTaxes = charges.getJSONArray("totalTaxes");
-					
-					loop: for (int i = 0; i < totalTaxes.length(); i++) {
-						JSONObject totalTax = totalTaxes.getJSONObject(i);
-						BigDecimal chargeAmount = amount.multiply(new BigDecimal(totalTax.getString("rate")).divide(new BigDecimal("100")));
-						
-						stmt = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
-						stmt.setLong(1, checkId);
-						stmt.setString(2, checkNo);
-						stmt.setLong(3, totalTax.getLong("id"));
-						rs = stmt.executeQuery();
-
-						if (rs.next()) {
-							stmt2 = connection.prepareStatement("update check_tax_charge set total_charge_amount = total_charge_amount - ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
-							stmt2.setBigDecimal(1, chargeAmount);
-							stmt2.setLong(2, checkId);
-							stmt2.setString(3, checkNo);
-							stmt2.setLong(4, totalTax.getLong("id"));
-							int updateCharge = stmt2.executeUpdate();
-							
-							if (updateCharge > 0) {
-								proceed = true;
-								amountWithCharge = amountWithCharge.add(chargeAmount);
-							} else {
-								proceed = false;
-								break loop;
-							}
-						} else {
-							proceed = false;
-							break loop;
-						}
-					}
-				}
+			if (rs.next()) {
+				int totalQuantity = rs.getInt("total_item_quantity");
+				BigDecimal totalAmount = rs.getBigDecimal("total_amount");
+				BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 				
-				if (proceed) {
-					if (!(charges.has("overallTaxes") && !charges.isNull("overallTaxes") && charges.getJSONArray("overallTaxes").length() > 0)) {
-						proceedUpdateCheck = true;
+				BigDecimal newTotalAmount = totalAmount.subtract(amount);
+				
+				BigDecimal newTotalAmountWithTax = newTotalAmount;
+				
+				boolean proceedUpdateCheck = false;
+				if (isItemTaxable) {
+					boolean proceed = false;
+					BigDecimal amountWithTotalTax = newTotalAmount;
+					if (!(charges.has("totalTaxes") && !charges.isNull("totalTaxes") && charges.getJSONArray("totalTaxes").length() > 0)) {
+						proceed = true;
 					} else {
-						JSONArray overallTaxes = charges.getJSONArray("overallTaxes");
+						JSONArray totalTaxes = charges.getJSONArray("totalTaxes");
+					
+						loop: for (int i = 0; i < totalTaxes.length(); i++) {
+							JSONObject totalTax = totalTaxes.getJSONObject(i);
+							BigDecimal totalChargeAmount = newTotalAmount.multiply(new BigDecimal(totalTax.getString("rate")).divide(new BigDecimal("100")));
+							BigDecimal grandTotalChargeAmount = totalChargeAmount.setScale(2, RoundingMode.HALF_UP);
+							BigDecimal totalChargeAmountRoundingAdjustment = grandTotalChargeAmount.subtract(totalChargeAmount);
 						
-						loop: for (int i = 0; i < overallTaxes.length(); i++) {
-							JSONObject overallTax = overallTaxes.getJSONObject(i);
-							BigDecimal chargeAmount = amountWithCharge.multiply(new BigDecimal(overallTax.getString("rate")).divide(new BigDecimal("100")));
-							
-							stmt3 = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
-							stmt3.setLong(1, checkId);
-							stmt3.setString(2, checkNo);
-							stmt3.setLong(3, overallTax.getLong("id"));
-							rs2 = stmt3.executeQuery();
-							
+							stmt2 = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
+							stmt2.setLong(1, checkId);
+							stmt2.setString(2, checkNo);
+							stmt2.setLong(3, totalTax.getLong("id"));
+							rs2 = stmt2.executeQuery();
+
 							if (rs2.next()) {
-								stmt4 = connection.prepareStatement("update check_tax_charge set total_charge_amount = total_charge_amount - ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
-								stmt4.setBigDecimal(1, chargeAmount);
-								stmt4.setLong(2, checkId);
-								stmt4.setString(3, checkNo);
-								stmt4.setLong(4, overallTax.getLong("id"));
-								int updateCharge = stmt4.executeUpdate();
-								
+								stmt3 = connection.prepareStatement("update check_tax_charge set total_charge_amount = ?,total_charge_amount_rounding_adjustment = ?,grand_total_charge_amount = ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
+								stmt3.setBigDecimal(1, totalChargeAmount);
+								stmt3.setBigDecimal(2, totalChargeAmountRoundingAdjustment);
+								stmt3.setBigDecimal(3, grandTotalChargeAmount);
+								stmt3.setLong(4, checkId);
+								stmt3.setString(5, checkNo);
+								stmt3.setLong(6, totalTax.getLong("id"));
+								int updateCharge = stmt3.executeUpdate();
+							
 								if (updateCharge > 0) {
-									proceedUpdateCheck = true;
-									amountWithCharge = amountWithCharge.add(chargeAmount);
+									proceed = true;
+									amountWithTotalTax = amountWithTotalTax.add(grandTotalChargeAmount);
+									newTotalAmountWithTax = newTotalAmountWithTax.add(grandTotalChargeAmount);
 								} else {
-									proceedUpdateCheck = false;
+									proceed = false;
 									break loop;
 								}
-							} else {
-								proceedUpdateCheck = false;
-								break loop;
 							}
-							
 						}
 					}
-				}
-			} else {
-				proceedUpdateCheck = true;
-			}
-			
-			if (proceedUpdateCheck) {
-				stmt5 = connection.prepareStatement("select * from `check` where id = ? and check_number = ?;");
-				stmt5.setLong(1, checkId);
-				stmt5.setString(2, checkNo);
-				rs3 = stmt5.executeQuery();
 				
-				if (rs3.next()) {
-					int totalQuantity = rs3.getInt("total_item_quantity");
-					BigDecimal totalAmount = rs3.getBigDecimal("total_amount");
-					BigDecimal totalAmountWithTax = rs3.getBigDecimal("total_amount_with_tax");
-					BigDecimal totalAmountWithTaxRoundingAdjustment = rs3.getBigDecimal("total_amount_with_tax_rounding_adjustment");
-					BigDecimal grandTotalAmount = rs3.getBigDecimal("grand_total_amount");
-					BigDecimal tenderAmount = rs3.getBigDecimal("tender_amount");
-					
-					BigDecimal newTotalAmountWithTax = totalAmountWithTax.subtract(amountWithCharge);
-					BigDecimal newGrandTotalAmount = roundToNearest(grandTotalAmount.subtract(amountWithCharge).subtract(totalAmountWithTaxRoundingAdjustment));
+					if (proceed) {
+						if (!(charges.has("overallTaxes") && !charges.isNull("overallTaxes") && charges.getJSONArray("overallTaxes").length() > 0)) {
+							proceedUpdateCheck = true;
+						} else {
+							JSONArray overallTaxes = charges.getJSONArray("overallTaxes");
+							
+							loop: for (int i = 0; i < overallTaxes.length(); i++) {
+								JSONObject overallTax = overallTaxes.getJSONObject(i);
+								BigDecimal totalChargeAmount = amountWithTotalTax.multiply(new BigDecimal(overallTax.getString("rate")).divide(new BigDecimal("100")));
+								BigDecimal grandTotalChargeAmount = totalChargeAmount.setScale(2, RoundingMode.HALF_UP);
+								BigDecimal totalChargeAmountRoundingAdjustment = grandTotalChargeAmount.subtract(totalChargeAmount);
+								
+								stmt4 = connection.prepareStatement("select * from check_tax_charge where check_id = ? and check_number = ? and tax_charge_id = ?;");
+								stmt4.setLong(1, checkId);
+								stmt4.setString(2, checkNo);
+								stmt4.setLong(3, overallTax.getLong("id"));
+								rs3 = stmt4.executeQuery();
+						
+								if (rs3.next()) {
+									stmt5 = connection.prepareStatement("update check_tax_charge set total_charge_amount = ?,total_charge_amount_rounding_adjustment = ?,grand_total_charge_amount = ? where check_id = ? and check_number = ? and tax_charge_id = ?;");
+									stmt5.setBigDecimal(1, totalChargeAmount);
+									stmt5.setBigDecimal(2, totalChargeAmountRoundingAdjustment);
+									stmt5.setBigDecimal(3, grandTotalChargeAmount);
+									stmt5.setLong(4, checkId);
+									stmt5.setString(5, checkNo);
+									stmt5.setLong(6, overallTax.getLong("id"));
+									int updateCharge = stmt5.executeUpdate();
+							
+									if (updateCharge > 0) {
+										proceedUpdateCheck = true;
+										newTotalAmountWithTax = newTotalAmountWithTax.add(grandTotalChargeAmount);
+									} else {
+										proceedUpdateCheck = false;
+										break loop;
+									}
+								}
+							}
+						}
+					}
+				} else {
+					proceedUpdateCheck = true;
+				}
+	
+				if (proceedUpdateCheck) {
+					BigDecimal newGrandTotalAmount = roundToNearest(newTotalAmountWithTax);
 					BigDecimal newTotalAmountWithTaxRoundingAdjustment = newGrandTotalAmount.subtract(newTotalAmountWithTax);
 					BigDecimal newOverdueAmount = newGrandTotalAmount.subtract(tenderAmount);
 					
 					stmt6 = connection.prepareStatement("update `check` set total_item_quantity = ?,total_amount = ?,total_amount_with_tax = ?,total_amount_with_tax_rounding_adjustment = ?,grand_total_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
 					stmt6.setInt(1, totalQuantity - orderQuantity);
-					stmt6.setBigDecimal(2, totalAmount.subtract(amount));
+					stmt6.setBigDecimal(2, newTotalAmount);
 					stmt6.setBigDecimal(3, newTotalAmountWithTax);
 					stmt6.setBigDecimal(4, newTotalAmountWithTaxRoundingAdjustment);
 					stmt6.setBigDecimal(5, newGrandTotalAmount);

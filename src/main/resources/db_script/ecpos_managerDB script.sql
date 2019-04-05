@@ -232,7 +232,9 @@ create table `check_tax_charge` (
 	`check_id` bigint(20) NOT NULL,
 	`check_number` bigint (20) NOT NULL,
     `tax_charge_id` varchar(255) NOT NULL,
-	`total_charge_amount` decimal(25, 4) NOT NULL
+	`total_charge_amount` decimal(25, 4) NOT NULL,
+	`total_charge_amount_rounding_adjustment` decimal(25, 4) NOT NULL,
+	`grand_total_charge_amount` decimal(25, 4) NOT NULL
 );
 
 create table `transaction_settlement_status` (

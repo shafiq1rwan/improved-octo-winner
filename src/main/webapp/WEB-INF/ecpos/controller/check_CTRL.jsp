@@ -114,7 +114,7 @@
 		            this.checked = true;                        
 		        });
 		        
-				$('#amount').html(parseFloat($scope.checkDetail.overdue).toFixed(2));
+				$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
 		    } else {
 		        $('[name=grandParentItemCheckbox]').each(function() {
 		            this.checked = false;                       
@@ -238,7 +238,7 @@
 			$("#allGrandParentItemCheckbox").hide();
 			$("input[name=grandParentItemCheckbox]").hide();
 			
-			$('#amount').html(parseFloat($scope.checkDetail.overdue).toFixed(2));
+			$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
 		}
 	});
 </script>

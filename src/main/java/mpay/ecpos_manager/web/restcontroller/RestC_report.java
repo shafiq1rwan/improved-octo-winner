@@ -12,7 +12,6 @@ import javax.sql.DataSource;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -65,7 +64,7 @@ public class RestC_report {
 				jObject.put("deviceType", rs.getString("dt"));
 				jObject.put("paymentMethod", rs.getString("pm") == null ? "-" : rs.getString("pm"));
 				jObject.put("totalCount", rs.getInt("count") == 0 ? "-" : rs.getInt("count"));
-				jObject.put("totalAmount", rs.getBigDecimal("amount") == null ? "-" : rs.getBigDecimal("amount"));
+				jObject.put("totalAmount", rs.getBigDecimal("amount") == null ? "-" : String.format("%.2f", rs.getBigDecimal("amount")));
 				
 				JARY.put(jObject);
 			}
