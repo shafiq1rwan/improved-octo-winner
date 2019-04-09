@@ -472,7 +472,7 @@ public class RestC_configuration {
 							String token = AesEncryption.encrypt(encryptKey, tokenValue);
 							
 							if (!token.equals(null)) {
-								String QRUrl = cloudUrl + "order/" + brandId + "#!/tk/" + token;
+								String QRUrl = cloudUrl + "order/" + token;
 								byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
 								byte[] encoded = new Base64().encode(QRImageByte);
 								String QRImage = "data:image/jpg;base64," + new String(encoded);
