@@ -1,3 +1,7 @@
+<%
+	int storeType = (int) session.getAttribute("storeType");
+%>
+
 <!DOCTYPE html>
 <html>
 <body>
@@ -6,6 +10,7 @@
 			<ul class="sidebar-menu">
 
 				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Order Management</li>
+				<%if (storeType == 2) {%>
 				<li>
 					<a href="${pageContext.request.contextPath}/ecpos/#!table_order">
 						<i class="fa fa-desktop"></i> 
@@ -13,10 +18,16 @@
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
+				<%}%>
 				<li>
 					<a href="${pageContext.request.contextPath}/ecpos/#!take_away_order">
 						<i class="fa fa-shopping-bag"></i> 
+					<%if (storeType == 2) {%>
 						<span>Take Away Order</span> 
+					<%} else {%>
+						<span>Purchase</span> 
+					<%}%>
+						
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
@@ -26,6 +37,13 @@
 					<a href="${pageContext.request.contextPath}/ecpos/#!items_listing">
 						<i class="fa fa-object-group"></i> 
 						<span>Items Listing</span> 
+						<span class="pull-right-container"> </span>
+					</a>
+				</li>
+				<li>
+					<a href="${pageContext.request.contextPath}/ecpos/#!checks_listing">
+						<i class="fa fa-list"></i> 
+						<span>Checks Listing</span> 
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>

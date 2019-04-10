@@ -39,7 +39,7 @@
 								<br>
 								<div class="row">
 									<div class="col-md-3 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">Cloud - Menu Info</label>
+										<label style="font-size: medium; margin-top: 6px;">Cloud - Item Info</label>
 									</div>
 									<div class="col-md-2 form-group">
 										<button class="btn btn-block btn-info" ng-click="submitSyncMenu()">Synchronize</button>

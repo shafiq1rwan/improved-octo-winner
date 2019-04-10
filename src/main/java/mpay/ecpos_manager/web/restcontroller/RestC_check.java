@@ -37,7 +37,7 @@ public class RestC_check {
 	@Autowired
 	DataSource dataSource;
 	
-	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.POST }, produces = "application/json")
+	@RequestMapping(value = { "/get_checks" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String getChecklist(@RequestBody String data) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -56,11 +56,11 @@ public class RestC_check {
 				stmt.setString(1, table_no);
 				rs = stmt.executeQuery();
 
-				JSONArray check_list = new JSONArray();
+				JSONArray checks = new JSONArray();
 				while (rs.next()) {
-					check_list.put(rs.getString("check_number"));
+					checks.put(rs.getString("check_number"));
 				}
-				jsonResult.put("check_list", check_list);
+				jsonResult.put("checks", checks);
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			} else {
@@ -83,8 +83,62 @@ public class RestC_check {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getCheckList() {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select c.id,c.check_number,s.staff_name,ot.name as order_type,c.table_number,c.total_item_quantity, " + 
+					"c.grand_total_amount,c.deposit_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
+					"from `check` c " + 
+					"inner join staff s on s.id = c.staff_id " + 
+					"inner join order_type ot on ot.id = c.order_type " + 
+					"inner join check_status cs on cs.id = c.check_status " + 
+					"order by created_date desc;");
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				JSONObject check = new JSONObject();
+				check.put("id", rs.getLong("id"));
+				check.put("checkNumber", rs.getString("check_number"));
+				check.put("staffName", rs.getString("staff_name"));
+				check.put("orderType", rs.getString("order_type"));
+				check.put("tableNumber", rs.getInt("table_number") == 0 ? "-" : rs.getInt("table_number"));
+				check.put("totalItemQuantity", rs.getInt("total_item_quantity"));
+				check.put("grandTotalAmount", String.format("%.2f", rs.getBigDecimal("grand_total_amount")));
+				check.put("depositAmount", String.format("%.2f", rs.getBigDecimal("deposit_amount")));
+				check.put("tenderAmount", String.format("%.2f", rs.getBigDecimal("tender_amount")));
+				check.put("overdueAmount", String.format("%.2f", rs.getBigDecimal("overdue_amount")));
+				check.put("checkStatus", rs.getString("check_status"));
+				check.put("createdDate", rs.getString("created_date"));
+				
+				jary.put(check);
+			}
+			jsonResult.put("data", jary);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/get_check_detail/{orderType}/{checkNo}/{tableNo}" }, method = { RequestMethod.GET }, produces = "application/json")
-	public String getCheckDetails(@PathVariable("orderType") String orderType, @PathVariable("checkNo") String checkNo, @PathVariable("tableNo") int tableNo) {
+	public String getCheckDetails(@PathVariable("orderType") String orderType, @PathVariable("checkNo") String checkNo, @PathVariable("tableNo") String tableNo) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -92,11 +146,13 @@ public class RestC_check {
 		PreparedStatement stmt3 = null;
 		PreparedStatement stmt4 = null;
 		PreparedStatement stmt5 = null;
+		PreparedStatement stmtA = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
 		ResultSet rs4 = null;
 		ResultSet rs5 = null;
+		ResultSet rsA = null;
 		
 		try {
 			connection = dataSource.getConnection();
@@ -162,8 +218,31 @@ public class RestC_check {
 					grandParentItem.put("itemId", rs3.getString("menu_item_id"));
 					grandParentItem.put("itemCode", rs3.getString("menu_item_code"));
 					grandParentItem.put("itemName", rs3.getString("menu_item_name"));
-					grandParentItem.put("itemQuantity", rs3.getString("quantity"));
+					grandParentItem.put("itemPrice", rs3.getString("menu_item_price"));
+					grandParentItem.put("itemQuantity", rs3.getInt("quantity"));
 					grandParentItem.put("totalAmount", rs3.getString("total_amount"));
+					
+					stmtA = connection.prepareStatement("select * from menu_item mi " + 
+							"left join menu_item_modifier_group mimg on mimg.menu_item_id = mi.id " + 
+							"where mi.id = ?;");
+					stmtA.setString(1, rs3.getString("menu_item_id"));
+					rsA = stmtA.executeQuery();
+
+					if (rsA.next()) {
+						if (rsA.getInt("menu_item_type") == 0) {
+							grandParentItem.put("isAlaCarte", true);
+							
+							if (rsA.getLong("menu_item_id") > 0) {
+								grandParentItem.put("hasModified", true);
+							} else {
+								grandParentItem.put("hasModified", false);
+							}
+						} else {
+							grandParentItem.put("isAlaCarte", false);
+						}
+					} else {
+						grandParentItem.put("isAlaCarte", false);
+					}
 					
 					stmt4 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2) order by id asc;");
 					stmt4.setLong(1, id);
@@ -179,6 +258,7 @@ public class RestC_check {
 						parentItem.put("itemId", rs4.getString("menu_item_id"));
 						parentItem.put("itemCode", rs4.getString("menu_item_code"));
 						parentItem.put("itemName", rs4.getString("menu_item_name"));
+						parentItem.put("itemPrice", rs4.getString("menu_item_price"));
 						parentItem.put("itemQuantity", rs4.getString("quantity"));
 						parentItem.put("totalAmount", rs4.getString("total_amount"));
 						
@@ -194,6 +274,7 @@ public class RestC_check {
 							childItem.put("itemId", rs5.getString("menu_item_id"));
 							childItem.put("itemCode", rs5.getString("menu_item_code"));
 							childItem.put("itemName", rs5.getString("menu_item_name"));
+							childItem.put("itemPrice", rs5.getString("menu_item_price"));
 							childItem.put("itemQuantity", rs5.getString("quantity"));
 							childItem.put("totalAmount", rs5.getString("total_amount"));
 							
@@ -1115,6 +1196,178 @@ public class RestC_check {
 			}
 		}
 		Logger.writeActivity("----------- CREATE BARCODE ORDER END ---------", ECPOS_FOLDER);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/update_item_quantity" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String updateItemQuantity(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("----------- UPDATE ITEM QUANTITY START ---------", ECPOS_FOLDER);
+		Logger.writeActivity("request: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
+
+		try {
+			JSONObject detail = new JSONObject(data);
+			
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
+
+			if ((detail.has("id") && !detail.isNull("id"))
+					&& (detail.has("quantity") && !detail.isNull("quantity"))) {
+				long checkDetailId = detail.getLong("id");
+				int quantity = detail.getInt("quantity");
+
+				stmt = connection.prepareStatement("select * from check_detail where id = ?;");
+				stmt.setLong(1, checkDetailId);
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					long checkId = rs.getLong("check_id");
+					String checkNo = rs.getString("check_number");
+					
+					stmt2 = connection.prepareStatement("select * from menu_item where id = ?;");
+					stmt2.setLong(1, rs.getLong("menu_item_id"));
+					rs2 = stmt2.executeQuery();
+
+					if (rs2.next()) {
+						if (rs2.getString("menu_item_type").equals("0")) {
+							BigDecimal totalAmount = rs2.getBigDecimal("menu_item_base_price").multiply(new BigDecimal(quantity));
+							boolean isItemTaxable = rs2.getBoolean("is_taxable");
+
+							JSONObject charges = new JSONObject();
+							JSONArray totalTaxes = new JSONArray();
+							JSONArray overallTaxes = new JSONArray();
+
+							if (isItemTaxable) {
+								stmt3 = connection.prepareStatement("select tc.* from tax_charge tc " + 
+										"inner join charge_type_lookup ctlu on ctlu.charge_type_number = tc.charge_type " + 
+										"where tc.is_active = 1;");
+								rs3 = stmt3.executeQuery();
+
+								while (rs3.next()) {
+									JSONObject taxInfo = new JSONObject();
+									
+									if (rs3.getInt("charge_type") == 1) {
+										taxInfo.put("id", rs3.getString("id"));
+										taxInfo.put("rate", rs3.getString("rate"));
+										
+										totalTaxes.put(taxInfo);
+									} else if (rs3.getInt("charge_type") == 2) {
+										taxInfo.put("id", rs3.getString("id"));
+										taxInfo.put("rate", rs3.getString("rate"));
+										
+										overallTaxes.put(taxInfo);
+									}
+								}
+								charges.put("totalTaxes", totalTaxes);
+								charges.put("overallTaxes", overallTaxes);
+							}
+							Logger.writeActivity("isItemTaxable: " + isItemTaxable, ECPOS_FOLDER);
+							Logger.writeActivity("charges: " + charges, ECPOS_FOLDER);
+
+							stmt4 = connection.prepareStatement("update check_detail set quantity = ?,total_amount = ? where id = ?;");
+							stmt4.setInt(1, quantity);
+							stmt4.setBigDecimal(2, totalAmount);
+							stmt4.setLong(3, checkDetailId);
+							int updateCheckDetail = stmt4.executeUpdate();
+
+							if (updateCheckDetail > 0) {
+								boolean updateDeductCheck = updateCancelledItemCheck(connection, checkId, checkNo, quantity, rs.getBigDecimal("total_amount"), isItemTaxable, charges);
+								
+								if (updateDeductCheck) {
+									boolean updateCheck = updateCheck(connection, checkId, checkNo, quantity, totalAmount, isItemTaxable, charges);
+								
+									if (updateCheck) {
+										// Only A La Carte
+										stmt5 = connection.prepareStatement("select * from menu_item_modifier_group where menu_item_id = ?;");
+										stmt5.setString(1, rs2.getString("id"));
+										rs5 = stmt5.executeQuery();
+	
+										if (rs5.next()) {
+											connection.rollback();
+											Logger.writeActivity("Item Quantity Failed To Update, Contain Modifier", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Quantity Failed To Update, Contain Modifier");
+										} else {
+											connection.commit();
+											Logger.writeActivity("Item Quantity Successfully Updated", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "00");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Quantity Successfully Updated");
+										}
+									} else {
+										connection.rollback();
+										Logger.writeActivity("Failed to update check", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Failed to update check");
+									}
+								} else {
+									connection.rollback();
+									Logger.writeActivity("Failed to update check", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Failed to update check");
+								}
+							} else {
+								connection.rollback();
+								Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Update");
+							}
+						} else {
+							connection.rollback();
+							Logger.writeActivity("Item Type Not Match", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Type Not Match");
+						}
+					} else {
+						connection.rollback();
+						Logger.writeActivity("Item Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found");
+					}
+				} else {
+					connection.rollback();
+					Logger.writeActivity("Check Detail Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Not Found");
+				}
+			} else {
+				Logger.writeActivity("Request Not Complete", ECPOS_FOLDER);
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
+			}
+			connection.setAutoCommit(true);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (rs5 != null) {rs5.close();rs5 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- UPDATE ITEM QUANTITY END ---------", ECPOS_FOLDER);
 		return jsonResult.toString();
 	}
 

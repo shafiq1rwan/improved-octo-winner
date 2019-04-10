@@ -56,7 +56,7 @@
 									<div class="col-md-12">
 										<div class="panel-body">
 											<div class="row">
-												<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" ng-repeat="existing_check in check_list">
+												<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" ng-repeat="existing_check in checks">
 													<a data-dismiss='modal' ng-click="redirect_to_check_detail(existing_check)">
 														<div class="panel panel-default text-center">
 															<div class="panel-heading" style="color: #333333e0; background-color: #00ff7f">

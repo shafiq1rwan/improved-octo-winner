@@ -153,4 +153,26 @@ public class WebComponents {
 		}
 		return result;
 	}
+	
+	public int getStoreType(DataSource dataSource) {
+		int storeType = 0;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+
+			stmt = connection.prepareStatement("select * from store;");
+			rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				storeType = rs.getInt("store_type_id");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+		return storeType;
+	}
 }

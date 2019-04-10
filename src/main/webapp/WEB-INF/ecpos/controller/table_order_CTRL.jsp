@@ -62,9 +62,9 @@
 				"table_no" : $scope.table_no
 			});
 
-			$http.post("${pageContext.request.contextPath}/rc/check/get_check_list", jsonData)
+			$http.post("${pageContext.request.contextPath}/rc/check/get_checks", jsonData)
 			.then(function(response) {
-				$scope.check_list = response.data.check_list;
+				$scope.checks = response.data.checks;
 			},
 			function(response) {
 				alert("Session TIME OUT");

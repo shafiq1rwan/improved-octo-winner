@@ -196,8 +196,8 @@
 		
 		.when("/",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/table_order",
-				controller : "table_order_CTRL"
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/settings",
+				controller : "settings_CTRL"
 			})
 		.when("/table_order",
 			{
@@ -218,6 +218,11 @@
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items_listing",
 				controller : "items_listing_CTRL"
+			})
+		.when("/checks_listing",
+			{
+				templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks_listing",
+				controller : "checks_listing_CTRL"
 			})
 		.when("/transactions_listing",
 			{
@@ -256,6 +261,7 @@
 <jsp:include page="/WEB-INF/ecpos/controller/payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/take_away_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/items_listing_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/checks_listing_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/transactions_listing_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/reports_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/settings_CTRL.jsp" />

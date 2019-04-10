@@ -33,6 +33,7 @@ public class EcposManagerController {
 	public ModelAndView ecposLandingPage(HttpServletRequest request) {
 		Logger.writeActivity("----------- ECPOS LANDING START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();
+		HttpSession session = request.getSession();
 		WebComponents webComponent = new WebComponents();
 		
 		// check for activation info
@@ -45,8 +46,10 @@ public class EcposManagerController {
 				model.setViewName("ecpos/activation");
 			} else {
 				UserAuthenticationModel user = webComponent.getEcposSession(request);
+				int storeType = webComponent.getStoreType(dataSource);
 				
 				if (user != null) {
+					session.setAttribute("storeType", storeType);
 					model.setViewName("ecpos/home");
 				} else {
 					model.setViewName("ecpos/login");
@@ -74,11 +77,13 @@ public class EcposManagerController {
 			try {
 				WebComponents webComponent = new WebComponents();
 				UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
+				int storeType = webComponent.getStoreType(dataSource);
 				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 				
 				if (loginUser != null) {
 					session.setAttribute("session_user", loginUser);
+					session.setAttribute("storeType", storeType);
 					model.setViewName("redirect:" + "/ecpos/#");
 				} else if(activationInfo.has("activationId") && activationInfo.getString("activationId").equals("")) {
 					model.addObject("http_message", "Activation is required");
@@ -148,6 +153,13 @@ public class EcposManagerController {
 	public ModelAndView ecpos_items_listing() {
 		ModelAndView model = new ModelAndView();
 		model.setViewName("ecpos/views/items_listing");
+		return model;
+	}
+	
+	@RequestMapping(value = {"/views/checks_listing"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_checks_listing() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/checks_listing");
 		return model;
 	}
 	

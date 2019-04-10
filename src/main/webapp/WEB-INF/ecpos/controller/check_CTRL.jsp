@@ -33,6 +33,12 @@
 					$('#cancelItemButton').prop('disabled', false);
 					$('#paymentButton').prop('disabled', false);
 				}
+				
+				setTimeout(function() {
+					$('input[name=itemQuantity]').click(function(){
+					    $(this).select();
+					});
+				},100);
 			},
 			function(response) {
 				alert("Session TIME OUT");
@@ -124,7 +130,7 @@
 		    }
 		}
 		
-		$scope.grandParentItemCheckbox = function () {
+		$scope.grandParentItemCheckbox = function() {
 			if ($("[name=grandParentItemCheckbox]:checked").length == $scope.checkDetail.grandParentItemArray.length) {
 				allGrandParentItemCheckbox.checked = true;
 			} else {
@@ -158,8 +164,28 @@
 			}
 		}
 		
-		$scope.redirectTableOrder = function() {
-			window.location.href = "${pageContext.request.contextPath}/ecpos/#!table_order";
+		$scope.submitUpdateItemQuantity = function(checkDetailId) {
+			var jsonData = JSON.stringify({
+				"id" : checkDetailId,
+				"quantity" : $('#'+checkDetailId).val()
+			});
+			
+			$http.post("${pageContext.request.contextPath}/rc/check/update_item_quantity", jsonData)
+			.then(function(response) {
+				if (response.data.response_code === "00") {
+					$scope.getCheckDetails();
+				} else {
+					if (response.data.response_message != null) {
+						alert(response.data.response_message);
+					} else {
+						alert("Error Occured While Updating Order");
+					}
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/ecpos";
+			});
 		}
 		
 		$scope.cancelItem = function() {
