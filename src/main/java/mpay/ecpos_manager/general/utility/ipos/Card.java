@@ -11,6 +11,8 @@ import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
@@ -61,7 +63,7 @@ public class Card {
 		return jsonResult;
 	}
 	
-	public JSONObject cardSalePayment(String storeId, String tranType, BigDecimal amount, String tips, String uniqueTranNumber, JSONObject terminalWifiIPPort) {
+	public JSONObject cardSalePayment(String storeId, String tranType, BigDecimal amount, String tips, String uniqueTranNumber, JSONObject terminalWifiIPPort, WebSocketSession session) {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
@@ -79,7 +81,11 @@ public class Card {
 				saleRequest = saleRequest + "," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"";
 			}
 
-			jsonResult = submitIPOS("{"+saleRequest+"}");
+			if(session!=null) {
+				jsonResult = submitIPOS("{"+saleRequest+"}", session);
+			} else {
+				jsonResult = submitIPOS("{"+saleRequest+"}");
+			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
@@ -144,12 +150,12 @@ public class Card {
 		try {
 			Process executeIPOS = Runtime.getRuntime().exec(iposExe + " " + request);
 			//executeIPOS.waitFor();
-					
 			if(!executeIPOS.waitFor(2, TimeUnit.MINUTES)) {
 				//destroy the process if exceed  timeout
 				executeIPOS.destroyForcibly();
 				System.out.println("terminate ipos process");
 			}
+			
 			BufferedReader input = new BufferedReader(new InputStreamReader(executeIPOS.getInputStream()));
 			
 			StringBuilder responseString = new StringBuilder();
@@ -169,6 +175,49 @@ public class Card {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		}
+		return response;
+	}
+	
+	//websocket variant
+	public JSONObject submitIPOS(String request, WebSocketSession session){
+		JSONObject response = new JSONObject();
+		
+		try {
+			Process executeIPOS = Runtime.getRuntime().exec(iposExe + " " + request);
+
+			BufferedReader input = new BufferedReader(new InputStreamReader(executeIPOS.getInputStream()));
+
+			String line;
+			String iposResponseMessage = "";
+			while ((line = input.readLine()) != null) {
+				 System.out.println(line);
+				 session.sendMessage(new TextMessage(line));
+				 
+				 if(line.contains("[IPOS-RESPONSE]")) {
+					 iposResponseMessage = line;
+				 }
+			}
+			
+			//executeIPOS.waitFor();
+			if(!executeIPOS.waitFor(2, TimeUnit.MINUTES)) {
+				//destroy the process if exceed  timeout
+				executeIPOS.destroyForcibly();
+				System.out.println("terminate ipos process");
+			}
+			input.close();
+
+			System.out.println("last line :" + iposResponseMessage);
+			
+			JSONObject jsonData = new JSONObject(iposResponseMessage.replace("[IPOS-RESPONSE]", ""));
+			if(!jsonData.isNull("cardResponse")) {
+				response = jsonData;
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
+			e.printStackTrace();
+		}
+		
+		System.out.println("IPOS result: " + response.toString());
 		return response;
 	}
 }

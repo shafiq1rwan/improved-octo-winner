@@ -1,5 +1,8 @@
-package mpay.ecpos_manager.web.restcontroller;
+package mpay.ecpos_manager.web.websocket;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,179 +10,63 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
-import mpay.ecpos_manager.general.utility.WebComponents;
 import mpay.ecpos_manager.general.utility.ipos.Card;
-import mpay.ecpos_manager.general.utility.ipos.QR;
 
-@RestController
-@RequestMapping("/rc/transaction")
-public class RestC_transaction {
+@Component
+public class SocketHandler extends TextWebSocketHandler {
+
+	private static String IPOS_FOLDER = Property.getIPOS_FOLDER_NAME();
 	
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
 	
-	@Autowired
-	DataSource dataSource;
+	private DataSource dataSource;
 	
-	@Autowired
-	Card iposCard;
+	private Card iposCard;
 	
-	@Autowired
-	QR iposQR;
+	private String iposExe;
 	
-	@RequestMapping(value = { "/get_transaction_list" }, method = { RequestMethod.GET }, produces = "application/json")
-	public String getTransactionList() {
-		JSONObject jsonResult = new JSONObject();
-		JSONArray jary = new JSONArray();
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			connection = dataSource.getConnection();
-			
-			stmt = connection.prepareStatement("select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, " + 
-					"pt.name as payment_type,case when terminal.name is null then '-' else terminal.name end as terminal, " + 
-					"t.transaction_amount,tss.name as transaction_status, " + 
-					"case when t.transaction_date is null then t.created_date else t.transaction_date end as transaction_date  " + 
-					"from transaction t " + 
-					"inner join staff s on s.id = t.staff_id " + 
-					"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
-					"inner join transaction_type tt on tt.id = t.transaction_type " + 
-					"inner join payment_method pm on pm.id = t.payment_method " + 
-					"inner join payment_type pt on pt.id = t.payment_type " + 
-					"left join terminal on terminal.serial_number = t.terminal_serial_number " + 
-					"inner join transaction_settlement_status tss on tss.id = t.transaction_status " + 
-					"order by t.transaction_date desc;");
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject transaction = new JSONObject();
-				transaction.put("id", rs.getString("id"));
-				transaction.put("staffName", rs.getString("staff_name"));
-				transaction.put("checkNumber", rs.getString("check_number"));
-				transaction.put("transactionType", rs.getString("transaction_type"));
-				transaction.put("paymentMethod", rs.getString("payment_method"));
-				transaction.put("paymentType", rs.getString("payment_type"));
-				transaction.put("terminal", rs.getString("terminal"));
-				transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
-				transaction.put("transactionStatus", rs.getString("transaction_status"));
-				transaction.put("transactionDate", rs.getString("transaction_date"));
-				
-				jary.put(transaction);
-			}
-			jsonResult.put("data", jary);
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jsonResult.toString();
-	}
-	
-	@RequestMapping(value = { "/get_accumulated_amount" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String getAccumulatedAmount(@RequestBody String data) {
-		JSONObject jsonResult = new JSONObject();
-		BigDecimal accumulatedAmount = new BigDecimal("0.00");
-		BigDecimal itemAmount = new BigDecimal("0.00");
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		ResultSet rs2 = null;
-		ResultSet rs3 = null;
+	// onMessage
+	@Override
+	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 		
-		try {
-			connection = dataSource.getConnection();
-			
-			JSONArray checkDetailIdArray = new JSONObject(data).getJSONArray("checkDetailIdArray");
-			
-			for (int i = 0; i < checkDetailIdArray.length(); i++) {
-				long checkDetailId = checkDetailIdArray.getLong(i);
-				
-				stmt = connection.prepareStatement("select * from check_detail where id = ?;");
-				stmt.setLong(1, checkDetailId);
-				rs = stmt.executeQuery();
-				
-				if (rs.next()) {
-					itemAmount = rs.getBigDecimal("total_amount");
-					
-					stmt.close();
-					stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-					stmt.setLong(1, checkDetailId);
-					rs2 = stmt.executeQuery();
-					
-					while (rs2.next()) {
-						itemAmount = itemAmount.add(rs2.getBigDecimal("total_amount"));
-						
-						stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-						stmt.setLong(1, rs2.getLong("id"));
-						rs3 = stmt.executeQuery();
-						
-						while (rs3.next()) {
-							itemAmount = itemAmount.add(rs3.getBigDecimal("total_amount"));
-						}
-					}
-				}
-				accumulatedAmount = accumulatedAmount.add(itemAmount);
-			}
-			
-			jsonResult.put("accumulatedAmount", accumulatedAmount);
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-				if (rs2 != null) {rs2.close();rs2 = null;}
-				if (rs3 != null) {rs3.close();rs3 = null;}
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jsonResult.toString();
-	}
-	
-	@RequestMapping(value = { "/submit_payment" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String submitPayment(@RequestBody String data, HttpServletRequest request) {
+		String data = message.getPayload();
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-
-		WebComponents webComponent = new WebComponents();
-		UserAuthenticationModel user = webComponent.getEcposSession(request);
+	
+		UserAuthenticationModel user = (UserAuthenticationModel)session.getAttributes().get("session_user");
+		dataSource = (DataSource)session.getAttributes().get("dataSource");
+		iposExe = (String)session.getAttributes().get("ipos_exe");
+		iposCard = (Card)session.getAttributes().get("ipos_card");
 		
 		try {
 			connection = dataSource.getConnection();
-			
 			JSONObject jsonObj = new JSONObject(data);
 			
 			int paymentType = -1;
@@ -196,16 +83,14 @@ public class RestC_transaction {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Type");
 				
-				return jsonResult.toString();
+				session.sendMessage(new TextMessage(jsonResult.toString()));
+				session.close();
 			}
 			
 			int paymentMethod = -1;
 			int transactionStatus = 1;
 			String terminalSerialNumber = null;
-			if (jsonObj.getString("paymentMethod").equals("Cash")) {
-				paymentMethod = 1;
-				transactionStatus = 3;
-			} else if (jsonObj.getString("paymentMethod").equals("Card")) {
+			if (jsonObj.getString("paymentMethod").equals("Card")) {
 				paymentMethod = 2;
 				
 				if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
@@ -213,17 +98,17 @@ public class RestC_transaction {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
 					
-					return jsonResult.toString();
+					session.sendMessage(new TextMessage(jsonResult.toString()));
+					session.close();
 				}
 				terminalSerialNumber = jsonObj.getString("terminalSerialNo");
-			} else if (jsonObj.getString("paymentMethod").equals("QR")) {
-				paymentMethod = 3;
 			} else {
 				Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Method");
 				
-				return jsonResult.toString();
+				session.sendMessage(new TextMessage(jsonResult.toString()));
+				session.close();
 			}
 			
 			JSONArray checkDetailIdArray = new JSONArray();
@@ -234,7 +119,8 @@ public class RestC_transaction {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found For Split Payment");
 					
-					return jsonResult.toString();
+					session.sendMessage(new TextMessage(jsonResult.toString()));
+					session.close();
 				}
 				checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
 			}
@@ -244,7 +130,8 @@ public class RestC_transaction {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Amount");
 				
-				return jsonResult.toString();
+				session.sendMessage(new TextMessage(jsonResult.toString()));
+				session.close();
 			}
 			BigDecimal paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 			
@@ -254,7 +141,8 @@ public class RestC_transaction {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
 				
-				return jsonResult.toString();
+				session.sendMessage(new TextMessage(jsonResult.toString()));
+				session.close();
 			}
 			long staffId = staffDetail.getLong("id");
 			
@@ -264,7 +152,8 @@ public class RestC_transaction {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
 				
-				return jsonResult.toString();
+				session.sendMessage(new TextMessage(jsonResult.toString()));
+				session.close();
 			}
 			long storeId = storeDetail.getLong("id");
 
@@ -307,48 +196,17 @@ public class RestC_transaction {
 						
 						boolean paymentFlag = false;
 						
-						if (paymentMethod == 1) {
-							paymentFlag = true;
-							updateTransactionResult.put(Constant.RESPONSE_CODE, "00");
-							updateTransactionResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						} else if (paymentMethod == 2) {
+						if(paymentMethod == 2) {
 							terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
 							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
 							
 							if (!uniqueTranNumber.equals(null)) {
-								transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, null);
+								transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, session);
 								
 								if(transactionResult.has("responseCode")) {
 									if (transactionResult.getString("responseCode").equals("00")) {
 										paymentFlag = true;
 										updateTransactionResult = updateTransactionResult(transactionResult,"card");
-									} else {
-										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
-									}
-								} else {
-									Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
-								}
-							} else {
-								Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
-							}
-						} else if (paymentMethod == 3) {
-							terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
-							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);		
-							String qrContent = jsonObj.getString("qrContent");
-							
-							if (!uniqueTranNumber.equals(null)) {
-								transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort);
-								
-								if(transactionResult.has("responseCode")) {
-									if (transactionResult.getString("responseCode").equals("00")) {
-										paymentFlag = true;
-										updateTransactionResult = updateTransactionResult(transactionResult,"qr");
 									} else {
 										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -429,144 +287,36 @@ public class RestC_transaction {
 				e.printStackTrace();
 			}
 		}
-		return jsonResult.toString();
+		
+		if(session.isOpen()) {
+			Logger.writeActivity("Card Payment Response: " + jsonResult.toString(), ECPOS_FOLDER);
+			session.sendMessage(new TextMessage(jsonResult.toString()));
+			session.close();
+		}
+	}
+
+	// onOpen
+	@Override
+	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+		Logger.writeActivity("Open WS connection successfully.", ECPOS_FOLDER);
+	}
+
+	// onError
+	@Override
+	public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+		if(session.isOpen()) {
+			session.close();
+		}
+		Logger.writeActivity("WS Connection Failed. Close the connection.", ECPOS_FOLDER);
+	}
+
+	// onClose
+	@Override
+	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+		Logger.writeActivity("Close WS connection successfully.", ECPOS_FOLDER);
 	}
 	
-	@RequestMapping(value = { "/request_settlement" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String requestSettlement(@RequestBody String data, HttpServletRequest request) {
-		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
-		JSONObject jsonResult = new JSONObject();
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		WebComponents webComponent = new WebComponents();
-		UserAuthenticationModel user = webComponent.getEcposSession(request);
-		
-		try {
-			connection = dataSource.getConnection();
-			
-			JSONObject staffDetail = getStaffDetail(user.getUsername());
-			if (staffDetail.length() <= 0) {
-				Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
-				
-				return jsonResult.toString();
-			}
-			long staffId = staffDetail.getLong("id");
-			
-			JSONObject storeDetail = getStoreDetail();
-			if (storeDetail.length() <= 0) {
-				Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
-				
-				return jsonResult.toString();
-			}
-			long storeId = storeDetail.getLong("id");
-			
-			JSONObject jsonObj = new JSONObject(data);
-			
-			if (jsonObj.has("terminalSerialNo") && jsonObj.has("settlementType")) {
-				String terminalSerialNo = jsonObj.getString("terminalSerialNo");
-				String settlementType = jsonObj.getString("settlementType");
-				
-				//settlement status using transaction status look up
-				stmt = connection.prepareStatement("insert into settlement (staff_id,nii_type,settlement_status,created_date) " + 
-						"values (?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
-				stmt.setLong(1, staffId);
-				stmt.setString(2, settlementType);
-				int insertSettlement = stmt.executeUpdate();
-				
-				if (insertSettlement > 0) {
-					rs = stmt.getGeneratedKeys();
-					
-					if (rs.next()) {
-						long settlementId = rs.getLong(1);
-						
-						JSONObject terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNo);
-						JSONObject settlementResult = iposCard.cardSettlement(settlementId, String.format("%04d", storeId), "card-settlement", settlementType, terminalWifiIPPort);
-							
-						if (settlementResult.getString("responseCode").equals("00")) {
-							if (settlementResult.getJSONObject("settlementResponse").length() > 0) {
-								JSONObject settlementResponse = settlementResult.getJSONObject("settlementResponse");
-								
-								int settlementStatus = 4;
-								if (settlementResult.getString("responseCode").equals("00")) {
-									settlementStatus = 3;
-								}
-								
-								stmt.close();
-								stmt = connection.prepareStatement("update settlement set settlement_status = ?,response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?, " + 
-										"wifi_port = ?,merchant_info = ?,bank_mid = ?,bank_tid = ?,batch_number = ?,transaction_date = ?,transaction_time = ?, " + 
-										"batch_total = ?, nii = ? where id = ?;");
-								stmt.setInt(1, settlementStatus);
-								stmt.setString(2, settlementResult.getString("responseCode"));
-								stmt.setString(3, settlementResult.getString("responseMessage"));
-								stmt.setString(4, settlementResult.getString("wifiIP"));
-								stmt.setString(5, settlementResult.getString("wifiPort"));
-								stmt.setString(6, settlementResponse.getString("merchantInfo"));
-								stmt.setString(7, settlementResponse.getString("bankMerchantID"));
-								stmt.setString(8, settlementResponse.getString("bankTerminalID"));
-								stmt.setString(9, settlementResponse.getString("batchNumber"));
-								stmt.setString(10, settlementResponse.getString("transactionDate"));
-								stmt.setString(11, settlementResponse.getString("transactionTime"));
-								stmt.setString(12, settlementResponse.getString("batchTotals"));
-								stmt.setString(13, settlementResponse.getString("nii"));
-								stmt.setString(14, settlementResult.getString("settlementId"));
-								int updateSettlement = stmt.executeUpdate();
-								
-								if (updateSettlement > 0) {
-									Logger.writeActivity("Settlement has been successfully performed", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "00");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement has been successfully performed.");
-								} else {
-									Logger.writeActivity("Settlement Failed To Update", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Update");
-								}
-							} else {
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Card Sale Payment Response Not Found");
-								Logger.writeActivity("Card Sale Payment Response Not Found", ECPOS_FOLDER);
-							}
-						} else {
-							Logger.writeActivity("Settlement Failed To Perform", ECPOS_FOLDER);
-							jsonResult.put(Constant.RESPONSE_CODE, "01");
-							jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Perform");
-						}
-					} else {
-						Logger.writeActivity("Settlement Failed To Insert", ECPOS_FOLDER);
-						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Insert");
-					}
-				} else {
-					Logger.writeActivity("Settlement Failed To Insert", ECPOS_FOLDER);
-					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Insert");
-				}
-			} else {
-				Logger.writeActivity("Settlement Request Info Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Request Info Not Found");
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jsonResult.toString();
-	}
-
-	public JSONObject getStoreDetail() {
+	private JSONObject getStoreDetail() {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -597,7 +347,7 @@ public class RestC_transaction {
 		return storeDetail;
 	}
 	
-	public JSONObject getStaffDetail(String username) {
+	private JSONObject getStaffDetail(String username) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -630,8 +380,8 @@ public class RestC_transaction {
 		}
 		return staffDetail;
 	}
-
-	public JSONObject getTerminalWifiIPPort(String terminalSerialNumber) {
+	
+	private JSONObject getTerminalWifiIPPort(String terminalSerialNumber) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -664,7 +414,7 @@ public class RestC_transaction {
 		return terminalWifiIPPort;
 	}
 	
-	public String generateUniqueTranNumber(long storeId, long transactionId) {
+	private String generateUniqueTranNumber(long storeId, long transactionId) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -708,7 +458,7 @@ public class RestC_transaction {
 		return null;
 	}
 	
-	public boolean updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private boolean updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		boolean response = false;
@@ -754,7 +504,7 @@ public class RestC_transaction {
 		return response;
 	}
 	
-	public boolean updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private boolean updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		boolean response = false;
@@ -800,7 +550,7 @@ public class RestC_transaction {
 		return response;
 	}
 	
-	public boolean updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private boolean updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -878,7 +628,7 @@ public class RestC_transaction {
 		return response;
 	}
 	
-	public JSONObject updateTransactionResult(JSONObject transactionResult, String transactionCategory) {
+	private JSONObject updateTransactionResult(JSONObject transactionResult, String transactionCategory) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -1024,4 +774,79 @@ public class RestC_transaction {
 		return jsonResult;
 	}
 	
+/*	private JSONObject cardSalePayment(String storeId, String tranType, BigDecimal amount, String tips, String uniqueTranNumber, JSONObject terminalWifiIPPort, WebSocketSession session) {
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			String saleRequest = "\\\"storeID\\\":" + "\\\"" + storeId + "\\\"," + "\\\"tranType\\\":" + "\\\"" + tranType
+					+ "\\\"," + "\\\"amount\\\":" + "\\\"" + amount + "\\\"," + "\\\"tips\\\":" + "\\\"" + tips
+					+ "\\\"," + "\\\"uniqueTranNumber\\\":" + "\\\"" + uniqueTranNumber + "\\\"";
+			
+			String terminalWifiIP = "";
+			String terminalWifiPort = "";
+			
+			if (terminalWifiIPPort.length() != 0) {
+				terminalWifiIP = terminalWifiIPPort.getString("wifi_IP");
+				terminalWifiPort = terminalWifiIPPort.getString("wifi_Port");
+				
+				saleRequest = saleRequest + "," + "\\\"wifiIP\\\":" + "\\\"" + terminalWifiIP + "\\\"," + "\\\"wifiPort\\\":" + "\\\"" + terminalWifiPort + "\\\"";
+			}
+
+			jsonResult = submitIPOS("{"+saleRequest+"}", session);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
+			e.printStackTrace();
+		}
+		
+		System.out.println("Card Sales Payment Result :" + jsonResult.toString());
+		return jsonResult;
+	}
+	
+
+	private JSONObject submitIPOS(String request, WebSocketSession session) throws Exception{
+		JSONObject response = new JSONObject();
+		
+		try {
+			Process executeIPOS = Runtime.getRuntime().exec(iposExe + " " + request);
+			//executeIPOS.waitFor();
+
+			BufferedReader input = new BufferedReader(new InputStreamReader(executeIPOS.getInputStream()));
+			
+			//StringBuilder responseString = new StringBuilder();
+
+			String line;
+			String iposResponseMessage = "";
+			while ((line = input.readLine()) != null) {
+				 System.out.println(line);
+				 session.sendMessage(new TextMessage(line));
+				 
+				 if(line.contains("[IPOS-RESPONSE]")) {
+					 iposResponseMessage = line;
+				 }
+			}
+			
+			//executeIPOS.waitFor();
+			if(!executeIPOS.waitFor(2, TimeUnit.MINUTES)) {
+				//destroy the process if exceed  timeout
+				executeIPOS.destroyForcibly();
+				System.out.println("terminate ipos process");
+			}
+			input.close();
+		
+			//return the json
+			System.out.println("last line :" + iposResponseMessage);
+			
+			JSONObject jsonData = new JSONObject(iposResponseMessage.replace("[IPOS-RESPONSE]", ""));
+			if(!jsonData.isNull("cardResponse")) {
+				response = jsonData;
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
+			e.printStackTrace();
+		}
+		
+		System.out.println("IPOS result: " + response.toString());
+		return response;
+	}*/
+
 }

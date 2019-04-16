@@ -89,11 +89,11 @@
 									<img ng-src="${pageContext.request.contextPath}/img/icon/credit-card.png" alt="Card Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
 								</div>
 							</div>
-<%-- 								<div style="padding: 15px;">
+							<div style="padding: 15px;">
 									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPayment('QR')">
 										<img ng-src="${pageContext.request.contextPath}/img/icon/qr-code.png" alt="QR Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
 									</div>
-								</div> --%>
+							</div>
 						</div>
 					</div>
 					
@@ -180,12 +180,73 @@
 			<div id="loading_modal" class="modal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static" role="dialog">
 				<div class="modal-content">
 					<div class="modal-body text-center">
-						<p>Transaction In Progress, Please Wait ...</p>
+						<p>{{socketMessage}}</p>
 					</div>
 				</div>
 			</div>
 			<!-- Loading Modal [END] -->
+
+		<!-- Scan QR Modal [START] -->
+		<div class="modal fade" id="scan_qr_modal" tabindex="-1" role="dialog" aria-labelledby="scan_qr_modal" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					 <div class="modal-header">
+					 	
+					        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					          <span aria-hidden="true">&times;</span>
+					        </button>
+					        <h4 class="modal-title">QR Payment</h4>
+					 </div>
+					<div class="modal-body text-center">
+						<form ng-submit="proceedToQRPayment()" autocomplete="off">
+							<div class="row">
+								<div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+									<div class="form-group">
+										<h3>Please scan QR to Pay</h3>
+										<input class="form-control" id="qr_content" type="text" ng-model="qrContent" required>
+										<br>
+										<button class="btn btn-primary" type="submit" ng-disabled="qrContent==''">Submit</button>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			
+			</div>
 		</div>
+		<!-- Scan QR Modal [END] -->
+		
+		<!-- Print Receipt Modal [START] -->
+		<div class="modal fade" id="print_receipt_modal" tabindex="-1" role="dialog" aria-labelledby="print_receipt_modal" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					 <div class="modal-header">
+					        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					          <span aria-hidden="true">&times;</span>
+					        </button>
+					 </div>
+					<div class="modal-body text-center">
+						<form ng-submit="">
+							<div class="row">
+								<div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+									<div class="form-group">
+										<h3>Print Receipt ?</h3>
+										<button class="btn btn-primary" type="submit">Print</button>
+				        				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			
+			</div>
+		</div>
+		<!-- Print Receipt Modal [END] -->
+
+		</div>
+
 	</div>
 </body>
 </html>
