@@ -18,7 +18,7 @@
 		},
 		function(response) {
 			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/ecpos";
+			window.location.href = "${pageContext.request.contextPath}/logout";
 		});
 
 		function splitArray(array_table_list) {
@@ -68,7 +68,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/logout";
 			});
 
 			$("#modal_table_check_list").modal('show');
@@ -94,7 +94,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/logout";
 			});
 		}
 				

@@ -42,7 +42,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -63,7 +63,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -107,7 +107,7 @@
 				},
 				function(response) {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			} else {
 				alert("Barcode value is empty");
@@ -159,7 +159,7 @@
 				},
 				function(response) {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			}
 		}
@@ -184,7 +184,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -221,7 +221,7 @@
 					},
 					function(response) {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					});
 				}
 			}
@@ -239,7 +239,7 @@
 					if (response.data.response_code === "00") {
 						alert("Check has been cancelled.")
 
-						window.location.href = "${pageContext.request.contextPath}/ecpos/#!table_order";
+						window.location.href = "${pageContext.request.contextPath}/#!table_order";
 					} else {
 						if (response.data.response_message != null) {
 							alert(response.data.response_message);
@@ -250,7 +250,7 @@
 				},
 				function(response) {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			}
 		}

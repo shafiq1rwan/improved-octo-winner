@@ -147,7 +147,7 @@
 					<%if (!http_message.equals("")) { %>
 					<span style="color: red;">${http_message}</span>
 					<%} %>
-					<form action="${pageContext.request.contextPath}/ecpos/authentication" method="post" accept-charset="UTF-8" role="form" class="form-signin">
+					<form action="${pageContext.request.contextPath}/authentication" method="post" accept-charset="UTF-8" role="form" class="form-signin">
 						<fieldset>
 							<label class="login-label" style="color: white;">User Name</label>
 							<input class="form-control" name="username" placeholder="User Name" type="text" required> 

@@ -20,7 +20,6 @@ import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
 import mpay.ecpos_manager.general.utility.WebComponents;
 
 @Controller
-@RequestMapping("/ecpos")
 public class EcposManagerController {
 	
 	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
@@ -84,7 +83,7 @@ public class EcposManagerController {
 				if (loginUser != null) {
 					session.setAttribute("session_user", loginUser);
 					session.setAttribute("storeType", storeType);
-					model.setViewName("redirect:" + "/ecpos/#");
+					model.setViewName("redirect:" + "/#");
 				} else if(activationInfo.has("activationId") && activationInfo.getString("activationId").equals("")) {
 					model.addObject("http_message", "Activation is required");
 					model.setViewName("ecpos/activation");
@@ -102,7 +101,7 @@ public class EcposManagerController {
 	}
 	
 	// Logout
-	@GetMapping("/logout")
+	@RequestMapping(value = { "/signout" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecposSessionInvalidate(HttpServletRequest request) {
 		Logger.writeActivity("----------- ECPOS LOGOUT START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();

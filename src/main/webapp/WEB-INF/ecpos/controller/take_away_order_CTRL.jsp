@@ -24,7 +24,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/logout";
 			});
 		}
 				

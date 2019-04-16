@@ -28,7 +28,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -45,7 +45,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -65,7 +65,7 @@
 				},
 				function(response) {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			}
 			
@@ -152,7 +152,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -171,7 +171,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -187,7 +187,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 
@@ -215,7 +215,7 @@
 			}, 
 			function(error) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -243,7 +243,7 @@
 			}, 
 			function(error) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -266,7 +266,7 @@
 			}, 
 			function(error) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -301,7 +301,7 @@
 				fn: function() {
 					$("div#modal-dialog").modal("hide");
 					if(type==1){
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 					$scope.getPrinterList();
 					$scope.getTerminalList();

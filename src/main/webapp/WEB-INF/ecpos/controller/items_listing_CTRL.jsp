@@ -23,7 +23,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_menu_items_by_item_type/" + $scope.itemType,
 					"error" : function() {
 						alert("Item list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"pageLength": 8,
@@ -57,7 +57,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_groups/",
 					"error" : function() {
 						alert("Modifier group list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"pageLength": 8,
@@ -92,7 +92,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -102,7 +102,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_items_list/"+modifierGroupId,
 					"error" : function() {
 						alert("Modifier item list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"bLengthChange": false,
@@ -138,7 +138,7 @@
 						"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_groups_by_menu_item/"+itemId+"/"+itemBackendId,
 						"error" : function() {
 							alert("Item modifier group list failed to display");
-							window.location.href = "${pageContext.request.contextPath}/ecpos";
+							window.location.href = "${pageContext.request.contextPath}/signout";
 						}
 					},
 					"bLengthChange": false,
@@ -170,7 +170,7 @@
 						"url" : "${pageContext.request.contextPath}/rc/menu/get_tiers/"+itemId+"/"+itemBackendId,
 						"error" : function() {
 							alert("Combo item tiers list failed to display");
-							window.location.href = "${pageContext.request.contextPath}/ecpos";
+							window.location.href = "${pageContext.request.contextPath}/signout";
 						}
 					},
 					"bLengthChange": false,
@@ -200,7 +200,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_tier_item_details/"+tierId,
 					"error" : function() {
 						alert("Tier item list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"ordering" : false,

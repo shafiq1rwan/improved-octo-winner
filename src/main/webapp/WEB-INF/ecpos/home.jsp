@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <!DOCTYPE html>
-<html>
+<html style="-webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -196,47 +196,47 @@
 		
 		.when("/",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/settings",
+				templateUrl : "${pageContext.request.contextPath}/views/settings",
 				controller : "settings_CTRL"
 			})
 		.when("/table_order",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/table_order",
+				templateUrl : "${pageContext.request.contextPath}/views/table_order",
 				controller : "table_order_CTRL"
 			})
 		.when("/check/:orderType/:checkNo/:tableNo",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/check",
+				templateUrl : "${pageContext.request.contextPath}/views/check",
 				controller : "check_CTRL"
 			})
 		.when("/take_away_order",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/take_away_order",
+				templateUrl : "${pageContext.request.contextPath}/views/take_away_order",
 				controller : "take_away_order_CTRL"
 			})
 		.when("/items_listing",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items_listing",
+				templateUrl : "${pageContext.request.contextPath}/views/items_listing",
 				controller : "items_listing_CTRL"
 			})
 		.when("/checks_listing",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks_listing",
+				templateUrl : "${pageContext.request.contextPath}/views/checks_listing",
 				controller : "checks_listing_CTRL"
 			})
 		.when("/transactions_listing",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/transactions_listing",
+				templateUrl : "${pageContext.request.contextPath}/views/transactions_listing",
 				controller : "transactions_listing_CTRL"
 			})
 		.when("/reports",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/reports",
+				templateUrl : "${pageContext.request.contextPath}/views/reports",
 				controller : "reports_CTRL"
 			})
 		.when("/settings",
 			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/settings",
+				templateUrl : "${pageContext.request.contextPath}/views/settings",
 				controller : "settings_CTRL"
 			});
 	}]);

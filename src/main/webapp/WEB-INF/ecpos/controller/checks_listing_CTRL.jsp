@@ -10,7 +10,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/check/get_check_list",
 					"error" : function() {
 						alert("Check list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"pageLength": 9,
@@ -50,7 +50,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 	});

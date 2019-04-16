@@ -32,7 +32,7 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 				"dataType" : "json",
 				"error" : function() {
 					alert("Report failed to display");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				}
 			},
 			"ordering" : false,

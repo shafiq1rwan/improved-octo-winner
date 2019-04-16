@@ -10,7 +10,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/transaction/get_transaction_list",
 					"error" : function() {
 						alert("Tranasction list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/ecpos";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"pageLength": 9,

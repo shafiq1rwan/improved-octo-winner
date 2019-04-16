@@ -89,7 +89,7 @@
 				},
 				function(response) {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			} else {
 				$('#terminalList').hide();
@@ -161,7 +161,7 @@
 				if (response.data.response_code === "00") {
 					$('#loading_modal').modal('hide');
 					alert(response.data.response_message);
-					window.location.href = "${pageContext.request.contextPath}/ecpos";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				} else {
 					$('#loading_modal').modal('hide');
 					alert(response.data.response_message);
@@ -170,7 +170,7 @@
 			function(response) {
 				$('#loading_modal').modal('hide');
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/ecpos";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 	});
