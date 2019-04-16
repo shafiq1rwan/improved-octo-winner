@@ -7,7 +7,6 @@ import javax.sql.DataSource;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,7 +31,6 @@ public class EcposManagerController {
 	public ModelAndView ecposLandingPage(HttpServletRequest request) {
 		Logger.writeActivity("----------- ECPOS LANDING START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();
-		HttpSession session = request.getSession();
 		WebComponents webComponent = new WebComponents();
 		
 		// check for activation info
@@ -45,10 +43,8 @@ public class EcposManagerController {
 				model.setViewName("ecpos/activation");
 			} else {
 				UserAuthenticationModel user = webComponent.getEcposSession(request);
-				int storeType = webComponent.getStoreType(dataSource);
 				
 				if (user != null) {
-					session.setAttribute("storeType", storeType);
 					model.setViewName("ecpos/home");
 				} else {
 					model.setViewName("ecpos/login");
@@ -76,13 +72,12 @@ public class EcposManagerController {
 			try {
 				WebComponents webComponent = new WebComponents();
 				UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
-				int storeType = webComponent.getStoreType(dataSource);
 				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 				
 				if (loginUser != null) {
+					session.setMaxInactiveInterval(0);
 					session.setAttribute("session_user", loginUser);
-					session.setAttribute("storeType", storeType);
 					model.setViewName("redirect:" + "/#");
 				} else if(activationInfo.has("activationId") && activationInfo.getString("activationId").equals("")) {
 					model.addObject("http_message", "Activation is required");

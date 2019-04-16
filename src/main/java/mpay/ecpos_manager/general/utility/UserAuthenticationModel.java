@@ -5,10 +5,9 @@ public class UserAuthenticationModel {
 
 	public int userLoginId = 0;
 	public String username = "";
-	public String userPassword = "";
 	public String name = "";
 	public int roleType = 0;
-	public int storeId = 0;
+	public int storeType = 0;
 
 	public int getUserLoginId() {
 		return userLoginId;
@@ -24,14 +23,6 @@ public class UserAuthenticationModel {
 
 	public void setUsername(String username) {
 		this.username = username;
-	}
-
-	public String getUserPassword() {
-		return userPassword;
-	}
-
-	public void setUserPassword(String userPassword) {
-		this.userPassword = userPassword;
 	}
 
 	public String getName() {
@@ -50,11 +41,11 @@ public class UserAuthenticationModel {
 		this.roleType = roleType;
 	}
 
-	public int getStoreId() {
-		return storeId;
+	public int getStoreType() {
+		return storeType;
 	}
 
-	public void setStoreId(int storeId) {
-		this.storeId = storeId;
+	public void setStoreType(int storeType) {
+		this.storeType = storeType;
 	}
 }

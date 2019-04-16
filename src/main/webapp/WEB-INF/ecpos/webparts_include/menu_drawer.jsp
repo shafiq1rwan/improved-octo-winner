@@ -1,5 +1,7 @@
+<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+
 <%
-	int storeType = (int) session.getAttribute("storeType");
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
 %>
 
 <!DOCTYPE html>
@@ -10,7 +12,7 @@
 			<ul class="sidebar-menu">
 
 				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Order Management</li>
-				<%if (storeType == 2) {%>
+				<%if (user.getStoreType() == 2) {%>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!table_order">
 						<i class="fa fa-desktop"></i> 
@@ -22,7 +24,7 @@
 				<li>
 					<a href="${pageContext.request.contextPath}/#!take_away_order">
 						<i class="fa fa-shopping-bag"></i> 
-					<%if (storeType == 2) {%>
+					<%if (user.getStoreType() == 2) {%>
 						<span>Take Away Order</span> 
 					<%} else {%>
 						<span>Purchase</span> 

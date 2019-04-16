@@ -25,7 +25,9 @@ public class WebComponents {
 		UserAuthenticationModel domainContainer = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
+		ResultSet rs2 = null;
 
 		try {
 			connection = dataSource.getConnection();
@@ -45,7 +47,14 @@ public class WebComponents {
 					domainContainer.setUserLoginId(Integer.parseInt(rs.getString("id")));
 					domainContainer.setName(rs.getString("staff_name"));
 					domainContainer.setUsername(rs.getString("staff_username"));
-					domainContainer.setRoleType(Integer.parseInt(rs.getString("staff_role")));				
+					domainContainer.setRoleType(Integer.parseInt(rs.getString("staff_role")));
+					
+					stmt2 = connection.prepareStatement("select * from store;");
+					rs2 = stmt2.executeQuery();
+
+					if (rs2.next()) {
+						domainContainer.setStoreType(rs2.getInt("store_type_id"));
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -54,7 +63,9 @@ public class WebComponents {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
@@ -152,27 +163,5 @@ public class WebComponents {
 			e.printStackTrace();
 		}
 		return result;
-	}
-	
-	public int getStoreType(DataSource dataSource) {
-		int storeType = 0;
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			connection = dataSource.getConnection();
-
-			stmt = connection.prepareStatement("select * from store;");
-			rs = stmt.executeQuery();
-
-			if (rs.next()) {
-				storeType = rs.getInt("store_type_id");
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		}
-		return storeType;
 	}
 }

@@ -1,5 +1,7 @@
+<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+
 <%
-	int storeType = (int) session.getAttribute("storeType");
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
 %>
 
 <!DOCTYPE html>
@@ -63,7 +65,7 @@ hr {
 													</div>
 												</div>
 												<div class="col-sm-6 form-group">
-													<%if (storeType == 2) {%>
+													<%if (user.getStoreType() == 2) {%>
 													<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 81%;" ng-click="generateQR()">
 														<i class="fa fa-qrcode"></i> Generate QR
 													</button>
@@ -91,7 +93,7 @@ hr {
 																<div class='col-sm-1 text-center'><input type="checkbox" ng-click="grandParentItemCheckbox()" name="grandParentItemCheckbox" value={{grandParentItem.checkDetailId}} style="margin: 2px 0 0;"></div>
 																<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
 																<div class='col-sm-5 text-left'>{{grandParentItem.itemName}} @ {{grandParentItem.itemPrice| number:2}}</div>
-																<%if (storeType == 1) {%>
+																<%if (user.getStoreType() == 1) {%>
 																<div class='col-sm-2 text-left' style="padding-left: 0px; padding-right: 0px;" ng-if="grandParentItem.isAlaCarte && !grandParentItem.hasModified">
 																	<div class="input-group">
 														                <input type="number" id="{{grandParentItem.checkDetailId}}" name="itemQuantity" style="width: 100%; padding-left: 6px;" value={{grandParentItem.itemQuantity}} min="1" max="99" size="1" />
