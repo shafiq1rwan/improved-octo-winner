@@ -32,11 +32,11 @@
 								</div>
 								<br>
 								<div class="row">
-									<div class="col-sm-4 form-group">
+									<div class="col-sm-4 col-lg-3 form-group">
 										<label>Start Date</label> 
 										<input type="datetime-local" class="form-control" ng-model="date.start" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>
-									<div class="col-sm-4 form-group">
+									<div class="col-sm-4 col-lg-3 form-group">
 										<label>End Date</label> 
 										<input type="datetime-local" class="form-control" ng-model="date.end" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>

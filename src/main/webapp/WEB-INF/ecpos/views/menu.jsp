@@ -43,7 +43,7 @@
 								</div>
 								<div class="row">
 									<div ng-repeat="category in categories.data">
-										<div class="col-sm-6" style="margin-top: 15px;">
+										<div class="col-sm-6 col-lg-4" style="margin-top: 15px;">
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
 												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 													<img ng-src="${pageContext.request.contextPath}{{category.imagePath}}" alt={{category.name}} style="max-width: 135px; max-height: 135px;" />
@@ -73,7 +73,7 @@
 								</div>
 								<div class="row">
 									<div ng-repeat="item in menuItems.data">
-										<div class="col-sm-6" style="margin-top: 15px;">
+										<div class="col-sm-6 col-lg-4" style="margin-top: 15px;">
 											<div style="text-align: center" ng-click="action(item)">
 												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 													<img ng-src="${pageContext.request.contextPath}{{item.imagePath}}" alt={{item.name}} style="max-width: 135px; max-height: 135px;" />

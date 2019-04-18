@@ -43,8 +43,8 @@
 							buttonValue = "Combo Details";
 						}
 						
-						return '<div class="col-sm-4"><button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button></div>' +
-						'<div class="col-sm-8"><button class="btn btn-sm btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button></div>';
+						return '<button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button>' +
+						'&nbsp;<button class="btn btn-sm btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button>';
 					}, "width": "28%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -69,7 +69,7 @@
 				"columns" : [{"data" : "id", "width": "5%"},
 					{"data" : "name", "width": "67%"},
 					{"render" : function(data, type, full, meta) {
-						return '<div><button class="btn btn-sm btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\', -1)">Details</button></div>';
+						return '<button class="btn btn-sm btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\', -1)">Details</button>';
 					}, "width": "28%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -116,7 +116,7 @@
 					{"data" : "backendId", "width": "20%"}, 
 					{"data" : "name", "width": "50%"},
 					{"render" : function(data, type, full, meta) {
-						return '<div><button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 1)">Details</button></div>';
+						return '<button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 1)">Details</button>';
 					}, "width": "12%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -153,7 +153,7 @@
 					"columns" : [{"data" : "sequence", "width": "18%"},
 						{"data" : "name", "width": "70%"},
 						{"render" : function(data, type, full, meta) {
-							return '<div><button class="btn btn-sm btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button></div>';
+							return '<button class="btn btn-sm btn-info" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button>';
 						}, "width": "12%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
@@ -188,7 +188,7 @@
 						{"data" : "name", "width": "58%"}, 
 						{"data" : "quantity", "width": "15%"},
 						{"render" : function(data, type, full, meta) {
-							return '<div><button class="btn btn-sm btn-info" ng-click="getComboItemTierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button></div>';
+							return '<button class="btn btn-sm btn-info" ng-click="getComboItemTierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button>';
 						}, "width": "12%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);

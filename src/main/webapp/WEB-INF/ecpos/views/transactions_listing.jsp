@@ -23,7 +23,7 @@
 				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
+							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
 										<font size="4">Transactions Listing</font>
@@ -40,7 +40,7 @@
 											<th>Amount</th>
 											<th>Status</th>
 											<th>Date</th>
-											<th></th>
+											<!-- <th></th> -->
 										</tr>
 									</thead>
 									<tbody></tbody>

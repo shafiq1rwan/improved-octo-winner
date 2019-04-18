@@ -25,10 +25,10 @@
 					{"data" : "paymentType"},
 					{"data" : "transactionAmount"},
 					{"data" : "transactionStatus"},
-					{"data" : "transactionDate"},
+					{"data" : "transactionDate"}/* ,
 					{"render" : function(data, type, full, meta) {
 						return '<div><button class="btn btn-sm btn-info" ng-click="getTransactionDetails('+ full.id + ')">Details</button></div>';
-					}}],
+					}} */],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
 				}

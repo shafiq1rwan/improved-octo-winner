@@ -51,7 +51,7 @@
 					</div>
 					<div class="modal-footer" style="padding: 30px;">
 						<div class="row">
-							<div class="col-sm-3" ng-repeat="existing_check in checks" style="padding-left: 10px; padding-right: 10px;">
+							<div class="col-sm-3 col-lg-4" ng-repeat="existing_check in checks" style="padding-left: 10px; padding-right: 10px;">
 								<div data-dismiss='modal' ng-click="redirect_to_check_detail(existing_check)">
 									<div class="panel panel-default text-center">
 										<div class="panel-heading" style="color: #333333e0; background-color: #00ff7f">
@@ -66,7 +66,7 @@
 								</div>
 							</div>
 
-							<div class="col-sm-3" style="padding-left: 10px; padding-right: 10px;">
+							<div class="col-sm-3 col-lg-4" style="padding-left: 10px; padding-right: 10px;">
 								<div data-dismiss='modal' ng-click="create_new_check()">
 									<div class="panel panel-default text-center">
 										<div class="panel-heading">
