@@ -268,9 +268,13 @@ public class RestC_transaction {
 			}
 			long storeId = storeDetail.getLong("id");
 
-			stmt = connection.prepareStatement("select * from `check` where table_number = ? and check_number = ? and check_status in (1, 2);");
-			stmt.setInt(1, jsonObj.getInt("tableNo"));
-			stmt.setString(2, jsonObj.getString("checkNo"));
+			String tableNoCondition = "table_number is null";
+			if (jsonObj.getInt("tableNo") > 0) {
+				tableNoCondition = "table_number = " + jsonObj.getInt("tableNo");
+			}
+			
+			stmt = connection.prepareStatement("select * from `check` where " + tableNoCondition + " and check_number = ? and check_status in (1, 2);");
+			stmt.setString(1, jsonObj.getString("checkNo"));
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
@@ -718,21 +722,24 @@ public class RestC_transaction {
 			
 			tenderAmount = tenderAmount.add(paymentAmount);
 			
-			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
+			String tableNoCondition = "table_number is null";
+			if (tableNo > 0) {
+				tableNoCondition = "table_number = " + tableNo;
+			}
+			
+			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and " + tableNoCondition + " and check_status in (1, 2);");
 			stmt.setBigDecimal(1, tenderAmount);
 			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
 			stmt.setString(3, checkNo);
-			stmt.setInt(4, tableNo);
 			int updateCheck = stmt.executeUpdate();
 			
 			if (updateCheck > 0) {
 				stmt.close();
 				stmt = connection.prepareStatement("update check_detail set check_detail_status = 3, transaction_id = ?, updated_date = now() " + 
-						"where check_id = (select id from `check` where check_number = ? and table_number = ?) and check_number = ? and check_detail_status in (1, 2); ");
+						"where check_id = (select id from `check` where check_number = ? and " + tableNoCondition + ") and check_number = ? and check_detail_status in (1, 2); ");
 				stmt.setLong(1, transactionId);
 				stmt.setString(2, checkNo);
-				stmt.setInt(3, tableNo);
-				stmt.setString(4, checkNo);
+				stmt.setString(3, checkNo);
 				int updateCheckDetail = stmt.executeUpdate();
 				
 				if (updateCheckDetail > 0) {
@@ -775,11 +782,15 @@ public class RestC_transaction {
 				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(tenderAmount);
 			}
 			
-			stmt = connection.prepareStatement("update `check` set " + amountType + " = ?, overdue_amount = ?, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
+			String tableNoCondition = "table_number is null";
+			if (tableNo > 0) {
+				tableNoCondition = "table_number = " + tableNo;
+			}
+			
+			stmt = connection.prepareStatement("update `check` set " + amountType + " = ?, overdue_amount = ?, updated_date = now() where check_number = ? and " + tableNoCondition + " and check_status in (1, 2);");
 			stmt.setBigDecimal(1, paidAmount);
 			stmt.setBigDecimal(2, overdueAmount);
 			stmt.setString(3, checkNo);
-			stmt.setInt(4, tableNo);
 			int updateCheck = stmt.executeUpdate();
 			
 			if (updateCheck > 0) {
