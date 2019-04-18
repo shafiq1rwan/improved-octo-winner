@@ -13,20 +13,19 @@
 						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
+				"searching": false,
 				"pageLength": 9,
 				"bLengthChange": false,
 				"order" : [ [ 0, "desc" ] ],
 				destroy : true,
-				"columns" : [{"data" : "id"}, 
-					{"data" : "staffName"}, 
+				"columns" : [{"data" : "id"},
 					{"data" : "checkNumber"},
-					{"data" : "transactionDate"},
+					{"data" : "staffName"}, 
 					{"data" : "transactionType"},
-					{"data" : "paymentMethod"},
 					{"data" : "paymentType"},
-					{"data" : "terminal"},
 					{"data" : "transactionAmount"},
 					{"data" : "transactionStatus"},
+					{"data" : "transactionDate"},
 					{"render" : function(data, type, full, meta) {
 						return '<div><button class="btn btn-sm btn-info" ng-click="getTransactionDetails('+ full.id + ')">Details</button></div>';
 					}}],

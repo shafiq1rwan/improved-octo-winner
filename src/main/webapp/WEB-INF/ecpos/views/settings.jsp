@@ -20,6 +20,11 @@
 		overflow-y: scroll;
 	}
 }
+
+hr {
+	margin-top: 0px;
+	margin-bottom: 5px;
+}
 </style>
 </head>
 
@@ -27,55 +32,51 @@
 	<div ng-controller="settings_CTRL">
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
-				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">
+				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-						<div class="col-md-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="background-color: white; margin-bottom: 0px; min-height: 87vh; padding-top: 0px;">
-								<div class="row">
-									<div class="col-sm-12" style="text-align: center">
-										<h3>Settings</h3>
+						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
+							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
+								<div class="row" style="text-align: center">
+									<div class="col-sm-12">
+										<font size="4">Settings</font>
 									</div>
 								</div>
 								<br>
-								<div class="row">
-									<div class="col-md-3 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">Cloud - Item Info</label>
+								<div class="row" style="padding-bottom: 8px;">
+									<div class="col-sm-4" style="margin: 0px; margin-top: 6px;">
+										<font size="3"><b>Cloud - Item Info</b></font>
 									</div>
-									<div class="col-md-2 form-group">
+									<div class="col-sm-2">
 										<button class="btn btn-block btn-info" ng-click="submitSyncMenu()">Synchronize</button>
 									</div>
-									<div class="col-md-1 form-group"></div>
-									<div class="col-md-3 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">ECPOS - Check, Transaction & Settlement Info</label>
+									<div class="col-sm-4" style="margin: 0px; margin-top: 6px;">
+										<font size="3"><b>ECPOS - Check, Transaction & Settlement Info</b></font>
 									</div>
-									<div class="col-md-2 form-group">
+									<div class="col-sm-2">
 										<button class="btn btn-block btn-info" ng-click="submitSyncTransaction()">Synchronize</button>
 									</div>
-									<div class="col-md-1 form-group"></div>
 								</div>
-								<div class="row">
-									<div class="col-md-3 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">Cloud - Store & Staff Info</label>
+								<div class="row" style="padding-bottom: 8px;">
+									<div class="col-sm-4" style="margin: 0px; margin-top: 6px;">
+										<font size="3"><b>Cloud - Store & Staff Info</b></font>
 									</div>
-									<div class="col-md-2 form-group">
+									<div class="col-sm-2">
 										<button class="btn btn-block btn-info" ng-click="submitSyncStore()">Synchronize</button>
 									</div>
-									<div class="col-md-1 form-group"></div>
-									<div class="col-md-3 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">ECPOS - Reactivation</label>
+									<div class="col-sm-4" style="margin: 0px; margin-top: 6px;">
+										<font size="3"><b>ECPOS - Reactivation</b></font>
 									</div>
-									<div class="col-md-2 form-group">
+									<div class="col-sm-2">
 										<button class="btn btn-block btn-danger" ng-click="showReactivationModal()">Reactivate</button>
 									</div>
-									<div class="col-md-1 form-group"></div>
 								</div>
-								<hr style="margin-top: 5px; margin-bottom: 18px;">
-								<div class="row">
-									<div class="col-md-12 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">Printer Configuration</label>
+								<hr>
+								<div class="row" style="padding-bottom: 8px;">
+									<div class="col-sm-12" style="padding-bottom: 8px;">
+										<font size="3"><b>Printer Configuration</b></font>
 									</div>
-									<div class="col-md-5 form-group" style="margin: 0px;">
-										<label style="margin-top: 6px;">Printer Model</label>
+									<div class="col-sm-6">
+										<font size="2">Printer Model</font>
 										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
 											<select id="printer" class="select2 form-control" style="width: 100%;" ng-click="savePrinter()">
 												<option selected>----- Select -----</option>
@@ -85,15 +86,14 @@
 									</div>
 								</div>
 								<hr>
-								<div class="row">
-									<div class="col-md-12 form-group" style="margin: 0px;">
-										<label style="font-size: medium; margin-top: 6px;">Terminal Configuration</label>
+								<div class="row" style="padding-bottom: 8px;">
+									<div class="col-sm-12">
+										<font size="3"><b>Terminal Configuration</b></font>
 										<button type="button" class="btn btn-social pull-right btn-primary bg-aqua" ng-click="showTerminalModal('create')">
 											<i class="fa fa-plus"></i> Add Terminal
 										</button>
 									</div>
 								</div>
-								<br>
 								<div id="terminalList">
 									<div class="row">
 										<div class='col-sm-1 text-center'><b>No</b></div>
@@ -103,21 +103,21 @@
 										<div class='col-sm-2 text-center'><b>Wifi Port</b></div>
 										<div class='col-sm-3 text-center'></div>
 									</div>
-									<hr style="margin-top: 5px; margin-bottom: 5px;">
+									<hr>
 									<div ng-repeat="terminal in terminalList.terminals">
-										<div class="row">
+										<div class="row" style="padding-bottom: 5px;">
 											<div class='col-sm-1 text-center' style="margin-top: 7px;">{{$index+1}}</div>
 											<div class='col-sm-2 text-left' style="margin-top: 7px;">{{terminal.name}}</div>
 											<div class='col-sm-2 text-center' style="margin-top: 7px;">{{terminal.serialNo}}</div>
 											<div class='col-sm-2 text-center' style="margin-top: 7px;">{{terminal.wifiIP}}</div>
 											<div class='col-sm-2 text-center' style="margin-top: 7px;">{{terminal.wifiPort}}</div>
-											<div class='col-sm-3 text-left'>
+											<div class='col-sm-3 text-left' style="padding: 0px;">
 												<button class="btn btn-info" ng-click="showSettlementModal(terminal.serialNo)">Settlement</button>
-												<button class="btn btn-primary" style="margin-left: 12%; margin-right: 12%;" ng-click="showTerminalModal('update', terminal.id)"><i class="fa fa-edit"></i></button>
+												<button class="btn btn-primary" ng-click="showTerminalModal('update', terminal.id)"><i class="fa fa-edit"></i></button>
 												<button class="btn btn-danger" ng-click="removeTerminal(terminal.id)"><i class="fa fa-trash-o"></i></button>
 											</div>
 										</div>
-										<hr style="margin-top: 5px; margin-bottom: 5px;">
+										<hr>
 									</div>
 								</div>
 							</div>

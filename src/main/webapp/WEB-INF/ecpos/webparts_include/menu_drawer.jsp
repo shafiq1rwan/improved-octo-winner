@@ -72,6 +72,7 @@
 						<span class="pull-right-container"> </span>
 					</a>
 				</li> --%>
+				<%if (user.getRoleType() == 1) {%>
 				<li>
 					<a onclick="openDrawer()">
 						<i class="fa fa-money"></i>
@@ -79,6 +80,7 @@
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
+				<%}%>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!settings"> 
 						<i class="fa fa-cog"></i>

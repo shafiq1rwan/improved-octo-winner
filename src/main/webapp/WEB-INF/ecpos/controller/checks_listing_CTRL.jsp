@@ -13,6 +13,7 @@
 						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
+				"searching": false,
 				"pageLength": 9,
 				"bLengthChange": false,
 				"order" : [ [ 0, "desc" ] ],
@@ -22,14 +23,12 @@
 					{"data" : "staffName"},
 					{"data" : "orderType"},
 					{"data" : "tableNumber"},
-					{"data" : "totalItemQuantity"},
 					{"data" : "grandTotalAmount"},
-					{"data" : "overdueAmount"},
 					{"data" : "checkStatus"},
-					{"data" : "createdDate"}/* ,
+					{"data" : "createdDate"},
 					{"render" : function(data, type, full, meta) {
 						return '<div><button class="btn btn-sm btn-info" ng-click="getCheckDetails(\''+ full.orderType + '/' + full.checkNumber + '/' + full.tableNumber + '\')">Details</button></div>';
-					}} */],
+					}}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
 				}
@@ -37,7 +36,6 @@
 		}
 		
 		$scope.getCheckDetails = function(params) {
-			console.log(params);
 			if (params.includes("take away")) {
 				params = params.replace("take away", "take_away");
 			}

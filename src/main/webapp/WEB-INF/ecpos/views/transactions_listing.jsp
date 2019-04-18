@@ -20,29 +20,26 @@
 	<div ng-controller="transactions_listing_CTRL">
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
-				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">
+				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-						<div class="col-md-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="background-color: white; min-height: 87vh; margin-bottom: 0px; padding-top: 0px;">
+						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
+							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<h3>Transactions Listing</h3>
+										<font size="4">Transactions Listing</font>
 									</div>
 								</div>
-								<br>
 								<table id="datatable_transactions" class="table table-bordered table-striped">
 									<thead>
 										<tr>
-											<th>No</th>
-											<th>Performed By</th>
-											<th>Check Number</th>
-											<th>Transaction Date</th>
+											<th>ID</th>
+											<th>Check No</th>
+											<th>By</th>
 											<th>Transaction Type</th>
-											<th>Payment Method</th>
 											<th>Payment Type</th>
-											<th>Terminal</th>
-											<th>Transaction Amount</th>
-											<th>Transaction Status</th>
+											<th>Amount</th>
+											<th>Status</th>
+											<th>Date</th>
 											<th></th>
 										</tr>
 									</thead>

@@ -15,37 +15,41 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 	}
 	
 	$scope.getSalesSummary = function() {
-		var dataObj = {
-			"startDate" : $scope.date.start.toISOString(),
-			"endDate" : $scope.date.end.toISOString()
-		};
-		console.log(dataObj);
-		
-		var table = $('#datatable_salesSummary').DataTable({
-			"ajax" : {
-				"url" : "${pageContext.request.contextPath}/rc/report/get_sales_summary",
-				"type" : "post",
-				"data" : function (d) {
-				      return JSON.stringify(dataObj);
-			    },
-				"contentType" : "application/json; charset=utf-8",
-				"dataType" : "json",
-				"error" : function() {
-					alert("Report failed to display");
-					window.location.href = "${pageContext.request.contextPath}/signout";
-				}
-			},
-			"ordering" : false,
-			"searching" : false,
-			"lengthChange" : false,
-			"info" : false,
-			"paging": false,
-			"destroy" : true,
-			"columns" : [{"data" : "deviceType", "width": "25%"}, 
-				{"data" : "paymentMethod", "width": "25%"}, 
-				{"data" : "totalCount", "width": "25%"},
-				{"data" : "totalAmount", "width": "25%"}]
-		});
+		if ($scope.date.start > $scope.date.end) {
+			alert("Start Date should be before End Date");
+		} else {
+			var dataObj = {
+				"startDate" : $scope.date.start.toISOString(),
+				"endDate" : $scope.date.end.toISOString()
+			};
+			console.log(dataObj);
+			
+			var table = $('#datatable_salesSummary').DataTable({
+				"ajax" : {
+					"url" : "${pageContext.request.contextPath}/rc/report/get_sales_summary",
+					"type" : "post",
+					"data" : function (d) {
+					      return JSON.stringify(dataObj);
+				    },
+					"contentType" : "application/json; charset=utf-8",
+					"dataType" : "json",
+					"error" : function() {
+						alert("Report failed to display");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				},
+				"ordering" : false,
+				"searching" : false,
+				"lengthChange" : false,
+				"info" : false,
+				"paging": false,
+				"destroy" : true,
+				"columns" : [{"data" : "deviceType", "width": "25%"}, 
+					{"data" : "paymentMethod", "width": "25%"}, 
+					{"data" : "totalCount", "width": "25%"},
+					{"data" : "totalAmount", "width": "25%"}]
+			});
+		}
 	}
 });
 </script>

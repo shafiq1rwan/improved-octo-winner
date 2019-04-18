@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -94,6 +96,8 @@ public class RestC_check {
 		try {
 			connection = dataSource.getConnection();
 			
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			
 			stmt = connection.prepareStatement("select c.id,c.check_number,s.staff_name,ot.name as order_type,c.table_number,c.total_item_quantity, " + 
 					"c.grand_total_amount,c.deposit_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
 					"from `check` c " + 
@@ -116,7 +120,7 @@ public class RestC_check {
 				check.put("tenderAmount", String.format("%.2f", rs.getBigDecimal("tender_amount")));
 				check.put("overdueAmount", String.format("%.2f", rs.getBigDecimal("overdue_amount")));
 				check.put("checkStatus", rs.getString("check_status"));
-				check.put("createdDate", rs.getString("created_date"));
+				check.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
 				
 				jary.put(check);
 			}
@@ -157,6 +161,8 @@ public class RestC_check {
 		try {
 			connection = dataSource.getConnection();
 			
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			
 			String tableNoCondition = null;
 			if (orderType.equals("table")) {
 				tableNoCondition = "table_number = " + tableNo;
@@ -175,7 +181,7 @@ public class RestC_check {
 				
 				jsonResult.put("checkNo", rs.getString("check_number"));
 				jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
-				jsonResult.put("createdDate", rs.getString("created_date"));
+				jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
 				jsonResult.put("totalAmount", new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
 				jsonResult.put("totalAmountWithTax", new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00" : rs.getString("total_amount_with_tax")));
 				jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));

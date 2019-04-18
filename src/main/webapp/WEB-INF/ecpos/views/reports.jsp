@@ -21,27 +21,26 @@
 	<div ng-controller="reports_CTRL">
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
-				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">
+				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-						<div class="col-md-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="background-color: white; margin-bottom: 0px; min-height: 30vh; padding-top: 0px;">
-								<div class="row">
-									<div class="col-sm-12" style="text-align: center">
-										<h3>Reports</h3>
+						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
+							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
+								<div class="row" style="text-align: center">
+									<div class="col-sm-12">
+										<font size="4">Reports</font>
 									</div>
 								</div>
 								<br>
 								<div class="row">
-									<div class="col-sm-3 form-group">
+									<div class="col-sm-4 form-group">
 										<label>Start Date</label> 
 										<input type="datetime-local" class="form-control" ng-model="date.start" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>
-									<div class="col-sm-3 form-group">
+									<div class="col-sm-4 form-group">
 										<label>End Date</label> 
 										<input type="datetime-local" class="form-control" ng-model="date.end" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>
 								</div>
-								<br>
 								<div>
 									<table id="datatable_salesSummary" class="table table-bordered table-striped">
 										<thead>

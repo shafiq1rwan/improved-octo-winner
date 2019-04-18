@@ -26,7 +26,7 @@
 
 <body>
 	<div ng-controller="payment_CTRL">
-		<div class="well" style="background-color: white; height: 87vh; overflow-y: auto; padding: 15px;">
+		<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px; padding-bottom: 22px;">
 				
 			<div id="paymentCarousel" class="carousel" data-interval="false">
 				<div class="carousel-inner">
@@ -37,29 +37,29 @@
 									<label>Payment Type</label>
 								</div>
 							</div>
-							<br>
-							<div class="row" style="padding : 15px;">
-								<div class="col-sm-6">
-									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('full')">
-										<label style="max-width: 200px; max-height: 125px; padding-top: 24%; padding-bottom: 24%;"><font size="4"><i>Full Payment</i></font></label>
+							<br><br><br>
+							<div class="row">
+								<div class="col-sm-6" style="margin-top: 15px;">
+									<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('full')">
+										<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Full Payment</i></font></label>
 									</div>
 								</div>
-								<div class="col-sm-6">
-									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('partial')">
-										<label style="max-width: 200px; max-height: 125px; padding-top: 24%; padding-bottom: 24%;"><font size="4"><i>Partial Payment</i></font></label>
+								<div class="col-sm-6" style="margin-top: 15px;">
+									<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('partial')">
+										<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Partial Payment</i></font></label>
 									</div>
 								</div>
 							</div>
-							<br>
-							<div class="row" style="padding : 15px;">
-								<div class="col-sm-6">
-									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('split')">
-										<label style="max-width: 200px; max-height: 125px; padding-top: 24%; padding-bottom: 24%;"><font size="4"><i>Split Payment</i></font></label>
+							<br><br>
+							<div class="row">
+								<div class="col-sm-6" style="margin-top: 15px;">
+									<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('split')">
+										<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Split Payment</i></font></label>
 									</div>
 								</div>
-								<div class="col-sm-6">
-									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('deposit')">
-										<label style="max-width: 200px; max-height: 125px; padding-top: 24%; padding-bottom: 24%;"><font size="4"><i>Deposit Payment</i></font></label>
+								<div class="col-sm-6" style="margin-top: 15px;">
+									<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('deposit')">
+										<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Deposit Payment</i></font></label>
 									</div>
 								</div>
 							</div>
@@ -70,7 +70,7 @@
 						<div id="paymentMethod">
 							<div class="row" style="font-size: large">
 								<div class="col-sm-2">
-									<a id="paymentMethodBack" href="#paymentCarousel" data-slide="prev">
+									<a id="paymentMethodBack" data-target="#paymentCarousel" data-slide="prev">
 										<i class="fa fa-arrow-left" style="color: black;"></i>
 									</a>
 								</div>
@@ -79,17 +79,17 @@
 								</div>
 								<div class="col-sm-2"></div>
 							</div>
-							<div style="padding: 50px;">
+							<div style="padding: 20px;">
 								<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPayment('Cash')">
 									<img ng-src="${pageContext.request.contextPath}/img/icon/money.png" alt="Cash Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
 								</div>
 							</div>
-							<div style="padding: 50px;">
+							<div style="padding: 20px;">
 								<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPayment('Card')">
 									<img ng-src="${pageContext.request.contextPath}/img/icon/credit-card.png" alt="Card Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
 								</div>
 							</div>
-							<div style="padding: 15px;">
+							<div style="padding: 20px;">
 									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPayment('QR')">
 										<img ng-src="${pageContext.request.contextPath}/img/icon/qr-code.png" alt="QR Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
 									</div>
@@ -101,7 +101,7 @@
 						<div id="payment">
 							<div class="row" style="font-size: large">
 								<div class="col-sm-2">
-									<a href="#paymentCarousel" data-slide="prev">
+									<a data-target="#paymentCarousel" data-slide="prev">
 										<i class="fa fa-arrow-left" style="color: black;"></i>
 									</a>
 								</div>

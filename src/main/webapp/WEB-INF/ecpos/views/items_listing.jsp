@@ -47,27 +47,28 @@
 	<div ng-controller="items_listing_CTRL">
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
-				<section class="content sectioncalibrator" style="padding-right: 15px; padding-left: 15px;">
+				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-						<div class="col-md-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="background-color: white; min-height: 87vh; margin-bottom: 0px; padding-top: 0px;">
+						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
+							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<h3>Items Listing</h3>
+										<font size="4">Items Listing</font>
 									</div>
 								</div>
-								<ul class="nav nav-pills nav-justified" role="tablist" style="border-radius: 5px;">
-									<li class="active">
-										<a data-toggle="pill" ng-click="getDataTable('0')">A La Carte</a>
-									</li>
-									<li style="border-left: 1px solid #ddd;">
-										<a data-toggle="pill" ng-click="getDataTable('1')">Combo</a>
-									</li>
-									<li style="border-left: 1px solid #ddd;">
-										<a data-toggle="pill" ng-click="getDataTable('2')">Modifier Group</a>
-									</li>
-								</ul>
-								<br>
+								<div style="padding-top: 5px; padding-bottom: 5px;">
+									<ul class="nav nav-pills nav-justified" role="tablist" style="border-radius: 5px;">
+										<li class="active">
+											<a data-toggle="pill" ng-click="getDataTable('0')">A La Carte</a>
+										</li>
+										<li style="border-left: 1px solid #ddd;">
+											<a data-toggle="pill" ng-click="getDataTable('1')">Combo</a>
+										</li>
+										<li style="border-left: 1px solid #ddd;">
+											<a data-toggle="pill" ng-click="getDataTable('2')">Modifier Group</a>
+										</li>
+									</ul>
+								</div>
 								<div ng-show="itemType == '0' || itemType == '1'">
 									<table id="datatable_items" class="table table-bordered table-striped">
 										<thead>
@@ -127,11 +128,10 @@
 														<button class="close" data-dismiss="modal">&times;</button>
 													</div>
 												</div>
-												<br>
 												<div class="row">
 													<div style="text-align: center">
-														<div style="margin: auto; margin-bottom: 10px; width: 150px; height: 150px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-															<img ng-src="${pageContext.request.contextPath}{{itemDetails.imagePath}}" alt=itemImage style="max-width: 150px; max-height: 150px;" />
+														<div style="margin: auto; margin-bottom: 10px; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+															<img ng-src="${pageContext.request.contextPath}{{itemDetails.imagePath}}" alt=itemImage style="max-width: 135px; max-height: 135px;" />
 														</div>
 													</div>
 												</div>
@@ -187,7 +187,7 @@
 										<div id="modifierItemList">
 											<div class="row" style="font-size: large">
 												<div class="col-sm-1">
-													<a id="back1" href="#itemDetailsCarousel" data-slide-to="2">
+													<a id="back1" data-target="#itemDetailsCarousel" data-slide-to="2">
 														<i class="fa fa-arrow-left" style="color: black;"></i>
 													</a>
 												</div>
@@ -200,7 +200,6 @@
 													<button class="close" data-dismiss="modal">&times;</button>
 												</div>
 											</div>
-											<br>
 											<div style="border: 1px solid #d2d6de; padding: 10px;">
 												<table id="datatable_modifierItemsList" class="table table-bordered table-striped" style="width:100%;">
 													<thead>
@@ -222,7 +221,7 @@
 										<div id="itemModifierGroupList">
 											<div class="row" style="font-size: large">
 												<div class="col-sm-1">
-													<a id="back2" href="#itemDetailsCarousel" data-slide-to="4">
+													<a id="back2" data-target="#itemDetailsCarousel" data-slide-to="4">
 														<i class="fa fa-arrow-left" style="color: black;"></i>
 													</a>
 												</div>
@@ -235,7 +234,6 @@
 													<button class="close" data-dismiss="modal">&times;</button>
 												</div>
 											</div>
-											<br>
 											<div style="border: 1px solid #d2d6de; padding: 10px;">
 												<table id="datatable_itemModifierGroupsList" class="table table-bordered table-striped" style="width:100%;">
 													<thead>
@@ -265,7 +263,6 @@
 													<button class="close" data-dismiss="modal">&times;</button>
 												</div>
 											</div>
-											<br>
 											<div style="border: 1px solid #d2d6de; padding: 10px;">
 												<table id="datatable_comboItemTiersList" class="table table-bordered table-striped" style="width:100%;">
 													<thead>
@@ -287,7 +284,7 @@
 										<div id="comboItemTierItemsList">
 											<div class="row" style="font-size: large">
 												<div class="col-sm-1">
-													<a id="back4" href="#itemDetailsCarousel" data-slide-to="3">
+													<a id="back4" data-target="#itemDetailsCarousel" data-slide-to="3">
 														<i class="fa fa-arrow-left" style="color: black;"></i>
 													</a>
 												</div>
@@ -300,7 +297,6 @@
 													<button class="close" data-dismiss="modal">&times;</button>
 												</div>
 											</div>
-											<br>
 											<div style="border: 1px solid #d2d6de; padding: 10px;">
 												<table id="datatable_comboItemTierItemsList" class="table table-bordered table-striped" style="width:100%;">
 													<thead>
