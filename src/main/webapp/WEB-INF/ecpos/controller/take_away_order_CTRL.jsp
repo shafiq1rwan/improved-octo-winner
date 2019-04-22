@@ -7,7 +7,7 @@
 					$scope.create_new_check();
 				} else {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				}
 			},
 			function(response) {

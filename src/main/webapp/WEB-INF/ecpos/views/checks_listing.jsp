@@ -58,13 +58,13 @@ hr {
 			</div>
 			
 			<div class="modal fade" data-backdrop="static" id="checkDetailsModal" role="dialog">
-				<div class="modal-dialog">
+				<div class="modal-dialog modal-lg">
 					<div class="modal-content">
 						<!-- <div class="modal-header"></div> -->
-						<div class="modal-body">
+						<div class="modal-body" style="padding: 20px;">
 							<button class="close" data-dismiss="modal">&times;</button>
 							<div class="row">
-								<div class="col-sm-11">
+								<div class="col-sm-7">
 									<div>
 										<font><b>Check : {{checkDetail.checkNo}}</b> / <b>Table : {{checkDetail.tableNo}}</b></font>
 									</div>
@@ -75,37 +75,44 @@ hr {
 										<font><b>Status : {{checkDetail.status}}</b></font>
 									</div>
 								</div>
+								<div ng-show="checkDetail.status == 'New'" class="col-sm-4" style="padding: 0px;">
+									<button id="cancelCheckButton" class="btn btn-info btn-sm pull-right" style="width: 50%;" ng-click="cancelCheck(checkDetail.checkNo)">CANCEL CHECK</button>
+								</div>
 							</div>
 							<div>
 								<div class="row" style="padding-top: 8px; padding-right: 15px;">
-									<div class='col-sm-2 text-left'><b>Code</b></div>
-									<div class='col-sm-6 text-left' style="padding: 0px;"><b>Item</b></div>
-									<div class='col-sm-2 text-center'><b>Quantity</b></div>
-									<div class='col-sm-2 text-right'><b>Price</b></div>
+									<div class='col-sm-1 text-center'><b>Code</b></div>
+									<div class='col-sm-7 text-left' style="padding: 0px;"><b>Item</b></div>
+									<div class='col-sm-2 text-center' style="padding-right: 0px;"><b>Quantity</b></div>
+									<div class='col-sm-1 text-center'><b>Status</b></div>
+									<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>Price</b></div>
 								</div>
 								<hr>
 								<div style="padding-right: 15px; max-height: 33vh; overflow-y: auto; height: 33vh;">
 									<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
 										<div style="padding-bottom: 8px;">
 											<div class="row">
-												<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
-												<div class='col-sm-6 text-left' style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice| number:2}}</div>
-												<div class='col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
-												<div class='col-sm-2 text-right'>{{grandParentItem.totalAmount| number:2}}</div>
+												<div class='col-sm-1 text-center'>{{grandParentItem.itemCode}}</div>
+												<div class='col-sm-7 text-left' style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice| number:2}}</div>
+												<div class='col-sm-2 text-center' style="padding-right: 0px;">{{grandParentItem.itemQuantity}}</div>
+												<div class='col-sm-1 text-center'>{{grandParentItem.itemStatus}}</div>
+												<div class='col-sm-1 text-right' style="padding-right: 0px;">{{grandParentItem.totalAmount| number:2}}</div>
 											</div>
 											<div ng-repeat="parentItem in grandParentItem.parentItemArray">
 												<div class="row">
-													<div class='col-sm-2 text-left'>{{parentItem.itemCode}}</div>
-													<div class='col-sm-6 text-left' style="padding: 0px;">:{{parentItem.itemName}}@{{parentItem.itemPrice| number:2}}</div>
+													<div class='col-sm-1 text-center'></div>
+													<div class='col-sm-7 text-left' style="padding: 0px;">:{{parentItem.itemName}}@{{parentItem.itemPrice| number:2}}</div>
 													<div class='col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
-													<div class='col-sm-2 text-right'>{{parentItem.totalAmount| number:2}}</div>										
+													<div class='col-sm-1'></div>
+													<div class='col-sm-1 text-right' style="padding-right: 0px;">{{parentItem.totalAmount| number:2}}</div>										
 												</div>
 												<div ng-repeat="childItem in parentItem.childItemArray">
 													<div class="row">
-														<div class='col-sm-2 text-left'>{{childItem.itemCode}}</div>
-														<div class='col-sm-6 text-left' style="padding: 0px;">&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice| number:2}}</div>
+														<div class='col-sm-1 text-center'></div>
+														<div class='col-sm-7 text-left' style="padding: 0px;">&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice| number:2}}</div>
 														<div class='col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
-														<div class='col-sm-2 text-right'>{{childItem.totalAmount| number:2}}</div>										
+														<div class='col-sm-1'></div>
+														<div class='col-sm-1 text-right' style="padding-right: 0px;">{{childItem.totalAmount| number:2}}</div>										
 													</div>
 												</div>
 											</div>
@@ -114,34 +121,34 @@ hr {
 								</div>
 								<hr>
 								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Subtotal</b></div>
-									<div class='col-sm-2 text-right'><b>{{checkDetail.totalAmount| number:2}}</b></div>
+									<div class='col-sm-11 text-left'><b>Subtotal</b></div>
+									<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>{{checkDetail.totalAmount| number:2}}</b></div>
 								</div>
 								<div ng-repeat="taxCharge in checkDetail.taxCharges">
-										<div class='col-sm-10 text-left'><b>{{taxCharge.name}} {{taxCharge.rate}}%</b></div>
-										<div class='col-sm-2 text-right'><b>{{taxCharge.chargeAmount| number:2}}</b></div>
+										<div class='col-sm-11 text-left'><b>{{taxCharge.name}} {{taxCharge.rate}}%</b></div>
+										<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>{{taxCharge.chargeAmount| number:2}}</b></div>
 									</div>
 								</div>
 								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Rounding Adjustment</b></div>
-									<div class='col-sm-2 text-right'><b>{{checkDetail.totalAmountWithTaxRoundingAdjustment| number:2}}</b></div>
+									<div class='col-sm-11 text-left'><b>Rounding Adjustment</b></div>
+									<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>{{checkDetail.totalAmountWithTaxRoundingAdjustment| number:2}}</b></div>
 								</div>
 								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Grand Total</b></div>
-									<div class='col-sm-2 text-right' style="border-top: solid; border-top-width: thin; border-bottom: 3px double;"><b>{{checkDetail.grandTotalAmount| number:2}}</b></div>
+									<div class='col-sm-11 text-left'><b>Grand Total</b></div>
+									<div class='col-sm-1 text-right' style="border-top: solid; border-top-width: thin; border-bottom: 3px double; padding-right: 0px;"><b>{{checkDetail.grandTotalAmount| number:2}}</b></div>
 								</div>
 								<hr>
 								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Deposit Amount</b></div>
-									<div class='col-sm-2 text-right'><b>{{checkDetail.depositAmount| number:2}}</b></div>
+									<div class='col-sm-11 text-left'><b>Deposit Amount</b></div>
+									<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>{{checkDetail.depositAmount| number:2}}</b></div>
 								</div>
 								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Tender Amount</b></div>
-									<div class='col-sm-2 text-right'><b>{{checkDetail.tenderAmount| number:2}}</b></div>
+									<div class='col-sm-11 text-left'><b>Tender Amount</b></div>
+									<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>{{checkDetail.tenderAmount| number:2}}</b></div>
 								</div>
 								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Overdue Amount</b></div>
-									<div class='col-sm-2 text-right'><b>{{checkDetail.overdueAmount| number:2}}</b></div>
+									<div class='col-sm-11 text-left'><b>Overdue Amount</b></div>
+									<div class='col-sm-1 text-right' style="padding-right: 0px;"><b>{{checkDetail.overdueAmount| number:2}}</b></div>
 								</div>
 							</div>
 						<!-- <div class="modal-footer"></div> -->

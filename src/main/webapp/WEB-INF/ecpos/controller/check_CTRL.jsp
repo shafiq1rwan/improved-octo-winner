@@ -24,7 +24,7 @@
 					$scope.getCheckDetails();
 				} else {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				}
 			},
 			function(response) {
@@ -251,7 +251,7 @@
 					if (response.data.response_code === "00") {
 						alert("Check has been cancelled.")
 
-						window.location.href = "${pageContext.request.contextPath}/#!table_order";
+						window.location.href = "${pageContext.request.contextPath}";
 					} else {
 						if (response.data.response_message != null) {
 							alert(response.data.response_message);

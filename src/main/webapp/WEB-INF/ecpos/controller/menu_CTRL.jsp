@@ -86,12 +86,6 @@
 				$('#menuCarousel').carousel(2);
 				
 				setTimeout(function() { 
-					var divide = 384;
-					if ($scope.tiers.data.length > 1) {
-						divide = 384 / $scope.tiers.data.length;	
-					}
-					$(".tab-width").width(divide+"px");
-					
 					$('#pill'+$scope.tiers.data[0].id).addClass("active");
 				}, 10);
 				$scope.tierQuantityLoop($scope.tiers.data[0]);

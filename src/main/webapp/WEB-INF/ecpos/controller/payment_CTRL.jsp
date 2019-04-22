@@ -101,7 +101,7 @@
 				},
 				function(response) {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			} else {
 				$('#terminalList').hide();
@@ -210,7 +210,7 @@
 					},
 					function(response) {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}/";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}); 
 				} else if($scope.paymentMethod == "Card"){
 					var paymentSocket = new WebSocket("ws://localhost:8080/paymentSocket");
@@ -362,7 +362,7 @@
 				function(response) {
 					$('#loading_modal').modal('hide');
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			}
 		}

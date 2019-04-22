@@ -380,7 +380,7 @@ public class RestC_check {
 				
 				stmt = connection.prepareStatement("select * from `check` c "
 						+ "inner join check_status cs on cs.id = c.check_status "
-						+ "where " + tableNoCondition + " and check_number = ? and check_status in (1, 2, 3);");
+						+ "where " + tableNoCondition + " and check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
 				
@@ -418,7 +418,9 @@ public class RestC_check {
 					}
 					jsonResult.put("taxCharges", taxCharges);
 	
-					stmt3 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2, 3) order by id asc;");
+					stmt3 = connection.prepareStatement("select * from check_detail cd " +
+							"inner join check_status cs on cs.id = cd.check_detail_status " +
+							"where check_id = ? and check_number = ? and parent_check_detail_id is null order by cd.id asc;");
 					stmt3.setLong(1, id);
 					stmt3.setString(2, checkNo);
 					rs3 = stmt3.executeQuery();
@@ -434,6 +436,7 @@ public class RestC_check {
 						grandParentItem.put("itemName", rs3.getString("menu_item_name"));
 						grandParentItem.put("itemPrice", rs3.getString("menu_item_price"));
 						grandParentItem.put("itemQuantity", rs3.getInt("quantity"));
+						grandParentItem.put("itemStatus", rs3.getString("name").equals("Closed") ? "Paid" : rs3.getString("name"));
 						grandParentItem.put("totalAmount", rs3.getString("total_amount"));
 						
 						stmtA = connection.prepareStatement("select * from menu_item mi " + 
@@ -458,7 +461,7 @@ public class RestC_check {
 							grandParentItem.put("isAlaCarte", false);
 						}
 						
-						stmt4 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2, 3) order by id asc;");
+						stmt4 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? order by id asc;");
 						stmt4.setLong(1, id);
 						stmt4.setString(2, checkNo);
 						stmt4.setLong(3, grandParentId);
@@ -476,7 +479,7 @@ public class RestC_check {
 							parentItem.put("itemQuantity", rs4.getString("quantity"));
 							parentItem.put("totalAmount", rs4.getString("total_amount"));
 							
-							stmt5 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2, 3) order by id asc;");
+							stmt5 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? order by id asc;");
 							stmt5.setLong(1, id);
 							stmt5.setString(2, checkNo);
 							stmt5.setLong(3, parentId);
