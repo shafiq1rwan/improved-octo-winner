@@ -11,6 +11,7 @@
 			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
 			.then(function(response) {
 				if (response.data.responseCode == "00") {
+					$scope.getCashDrawerList();
 					$scope.getPrinterList();
 					$scope.getTerminalList();
 				} else {
@@ -23,7 +24,34 @@
 				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
-		
+
+		$scope.getCashDrawerList = function() {
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_cash_drawer_setup_info")
+			.then(function (response) {
+				$scope.cashDrawerData = response.data;
+				//if selectedCashDrawer exist
+				if($scope.cashDrawerData.hasOwnProperty("selectedCashDrawer")){
+					$scope.selectedCashDrawer = response.data.selectedCashDrawer;
+					
+					for(var i =0; i< $scope.cashDrawerData.device_manufacturers.length; i++){
+						if($scope.cashDrawerData.device_manufacturers[i].id === $scope.selectedCashDrawer.device_manufacturer){
+							$scope.selectedDeviceManufacturer = $scope.selectedCashDrawer.device_manufacturer;
+						}
+					}
+					
+					for(var j = 0; j< $scope.cashDrawerData.port_names.length; j++){
+						if($scope.cashDrawerData.port_names[j].id === $scope.selectedCashDrawer.port_name){
+							$scope.selectedPortName = $scope.selectedCashDrawer.port_name;
+						}
+					}
+					
+				}
+			}, function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
 		$scope.getPrinterList = function() {
 			$http.get("${pageContext.request.contextPath}/rc/configuration/get_printer_detail/")
 			.then(function(response) {
@@ -59,6 +87,34 @@
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
+		}
+		
+		
+		$scope.saveCashDrawer = function(){
+			if($scope.selectedDeviceManufacturer == null || $scope.selectedPortName == null 
+					|| $scope.selectedDeviceManufacturer == '' || $scope.selectedPortName == ''){
+				console.log("Info Not full")
+			} else {
+				console.log($scope.selectedDeviceManufacturer + " " + $scope.selectedPortName)
+				
+				//fire saved printer event
+				var jsonData = JSON.stringify({
+					'device_manufacturer' : $scope.selectedDeviceManufacturer,
+					'port_name' : $scope.selectedPortName
+				});
+				
+				console.log("Saved Printer Data: " + jsonData);
+				
+				$http.post("${pageContext.request.contextPath}/rc/configuration/save_cash_drawer", jsonData)
+				.then(function(response) {
+					$scope.getCashDrawerList();
+				},
+				function(response) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/signout";
+				});
+				
+			}
 		}
 		
 		$scope.showTerminalModal = function(action, id) {
@@ -109,19 +165,19 @@
 				},
 				url : '${pageContext.request.contextPath}/activation'
 			}).then(function(response) {
-				if (response != null && response.data != null
-						&& response.data.resultCode != null) {
-					if (response.data.resultCode == "00") {						
-						$scope.syncSuccess(response.data.resultMessage, 1);							
-					} else {
-						$scope.syncFailed(response.data.resultMessage,  1);
-					}
-				} else {
-					$scope.syncFailed("Invalid server response!", 1);
-				}
-			}, function(error) {
-				$scope.syncFailed("Unable to connect to server!", 1);
-			});
+						if (response != null && response.data != null
+								&& response.data.resultCode != null) {
+							if (response.data.resultCode == "00") {						
+								$scope.syncSuccess(response.data.resultMessage, 1);							
+							} else {
+								$scope.syncFailed(response.data.resultMessage,  1);
+							}
+						} else {
+							$scope.syncFailed("Invalid server response!", 1);
+						}
+					}, function(error) {
+						$scope.syncFailed("Unable to connect to server!", 1);
+					});
 		}
 		
 		$scope.savePrinter = function() {

@@ -112,7 +112,7 @@
 				}
 			},
 			error : function() {
-				alert('Drawer cannot be open. Please kindly check your printer.');
+				alert('Drawer cannot open. Please kindly check the cash drawer printer.');
 			}
 		});
 	}

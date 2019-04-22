@@ -71,6 +71,41 @@ hr {
 									</div>
 								</div>
 								<hr>
+								
+								<div class="row" style="padding-bottom: 8px;">
+									<div class="col-sm-12" style="padding-bottom: 8px;">
+										<font size="3"><b>Cash Drawer Configuration</b></font>
+									</div>
+									
+									<div class="col-sm-4">
+										<font size="2">Device Manufacturer</font>
+										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+											<select id="cashDrawerDeviceManufacturer" class="form-control" ng-model="selectedDeviceManufacturer" 
+												ng-options="device_manufacturer.id as device_manufacturer.name for device_manufacturer in cashDrawerData.device_manufacturers">
+													<option value="" disabled>-- SELECT --</option>
+											</select>
+										</div>
+									</div>
+									
+									<div class="col-sm-4">
+										<font size="2">Port Name</font>
+										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+											<select id="cashDrawerDevicePortName" class="form-control" ng-model="selectedPortName" 
+												ng-options="port_name.id as port_name.name for port_name in cashDrawerData.port_names">
+													<option value="" disabled>-- SELECT --</option>
+											</select>
+										</div>
+									</div>
+									
+									<div class ="col-sm-4">
+										<font size="2"></font>
+										<div style="padding: 10px;">
+											<button class="btn btn-info" ng-click="saveCashDrawer()">Set</button>
+										</div>			
+									</div>
+								</div>
+								<hr>
+
 								<div class="row" style="padding-bottom: 8px;">
 									<div class="col-sm-12" style="padding-bottom: 8px;">
 										<font size="3"><b>Printer Configuration</b></font>
