@@ -41,6 +41,10 @@
 				$("#zerozero").prop('disabled', true);
 				$("#remove").prop('disabled', true);
 			} else if ($scope.paymentType == "split") {
+				$("input[name=grandParentItemCheckbox]:checked").each(function(){
+					$(this).prop('checked', false);
+				});
+				
 				$("#allGrandParentItemCheckbox").show();
 				$("input[name=grandParentItemCheckbox]").show();
 	
@@ -180,9 +184,25 @@
 						if (response.data.response_code === "00") {
 							alert(response.data.response_message);
 							<%if (user.getStoreType() == 2) {%>
-							$location.path("${pageContext.request.contextPath}/table_order");
+							if ($scope.orderType == "table") {
+								if ($scope.paymentType == "full") {
+									window.location.href = "${pageContext.request.contextPath}/views/table_order";
+								} else {
+									location.reload();
+								}
+							} else if ($scope.orderType == "take_away") {
+								if ($scope.paymentType == "full") {
+									window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+								} else {
+									location.reload();
+								}
+							}
 							<%} else {%>
-							$location.path("${pageContext.request.contextPath}/take_away_order");
+							if ($scope.paymentType == "full") {
+								window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+							} else {
+								location.reload();
+							}
 							<%}%>
 						} else {
 							alert(response.data.response_message);
@@ -313,9 +333,25 @@
 						console.log("success")
 						alert(response.data.response_message);
 						<%if (user.getStoreType() == 2) {%>
-						window.location.href = "${pageContext.request.contextPath}/views/table_order";
+						if ($scope.orderType == "table") {
+							if ($scope.paymentType == "full") {
+								window.location.href = "${pageContext.request.contextPath}/views/table_order";
+							} else {
+								location.reload();
+							}
+						} else if ($scope.orderType == "take_away") {
+							if ($scope.paymentType == "full") {
+								window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+							} else {
+								location.reload();
+							}
+						}
 						<%} else {%>
-						window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+						if ($scope.paymentType == "full") {
+							window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+						} else {
+							location.reload();
+						}
 						<%}%>
 					} else {
 						$('#loading_modal').modal('hide');

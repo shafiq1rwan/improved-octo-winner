@@ -1,5 +1,10 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+
+<%
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
+%>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <html>
 <head>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/select2/select2.min.css">
@@ -58,11 +63,13 @@
 											<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Split Payment</i></font></label>
 										</div>
 									</div>
+									<%if (user.getStoreType() == 2) {%>
 									<div class="col-sm-6" style="margin-top: 15px;">
 										<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('deposit')">
 											<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Deposit Payment</i></font></label>
 										</div>
 									</div>
+									<%}%>
 								</div>
 							</div>
 						</div>
