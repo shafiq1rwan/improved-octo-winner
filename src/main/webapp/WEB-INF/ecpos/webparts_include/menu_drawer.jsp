@@ -74,7 +74,7 @@
 				</li> --%>
 				<%if (user.getRoleType() == 1) {%>
 				<li>
-					<a onclick="openDrawer()">
+					<a onclick="openDrawer()" style="cursor: pointer;">
 						<i class="fa fa-money"></i>
 						<span>Open Cash Drawer</span> 
 						<span class="pull-right-container"></span>

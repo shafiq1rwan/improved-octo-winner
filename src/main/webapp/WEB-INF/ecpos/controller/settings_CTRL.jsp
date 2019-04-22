@@ -93,7 +93,7 @@
 		$scope.saveCashDrawer = function(){
 			if($scope.selectedDeviceManufacturer == null || $scope.selectedPortName == null 
 					|| $scope.selectedDeviceManufacturer == '' || $scope.selectedPortName == ''){
-				console.log("Info Not full")
+				console.log("Please Select Both Device Manufacturer and Port Name.")
 			} else {
 				console.log($scope.selectedDeviceManufacturer + " " + $scope.selectedPortName)
 				
@@ -107,6 +107,7 @@
 				
 				$http.post("${pageContext.request.contextPath}/rc/configuration/save_cash_drawer", jsonData)
 				.then(function(response) {
+					alert("Cash Drawer Successfully Set.");
 					$scope.getCashDrawerList();
 				},
 				function(response) {
