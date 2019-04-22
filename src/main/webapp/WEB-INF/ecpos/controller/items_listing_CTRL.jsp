@@ -4,7 +4,19 @@
 		$scope.previousPage;
 		
 		$scope.initiation = function() {
-			$scope.getDataTable("0");
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getDataTable("0");
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}";
+			});
 		}
 		
 		$scope.getDataTable = function(itemType) {
@@ -22,8 +34,8 @@
 				"ajax" : {
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_menu_items_by_item_type/" + $scope.itemType,
 					"error" : function() {
-						alert("Item list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}";
 					}
 				},
 				"searching": false,
@@ -57,8 +69,8 @@
 				"ajax" : {
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_groups/",
 					"error" : function() {
-						alert("Modifier group list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}";
 					}
 				},
 				"searching": false,
@@ -103,8 +115,8 @@
 				"ajax" : {
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_items_list/"+modifierGroupId,
 					"error" : function() {
-						alert("Modifier item list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}";
 					}
 				},
 				"searching": false,
@@ -120,19 +132,20 @@
 					}, "width": "12%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
-				}
+				},
+				"initComplete": function( settings, json ) {
+					 $('#modifierGroupName').html(modifierGroupName);
+						
+					$('#itemDetailsCarousel').carousel(1);
+					$('#itemDetailsModal').modal("show");
+					
+					if (callingPage == -1) {
+						$('#back1').hide();
+					} else {
+						$('#back1').show();
+					}
+				 }
 			});
-			
-			$('#modifierGroupName').html(modifierGroupName);
-			
-			$('#itemDetailsCarousel').carousel(1);
-			$('#itemDetailsModal').modal("show");
-			
-			if (callingPage == -1) {
-				$('#back1').hide();
-			} else {
-				$('#back1').show();
-			}
 		}
 		
 		$scope.redirectItemCarousel = function(itemType, itemId, itemBackendId, itemName, callingPage) {
@@ -141,8 +154,8 @@
 					"ajax" : {
 						"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_groups_by_menu_item/"+itemId+"/"+itemBackendId,
 						"error" : function() {
-							alert("Item modifier group list failed to display");
-							window.location.href = "${pageContext.request.contextPath}/signout";
+							alert("Session TIME OUT");
+							window.location.href = "${pageContext.request.contextPath}";
 						}
 					},
 					"searching": false,
@@ -157,26 +170,27 @@
 						}, "width": "12%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
-					}
+					},
+					"initComplete": function( settings, json ) {
+						$('#itemName').html(itemName);
+							
+						$('#itemDetailsCarousel').carousel(2);
+						$('#itemDetailsModal').modal("show");
+						
+						if (callingPage == -1) {
+							$('#back2').hide();
+						} else {
+							$('#back2').show();
+						}
+					 }
 				});
-				
-				$('#itemName').html(itemName);
-				
-				$('#itemDetailsCarousel').carousel(2);
-				$('#itemDetailsModal').modal("show");
-				
-				if (callingPage == -1) {
-					$('#back2').hide();
-				} else {
-					$('#back2').show();
-				}
 			} else if (itemType == "1") {
 				var table = $('#datatable_comboItemTiersList').DataTable({
 					"ajax" : {
 						"url" : "${pageContext.request.contextPath}/rc/menu/get_tiers/"+itemId+"/"+itemBackendId,
 						"error" : function() {
-							alert("Combo item tiers list failed to display");
-							window.location.href = "${pageContext.request.contextPath}/signout";
+							alert("Session TIME OUT");
+							window.location.href = "${pageContext.request.contextPath}";
 						}
 					},
 					"searching": false,
@@ -192,13 +206,14 @@
 						}, "width": "12%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
+					},
+					"initComplete": function( settings, json ) {
+						$('#comboItemName').html(itemName);
+						
+						$('#itemDetailsCarousel').carousel(3);
+						$('#itemDetailsModal').modal("show");
 					}
 				});
-				
-				$('#comboItemName').html(itemName);
-				
-				$('#itemDetailsCarousel').carousel(3);
-				$('#itemDetailsModal').modal("show");
 			}
 		}
 		
@@ -207,8 +222,8 @@
 				"ajax" : {
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_tier_item_details/"+tierId,
 					"error" : function() {
-						alert("Tier item list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}";
 					}
 				},
 				"searching": false,
@@ -224,13 +239,14 @@
 					}, "width": "35%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
+				},
+				"initComplete": function( settings, json ) {
+					$('#comboItemTierName').html(tierName);
+					
+					$('#itemDetailsCarousel').carousel(4);
+					$('#itemDetailsModal').modal("show");
 				}
 			});
-			
-			$('#comboItemTierName').html(tierName);
-			
-			$('#itemDetailsCarousel').carousel(4);
-			$('#itemDetailsModal').modal("show");
 		}
 		
 		$scope.backCarousel = function() {

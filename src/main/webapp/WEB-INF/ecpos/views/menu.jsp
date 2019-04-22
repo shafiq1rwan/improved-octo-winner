@@ -29,7 +29,7 @@
 
 <body>
 	<div ng-controller="menu_CTRL">
-		<div ng-init="initiation();">
+		<div ng-init="menuInitiation();">
 			<div class="well" style="max-height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px; padding-bottom: 22px;">
 
 				<div id="menuCarousel" class="carousel" data-interval="false">

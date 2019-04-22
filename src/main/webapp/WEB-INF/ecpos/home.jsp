@@ -1,3 +1,9 @@
+<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+
+<%
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
+%>
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <!DOCTYPE html>
@@ -196,8 +202,13 @@
 		
 		.when("/",
 			{
-				templateUrl : "${pageContext.request.contextPath}/views/settings",
-				controller : "settings_CTRL"
+			<%if (user.getStoreType() == 2) {%>
+				templateUrl : "${pageContext.request.contextPath}/views/table_order",
+				controller : "table_order_CTRL"
+			<%} else {%>
+				templateUrl : "${pageContext.request.contextPath}/views/take_away_order",
+				controller : "take_away_order_CTRL"
+			<%}%>
 			})
 		.when("/table_order",
 			{

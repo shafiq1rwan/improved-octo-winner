@@ -8,18 +8,35 @@
 		
 		$scope.table_no ="";
 		
-		//Get table list
-		$http.get("${pageContext.request.contextPath}/rc/configuration/get_table_list")
-		.then(function(response) {
-			$scope.fields_TableInfo = response.data;
-			var table_list = $scope.fields_TableInfo.table_list;
-
-			splitArray(table_list);
-		},
-		function(response) {
-			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/logout";
-		});
+		$scope.initiation = function() {
+			$http.post("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getTableList();
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
+		$scope.getTableList = function() {
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_table_list")
+			.then(function(response) {
+				$scope.fields_TableInfo = response.data;
+				var table_list = $scope.fields_TableInfo.table_list;
+	
+				splitArray(table_list);
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
 
 		function splitArray(array_table_list) {
 			var i;
@@ -65,22 +82,21 @@
 			$http.post("${pageContext.request.contextPath}/rc/check/get_checks", jsonData)
 			.then(function(response) {
 				$scope.checks = response.data.checks;
+
+				$("#modal_table_check_list").modal('show');
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/logout";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
-
-			$("#modal_table_check_list").modal('show');
 		}
 
 		$scope.create_new_check = function() {
 			var jsonData = JSON.stringify({
 				"table_no" :  $scope.table_no,
-				"order_type" : "table"
 			});
 			
-			$http.post("${pageContext.request.contextPath}/rc/check/create", jsonData)
+			$http.post("${pageContext.request.contextPath}/rc/check/create/table", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
 					$scope.redirect_to_check_detail(response.data.check_no);
@@ -94,7 +110,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/logout";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 				

@@ -18,7 +18,19 @@
 		$('#terminalList').hide();
 
 		$scope.initiation = function() {
-			$scope.getCheckDetails();
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getCheckDetails();
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
 		}
 		
 		$scope.getCheckDetails = function() {

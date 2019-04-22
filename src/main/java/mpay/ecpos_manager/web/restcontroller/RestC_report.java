@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.codehaus.jettison.json.JSONArray;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @RestController
 @RequestMapping("/rc/report")
@@ -30,45 +34,52 @@ public class RestC_report {
 	DataSource dataSource;
 	
 	@RequestMapping(value =  "/get_sales_summary" , method = { RequestMethod.POST }, headers = "Accept=application/json")
-	private String getSalesSummary(@RequestBody String dataObj) {
+	private String getSalesSummary(@RequestBody String dataObj, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jObjectResult = new JSONObject();
 		JSONArray JARY = new JSONArray();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			JSONObject jsonObj = new JSONObject(dataObj);
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-			Date startDate = dateFormat.parse(jsonObj.getString("startDate").replaceAll("T", " ").replaceAll("Z", ""));
-			Date endDate = dateFormat.parse(jsonObj.getString("endDate").replaceAll("T", " ").replaceAll("Z", ""));
-
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement("select dt.name as dt,pm,trans.count,trans.amount from device_type dt " + 
-					"left join ( " + 
-					"select trans.device_type,pm.name as pm,trans.count,trans.amount from payment_method pm " + 
-					"left join ( " + 
-					"select cd.device_type,t.payment_method,count(t.id) as count,sum(t.transaction_amount) as amount " + 
-					"from transaction t " + 
-					"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
-					"inner join check_detail cd on cd.check_id = c.id and cd.check_number = c.check_number " + 
-					"where t.transaction_type = 1 and t.transaction_status = 3 and t.created_date >= ? and t.created_date <= ? " + 
-					"group by cd.device_type,t.payment_method) trans on trans.payment_method = pm.id) trans on trans.device_type = dt.id " + 
-					"order by dt.id;");
-			stmt.setTimestamp(1, new java.sql.Timestamp(startDate.getTime()));
-			stmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject jObject = new JSONObject();
-				jObject.put("deviceType", rs.getString("dt"));
-				jObject.put("paymentMethod", rs.getString("pm") == null ? "-" : rs.getString("pm"));
-				jObject.put("totalCount", rs.getInt("count") == 0 ? "-" : rs.getInt("count"));
-				jObject.put("totalAmount", rs.getBigDecimal("amount") == null ? "-" : String.format("%.2f", rs.getBigDecimal("amount")));
-				
-				JARY.put(jObject);
+			if (user != null) {
+				JSONObject jsonObj = new JSONObject(dataObj);
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				Date startDate = dateFormat.parse(jsonObj.getString("startDate").replaceAll("T", " ").replaceAll("Z", ""));
+				Date endDate = dateFormat.parse(jsonObj.getString("endDate").replaceAll("T", " ").replaceAll("Z", ""));
+	
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("select dt.name as dt,pm,trans.count,trans.amount from device_type dt " + 
+						"left join ( " + 
+						"select trans.device_type,pm.name as pm,trans.count,trans.amount from payment_method pm " + 
+						"left join ( " + 
+						"select cd.device_type,t.payment_method,count(t.id) as count,sum(t.transaction_amount) as amount " + 
+						"from transaction t " + 
+						"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
+						"inner join check_detail cd on cd.check_id = c.id and cd.check_number = c.check_number " + 
+						"where t.transaction_type = 1 and t.transaction_status = 3 and t.created_date >= ? and t.created_date <= ? " + 
+						"group by cd.device_type,t.payment_method) trans on trans.payment_method = pm.id) trans on trans.device_type = dt.id " + 
+						"order by dt.id;");
+				stmt.setTimestamp(1, new java.sql.Timestamp(startDate.getTime()));
+				stmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					JSONObject jObject = new JSONObject();
+					jObject.put("deviceType", rs.getString("dt"));
+					jObject.put("paymentMethod", rs.getString("pm") == null ? "-" : rs.getString("pm"));
+					jObject.put("totalCount", rs.getInt("count") == 0 ? "-" : rs.getInt("count"));
+					jObject.put("totalAmount", rs.getBigDecimal("amount") == null ? "-" : String.format("%.2f", rs.getBigDecimal("amount")));
+					
+					JARY.put(jObject);
+				}
+				jObjectResult.put("data", JARY);
+			} else {
+				response.setStatus(408);
 			}
-			jObjectResult.put("data", JARY);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
 			e.printStackTrace();

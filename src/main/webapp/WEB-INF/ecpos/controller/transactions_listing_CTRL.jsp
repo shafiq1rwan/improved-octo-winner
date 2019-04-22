@@ -1,7 +1,19 @@
 <script>
 	app.controller('transactions_listing_CTRL', function($scope, $http, $window, $routeParams, $location, $compile) {
 		$scope.initiation = function() {
-			$scope.getTransactionsList();
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getTransactionsList();
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
 		}
 		
 		$scope.getTransactionsList = function() {
@@ -9,8 +21,8 @@
 				"ajax" : {
 					"url" : "${pageContext.request.contextPath}/rc/transaction/get_transaction_list",
 					"error" : function() {
-						alert("Tranasction list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}";
 					}
 				},
 				"searching": false,

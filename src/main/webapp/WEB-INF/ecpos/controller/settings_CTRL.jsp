@@ -8,8 +8,20 @@
 		$("#terminalList").hide();
 		
 		$scope.initiation = function() {
-			$scope.getPrinterList();
-			$scope.getTerminalList();
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getPrinterList();
+					$scope.getTerminalList();
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
 		}
 		
 		$scope.getPrinterList = function() {
@@ -96,21 +108,20 @@
 					activationKey : $scope.reactivate.activationKey
 				},
 				url : '${pageContext.request.contextPath}/activation'
-			}).then(
-					function(response) {
-						if (response != null && response.data != null
-								&& response.data.resultCode != null) {
-							if (response.data.resultCode == "00") {						
-								$scope.syncSuccess(response.data.resultMessage, 1);							
-							} else {
-								$scope.syncFailed(response.data.resultMessage,  1);
-							}
-						} else {
-							$scope.syncFailed("Invalid server response!", 1);
-						}
-					}, function(error) {
-						$scope.syncFailed("Unable to connect to server!", 1);
-					});
+			}).then(function(response) {
+				if (response != null && response.data != null
+						&& response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage, 1);							
+					} else {
+						$scope.syncFailed(response.data.resultMessage,  1);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!", 1);
+				}
+			}, function(error) {
+				$scope.syncFailed("Unable to connect to server!", 1);
+			});
 		}
 		
 		$scope.savePrinter = function() {

@@ -19,8 +19,13 @@
 		$("#alaCarteModifier").show();
 		$("#back").show();
 		
-		$scope.initiation = function() {
-			$scope.getCategories();
+		$scope.menuInitiation = function() {
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getCategories();
+				}
+			});
 		}
 		
 		$scope.getCategories = function() {	

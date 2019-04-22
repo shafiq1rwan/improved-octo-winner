@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.apache.commons.codec.binary.Base64;
@@ -27,6 +29,8 @@ import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.AesEncryption;
 import mpay.ecpos_manager.general.utility.QRGenerate;
+import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @RestController
 @RequestMapping("/rc/configuration")
@@ -43,41 +47,67 @@ public class RestC_configuration {
 	@Value("${CLOUD_BASE_URL}")
 	private String cloudUrl;
 	
+	@RequestMapping(value = {"/session_checking"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public String ecposSessionChecking(HttpServletRequest request) {
+		JSONObject jsonResult = new JSONObject();
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				jsonResult.put("responseCode", "00");
+			} else {
+				jsonResult.put("responseCode", "01");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/get_table_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String getTablelist() {
+	public String getTablelist(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-
-			stmt = connection.prepareStatement("SELECT store_table_count FROM store;");
-			rs = stmt.executeQuery();
-
-			if (rs.next()) {
-				int table_count = rs.getInt("store_table_count");
-				
-				JSONArray tableList = new JSONArray();
-				for (int i = 0; i < table_count; i++) {
-
-					stmt = connection.prepareStatement("SELECT COUNT(*) AS count FROM `check` WHERE table_number = ? AND check_status IN (1,2)");
-					stmt.setInt(1, i + 1);
-					rs2 = stmt.executeQuery();
+			if (user != null) {
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("SELECT store_table_count FROM store;");
+				rs = stmt.executeQuery();
+	
+				if (rs.next()) {
+					int table_count = rs.getInt("store_table_count");
 					
-					if (rs2.next()) {
-						String data = Integer.toString(i + 1) + "," + rs2.getString("count");
-						tableList.put(data);
+					JSONArray tableList = new JSONArray();
+					for (int i = 0; i < table_count; i++) {
+	
+						stmt = connection.prepareStatement("SELECT COUNT(*) AS count FROM `check` WHERE table_number = ? AND check_status IN (1,2)");
+						stmt.setInt(1, i + 1);
+						rs2 = stmt.executeQuery();
+						
+						if (rs2.next()) {
+							String data = Integer.toString(i + 1) + "," + rs2.getString("count");
+							tableList.put(data);
+						}
 					}
+					jsonResult.put(Constant.TABLE_LIST, tableList);
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "NO TABLE FOUND, PLEASE TRY AGAIN");
 				}
-				jsonResult.put(Constant.TABLE_LIST, tableList);
-				jsonResult.put(Constant.RESPONSE_CODE, "00");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			} else {
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "NO TABLE FOUND, PLEASE TRY AGAIN");
+				response.setStatus(408);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -97,34 +127,41 @@ public class RestC_configuration {
 	}
 	
 	@RequestMapping(value = { "/get_terminal_list/{terminalId}" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String getTerminallist(@PathVariable("terminalId") String terminalId) {
+	public String getTerminallist(@PathVariable("terminalId") String terminalId, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray JARY = new JSONArray();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			
-			if (terminalId.equals("all")) {
-				stmt = connection.prepareStatement("select * from terminal;");
-			} else {				
-				stmt = connection.prepareStatement("select * from terminal where id = ?;");
-				stmt.setString(1, terminalId);
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				if (terminalId.equals("all")) {
+					stmt = connection.prepareStatement("select * from terminal;");
+				} else {				
+					stmt = connection.prepareStatement("select * from terminal where id = ?;");
+					stmt.setString(1, terminalId);
+				}
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					JSONObject jObject = new JSONObject();
+					jObject.put("id", rs.getString("id"));
+					jObject.put("name", rs.getString("name"));
+					jObject.put("serialNo", rs.getString("serial_number"));
+					jObject.put("wifiIP", rs.getString("wifi_IP"));
+					jObject.put("wifiPort", rs.getString("wifi_Port"));
+					JARY.put(jObject);
+				}
+				jsonResult.put("terminals", JARY);
+			} else {
+				response.setStatus(408);
 			}
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject jObject = new JSONObject();
-				jObject.put("id", rs.getString("id"));
-				jObject.put("name", rs.getString("name"));
-				jObject.put("serialNo", rs.getString("serial_number"));
-				jObject.put("wifiIP", rs.getString("wifi_IP"));
-				jObject.put("wifiPort", rs.getString("wifi_Port"));
-				JARY.put(jObject);
-			}
-			jsonResult.put("terminals", JARY);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -142,33 +179,40 @@ public class RestC_configuration {
 	}
 	
 	@RequestMapping(value = { "/get_printer_detail" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String getPrinterList() {
+	public String getPrinterList(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			String getPrinterListParams[] = { printerExe, "1", "2", "2", "2", "2" };
-			Process executePrinter = Runtime.getRuntime().exec(getPrinterListParams);
-			BufferedReader input = new BufferedReader(new InputStreamReader(executePrinter.getInputStream()));
-
-			StringBuilder responseString = new StringBuilder();
-
-			while (input.readLine() != null) {
-				responseString.append(input.readLine());
-			}
-
-			JSONObject jsonObj = new JSONObject(responseString.toString());
-
-			if (jsonObj.has("PortInfoList")) {
-				JSONArray portInfoList = jsonObj.getJSONArray("PortInfoList");
-//				JSONArray paperSizeList = jsonObj.getJSONArray("PaperSizeList");
-
-				jsonResult.put("portInfoList", portInfoList);
-//				jsonResult.put("PaperSizeList", paperSizeList);
-				
-				JSONObject selectedPrinter = getSelectedPrinter();
-				if (selectedPrinter.length() > 0) {
-					jsonResult.put("selectedPrinter", selectedPrinter.getString("portName"));
+			if (user != null) {
+				String getPrinterListParams[] = { printerExe, "1", "2", "2", "2", "2" };
+				Process executePrinter = Runtime.getRuntime().exec(getPrinterListParams);
+				BufferedReader input = new BufferedReader(new InputStreamReader(executePrinter.getInputStream()));
+	
+				StringBuilder responseString = new StringBuilder();
+	
+				while (input.readLine() != null) {
+					responseString.append(input.readLine());
 				}
+	
+				JSONObject jsonObj = new JSONObject(responseString.toString());
+	
+				if (jsonObj.has("PortInfoList")) {
+					JSONArray portInfoList = jsonObj.getJSONArray("PortInfoList");
+	//				JSONArray paperSizeList = jsonObj.getJSONArray("PaperSizeList");
+	
+					jsonResult.put("portInfoList", portInfoList);
+	//				jsonResult.put("PaperSizeList", paperSizeList);
+					
+					JSONObject selectedPrinter = getSelectedPrinter();
+					if (selectedPrinter.length() > 0) {
+						jsonResult.put("selectedPrinter", selectedPrinter.getString("portName"));
+					}
+				}
+			} else {
+				response.setStatus(408);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -178,46 +222,53 @@ public class RestC_configuration {
 	}
 	
 	@RequestMapping(value = { "/open_cash_drawer" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String openCashDrawer() {
+	public String openCashDrawer(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
+			if (user != null) {
+				connection = dataSource.getConnection();
+					
+				stmt = connection.prepareStatement("select * from printer;");
+				rs = stmt.executeQuery();
 				
-			stmt = connection.prepareStatement("select * from printer;");
-			rs = stmt.executeQuery();
-			
-			if (rs.next()) {
-				String openDrawerParams[] = { printerExe, "2", rs.getString("model_name"), rs.getString("paper_size"), rs.getString("port_name"), "2" };
-				Process openDrawer = Runtime.getRuntime().exec(openDrawerParams);
-				BufferedReader input = new BufferedReader(new InputStreamReader(openDrawer.getInputStream()));
-			
-				StringBuilder responseString = new StringBuilder();
-
-				while (input.readLine() != null) {
-					responseString.append(input.readLine());
-				}
-
-				JSONObject jsonObj = new JSONObject(responseString.toString());
-
-				if (jsonObj.has("ResponseCode") && jsonObj.has("ResponseMessage")) {
-					if (jsonObj.getInt("ResponseCode") == 1) {
-						jsonResult.put(Constant.RESPONSE_CODE, "00");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+				if (rs.next()) {
+					String openDrawerParams[] = { printerExe, "2", rs.getString("model_name"), rs.getString("paper_size"), rs.getString("port_name"), "2" };
+					Process openDrawer = Runtime.getRuntime().exec(openDrawerParams);
+					BufferedReader input = new BufferedReader(new InputStreamReader(openDrawer.getInputStream()));
+				
+					StringBuilder responseString = new StringBuilder();
+	
+					while (input.readLine() != null) {
+						responseString.append(input.readLine());
+					}
+	
+					JSONObject jsonObj = new JSONObject(responseString.toString());
+	
+					if (jsonObj.has("ResponseCode") && jsonObj.has("ResponseMessage")) {
+						if (jsonObj.getInt("ResponseCode") == 1) {
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+						} else {
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Error Occur While Open Drawer");
+						}
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Error Occur While Open Drawer");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
 					}
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "No Connected Printer Found");
 				}
 			} else {
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "No Connected Printer Found");
+				response.setStatus(408);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -226,33 +277,40 @@ public class RestC_configuration {
 	}
 	
 	@RequestMapping(value = { "/save_printer" }, method = { RequestMethod.POST }, produces = "application/json")
-	public void savePrinter(@RequestBody String data) {
+	public void savePrinter(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			
-			JSONObject printer = new JSONObject(data);
+			if (user != null) {
+				connection = dataSource.getConnection();
 				
-			stmt = connection.prepareStatement("select * from printer;");
-			rs = stmt.executeQuery();
-			
-			if (rs.next()) {
-				stmt2 = connection.prepareStatement("update printer set model_name = ?, port_name = ?, paper_size = ?;");
-				stmt2.setString(1, printer.getString("modelName"));
-				stmt2.setString(2, printer.getString("portName"));
-				stmt2.setString(3, printer.getString("paperSize"));
-				stmt2.executeUpdate();
+				JSONObject printer = new JSONObject(data);
+					
+				stmt = connection.prepareStatement("select * from printer;");
+				rs = stmt.executeQuery();
+				
+				if (rs.next()) {
+					stmt2 = connection.prepareStatement("update printer set model_name = ?, port_name = ?, paper_size = ?;");
+					stmt2.setString(1, printer.getString("modelName"));
+					stmt2.setString(2, printer.getString("portName"));
+					stmt2.setString(3, printer.getString("paperSize"));
+					stmt2.executeUpdate();
+				} else {
+					stmt2 = connection.prepareStatement("insert into printer (model_name, port_name, paper_size) values (?,?,?)");
+					stmt2.setString(1, printer.getString("modelName"));
+					stmt2.setString(2, printer.getString("portName"));
+					stmt2.setString(3, printer.getString("paperSize"));
+					stmt2.executeUpdate();
+				}
 			} else {
-				stmt2 = connection.prepareStatement("insert into printer (model_name, port_name, paper_size) values (?,?,?)");
-				stmt2.setString(1, printer.getString("modelName"));
-				stmt2.setString(2, printer.getString("portName"));
-				stmt2.setString(3, printer.getString("paperSize"));
-				stmt2.executeUpdate();
+				response.setStatus(408);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -271,7 +329,7 @@ public class RestC_configuration {
 	}
 	
 	@RequestMapping(value = { "/save_terminal" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String saveTerminal(@RequestBody String data) {
+	public String saveTerminal(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -279,74 +337,81 @@ public class RestC_configuration {
 		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			connection.setAutoCommit(false);
-			
-			JSONObject terminal = new JSONObject(data);
-			String action = terminal.getString("action");
-			String terminalName = terminal.getString("name");
-			String terminalSerialNo = terminal.getString("serialNo");
-			
-			String terminalWifiIP = null;
-			if (terminal.has("wifiIP")) {
-				terminalWifiIP = terminal.getString("wifiIP");
-			}
-			
-			String terminalWifiPort = null;
-			if (terminal.has("wifiPort")) {
-				terminalWifiPort = terminal.getString("wifiPort");
-			}
-			
-			String terminalId = null;
-			if (action.equals("create")) {
-				stmt = connection.prepareStatement("select * from terminal where name = ? or serial_number = ?;");
-				stmt.setString(1, terminalName);
-				stmt.setString(2, terminalSerialNo);
-			} else if (action.equals("update")) {
-				terminalId = terminal.getString("id");
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
 				
-				stmt = connection.prepareStatement("select * from terminal where (name = ? or serial_number = ?) and id != ?;");
-				stmt.setString(1, terminalName);
-				stmt.setString(2, terminalSerialNo);
-				stmt.setString(3, terminalId);
-			}
-			rs = stmt.executeQuery();
-			
-			if (rs.next()) {
-				jsonResult.put("response_code", "01");
-				jsonResult.put("response_message", "Duplicate Terminal Information");
-				Logger.writeActivity("Duplicate Terminal Information", ECPOS_FOLDER);
-			} else {				
+				JSONObject terminal = new JSONObject(data);
+				String action = terminal.getString("action");
+				String terminalName = terminal.getString("name");
+				String terminalSerialNo = terminal.getString("serialNo");
+				
+				String terminalWifiIP = null;
+				if (terminal.has("wifiIP")) {
+					terminalWifiIP = terminal.getString("wifiIP");
+				}
+				
+				String terminalWifiPort = null;
+				if (terminal.has("wifiPort")) {
+					terminalWifiPort = terminal.getString("wifiPort");
+				}
+				
+				String terminalId = null;
 				if (action.equals("create")) {
-					stmt2 = connection.prepareStatement("insert into terminal (name,serial_number,wifi_IP,wifi_Port) values (?,?,?,?);");
-					stmt2.setString(1, terminalName);
-					stmt2.setString(2, terminalSerialNo);
-					stmt2.setString(3, terminalWifiIP);
-					stmt2.setString(4, terminalWifiPort);
+					stmt = connection.prepareStatement("select * from terminal where name = ? or serial_number = ?;");
+					stmt.setString(1, terminalName);
+					stmt.setString(2, terminalSerialNo);
 				} else if (action.equals("update")) {
-					stmt2 = connection.prepareStatement("update terminal set name = ?,serial_number = ?,wifi_IP = ?,wifi_Port = ? where id = ?;");
-					stmt2.setString(1, terminalName);
-					stmt2.setString(2, terminalSerialNo);
-					stmt2.setString(3, terminalWifiIP);
-					stmt2.setString(4, terminalWifiPort);
-					stmt2.setString(5, terminalId);
+					terminalId = terminal.getString("id");
+					
+					stmt = connection.prepareStatement("select * from terminal where (name = ? or serial_number = ?) and id != ?;");
+					stmt.setString(1, terminalName);
+					stmt.setString(2, terminalSerialNo);
+					stmt.setString(3, terminalId);
 				}
-				int rs2 = stmt2.executeUpdate();
+				rs = stmt.executeQuery();
 				
-				if (rs2 > 0) {
-					connection.commit();
-					jsonResult.put("response_code", "00");
-					jsonResult.put("response_message", "Terminal Information has been saved");
-					Logger.writeActivity("Terminal Information has been saved", ECPOS_FOLDER);
-				} else {
-					connection.rollback();
+				if (rs.next()) {
 					jsonResult.put("response_code", "01");
-					jsonResult.put("response_message", "Terminal Information failed to save");
-					Logger.writeActivity("Terminal Information failed to save", ECPOS_FOLDER);
+					jsonResult.put("response_message", "Duplicate Terminal Information");
+					Logger.writeActivity("Duplicate Terminal Information", ECPOS_FOLDER);
+				} else {				
+					if (action.equals("create")) {
+						stmt2 = connection.prepareStatement("insert into terminal (name,serial_number,wifi_IP,wifi_Port) values (?,?,?,?);");
+						stmt2.setString(1, terminalName);
+						stmt2.setString(2, terminalSerialNo);
+						stmt2.setString(3, terminalWifiIP);
+						stmt2.setString(4, terminalWifiPort);
+					} else if (action.equals("update")) {
+						stmt2 = connection.prepareStatement("update terminal set name = ?,serial_number = ?,wifi_IP = ?,wifi_Port = ? where id = ?;");
+						stmt2.setString(1, terminalName);
+						stmt2.setString(2, terminalSerialNo);
+						stmt2.setString(3, terminalWifiIP);
+						stmt2.setString(4, terminalWifiPort);
+						stmt2.setString(5, terminalId);
+					}
+					int rs2 = stmt2.executeUpdate();
+					
+					if (rs2 > 0) {
+						connection.commit();
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "Terminal Information has been saved");
+						Logger.writeActivity("Terminal Information has been saved", ECPOS_FOLDER);
+					} else {
+						connection.rollback();
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "Terminal Information failed to save");
+						Logger.writeActivity("Terminal Information failed to save", ECPOS_FOLDER);
+					}
 				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
 			}
-			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -365,7 +430,7 @@ public class RestC_configuration {
 	}
 	
 	@RequestMapping(value = { "/remove_terminal" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String removeTerminal(@RequestBody String data) {
+	public String removeTerminal(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -373,39 +438,46 @@ public class RestC_configuration {
 		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			connection.setAutoCommit(false);
-			
-			String terminalId = new JSONObject(data).getString("id");
-			
-			stmt = connection.prepareStatement("select * from terminal where id = ?;");
-			stmt.setString(1, terminalId);
-			rs = stmt.executeQuery();
-			
-			if (rs.next()) {
-				stmt2 = connection.prepareStatement("delete from terminal where id = ?;");
-				stmt2.setString(1, terminalId);
-				int rs2 = stmt2.executeUpdate();
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
 				
-				if (rs2 > 0) {
-					connection.commit();
-					jsonResult.put("response_code", "00");
-					jsonResult.put("response_message", "Terminal has been removed");
-					Logger.writeActivity("Terminal has been removed", ECPOS_FOLDER);
+				String terminalId = new JSONObject(data).getString("id");
+				
+				stmt = connection.prepareStatement("select * from terminal where id = ?;");
+				stmt.setString(1, terminalId);
+				rs = stmt.executeQuery();
+				
+				if (rs.next()) {
+					stmt2 = connection.prepareStatement("delete from terminal where id = ?;");
+					stmt2.setString(1, terminalId);
+					int rs2 = stmt2.executeUpdate();
+					
+					if (rs2 > 0) {
+						connection.commit();
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "Terminal has been removed");
+						Logger.writeActivity("Terminal has been removed", ECPOS_FOLDER);
+					} else {
+						connection.rollback();
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "Terminal failed to remove");
+						Logger.writeActivity("Terminal failed to remove", ECPOS_FOLDER);
+					}
 				} else {
 					connection.rollback();
 					jsonResult.put("response_code", "01");
-					jsonResult.put("response_message", "Terminal failed to remove");
-					Logger.writeActivity("Terminal failed to remove", ECPOS_FOLDER);
+					jsonResult.put("response_message", "Terminal Not Found");
+					Logger.writeActivity("Terminal NOT Found", ECPOS_FOLDER);
 				}
+				connection.setAutoCommit(true);
 			} else {
-				connection.rollback();
-				jsonResult.put("response_code", "01");
-				jsonResult.put("response_message", "Terminal Not Found");
-				Logger.writeActivity("Terminal NOT Found", ECPOS_FOLDER);
+				response.setStatus(408);
 			}
-			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -424,7 +496,7 @@ public class RestC_configuration {
 	}
 
 	@RequestMapping(value = { "/generate_qr" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String generateQR(@RequestBody String data) {
+	public String generateQR(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -433,79 +505,86 @@ public class RestC_configuration {
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			
-			JSONObject jsonRequest = new JSONObject(data); 
-			
-			if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo")) {
-				String tableNo = jsonRequest.getString("tableNo");
-				String checkNo = jsonRequest.getString("checkNo");
-				String brandId = null;
-				String storeId = null;
+			if (user != null) {
+				connection = dataSource.getConnection();
 				
-				stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BRAND_ID';");
-				rs = stmt.executeQuery();
+				JSONObject jsonRequest = new JSONObject(data); 
 				
-				if (rs.next()) {
-					brandId = rs.getString("value");
+				if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo")) {
+					String tableNo = jsonRequest.getString("tableNo");
+					String checkNo = jsonRequest.getString("checkNo");
+					String brandId = null;
+					String storeId = null;
 					
-					stmt.close();
-					stmt = connection.prepareStatement("select * from store order by id desc;");
-					rs2 = stmt.executeQuery();
+					stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BRAND_ID';");
+					rs = stmt.executeQuery();
 					
-					if (rs2.next()) {
-						storeId = rs2.getString("id");
+					if (rs.next()) {
+						brandId = rs.getString("value");
 						
 						stmt.close();
-						stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD QR ENCRYPT KEY';");
-						rs3 = stmt.executeQuery();
+						stmt = connection.prepareStatement("select * from store order by id desc;");
+						rs2 = stmt.executeQuery();
 						
-						if (rs3.next()) {
-							String encryptKey = rs3.getString("value");
+						if (rs2.next()) {
+							storeId = rs2.getString("id");
 							
-							String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+							stmt.close();
+							stmt = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD QR ENCRYPT KEY';");
+							rs3 = stmt.executeQuery();
 							
-							String delimiter = "|;";
-							String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp;
-							
-							String token = AesEncryption.encrypt(encryptKey, tokenValue);
-							
-							if (!token.equals(null)) {
-								String QRUrl = cloudUrl + "order/" + token;
-								byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
-								byte[] encoded = new Base64().encode(QRImageByte);
-								String QRImage = "data:image/jpg;base64," + new String(encoded);
-								jsonResult.put("QRImage", QRImage);
+							if (rs3.next()) {
+								String encryptKey = rs3.getString("value");
 								
-								jsonResult.put("response_code", "00");
-								jsonResult.put("response_message", "QR image is generated");
-								Logger.writeActivity("QR image is generated", ECPOS_FOLDER);
-								Logger.writeActivity(QRImage, ECPOS_FOLDER);
+								String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+								
+								String delimiter = "|;";
+								String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp;
+								
+								String token = AesEncryption.encrypt(encryptKey, tokenValue);
+								
+								if (!token.equals(null)) {
+									String QRUrl = cloudUrl + "order/" + token;
+									byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
+									byte[] encoded = new Base64().encode(QRImageByte);
+									String QRImage = "data:image/jpg;base64," + new String(encoded);
+									jsonResult.put("QRImage", QRImage);
+									
+									jsonResult.put("response_code", "00");
+									jsonResult.put("response_message", "QR image is generated");
+									Logger.writeActivity("QR image is generated", ECPOS_FOLDER);
+									Logger.writeActivity(QRImage, ECPOS_FOLDER);
+								} else {
+									jsonResult.put("response_code", "01");
+									jsonResult.put("response_message", "Token Failed To Generate");
+									Logger.writeActivity("Token Failed To Generate", ECPOS_FOLDER);
+								}
 							} else {
 								jsonResult.put("response_code", "01");
-								jsonResult.put("response_message", "Token Failed To Generate");
-								Logger.writeActivity("Token Failed To Generate", ECPOS_FOLDER);
+								jsonResult.put("response_message", "BYOD QR Encrypt Key Not Found");
+								Logger.writeActivity("BYOD QR Encrypt Key Not Found", ECPOS_FOLDER);
 							}
 						} else {
 							jsonResult.put("response_code", "01");
-							jsonResult.put("response_message", "BYOD QR Encrypt Key Not Found");
-							Logger.writeActivity("BYOD QR Encrypt Key Not Found", ECPOS_FOLDER);
+							jsonResult.put("response_message", "Store Id Not Found");
+							Logger.writeActivity("Store Id Not Found", ECPOS_FOLDER);
 						}
 					} else {
 						jsonResult.put("response_code", "01");
-						jsonResult.put("response_message", "Store Id Not Found");
-						Logger.writeActivity("Store Id Not Found", ECPOS_FOLDER);
+						jsonResult.put("response_message", "Brand Id Not Found");
+						Logger.writeActivity("Brand Id Not Found", ECPOS_FOLDER);
 					}
 				} else {
 					jsonResult.put("response_code", "01");
-					jsonResult.put("response_message", "Brand Id Not Found");
-					Logger.writeActivity("Brand Id Not Found", ECPOS_FOLDER);
+					jsonResult.put("response_message", "Table No or Check No Not Found");
+					Logger.writeActivity("Table No or Check No Not Found", ECPOS_FOLDER);
 				}
 			} else {
-				jsonResult.put("response_code", "01");
-				jsonResult.put("response_message", "Table No or Check No Not Found");
-				Logger.writeActivity("Table No or Check No Not Found", ECPOS_FOLDER);
+				response.setStatus(408);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);

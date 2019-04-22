@@ -1,16 +1,23 @@
 <script>
 	app.controller('take_away_order_CTRL', function($scope, $http, $routeParams, $window, $location, $route) {
 		$scope.initiation = function() {
-			$scope.create_new_check();
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.create_new_check();
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
 		}
 		
 		$scope.create_new_check = function() {
-			var jsonData = JSON.stringify({
-				"table_no" :  null,
-				"order_type" : "take away"
-			});
-			
-			$http.post("${pageContext.request.contextPath}/rc/check/create", jsonData)
+			$http.post("${pageContext.request.contextPath}/rc/check/create/take_away")
 			.then(function(response) {
 				if (response.data.response_code === "00") {
 					$scope.redirect_to_check_detail(response.data.check_no);
@@ -24,7 +31,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/logout";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 				

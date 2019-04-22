@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
@@ -64,20 +63,20 @@ public class EcposManagerController {
 		Logger.writeActivity("----------- ECPOS AUTHENTICATION START ---------", ECPOS_FOLDER);
 		ModelAndView model = new ModelAndView();
 		HttpSession session = request.getSession();
-		UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
 
 		if (user != null) {
 			model.setViewName("ecpos/home");
 		} else {
 			try {
-				WebComponents webComponent = new WebComponents();
-				UserAuthenticationModel loginUser = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
+				user = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
 				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 				
-				if (loginUser != null) {
+				if (user != null) {
 					session.setMaxInactiveInterval(0);
-					session.setAttribute("session_user", loginUser);
+					session.setAttribute("session_user", user);
 					model.setViewName("redirect:" + "/#");
 				} else if(activationInfo.has("activationId") && activationInfo.getString("activationId").equals("")) {
 					model.addObject("http_message", "Activation is required");
@@ -177,8 +176,6 @@ public class EcposManagerController {
 		model.setViewName("ecpos/views/settings");
 		return model;
 	}
-	
-	
 	
 	
 //	// USER - SHOW SALES

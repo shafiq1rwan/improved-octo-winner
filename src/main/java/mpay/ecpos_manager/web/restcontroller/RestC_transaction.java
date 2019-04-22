@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.Calendar;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.codehaus.jettison.json.JSONArray;
@@ -43,47 +44,54 @@ public class RestC_transaction {
 	QR iposQR;
 	
 	@RequestMapping(value = { "/get_transaction_list" }, method = { RequestMethod.GET }, produces = "application/json")
-	public String getTransactionList() {
+	public String getTransactionList(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray jary = new JSONArray();
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			
-			stmt = connection.prepareStatement("select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, " + 
-					"pt.name as payment_type,case when terminal.name is null then '-' else terminal.name end as terminal, " + 
-					"t.transaction_amount,tss.name as transaction_status, " + 
-					"case when t.transaction_date is null then t.created_date else t.transaction_date end as transaction_date  " + 
-					"from transaction t " + 
-					"inner join staff s on s.id = t.staff_id " + 
-					"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
-					"inner join transaction_type tt on tt.id = t.transaction_type " + 
-					"inner join payment_method pm on pm.id = t.payment_method " + 
-					"inner join payment_type pt on pt.id = t.payment_type " + 
-					"left join terminal on terminal.serial_number = t.terminal_serial_number " + 
-					"inner join transaction_settlement_status tss on tss.id = t.transaction_status " + 
-					"order by t.transaction_date desc;");
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				JSONObject transaction = new JSONObject();
-				transaction.put("id", rs.getString("id"));
-				transaction.put("staffName", rs.getString("staff_name"));
-				transaction.put("checkNumber", rs.getString("check_number"));
-				transaction.put("transactionType", rs.getString("transaction_type"));
-				transaction.put("paymentMethod", rs.getString("payment_method"));
-				transaction.put("paymentType", rs.getString("payment_type"));
-				transaction.put("terminal", rs.getString("terminal"));
-				transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
-				transaction.put("transactionStatus", rs.getString("transaction_status"));
-				transaction.put("transactionDate", rs.getString("transaction_date"));
+			if (user != null) {
+				connection = dataSource.getConnection();
 				
-				jary.put(transaction);
+				stmt = connection.prepareStatement("select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, " + 
+						"pt.name as payment_type,case when terminal.name is null then '-' else terminal.name end as terminal, " + 
+						"t.transaction_amount,tss.name as transaction_status, " + 
+						"case when t.transaction_date is null then t.created_date else t.transaction_date end as transaction_date  " + 
+						"from transaction t " + 
+						"inner join staff s on s.id = t.staff_id " + 
+						"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
+						"inner join transaction_type tt on tt.id = t.transaction_type " + 
+						"inner join payment_method pm on pm.id = t.payment_method " + 
+						"inner join payment_type pt on pt.id = t.payment_type " + 
+						"left join terminal on terminal.serial_number = t.terminal_serial_number " + 
+						"inner join transaction_settlement_status tss on tss.id = t.transaction_status " + 
+						"order by t.transaction_date desc;");
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					JSONObject transaction = new JSONObject();
+					transaction.put("id", rs.getString("id"));
+					transaction.put("staffName", rs.getString("staff_name"));
+					transaction.put("checkNumber", rs.getString("check_number"));
+					transaction.put("transactionType", rs.getString("transaction_type"));
+					transaction.put("paymentMethod", rs.getString("payment_method"));
+					transaction.put("paymentType", rs.getString("payment_type"));
+					transaction.put("terminal", rs.getString("terminal"));
+					transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
+					transaction.put("transactionStatus", rs.getString("transaction_status"));
+					transaction.put("transactionDate", rs.getString("transaction_date"));
+					
+					jary.put(transaction);
+				}
+				jsonResult.put("data", jary);
+			} else {
+				response.setStatus(408);
 			}
-			jsonResult.put("data", jary);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -101,7 +109,7 @@ public class RestC_transaction {
 	}
 	
 	@RequestMapping(value = { "/get_accumulated_amount" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String getAccumulatedAmount(@RequestBody String data) {
+	public String getAccumulatedAmount(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		BigDecimal accumulatedAmount = new BigDecimal("0.00");
 		BigDecimal itemAmount = new BigDecimal("0.00");
@@ -111,42 +119,48 @@ public class RestC_transaction {
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
 		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
 		try {
-			connection = dataSource.getConnection();
-			
-			JSONArray checkDetailIdArray = new JSONObject(data).getJSONArray("checkDetailIdArray");
-			
-			for (int i = 0; i < checkDetailIdArray.length(); i++) {
-				long checkDetailId = checkDetailIdArray.getLong(i);
+			if (user != null) {
+				connection = dataSource.getConnection();
 				
-				stmt = connection.prepareStatement("select * from check_detail where id = ?;");
-				stmt.setLong(1, checkDetailId);
-				rs = stmt.executeQuery();
+				JSONArray checkDetailIdArray = new JSONObject(data).getJSONArray("checkDetailIdArray");
 				
-				if (rs.next()) {
-					itemAmount = rs.getBigDecimal("total_amount");
+				for (int i = 0; i < checkDetailIdArray.length(); i++) {
+					long checkDetailId = checkDetailIdArray.getLong(i);
 					
-					stmt.close();
-					stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+					stmt = connection.prepareStatement("select * from check_detail where id = ?;");
 					stmt.setLong(1, checkDetailId);
-					rs2 = stmt.executeQuery();
+					rs = stmt.executeQuery();
 					
-					while (rs2.next()) {
-						itemAmount = itemAmount.add(rs2.getBigDecimal("total_amount"));
+					if (rs.next()) {
+						itemAmount = rs.getBigDecimal("total_amount");
 						
+						stmt.close();
 						stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-						stmt.setLong(1, rs2.getLong("id"));
-						rs3 = stmt.executeQuery();
+						stmt.setLong(1, checkDetailId);
+						rs2 = stmt.executeQuery();
 						
-						while (rs3.next()) {
-							itemAmount = itemAmount.add(rs3.getBigDecimal("total_amount"));
+						while (rs2.next()) {
+							itemAmount = itemAmount.add(rs2.getBigDecimal("total_amount"));
+							
+							stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+							stmt.setLong(1, rs2.getLong("id"));
+							rs3 = stmt.executeQuery();
+							
+							while (rs3.next()) {
+								itemAmount = itemAmount.add(rs3.getBigDecimal("total_amount"));
+							}
 						}
 					}
+					accumulatedAmount = accumulatedAmount.add(itemAmount);
 				}
-				accumulatedAmount = accumulatedAmount.add(itemAmount);
+				jsonResult.put("accumulatedAmount", accumulatedAmount);
+			} else {
+				response.setStatus(408);
 			}
-			
-			jsonResult.put("accumulatedAmount", accumulatedAmount);
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
@@ -166,7 +180,7 @@ public class RestC_transaction {
 	}
 	
 	@RequestMapping(value = { "/submit_payment" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String submitPayment(@RequestBody String data, HttpServletRequest request) {
+	public String submitPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -178,246 +192,250 @@ public class RestC_transaction {
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {
-			connection = dataSource.getConnection();
-			
-			JSONObject jsonObj = new JSONObject(data);
-			
-			int paymentType = -1;
-			if (jsonObj.getString("paymentType").equals("full")) {
-				paymentType = 1;
-			} else if (jsonObj.getString("paymentType").equals("partial")) {
-				paymentType = 2;
-			} else if (jsonObj.getString("paymentType").equals("split")) {
-				paymentType = 3;
-			} else if (jsonObj.getString("paymentType").equals("deposit")) {
-				paymentType = 4;
-			} else {
-				Logger.writeActivity("Invalid Payment Type", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Type");
+			if (user != null) {
+				connection = dataSource.getConnection();
 				
-				return jsonResult.toString();
-			}
-			
-			int paymentMethod = -1;
-			int transactionStatus = 1;
-			String terminalSerialNumber = null;
-			if (jsonObj.getString("paymentMethod").equals("Cash")) {
-				paymentMethod = 1;
-				transactionStatus = 3;
-			} else if (jsonObj.getString("paymentMethod").equals("Card")) {
-				paymentMethod = 2;
+				JSONObject jsonObj = new JSONObject(data);
 				
-				if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
-					Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
+				int paymentType = -1;
+				if (jsonObj.getString("paymentType").equals("full")) {
+					paymentType = 1;
+				} else if (jsonObj.getString("paymentType").equals("partial")) {
+					paymentType = 2;
+				} else if (jsonObj.getString("paymentType").equals("split")) {
+					paymentType = 3;
+				} else if (jsonObj.getString("paymentType").equals("deposit")) {
+					paymentType = 4;
+				} else {
+					Logger.writeActivity("Invalid Payment Type", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Type");
 					
 					return jsonResult.toString();
 				}
-				terminalSerialNumber = jsonObj.getString("terminalSerialNo");
-			} else if (jsonObj.getString("paymentMethod").equals("QR")) {
-				paymentMethod = 3;
-			} else {
-				Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Method");
 				
-				return jsonResult.toString();
-			}
-			
-			JSONArray checkDetailIdArray = new JSONArray();
-			if (paymentType == 3) {
-			
-				if (!(jsonObj.has("checkDetailIdArray") && jsonObj.getJSONArray("checkDetailIdArray").length() > 0)) {
-					Logger.writeActivity("Item Not Found For Split Payment", ECPOS_FOLDER);
-					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found For Split Payment");
+				int paymentMethod = -1;
+				int transactionStatus = 1;
+				String terminalSerialNumber = null;
+				if (jsonObj.getString("paymentMethod").equals("Cash")) {
+					paymentMethod = 1;
+					transactionStatus = 3;
+				} else if (jsonObj.getString("paymentMethod").equals("Card")) {
+					paymentMethod = 2;
 					
-					return jsonResult.toString();
-				}
-				checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
-			}
-			
-			if (!(jsonObj.has("paymentAmount") && !jsonObj.getString("paymentAmount").equals(null))) {
-				Logger.writeActivity("Invalid Payment Amount", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Amount");
-				
-				return jsonResult.toString();
-			}
-			BigDecimal paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
-			
-			JSONObject staffDetail = getStaffDetail(user.getUsername());
-			if (staffDetail.length() <= 0) {
-				Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
-				
-				return jsonResult.toString();
-			}
-			long staffId = staffDetail.getLong("id");
-			
-			JSONObject storeDetail = getStoreDetail();
-			if (storeDetail.length() <= 0) {
-				Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
-				
-				return jsonResult.toString();
-			}
-			long storeId = storeDetail.getLong("id");
-
-			String tableNoCondition = "table_number is null";
-			if (jsonObj.getInt("tableNo") > 0) {
-				tableNoCondition = "table_number = " + jsonObj.getInt("tableNo");
-			}
-			
-			stmt = connection.prepareStatement("select * from `check` where " + tableNoCondition + " and check_number = ? and check_status in (1, 2);");
-			stmt.setString(1, jsonObj.getString("checkNo"));
-			rs = stmt.executeQuery();
-			
-			if (rs.next()) {
-				long checkId = rs.getLong("id");
-				String checkNo = rs.getString("check_number");
-				BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
-				BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
-				BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
-				
-				stmt.close();
-				stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
-						"values (?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
-				stmt.setLong(1, staffId);
-				stmt.setLong(2, checkId);
-				stmt.setString(3, checkNo);
-				stmt.setInt(4, 1);
-				stmt.setInt(5, paymentMethod);
-				stmt.setInt(6, paymentType);
-				stmt.setString(7, terminalSerialNumber);
-				stmt.setString(8, "RM");
-				stmt.setBigDecimal(9, paymentAmount);
-				stmt.setInt(10, transactionStatus);
-				int insertTransaction = stmt.executeUpdate();
-				
-				if (insertTransaction > 0) {
-					rs2 = stmt.getGeneratedKeys();
-					
-					if (rs2.next()) {
-						long transactionId = rs2.getLong(1);
-
-						JSONObject terminalWifiIPPort = new JSONObject();
-						JSONObject transactionResult = new JSONObject();
-						JSONObject updateTransactionResult = new JSONObject();
-						
-						boolean paymentFlag = false;
-						
-						if (paymentMethod == 1) {
-							paymentFlag = true;
-							updateTransactionResult.put(Constant.RESPONSE_CODE, "00");
-							updateTransactionResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						} else if (paymentMethod == 2) {
-							terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
-							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
-							
-							if (!uniqueTranNumber.equals(null)) {
-								transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, null);
-								
-								if(transactionResult.has("responseCode")) {
-									if (transactionResult.getString("responseCode").equals("00")) {
-										paymentFlag = true;
-										updateTransactionResult = updateTransactionResult(transactionResult,"card");
-									} else {
-										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
-									}
-								} else {
-									Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
-								}
-							} else {
-								Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
-							}
-						} else if (paymentMethod == 3) {
-							terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
-							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);		
-							String qrContent = jsonObj.getString("qrContent");
-							
-							if (!uniqueTranNumber.equals(null)) {
-								transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort);
-								
-								if(transactionResult.has("responseCode")) {
-									if (transactionResult.getString("responseCode").equals("00")) {
-										paymentFlag = true;
-										updateTransactionResult = updateTransactionResult(transactionResult,"qr");
-									} else {
-										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
-									}
-								} else {
-									Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
-								}
-							} else {
-								Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
-							}
-						}
-						
-						if(paymentFlag) {
-							if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
-								if (updateTransactionResult.getString(Constant.RESPONSE_CODE).equals("00")) {
-									boolean updateCheckResult = false;
-									
-									if (paymentType == 1) {
-										updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
-									} else if (paymentType == 3) {
-										updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount, grandTotalAmount, depositAmount, tenderAmount);
-									} else {
-										updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
-									}
-									
-									if (updateCheckResult) {
-										Logger.writeActivity("Transaction has been successfully performed", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "00");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
-									} else {
-										Logger.writeActivity("Check Failed To Close", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Close");
-									}
-								} else {
-									Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, updateTransactionResult.getString(Constant.RESPONSE_MESSAGE));
-								}
-							} else {
-									Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
-							}
-						}
-
-					} else {
-						Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
+					if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
+						Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
+						
+						return jsonResult.toString();
+					}
+					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
+				} else if (jsonObj.getString("paymentMethod").equals("QR")) {
+					paymentMethod = 3;
+				} else {
+					Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Method");
+					
+					return jsonResult.toString();
+				}
+				
+				JSONArray checkDetailIdArray = new JSONArray();
+				if (paymentType == 3) {
+				
+					if (!(jsonObj.has("checkDetailIdArray") && jsonObj.getJSONArray("checkDetailIdArray").length() > 0)) {
+						Logger.writeActivity("Item Not Found For Split Payment", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found For Split Payment");
+						
+						return jsonResult.toString();
+					}
+					checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
+				}
+				
+				if (!(jsonObj.has("paymentAmount") && !jsonObj.getString("paymentAmount").equals(null))) {
+					Logger.writeActivity("Invalid Payment Amount", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Amount");
+					
+					return jsonResult.toString();
+				}
+				BigDecimal paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
+				
+				JSONObject staffDetail = getStaffDetail(user.getUsername());
+				if (staffDetail.length() <= 0) {
+					Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
+					
+					return jsonResult.toString();
+				}
+				long staffId = staffDetail.getLong("id");
+				
+				JSONObject storeDetail = getStoreDetail();
+				if (storeDetail.length() <= 0) {
+					Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
+					
+					return jsonResult.toString();
+				}
+				long storeId = storeDetail.getLong("id");
+	
+				String tableNoCondition = "table_number is null";
+				if (jsonObj.getInt("tableNo") > 0) {
+					tableNoCondition = "table_number = " + jsonObj.getInt("tableNo");
+				}
+				
+				stmt = connection.prepareStatement("select * from `check` where " + tableNoCondition + " and check_number = ? and check_status in (1, 2);");
+				stmt.setString(1, jsonObj.getString("checkNo"));
+				rs = stmt.executeQuery();
+				
+				if (rs.next()) {
+					long checkId = rs.getLong("id");
+					String checkNo = rs.getString("check_number");
+					BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
+					BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
+					BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
+					
+					stmt.close();
+					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
+							"values (?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
+					stmt.setLong(1, staffId);
+					stmt.setLong(2, checkId);
+					stmt.setString(3, checkNo);
+					stmt.setInt(4, 1);
+					stmt.setInt(5, paymentMethod);
+					stmt.setInt(6, paymentType);
+					stmt.setString(7, terminalSerialNumber);
+					stmt.setString(8, "RM");
+					stmt.setBigDecimal(9, paymentAmount);
+					stmt.setInt(10, transactionStatus);
+					int insertTransaction = stmt.executeUpdate();
+					
+					if (insertTransaction > 0) {
+						rs2 = stmt.getGeneratedKeys();
+						
+						if (rs2.next()) {
+							long transactionId = rs2.getLong(1);
+	
+							JSONObject terminalWifiIPPort = new JSONObject();
+							JSONObject transactionResult = new JSONObject();
+							JSONObject updateTransactionResult = new JSONObject();
+							
+							boolean paymentFlag = false;
+							
+							if (paymentMethod == 1) {
+								paymentFlag = true;
+								updateTransactionResult.put(Constant.RESPONSE_CODE, "00");
+								updateTransactionResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+							} else if (paymentMethod == 2) {
+								terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
+								String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
+								
+								if (!uniqueTranNumber.equals(null)) {
+									transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, null);
+									
+									if(transactionResult.has("responseCode")) {
+										if (transactionResult.getString("responseCode").equals("00")) {
+											paymentFlag = true;
+											updateTransactionResult = updateTransactionResult(transactionResult,"card");
+										} else {
+											Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
+										}
+									} else {
+										Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
+									}
+								} else {
+									Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
+								}
+							} else if (paymentMethod == 3) {
+								terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
+								String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);		
+								String qrContent = jsonObj.getString("qrContent");
+								
+								if (!uniqueTranNumber.equals(null)) {
+									transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort);
+									
+									if(transactionResult.has("responseCode")) {
+										if (transactionResult.getString("responseCode").equals("00")) {
+											paymentFlag = true;
+											updateTransactionResult = updateTransactionResult(transactionResult,"qr");
+										} else {
+											Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
+										}
+									} else {
+										Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
+									}
+								} else {
+									Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
+								}
+							}
+							
+							if(paymentFlag) {
+								if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
+									if (updateTransactionResult.getString(Constant.RESPONSE_CODE).equals("00")) {
+										boolean updateCheckResult = false;
+										
+										if (paymentType == 1) {
+											updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+										} else if (paymentType == 3) {
+											updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount, grandTotalAmount, depositAmount, tenderAmount);
+										} else {
+											updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+										}
+										
+										if (updateCheckResult) {
+											Logger.writeActivity("Transaction has been successfully performed", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "00");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
+										} else {
+											Logger.writeActivity("Check Failed To Close", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Close");
+										}
+									} else {
+										Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, updateTransactionResult.getString(Constant.RESPONSE_MESSAGE));
+									}
+								} else {
+										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
+								}
+							}
+	
+						} else {
+							Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
+						}
+					} else {
+						Logger.writeActivity("Transaction Failed To Insert", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Insert");
 					}
 				} else {
-					Logger.writeActivity("Transaction Failed To Insert", ECPOS_FOLDER);
+					Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Insert");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
 				}
 			} else {
-				Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
+				response.setStatus(408);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -437,7 +455,7 @@ public class RestC_transaction {
 	}
 	
 	@RequestMapping(value = { "/request_settlement" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String requestSettlement(@RequestBody String data, HttpServletRequest request) {
+	public String requestSettlement(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -448,97 +466,103 @@ public class RestC_transaction {
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {
-			connection = dataSource.getConnection();
-			
-			JSONObject staffDetail = getStaffDetail(user.getUsername());
-			if (staffDetail.length() <= 0) {
-				Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
+			if (user != null) {
+				connection = dataSource.getConnection();
 				
-				return jsonResult.toString();
-			}
-			long staffId = staffDetail.getLong("id");
-			
-			JSONObject storeDetail = getStoreDetail();
-			if (storeDetail.length() <= 0) {
-				Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
-				
-				return jsonResult.toString();
-			}
-			long storeId = storeDetail.getLong("id");
-			
-			JSONObject jsonObj = new JSONObject(data);
-			
-			if (jsonObj.has("terminalSerialNo") && jsonObj.has("settlementType")) {
-				String terminalSerialNo = jsonObj.getString("terminalSerialNo");
-				String settlementType = jsonObj.getString("settlementType");
-				
-				//settlement status using transaction status look up
-				stmt = connection.prepareStatement("insert into settlement (staff_id,nii_type,settlement_status,created_date) " + 
-						"values (?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
-				stmt.setLong(1, staffId);
-				stmt.setString(2, settlementType);
-				int insertSettlement = stmt.executeUpdate();
-				
-				if (insertSettlement > 0) {
-					rs = stmt.getGeneratedKeys();
+				JSONObject staffDetail = getStaffDetail(user.getUsername());
+				if (staffDetail.length() <= 0) {
+					Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
 					
-					if (rs.next()) {
-						long settlementId = rs.getLong(1);
+					return jsonResult.toString();
+				}
+				long staffId = staffDetail.getLong("id");
+				
+				JSONObject storeDetail = getStoreDetail();
+				if (storeDetail.length() <= 0) {
+					Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
+					
+					return jsonResult.toString();
+				}
+				long storeId = storeDetail.getLong("id");
+				
+				JSONObject jsonObj = new JSONObject(data);
+				
+				if (jsonObj.has("terminalSerialNo") && jsonObj.has("settlementType")) {
+					String terminalSerialNo = jsonObj.getString("terminalSerialNo");
+					String settlementType = jsonObj.getString("settlementType");
+					
+					//settlement status using transaction status look up
+					stmt = connection.prepareStatement("insert into settlement (staff_id,nii_type,settlement_status,created_date) " + 
+							"values (?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
+					stmt.setLong(1, staffId);
+					stmt.setString(2, settlementType);
+					int insertSettlement = stmt.executeUpdate();
+					
+					if (insertSettlement > 0) {
+						rs = stmt.getGeneratedKeys();
 						
-						JSONObject terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNo);
-						JSONObject settlementResult = iposCard.cardSettlement(settlementId, String.format("%04d", storeId), "card-settlement", settlementType, terminalWifiIPPort);
+						if (rs.next()) {
+							long settlementId = rs.getLong(1);
 							
-						if (settlementResult.getString("responseCode").equals("00")) {
-							if (settlementResult.getJSONObject("settlementResponse").length() > 0) {
-								JSONObject settlementResponse = settlementResult.getJSONObject("settlementResponse");
+							JSONObject terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNo);
+							JSONObject settlementResult = iposCard.cardSettlement(settlementId, String.format("%04d", storeId), "card-settlement", settlementType, terminalWifiIPPort);
 								
-								int settlementStatus = 4;
-								if (settlementResult.getString("responseCode").equals("00")) {
-									settlementStatus = 3;
-								}
-								
-								stmt.close();
-								stmt = connection.prepareStatement("update settlement set settlement_status = ?,response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?, " + 
-										"wifi_port = ?,merchant_info = ?,bank_mid = ?,bank_tid = ?,batch_number = ?,transaction_date = ?,transaction_time = ?, " + 
-										"batch_total = ?, nii = ? where id = ?;");
-								stmt.setInt(1, settlementStatus);
-								stmt.setString(2, settlementResult.getString("responseCode"));
-								stmt.setString(3, settlementResult.getString("responseMessage"));
-								stmt.setString(4, settlementResult.getString("wifiIP"));
-								stmt.setString(5, settlementResult.getString("wifiPort"));
-								stmt.setString(6, settlementResponse.getString("merchantInfo"));
-								stmt.setString(7, settlementResponse.getString("bankMerchantID"));
-								stmt.setString(8, settlementResponse.getString("bankTerminalID"));
-								stmt.setString(9, settlementResponse.getString("batchNumber"));
-								stmt.setString(10, settlementResponse.getString("transactionDate"));
-								stmt.setString(11, settlementResponse.getString("transactionTime"));
-								stmt.setString(12, settlementResponse.getString("batchTotals"));
-								stmt.setString(13, settlementResponse.getString("nii"));
-								stmt.setString(14, settlementResult.getString("settlementId"));
-								int updateSettlement = stmt.executeUpdate();
-								
-								if (updateSettlement > 0) {
-									Logger.writeActivity("Settlement has been successfully performed", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "00");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement has been successfully performed.");
+							if (settlementResult.getString("responseCode").equals("00")) {
+								if (settlementResult.getJSONObject("settlementResponse").length() > 0) {
+									JSONObject settlementResponse = settlementResult.getJSONObject("settlementResponse");
+									
+									int settlementStatus = 4;
+									if (settlementResult.getString("responseCode").equals("00")) {
+										settlementStatus = 3;
+									}
+									
+									stmt.close();
+									stmt = connection.prepareStatement("update settlement set settlement_status = ?,response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?, " + 
+											"wifi_port = ?,merchant_info = ?,bank_mid = ?,bank_tid = ?,batch_number = ?,transaction_date = ?,transaction_time = ?, " + 
+											"batch_total = ?, nii = ? where id = ?;");
+									stmt.setInt(1, settlementStatus);
+									stmt.setString(2, settlementResult.getString("responseCode"));
+									stmt.setString(3, settlementResult.getString("responseMessage"));
+									stmt.setString(4, settlementResult.getString("wifiIP"));
+									stmt.setString(5, settlementResult.getString("wifiPort"));
+									stmt.setString(6, settlementResponse.getString("merchantInfo"));
+									stmt.setString(7, settlementResponse.getString("bankMerchantID"));
+									stmt.setString(8, settlementResponse.getString("bankTerminalID"));
+									stmt.setString(9, settlementResponse.getString("batchNumber"));
+									stmt.setString(10, settlementResponse.getString("transactionDate"));
+									stmt.setString(11, settlementResponse.getString("transactionTime"));
+									stmt.setString(12, settlementResponse.getString("batchTotals"));
+									stmt.setString(13, settlementResponse.getString("nii"));
+									stmt.setString(14, settlementResult.getString("settlementId"));
+									int updateSettlement = stmt.executeUpdate();
+									
+									if (updateSettlement > 0) {
+										Logger.writeActivity("Settlement has been successfully performed", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement has been successfully performed.");
+									} else {
+										Logger.writeActivity("Settlement Failed To Update", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Update");
+									}
 								} else {
-									Logger.writeActivity("Settlement Failed To Update", ECPOS_FOLDER);
 									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Update");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Card Sale Payment Response Not Found");
+									Logger.writeActivity("Card Sale Payment Response Not Found", ECPOS_FOLDER);
 								}
 							} else {
+								Logger.writeActivity("Settlement Failed To Perform", ECPOS_FOLDER);
 								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Card Sale Payment Response Not Found");
-								Logger.writeActivity("Card Sale Payment Response Not Found", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Perform");
 							}
 						} else {
-							Logger.writeActivity("Settlement Failed To Perform", ECPOS_FOLDER);
+							Logger.writeActivity("Settlement Failed To Insert", ECPOS_FOLDER);
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
-							jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Perform");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Insert");
 						}
 					} else {
 						Logger.writeActivity("Settlement Failed To Insert", ECPOS_FOLDER);
@@ -546,14 +570,12 @@ public class RestC_transaction {
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Insert");
 					}
 				} else {
-					Logger.writeActivity("Settlement Failed To Insert", ECPOS_FOLDER);
+					Logger.writeActivity("Settlement Request Info Not Found", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Insert");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Request Info Not Found");
 				}
 			} else {
-				Logger.writeActivity("Settlement Request Info Not Found", ECPOS_FOLDER);
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Request Info Not Found");
+				response.setStatus(408);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);

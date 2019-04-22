@@ -1,7 +1,19 @@
 <script>
 	app.controller('checks_listing_CTRL', function($scope, $http, $window, $routeParams, $location, $compile) {
 		$scope.initiation = function() {
-			$scope.getChecksList();
+			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
+			.then(function(response) {
+				if (response.data.responseCode == "00") {
+					$scope.getChecksList();
+				} else {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}";
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
 		}
 		
 		$scope.getChecksList = function() {
@@ -9,8 +21,8 @@
 				"ajax" : {
 					"url" : "${pageContext.request.contextPath}/rc/check/get_check_list",
 					"error" : function() {
-						alert("Check list failed to display");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}";
 					}
 				},
 				"searching": false,
@@ -40,7 +52,7 @@
 				params = params.replace("take away", "take_away");
 			}
 			console.log(params);
-			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + params)
+			$http.get("${pageContext.request.contextPath}/rc/check/get_all_check_detail/" + params)
 			.then(function(response) {
 				$scope.checkDetail = response.data;
 				
