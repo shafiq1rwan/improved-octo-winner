@@ -109,15 +109,13 @@
 				for (var i = 0; i < $scope.temporaryTiers.length; i++) {
 					if ($scope.temporaryTiers[i].id == $scope.tierDetails.id) {
 						for (var j = 0; j < $scope.temporaryTiers[i].items.length; j++) {
-							if ($scope.temporaryTiers[i].items[j].sequence == j+1) {
-								var index = j+1;
-								var itemId = "#selectedItem"+index;
-								$(itemId).html($scope.temporaryTiers[i].items[j].name.bold());
-								
-								var modifierId = "#selectedModifiers"+index;
-								for (var k = 0; k < $scope.temporaryTiers[i].items[j].modifiers.length; k++) {
-									$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].groupName + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].name + "</div>");
-								}
+							var index = $scope.temporaryTiers[i].items[j].sequence;
+							var itemId = "#selectedItem"+index;
+							$(itemId).html($scope.temporaryTiers[i].items[j].name.bold());
+							
+							var modifierId = "#selectedModifiers"+index;
+							for (var k = 0; k < $scope.temporaryTiers[i].items[j].modifiers.length; k++) {
+								$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].groupName + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].name + "</div>");
 							}
 						}
 					}
@@ -184,6 +182,9 @@
 			$scope.temporaryModifiers = [];
 			
 			$scope.sequence = "";
+			
+			$('#itemQuantity').val(1);
+			$('#alaCarteItemQuantity').val(1);
 		}
 		
 		$scope.addItemQuantity = function() {
@@ -282,20 +283,19 @@
 						$scope.temporaryTiers.push($scope.temporaryTier);
 					}
 				}
-	
+
 				for (var i = 0; i < $scope.temporaryTiers.length; i++) {
 					if ($scope.temporaryTiers[i].id == $scope.temporaryTier.id) {
 						for (var j = 0; j < $scope.temporaryTiers[i].items.length; j++) {
-							if ($scope.temporaryTiers[i].items[j].sequence == j+1) {
-								var index = j+1;
-								var itemId = "#selectedItem"+index;
-								$(itemId).html($scope.temporaryTiers[i].items[j].name.bold());
-								
-								var modifierId = "#selectedModifiers"+index;
-								$(modifierId).html("");
-								for (var k = 0; k < $scope.temporaryTiers[i].items[j].modifiers.length; k++) {
-									$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].groupName + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].name + "</div>");
-								}
+							var index = $scope.temporaryTiers[i].items[j].sequence;
+							var itemId = "#selectedItem"+index;
+							console.log(itemId);
+							$(itemId).html($scope.temporaryTiers[i].items[j].name.bold());
+							
+							var modifierId = "#selectedModifiers"+index;
+							$(modifierId).html("");
+							for (var k = 0; k < $scope.temporaryTiers[i].items[j].modifiers.length; k++) {
+								$(modifierId).append("<div>" + $scope.temporaryTiers[i].items[j].modifiers[k].groupName + ": " + $scope.temporaryTiers[i].items[j].modifiers[k].name + "</div>");
 							}
 						}
 					}
