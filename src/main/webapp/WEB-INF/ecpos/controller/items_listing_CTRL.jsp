@@ -15,7 +15,7 @@
 			},
 			function(response) {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
 		
@@ -35,7 +35,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_menu_items_by_item_type/" + $scope.itemType,
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"searching": false,
@@ -70,7 +70,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_groups/",
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"searching": false,
@@ -116,7 +116,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_items_list/"+modifierGroupId,
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"searching": false,
@@ -155,7 +155,7 @@
 						"url" : "${pageContext.request.contextPath}/rc/menu/get_modifier_groups_by_menu_item/"+itemId+"/"+itemBackendId,
 						"error" : function() {
 							alert("Session TIME OUT");
-							window.location.href = "${pageContext.request.contextPath}";
+							window.location.href = "${pageContext.request.contextPath}/signout";
 						}
 					},
 					"searching": false,
@@ -190,7 +190,7 @@
 						"url" : "${pageContext.request.contextPath}/rc/menu/get_tiers/"+itemId+"/"+itemBackendId,
 						"error" : function() {
 							alert("Session TIME OUT");
-							window.location.href = "${pageContext.request.contextPath}";
+							window.location.href = "${pageContext.request.contextPath}/signout";
 						}
 					},
 					"searching": false,
@@ -223,7 +223,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/menu/get_tier_item_details/"+tierId,
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"searching": false,

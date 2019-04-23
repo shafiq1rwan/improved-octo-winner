@@ -7,7 +7,7 @@
 					$scope.getChecksList();
 				} else {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				}
 			},
 			function(response) {
@@ -22,7 +22,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/check/get_check_list",
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"searching": false,
@@ -51,7 +51,7 @@
 			if (params.includes("take away")) {
 				params = params.replace("take away", "take_away");
 			}
-			console.log(params);
+			
 			$http.get("${pageContext.request.contextPath}/rc/check/get_all_check_detail/" + params)
 			.then(function(response) {
 				$scope.checkDetail = response.data;
@@ -62,6 +62,34 @@
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
+		}
+		
+		$scope.cancelCheck = function(checkNo) {
+			var confirmation = confirm("Confirm to cancel check?");
+			if (confirmation == true) {
+				var jsonData = JSON.stringify({
+					"checkNo" : checkNo
+				});
+				
+				$http.post("${pageContext.request.contextPath}/rc/check/cancel_check", jsonData)
+				.then(function(response) {
+					if (response.data.response_code === "00") {
+						alert("Check has been cancelled.")
+
+						location.reload();
+					} else {
+						if (response.data.response_message != null) {
+							alert(response.data.response_message);
+						} else {
+							alert("Error Occured While Remove Check");
+						}
+					}
+				},
+				function(response) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/signout";
+				});
+			}
 		}
 	});
 </script>

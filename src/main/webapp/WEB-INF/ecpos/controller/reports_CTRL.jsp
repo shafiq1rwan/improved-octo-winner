@@ -17,7 +17,7 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 				$scope.getSalesSummary();
 			} else {
 				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}";
+				window.location.href = "${pageContext.request.contextPath}/signout";
 			}
 		},
 		function(response) {
@@ -47,7 +47,7 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 					"dataType" : "json",
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"ordering" : false,

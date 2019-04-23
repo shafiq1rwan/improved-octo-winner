@@ -7,7 +7,7 @@
 					$scope.getTransactionsList();
 				} else {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				}
 			},
 			function(response) {
@@ -22,7 +22,7 @@
 					"url" : "${pageContext.request.contextPath}/rc/transaction/get_transaction_list",
 					"error" : function() {
 						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}";
+						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
 				},
 				"searching": false,
