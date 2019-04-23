@@ -367,8 +367,10 @@
 					if(type==1){
 						window.location.href = "${pageContext.request.contextPath}/signout";
 					}
-					$scope.getPrinterList();
-					$scope.getTerminalList();
+					else{
+						$scope.getPrinterList();
+						$scope.getTerminalList();
+					}
 				}
 			}
 			$scope.displayDialog(dialogOption);
