@@ -16,7 +16,7 @@
 					$scope.getTerminalList();
 				} else {
 					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}";
+					window.location.href = "${pageContext.request.contextPath}/signout";
 				}
 			},
 			function(response) {
@@ -29,6 +29,7 @@
 			$http.get("${pageContext.request.contextPath}/rc/configuration/get_cash_drawer_setup_info")
 			.then(function (response) {
 				$scope.cashDrawerData = response.data;
+				
 				//if selectedCashDrawer exist
 				if($scope.cashDrawerData.hasOwnProperty("selectedCashDrawer")){
 					$scope.selectedCashDrawer = response.data.selectedCashDrawer;
@@ -44,7 +45,6 @@
 							$scope.selectedPortName = $scope.selectedCashDrawer.port_name;
 						}
 					}
-					
 				}
 			}, function(response) {
 				alert("Session TIME OUT");
@@ -89,11 +89,9 @@
 			});
 		}
 		
-		
 		$scope.saveCashDrawer = function(){
-			if($scope.selectedDeviceManufacturer == null || $scope.selectedPortName == null 
-					|| $scope.selectedDeviceManufacturer == '' || $scope.selectedPortName == ''){
-				console.log("Info Not full")
+			if($scope.selectedDeviceManufacturer == null || $scope.selectedPortName == null || $scope.selectedDeviceManufacturer == '' || $scope.selectedPortName == ''){
+				console.log("Please Select Both Device Manufacturer and Port Name.")
 			} else {
 				console.log($scope.selectedDeviceManufacturer + " " + $scope.selectedPortName)
 				
@@ -102,18 +100,17 @@
 					'device_manufacturer' : $scope.selectedDeviceManufacturer,
 					'port_name' : $scope.selectedPortName
 				});
-				
 				console.log("Saved Printer Data: " + jsonData);
 				
 				$http.post("${pageContext.request.contextPath}/rc/configuration/save_cash_drawer", jsonData)
 				.then(function(response) {
+					alert("Cash Drawer Successfully Set.");
 					$scope.getCashDrawerList();
 				},
 				function(response) {
 					alert("Session TIME OUT");
 					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
-				
 			}
 		}
 		
@@ -165,19 +162,19 @@
 				},
 				url : '${pageContext.request.contextPath}/activation'
 			}).then(function(response) {
-						if (response != null && response.data != null
-								&& response.data.resultCode != null) {
-							if (response.data.resultCode == "00") {						
-								$scope.syncSuccess(response.data.resultMessage, 1);							
-							} else {
-								$scope.syncFailed(response.data.resultMessage,  1);
-							}
-						} else {
-							$scope.syncFailed("Invalid server response!", 1);
-						}
-					}, function(error) {
-						$scope.syncFailed("Unable to connect to server!", 1);
-					});
+				if (response != null && response.data != null
+						&& response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage, 1);							
+					} else {
+						$scope.syncFailed(response.data.resultMessage,  1);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!", 1);
+				}
+			}, function(error) {
+				$scope.syncFailed("Unable to connect to server!", 1);
+			});
 		}
 		
 		$scope.savePrinter = function() {

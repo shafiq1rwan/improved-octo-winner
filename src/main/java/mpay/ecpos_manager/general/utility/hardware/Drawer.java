@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,10 +52,15 @@ public class Drawer {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, response.getString("ResponseMessage"));
 				Logger.writeActivity("OPEN DRAWER SUCCESS", HARDWARE_FOLDER);
-			} else {
+			} 
+			else if(response.getString("ResponseCode").equals("02")) {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, response.getString("ResponseMessage"));
-				Logger.writeActivity("CLOSE DRAWER FAIL", HARDWARE_FOLDER);
+			}
+			else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, response.getString("ResponseMessage"));
+				Logger.writeActivity(response.getString("ResponseMessage"), HARDWARE_FOLDER);
 			}
 		} catch(Exception e) {
 			Logger.writeError(e, "Exception: ", HARDWARE_FOLDER);
@@ -88,6 +94,11 @@ public class Drawer {
 		} catch(Exception e) {
 			Logger.writeError(e, "Exception: ", HARDWARE_FOLDER);
 			e.printStackTrace();
+			try {
+				response.put("ResponseCode", "02");
+				response.put("ResponseMessage", "Exception Occured While Retrieving UniDrawer.exe");
+			} catch (JSONException e1) {
+			}
 		}
 		return response;
 	}
