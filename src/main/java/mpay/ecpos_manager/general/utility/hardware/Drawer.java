@@ -2,19 +2,13 @@ package mpay.ecpos_manager.general.utility.hardware;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.net.URLDecoder;
 
 import javax.sql.DataSource;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import mpay.ecpos_manager.general.constant.Constant;
@@ -28,9 +22,6 @@ public class Drawer {
 	
 	@Autowired
 	DataSource dataSource;
-	
-	@Value("${drawer_exe}")
-	private String drawerExe;
 	
 	public JSONObject openDrawer(String deviceManufacturerName, String portName) {
 		JSONObject jsonResult = new JSONObject();
@@ -73,9 +64,13 @@ public class Drawer {
 		JSONObject response = new JSONObject();
 		
 		try {
-			System.out.println(new ClassPathResource("/UniDrawer_v1.0.exe", this.getClass().getClassLoader()).getFile().getAbsolutePath());
-			Path path = Paths.get(System.getProperty("user.dir"), drawerExe, "UniDrawer_v1.0.exe");
-			Process executeDrawer = Runtime.getRuntime().exec(new String[] {path.toAbsolutePath().toString(), request});
+			String drawerPath = getClass().getClassLoader().getResource("mpay/ecpos_manager/general/utility/hardware/UniDrawer_v1.0.exe").getFile();
+			drawerPath = URLDecoder.decode(drawerPath, "UTF-8");
+			if (drawerPath.startsWith("/")) {
+				drawerPath.substring(1);
+			}
+			
+			Process executeDrawer = Runtime.getRuntime().exec(new String[] {drawerPath, request});
 			executeDrawer.waitFor();
 			
 			BufferedReader input = new BufferedReader(new InputStreamReader(executeDrawer.getInputStream()));
