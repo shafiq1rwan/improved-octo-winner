@@ -2,6 +2,8 @@ package mpay.ecpos_manager.general.utility.hardware;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +13,7 @@ import javax.sql.DataSource;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import mpay.ecpos_manager.general.constant.Constant;
@@ -64,7 +67,9 @@ public class Drawer {
 		JSONObject response = new JSONObject();
 		
 		try {
-			Process executeDrawer = Runtime.getRuntime().exec(drawerExe + " " + request);
+			System.out.println(new ClassPathResource("/UniDrawer_v1.0.exe", this.getClass().getClassLoader()).getFile().getAbsolutePath());
+			Path path = Paths.get(System.getProperty("user.dir"), drawerExe, "UniDrawer_v1.0.exe");
+			Process executeDrawer = Runtime.getRuntime().exec(new String[] {path.toAbsolutePath().toString(), request});
 			executeDrawer.waitFor();
 			
 			BufferedReader input = new BufferedReader(new InputStreamReader(executeDrawer.getInputStream()));
