@@ -111,28 +111,29 @@
 		$scope.enterCalculator = function(id, number) {
 			var amount = document.getElementById(id).innerHTML;
 	
-			if (amount > 999999.99) {
-				//do nothing
-			} else if (amount < 0.00) {
-				alert("Amount cannot be less than 0.00");
-			} else {
-				if (number != -10 && number != 100) {
+			if (amount < 0.00) {
+				alert("Amount should not be less than 0.00");
+			} else if (number != -10) {
+				if (amount.length < 12) {
 					amount = amount + number;
-				}
-	
-				var floatAmount = parseFloat(amount);
-				if (number == -10) {
-					floatAmount = floatAmount / 10;
-				} else {
-					if (amount.length < 10) {
-						if (number == 100) {
-							floatAmount = floatAmount * 100;
-						} else {
-							floatAmount = floatAmount * 10;
-						}
+					
+					var floatAmount = parseFloat(amount);
+					
+					if (number == 00) {
+						floatAmount = floatAmount * 100;
+					} else {
+						floatAmount = floatAmount * 10;
 					}
+					
+					var temp = floatAmount.toFixed(3);
+					temp = temp.substring(0, temp.length - 1);
+					document.getElementById(id).innerHTML = temp;
 				}
-	
+			} else if (number == -10) {
+				var floatAmount = parseFloat(amount);
+				
+				floatAmount = floatAmount / 10;
+				
 				var temp = floatAmount.toFixed(3);
 				temp = temp.substring(0, temp.length - 1);
 				document.getElementById(id).innerHTML = temp;
@@ -186,20 +187,20 @@
 							<%if (user.getStoreType() == 2) {%>
 							if ($scope.orderType == "table") {
 								if ($scope.paymentType == "full") {
-									window.location.href = "${pageContext.request.contextPath}/views/table_order";
+									$location.path("${pageContext.request.contextPath}/table_order");
 								} else {
 									location.reload();
 								}
 							} else if ($scope.orderType == "take_away") {
 								if ($scope.paymentType == "full") {
-									window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+									$location.path("${pageContext.request.contextPath}/take_away_order");
 								} else {
 									location.reload();
 								}
 							}
 							<%} else {%>
 							if ($scope.paymentType == "full") {
-								window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+								$location.path("${pageContext.request.contextPath}/take_away_order");
 							} else {
 								location.reload();
 							}
@@ -335,20 +336,20 @@
 						<%if (user.getStoreType() == 2) {%>
 						if ($scope.orderType == "table") {
 							if ($scope.paymentType == "full") {
-								window.location.href = "${pageContext.request.contextPath}/views/table_order";
+								$location.path("${pageContext.request.contextPath}/table_order");
 							} else {
 								location.reload();
 							}
 						} else if ($scope.orderType == "take_away") {
 							if ($scope.paymentType == "full") {
-								window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+								$location.path("${pageContext.request.contextPath}/take_away_order");
 							} else {
 								location.reload();
 							}
 						}
 						<%} else {%>
 						if ($scope.paymentType == "full") {
-							window.location.href = "${pageContext.request.contextPath}/views/take_away_order";
+							$location.path("${pageContext.request.contextPath}/take_away_order");
 						} else {
 							location.reload();
 						}

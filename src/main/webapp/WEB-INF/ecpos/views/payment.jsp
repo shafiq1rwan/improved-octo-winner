@@ -26,6 +26,46 @@
 		overflow-y: scroll;
 	}
 }
+
+.calculator {
+  background: #f6f6f6;
+  width: 100%;
+  height: 45px;
+  border-radius: 5px;
+  font-size: medium;
+  border: 2px solid #f6f6f6;
+}
+
+.calculator:hover:enabled {
+  background-color: #00fa9a;
+  color: white;
+  border-color: #00fa9a;
+}
+
+.calculator:hover:disabled {
+  background-color: #dddddd;
+  cursor: not-allowed;
+}
+
+.calculatoraction {
+  background: #f6f6f6;
+  width: 400%;
+  height: 95px;
+  border-radius: 5px;
+  font-size: medium;
+  border: 2px solid #f6f6f6;
+}
+
+.calculatoraction:hover:enabled {
+  background-color: #00fa9a;
+  color: white;
+  border-color: #00fa9a;
+}
+
+.calculatoraction:hover:disabled {
+  background-color: #dddddd;
+  cursor: not-allowed;
+}
 </style>
 </head>
 
@@ -98,9 +138,9 @@
 									</div>
 								</div>
 								<div style="padding: 20px;">
-										<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPayment('QR')">
-											<img ng-src="${pageContext.request.contextPath}/img/icon/qr-code.png" alt="QR Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
-										</div>
+									<div style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPayment('QR')">
+										<img ng-src="${pageContext.request.contextPath}/img/icon/qr-code.png" alt="QR Payment" style="max-width: 200px; max-height: 125px; padding-top: 8%; padding-bottom: 8%;" />
+									</div>
 								</div>
 							</div>
 						</div>
@@ -134,48 +174,55 @@
 									<label>Tender Amount</label>
 									<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
 										<div style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
-											<hr style="border: 1px solid #eee;">
+											<hr style="border: none; height:2px; color: black; background-color: black;">
 											<div class="row">
-												<div class="col-sm-3" style="text-align: center; font-size: 20px; color: grey;">
+												<div class="col-sm-3" style="text-align: center; font-size: 25px; color: black;">
 													<label>RM</label>
 												</div>
-												<div class="col-sm-9" style="text-align: right; padding-right: 70px; font-size: 20px; color: grey;">
+												<div class="col-sm-9" style="text-align: right; padding-right: 25px; font-size: 25px; color: black;">
 													<label id="amount">0.00</label>
 												</div>
 											</div>
-											<table class="table table-borderless">
-												<tbody>
-													<tr style="border-top: 2px solid #eee;">
-														<td><input id="seven" type="button" value="7" class="form-control btn" ng-click="enterCalculator('amount',7)" /></td>
-														<td><input id="eight" type="button" value="8" class="form-control btn" ng-click="enterCalculator('amount',8)" /></td>
-														<td><input id="nine" type="button" value="9" class="form-control btn" ng-click="enterCalculator('amount',9)" /></td>
-														<td rowspan=2 style="vertical-align: middle;">
-															<button id="remove" value="removeButton" class="form-control btn" ng-click="enterCalculator('amount',-10)" style="height: 200%;">
+											<hr style="border: none; height:2px; color: black; background-color: black;">
+											<div class="row">
+												<div class="col-sm-9">
+													<div class="row" style="padding-left: 15px;">
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="seven" type="button" value="7" class="calculator" ng-click="enterCalculator('amount',7)" /></div>
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="eight" type="button" value="8" class="calculator" ng-click="enterCalculator('amount',8)" /></div>
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="nine" type="button" value="9" class="calculator" ng-click="enterCalculator('amount',9)" /></div>
+													</div>
+													<div class="row" style="padding-left: 15px;">
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="four" type="button" value="4" class="calculator" ng-click="enterCalculator('amount',4)" /></div>
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="five" type="button" value="5" class="calculator" ng-click="enterCalculator('amount',5)" /></div>
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="six" type="button" value="6" class="calculator" ng-click="enterCalculator('amount',6)" /></div>
+													</div>
+													<div class="row" style="padding-left: 15px;">
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="one" type="button" value="1" class="calculator" ng-click="enterCalculator('amount',1)" /></div>
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="two" type="button" value="2" class="calculator" ng-click="enterCalculator('amount',2)" /></div>
+														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="three" type="button" value="3" class="calculator" ng-click="enterCalculator('amount',3)" /></div>
+													</div>
+													<div class="row" style="padding-left: 15px;">
+														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('amount',0)" /></div>
+														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('amount',00)" /></div>
+													</div>
+												</div>
+												<div class="col-sm-3">
+													<div class="row" style="padding-right: 15px;">
+														<div class="col-sm-3" style="padding: 0px; padding-bottom: 5px;">
+															<button id="remove" value="removeButton" class="calculatoraction" ng-click="enterCalculator('amount',-10)">
 																<i class="fa fa-arrow-left" aria-hidden="true"></i>
 															</button>
-														</td>
-													</tr>
-													<tr>
-														<td><input id="four" type="button" value="4" class="form-control btn" ng-click="enterCalculator('amount',4)" /></td>
-														<td><input id="five" type="button" value="5" class="form-control btn" ng-click="enterCalculator('amount',5)" /></td>
-														<td><input id="six" type="button" value="6" class="form-control btn" ng-click="enterCalculator('amount',6)" /></td>
-													</tr>
-													<tr>
-														<td><input id="one" type="button" value="1" class="form-control btn" ng-click="enterCalculator('amount',1)" /></td>
-														<td><input id="two" type="button" value="2" class="form-control btn" ng-click="enterCalculator('amount',2)" /></td>
-														<td><input id="three" type="button" value="3" class="form-control btn" ng-click="enterCalculator('amount',3)" /></td>
-														<td rowspan="2" style="vertical-align: middle; border-bottom: 1px solid #f4f4f4;">
-															<button value="confirmButton" class="form-control btn" ng-click="submitPayment()" style="height: 200%;">
+														</div>
+													</div>
+													<div class="row" style="padding-right: 15px;">
+														<div class="col-sm-3" style="padding: 0px; padding-bottom: 5px;">
+															<button value="confirmButton" class="calculatoraction" ng-click="submitPayment()">
 																<i class="fa fa-check-square" aria-hidden="true"></i>
 															</button>
-														</td>
-													</tr>
-													<tr>
-														<td style="border-bottom: 1px solid #f4f4f4;"><input id="zero" type="button" value="0" class="form-control btn" ng-click="enterCalculator('amount',0)" /></td>
-														<td colspan="2" style="border-bottom: 1px solid #f4f4f4;"><input id="zerozero" value="00" type="button" class="form-control btn" ng-click="enterCalculator('amount',100)" /></td>
-													</tr>
-												</tbody>
-											</table>
+														</div>
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>

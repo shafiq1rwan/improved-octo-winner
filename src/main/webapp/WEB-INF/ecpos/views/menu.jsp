@@ -24,6 +24,21 @@
 	border-top: 0;
 	color: #444;
 }
+
+.itemname {
+	height: 35px;
+	max-height: 35px;
+	overflow-wrap: break-word;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	-webkit-line-clamp: 2;
+	display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+/* .itemname:hover {
+	overflow: visible;
+} */
 </style>
 </head>
 
@@ -43,12 +58,13 @@
 								</div>
 								<div class="row">
 									<div ng-repeat="category in categories.data">
-										<div class="col-sm-6 col-lg-4" style="margin-top: 15px;">
+										<div class="col-sm-6 col-lg-4">
+											<br>
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
 												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 													<img ng-src="${pageContext.request.contextPath}{{category.imagePath}}" alt={{category.name}} style="max-width: 135px; max-height: 135px;" />
 												</div>
-												<div>
+												<div class="itemname">
 													<b>{{category.name}}</b>
 												</div>
 											</div>
@@ -73,12 +89,13 @@
 								</div>
 								<div class="row">
 									<div ng-repeat="item in menuItems.data">
-										<div class="col-sm-6 col-lg-4" style="margin-top: 15px;">
+										<div class="col-sm-6 col-lg-4">
+											<br>
 											<div style="text-align: center" ng-click="action(item)">
 												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 													<img ng-src="${pageContext.request.contextPath}{{item.imagePath}}" alt={{item.name}} style="max-width: 135px; max-height: 135px;" />
 												</div>
-												<div>
+												<div class="itemname">
 													<b>{{item.name}}</b>
 												</div>
 											</div>
@@ -261,19 +278,17 @@
 													<label id="tierName"></label>
 												</div>
 											</div>
-											<br>
 											<div class="row">
 												<div ng-repeat="tierItemDetail in tierItemDetails.data">
 													<div class="col-sm-4">
-														<div style="text-align: center">
-															<label ng-click="getModifiers(tierItemDetail)">
-																<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-																	<img ng-src="${pageContext.request.contextPath}{{tierItemDetail.imagePath}}" style="max-width: 135px; max-height: 135px;" />
-																</div>
-																<div>
-																	<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>
-																</div>
-															</label>
+														<br>
+														<div style="text-align: center" ng-click="getModifiers(tierItemDetail)">
+															<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+																<img ng-src="${pageContext.request.contextPath}{{tierItemDetail.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+															</div>
+															<div class="itemname">
+																<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>
+															</div>
 														</div>
 													</div>
 												</div>
