@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.NetworkAddressTool;
 import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.URLTool;
 import mpay.ecpos_manager.general.utility.WebComponents;
@@ -118,14 +119,32 @@ public class RestC_syncmenu {
 				if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E02")) {
 					resultCode = "E02";
 					resultMessage = "Device has been deactivated.";
+					
+					// clear ecpos activation info
+					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", "");
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", "");
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", "");
+					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", "");
+					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", "");			
+					DataSync.resetDBMenuData(connection);
+					webComponent.clearEcposSession(request);
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E03")) {
-					resultCode = "E02";
+					resultCode = "E03";
 					resultMessage = "Invalid access token. Please contact support.";
+					
+					// clear ecpos activation info
+					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", "");
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", "");
+					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", "");
+					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", "");
+					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", "");
+					DataSync.resetDBMenuData(connection);
+					webComponent.clearEcposSession(request);
 				} else if (responseData.has("resultCode") && (responseData.getString("resultCode").equals("E06"))) {
-					resultCode = "E02";
+					resultCode = "E06";
 					resultMessage = "Current store is not published at cloud. Please contact support.";
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E04")) {
-					resultCode = "E02";
+					resultCode = "E04";
 					resultMessage = "There is no menu published at cloud. Please contact support.";
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E05")) {
 					resultCode = "00";
@@ -159,7 +178,7 @@ public class RestC_syncmenu {
 
 					connection.setAutoCommit(false);
 					DataSync.resetDBMenuData(connection);
-
+					
 					Statement statement = connection.createStatement();		
 					try {
 						BufferedReader br2 = new BufferedReader(new FileReader(queryFile));
@@ -277,7 +296,7 @@ public class RestC_syncmenu {
 					resultCode = "00";
 					resultMessage = "Updated to latest version.";
 				} else {
-					resultCode = "E03";
+					resultCode = "E05";
 					resultMessage = responseData.has("resultMessage") && !responseData.getString("resultMessage").isEmpty()
 							? responseData.getString("resultMessage")
 							: "Unknown error. Please try again later.";

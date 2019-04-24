@@ -156,7 +156,7 @@ CREATE TABLE tax_charge
 CREATE TABLE charge_type_lookup
 (
 	charge_type_number INT UNIQUE NOT NULL, 
-	charge_type_name NVARCHAR(50) NOT NULL UNIQUE
+	charge_type_name NVARCHAR(50) NOT NULL
 );
 
 CREATE TABLE store_type_lookup

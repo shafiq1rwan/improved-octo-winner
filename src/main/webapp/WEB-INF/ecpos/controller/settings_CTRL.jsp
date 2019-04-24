@@ -271,7 +271,7 @@
 					if (response.data.resultCode == "00") {						
 						$scope.syncSuccess(response.data.resultMessage);
 					} else {
-						$scope.syncFailed(response.data.resultMessage);
+						$scope.syncFailed(response.data.resultMessage, 2, response.data.resultCode);
 					}
 				} else {
 					$scope.syncFailed("Invalid server response!");
@@ -334,7 +334,8 @@
 			});
 		}
 		
-		$scope.syncFailed = function(message, type) {
+		$scope.syncFailed = function(message, type, errorCode) {
+			// type = 2, sync menu
 			$('#loading_modal').modal('hide');
 			var dialogOption = {};
 			dialogOption.title = "Sync Failed!";
@@ -345,7 +346,12 @@
 			dialogOption.button1 = {
 				name: "OK",
 				fn: function() {
-					$("div#modal-dialog").modal("hide");
+					$("div#modal-dialog").modal("hide");			
+					if(type==2){
+						if(errorCode=='E02' || errorCode=='E03'){				
+							window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					}
 				}
 			}
 			$scope.displayDialog(dialogOption);
