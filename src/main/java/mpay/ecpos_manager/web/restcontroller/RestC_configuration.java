@@ -30,6 +30,7 @@ import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.AesEncryption;
 import mpay.ecpos_manager.general.utility.QRGenerate;
 import mpay.ecpos_manager.general.utility.hardware.Drawer;
+import mpay.ecpos_manager.general.utility.hardware.ReceiptPrinter;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
 import mpay.ecpos_manager.general.utility.WebComponents;
 
@@ -44,6 +45,9 @@ public class RestC_configuration {
 	
 	@Autowired
 	Drawer drawer;
+	
+	@Autowired
+	ReceiptPrinter receiptPrinter;
 	
 	@Value("${printer_exe}")
 	private String printerExe;
@@ -898,7 +902,46 @@ public class RestC_configuration {
 		return jsonResult;
 	}
 	
+	//Printer APIs
+	@RequestMapping(value = { "/print_receipt" }, method = RequestMethod.POST, produces = "application/json")
+	public String printReceipt(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) { 
+				JSONObject jsonData = new JSONObject(data);
+				
+				if(jsonData.has("checkNo")) {
+					JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), jsonData.getString("checkNo"));
+					
+					if(printableJson.getString("response_code").equals("00")) {
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					} else {
+
+					}
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check No Not Found");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+
+		}
+		
+		System.out.println("Ending is near" + jsonResult.toString());
+		return jsonResult.toString();
+	}
 	
+		
 	
 	
 }

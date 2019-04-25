@@ -184,6 +184,10 @@
 					.then(function(response) {
 						if (response.data.response_code === "00") {
 							alert(response.data.response_message);
+							
+							//Print Receipt here
+							printReceipt($scope.checkNo)
+
 							<%if (user.getStoreType() == 2) {%>
 							if ($scope.orderType == "table") {
 								if ($scope.paymentType == "full") {
@@ -333,6 +337,10 @@
 						$('#loading_modal').modal('hide');
 						console.log("success")
 						alert(response.data.response_message);
+						
+						//Print Receipt here
+						printReceipt($scope.checkNo)
+						
 						<%if (user.getStoreType() == 2) {%>
 						if ($scope.orderType == "table") {
 							if ($scope.paymentType == "full") {
@@ -371,5 +379,25 @@
 		$('#scan_qr_modal').on('hidden.bs.modal', function() {
 			$scope.qrContent = "";
 		});
+		
+		//Used upon success payment
+		function printReceipt(checkNo) {
+			var jsonData = JSON.stringify({
+				"checkNo" : checkNo
+			});
+
+			$http.post("${pageContext.request.contextPath}/rc/configuration/print_receipt",jsonData)
+			.then(function(response) {
+				if (response.data.response_code === "00") {
+					console.log("Success Printable");
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
+		
 	});
 </script>

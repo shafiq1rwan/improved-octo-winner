@@ -3,6 +3,7 @@ package mpay.ecpos_manager.general.utility.ipos;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
 import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
@@ -46,7 +47,7 @@ public class Card {
 			}
 			
 			JSONObject response = submitIPOS("{"+pingRequest+"}");
-
+			
 			if (response.getString("responseCode").equals("00")) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
@@ -84,7 +85,7 @@ public class Card {
 			if(session!=null) {
 				jsonResult = submitIPOS("{"+saleRequest+"}", session);
 			} else {
-				jsonResult = submitIPOS("{"+saleRequest+"}");
+				//jsonResult = submitIPOS("{"+saleRequest+"}");
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", IPOS_FOLDER);

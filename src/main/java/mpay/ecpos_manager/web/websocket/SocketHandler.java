@@ -45,12 +45,13 @@ public class SocketHandler extends TextWebSocketHandler {
 	
 	private Card iposCard;
 	
-	private String iposExe;
+	//private String iposExe;
 	
 	// onMessage
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 		
+		System.out.println("Come on I am here");
 		String data = message.getPayload();
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
 		
@@ -62,9 +63,9 @@ public class SocketHandler extends TextWebSocketHandler {
 	
 		UserAuthenticationModel user = (UserAuthenticationModel)session.getAttributes().get("session_user");
 		dataSource = (DataSource)session.getAttributes().get("dataSource");
-		iposExe = (String)session.getAttributes().get("ipos_exe");
+		//iposExe = (String)session.getAttributes().get("ipos_exe");
 		iposCard = (Card)session.getAttributes().get("ipos_card");
-		
+
 		try {
 			connection = dataSource.getConnection();
 			JSONObject jsonObj = new JSONObject(data);
@@ -287,7 +288,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				e.printStackTrace();
 			}
 		}
-		
+				
 		if(session.isOpen()) {
 			Logger.writeActivity("Card Payment Response: " + jsonResult.toString(), ECPOS_FOLDER);
 			session.sendMessage(new TextMessage(jsonResult.toString()));
@@ -307,12 +308,14 @@ public class SocketHandler extends TextWebSocketHandler {
 		if(session.isOpen()) {
 			session.close();
 		}
+		System.out.println("Error Occured. Connection Closed");
 		Logger.writeActivity("WS Connection Failed. Close the connection.", ECPOS_FOLDER);
 	}
 
 	// onClose
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+		System.out.println("Connection Closed");
 		Logger.writeActivity("Close WS connection successfully.", ECPOS_FOLDER);
 	}
 	

@@ -27,12 +27,6 @@ public class Drawer {
 		JSONObject jsonResult = new JSONObject();
 		
 		try {
-	/*		JSONObject requestJson = new JSONObject();
-			requestJson.put("DeviceType", deviceManufacturerName);
-			requestJson.put("PortName", portName);*/
-
-			//String request = "{\"DeviceType\":" + deviceManufacturerName + ",\"PortName\": "+ portName +"}";
-			
 			String request = "\\\"DeviceType\\\":" + "\\\"" + deviceManufacturerName 
 					+ "\\\","+ "\\\"PortName\\\":" +"\\\"" + portName + "\\\"";
 			
@@ -97,10 +91,5 @@ public class Drawer {
 		}
 		return response;
 	}
-	
-	
-	
-	
-	
-	
+
 }
