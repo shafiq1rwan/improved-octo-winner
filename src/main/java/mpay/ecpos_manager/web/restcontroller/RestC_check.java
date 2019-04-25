@@ -225,7 +225,6 @@ public class RestC_check {
 						taxCharges.put(taxCharge);
 					}
 					jsonResult.put("taxCharges", taxCharges);
-					System.out.println("Tax Charge List: " +  jsonResult.toString());
 	
 					stmt3 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2) order by id asc;");
 					stmt3.setLong(1, id);

@@ -3,7 +3,6 @@ package mpay.ecpos_manager.general.utility.ipos;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;

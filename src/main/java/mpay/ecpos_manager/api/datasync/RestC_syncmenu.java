@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
-import mpay.ecpos_manager.general.utility.NetworkAddressTool;
 import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.URLTool;
 import mpay.ecpos_manager.general.utility.WebComponents;
@@ -90,7 +89,6 @@ public class RestC_syncmenu {
 				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
 				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
-				System.out.println("params:" + params.toString());
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
 
 				URL url = new URL(cloudUrl + "api/device/syncMenu");
@@ -112,7 +110,6 @@ public class RestC_syncmenu {
 				}
 				br.close();
 				
-				System.out.println("Response:" + inputBuffer.toString());
 				Logger.writeActivity("Response: " + inputBuffer.toString(), SYNC_FOLDER);
 
 				JSONObject responseData = new JSONObject(inputBuffer.toString());
@@ -331,7 +328,6 @@ public class RestC_syncmenu {
 			} catch (Exception e) {
 			}
 		}
-		System.out.println(result);
 		return result.toString();
 	}
 	
@@ -362,7 +358,6 @@ public class RestC_syncmenu {
 				params.put("authToken", SecureHash.generateSecureHash("SHA-256", activationInfo.getString("activationId").concat(activationInfo.getString("macAddress")).concat(date.toString())));
 				
 				Logger.writeActivity("Request: " + params.toString(), SYNC_FOLDER);
-				System.out.println("params:" + params.toString());
 				byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
 
 				URL url = new URL(cloudUrl + "api/device/syncStore");
@@ -384,7 +379,6 @@ public class RestC_syncmenu {
 				}
 				br.close();
 				
-				System.out.println("Response:" + inputBuffer.toString());
 				Logger.writeActivity("Response: " + inputBuffer.toString(), SYNC_FOLDER);
 
 				JSONObject responseData = new JSONObject(inputBuffer.toString());
@@ -466,7 +460,6 @@ public class RestC_syncmenu {
 			} catch (Exception e) {
 			}
 		}
-		System.out.println(result);
 		return result.toString();
 	}
 }

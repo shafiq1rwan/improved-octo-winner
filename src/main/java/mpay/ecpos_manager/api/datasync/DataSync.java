@@ -103,10 +103,8 @@ public class DataSync {
 			String logoPath = storeInfo.getString("logoPath");
 			String imageName = logoPath.substring(logoPath.lastIndexOf('/') + 1);
 			File imageFile = new File(imagePath, imageName);
-			System.out.println("test1:" + logoPath);
-			System.out.println("test2:" + imageFile);
+
 			if(imageFile.exists()) {
-				System.out.println("in here");
 				BufferedInputStream in = new BufferedInputStream(new URL(logoPath).openStream());
 				FileOutputStream fileOutputStream = new FileOutputStream(imageFile);
 				byte dataBuffer[] = new byte[1024];

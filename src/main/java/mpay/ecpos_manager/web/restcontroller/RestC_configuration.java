@@ -689,8 +689,7 @@ public class RestC_configuration {
 				if(selectedCashDrawerObj.has("device_manufacturer") && selectedCashDrawerObj.has("port_name")) {
 					jsonResult.put("selectedCashDrawer", selectedCashDrawerObj);
 				}
-			}
-			else {
+			} else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -731,8 +730,7 @@ public class RestC_configuration {
 					jsonResult.put("device_manufacturer", rs.getString("device_manufacturer"));
 					jsonResult.put("port_name", rs.getString("port_name"));
 				}
-			}
-			else {
+			} else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -781,8 +779,7 @@ public class RestC_configuration {
 					stmt2.setInt(2, cashDrawer.getInt("port_name"));
 					stmt2.executeUpdate();
 				}
-			}
-			else {
+			} else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -837,7 +834,6 @@ public class RestC_configuration {
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, "Port Name Not Found");
 						}
-						
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Device Manufacturer Name Not Found");	
@@ -846,8 +842,7 @@ public class RestC_configuration {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Cash Drawer Info Not Found");
 				}
-			}
-			else {
+			} else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -867,7 +862,6 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
 		}
-
 		return jsonResult.toString();
 	}
 	
@@ -933,15 +927,7 @@ public class RestC_configuration {
 		} catch(Exception e) {
 			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
 			e.printStackTrace();
-		} finally {
-
 		}
-		
-		System.out.println("Ending is near" + jsonResult.toString());
 		return jsonResult.toString();
 	}
-	
-		
-	
-	
 }

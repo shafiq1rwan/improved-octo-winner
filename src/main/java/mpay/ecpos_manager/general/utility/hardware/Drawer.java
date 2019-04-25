@@ -73,7 +73,6 @@ public class Drawer {
 			String line;
 			while ((line = input.readLine()) != null) {
 				responseString.append(line);
-				System.out.println(responseString);
 			}
 			input.close();
 			

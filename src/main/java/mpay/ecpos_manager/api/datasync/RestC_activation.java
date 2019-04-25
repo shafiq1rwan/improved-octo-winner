@@ -109,7 +109,6 @@ public class RestC_activation {
 			Logger.writeActivity("Response: " + inputBuffer.toString(), ECPOS_FOLDER);
 
 			JSONObject responseData = new JSONObject(inputBuffer.toString());
-			System.out.println(responseData);
 
 			if (responseData.has("resultCode") && responseData.getString("resultCode").equals("00")) {
 				// successful

@@ -111,8 +111,13 @@
 					alert(data.response_message);
 				}
 			},
-			error : function() {
-				alert('Drawer cannot open. Please kindly check the cash drawer printer.');
+			error : function(jqXHR) {
+				if (jqXHR.status == 408) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/signout";
+				} else {
+					alert('Drawer cannot open. Please kindly check the cash drawer printer.');
+				}
 			}
 		});
 	}

@@ -21,7 +21,6 @@ public class ZipTool {
 		while (ze != null) {
 			String fileName = ze.getName();
 			File newFile = new File(destDir + File.separator + fileName);
-			//System.out.println("Unzipping to " + newFile.getAbsolutePath());
 			new File(newFile.getParent()).mkdirs();
 			FileOutputStream fos = new FileOutputStream(newFile);
 			int len;
