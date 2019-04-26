@@ -49,8 +49,8 @@ public class RestC_configuration {
 	@Autowired
 	ReceiptPrinter receiptPrinter;
 	
-	@Value("${printer_exe}")
-	private String printerExe;
+/*	@Value("${printer_exe}")
+	private String printerExe;*/
 	
 	@Value("${CLOUD_BASE_URL}")
 	private String cloudUrl;
@@ -186,7 +186,136 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/get_printer_detail" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	@RequestMapping(value = { "/get_receipt_printer_manufacturers" }, method = { RequestMethod.GET}, produces = "application/json")
+	public String getReceiptPrinterManufacturers(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray receiptPrinterManufacturerJArray = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if(user!=null) {
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("select * from receipt_printer_manufacturer_lookup;");
+				rs = stmt.executeQuery();
+				
+				while (rs.next()) {
+					JSONObject receiptPrinterManufacturerObj = new JSONObject();
+					receiptPrinterManufacturerObj.put("id", rs.getInt("id"));
+					receiptPrinterManufacturerObj.put("name", rs.getString("name"));
+					receiptPrinterManufacturerJArray.put(receiptPrinterManufacturerObj);
+				}
+				jsonResult.put("device_manufacturers", receiptPrinterManufacturerJArray);
+				
+				//get selected receipt printer if available
+				JSONObject selectedReceiptPrinterObj = selectedReceiptPrinter();
+				if(selectedReceiptPrinterObj.has("receipt_printer_manufacturer")) {
+					jsonResult.put("selectedReceiptPrinter", selectedReceiptPrinterObj.getInt("receipt_printer_manufacturer"));
+				}
+			} else {
+				response.setStatus(408);
+			}	
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		
+		
+		return jsonResult.toString();
+	}
+	
+	private JSONObject selectedReceiptPrinter() {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("select * from receipt_printer;");
+			rs = stmt.executeQuery();
+			
+			if(rs.next()) {
+				jsonResult.put("receipt_printer_manufacturer", rs.getInt("receipt_printer_manufacturer"));
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
+	}
+	
+	@RequestMapping(value = { "/save_receipt_printer" }, method = { RequestMethod.POST }, produces = "application/json")
+	public void saveReceiptPrinter(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				JSONObject receiptPrinter = new JSONObject(data);
+					
+				stmt = connection.prepareStatement("select * from receipt_printer;");
+				rs = stmt.executeQuery();
+				
+				if (rs.next()) {
+					stmt2 = connection.prepareStatement("update receipt_printer set receipt_printer_manufacturer = ?;");
+					stmt2.setInt(1, receiptPrinter.getInt("receipt_printer_manufacturer"));
+					stmt2.executeUpdate();
+				} else {
+					stmt2 = connection.prepareStatement("insert into receipt_printer (receipt_printer_manufacturer) values (?)");
+					stmt2.setInt(1, receiptPrinter.getInt("receipt_printer_manufacturer"));
+					stmt2.executeUpdate();
+				}
+			}
+			else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+	}
+	
+/*	@RequestMapping(value = { "/get_printer_detail" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String getPrinterList(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 
@@ -227,7 +356,7 @@ public class RestC_configuration {
 			e.printStackTrace();
 		}
 		return jsonResult.toString();
-	}
+	}*/
 /*	
 	@RequestMapping(value = { "/open_cash_drawer" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String openCashDrawer(HttpServletRequest request, HttpServletResponse response) {
@@ -689,7 +818,8 @@ public class RestC_configuration {
 				if(selectedCashDrawerObj.has("device_manufacturer") && selectedCashDrawerObj.has("port_name")) {
 					jsonResult.put("selectedCashDrawer", selectedCashDrawerObj);
 				}
-			} else {
+			}
+			else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -730,7 +860,8 @@ public class RestC_configuration {
 					jsonResult.put("device_manufacturer", rs.getString("device_manufacturer"));
 					jsonResult.put("port_name", rs.getString("port_name"));
 				}
-			} else {
+			}
+			else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -779,7 +910,8 @@ public class RestC_configuration {
 					stmt2.setInt(2, cashDrawer.getInt("port_name"));
 					stmt2.executeUpdate();
 				}
-			} else {
+			}
+			else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -834,6 +966,7 @@ public class RestC_configuration {
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, "Port Name Not Found");
 						}
+						
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Device Manufacturer Name Not Found");	
@@ -842,7 +975,8 @@ public class RestC_configuration {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Cash Drawer Info Not Found");
 				}
-			} else {
+			}
+			else {
 				response.setStatus(408);
 			}
 		} catch (Exception e) {
@@ -862,6 +996,7 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
 		}
+
 		return jsonResult.toString();
 	}
 	
@@ -927,7 +1062,14 @@ public class RestC_configuration {
 		} catch(Exception e) {
 			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
 			e.printStackTrace();
+		} finally {
+
 		}
+		
 		return jsonResult.toString();
 	}
+	
+		
+	
+	
 }

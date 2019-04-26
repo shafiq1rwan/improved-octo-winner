@@ -108,16 +108,24 @@ hr {
 
 								<div class="row" style="padding-bottom: 8px;">
 									<div class="col-sm-12" style="padding-bottom: 8px;">
-										<font size="3"><b>Printer Configuration</b></font>
+										<font size="3"><b>Receipt Printer Configuration</b></font>
 									</div>
+									
 									<div class="col-sm-6">
-										<font size="2">Printer Model</font>
+										<font size="2">Receipt Printer Manufacturer Model</font>
 										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
-											<select id="printer" class="select2 form-control" style="width: 100%;" ng-click="savePrinter()">
-												<option selected>----- Select -----</option>
-												<option ng-repeat="printer in printerDetail.portInfoList" value="{{printer.PortInfo.PortName}}!!{{printer.PortInfo.ModelName}}">{{printer.PortInfo.PortName}}</option>
+											<select id="receiptPrinterManufacturer" class="form-control" ng-model="selectedReceiptPrinterManufacturer"
+												ng-options="manufacturer.id as manufacturer.name for manufacturer in receiptPrinterData.device_manufacturers">
+												<option value="" disabled>-- SELECT --</option>
 											</select>
 										</div>
+									</div>
+									
+									<div class ="col-sm-4">
+										<font size="2"></font>
+										<div style="padding: 10px;">
+											<button class="btn btn-info" ng-click="saveReceiptPrinter()">Set</button>
+										</div>			
 									</div>
 								</div>
 								<hr>

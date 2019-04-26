@@ -408,6 +408,16 @@ CREATE TABLE cash_drawer (
 	`port_name` bigint(20) NOT NULL
 );
 
+CREATE TABLE receipt_printer_manufacturer_lookup (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`name` varchar(255) NOT NULL,
+	PRIMARY KEY (`id`)
+);
+
+CREATE TABLE receipt_printer (
+	`receipt_printer_manufacturer` bigint(20) NOT NULL
+);
+
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
@@ -444,7 +454,9 @@ insert into `nii_type` values
 insert into general_configuration (description, parameter, value)
 values ('BYOD_QR_Encrypt_Key', 'BYOD QR ENCRYPT KEY', '8y0DtH3s3Cr3Tk3Y');
 
-insert into device_manufacturer_lookup values (1, 'Posiflex');
+insert into device_manufacturer_lookup values (1, 'Posiflex'), (2, 'ETech');
 
 insert into port_name_lookup values 
 (1, 'COM1'), (2, 'COM2'), (3, 'COM3'), (4, 'COM4'), (5, 'COM5'), (6, 'COM6'), (7, 'COM7'), (8, 'COM8');
+
+insert into receipt_printer_manufacturer_lookup values (1, 'Posiflex'), (2,'EPSON');

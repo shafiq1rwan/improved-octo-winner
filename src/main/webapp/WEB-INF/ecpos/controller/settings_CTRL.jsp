@@ -53,20 +53,21 @@
 		}
 
 		$scope.getPrinterList = function() {
-			$http.get("${pageContext.request.contextPath}/rc/configuration/get_printer_detail/")
-			.then(function(response) {
-				$scope.printerDetail = response.data;
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_receipt_printer_manufacturers")
+			.then(function (response) {
+				$scope.receiptPrinterData = response.data;
 				
-				if ($scope.printerDetail.hasOwnProperty("selectedPrinter")) {
-					$("printer").val("");
-					for (var i = 0; i < $scope.printerDetail.portInfoList.length; i++) {
-						if ($scope.printerDetail.portInfoList.PortInfo[i].PortName === $scope.printerDetail.selectedPrinter) {
-							$scope.printerDetail.portInfoList.PortInfo[i].selected = true;
+				if($scope.receiptPrinterData.hasOwnProperty("selectedReceiptPrinter")){
+					$scope.selectedReceiptPrinterManufacturer = response.data.selectedReceiptPrinter;
+					
+		/* 			for(var i =0; i< $scope.cashDrawerData.device_manufacturers.length; i++){
+						if($scope.cashDrawerData.device_manufacturers[i].id === $scope.selectedCashDrawer.device_manufacturer){
+							$scope.selectedDeviceManufacturer = $scope.selectedCashDrawer.device_manufacturer;
 						}
-					}
+					} */
+
 				}
-			},
-			function(response) {
+			}, function(response) {
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
@@ -100,12 +101,32 @@
 					'device_manufacturer' : $scope.selectedDeviceManufacturer,
 					'port_name' : $scope.selectedPortName
 				});
-				console.log("Saved Printer Data: " + jsonData);
 				
 				$http.post("${pageContext.request.contextPath}/rc/configuration/save_cash_drawer", jsonData)
 				.then(function(response) {
 					alert("Cash Drawer Successfully Set.");
 					$scope.getCashDrawerList();
+				},
+				function(response) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/signout";
+				});
+			}
+		}
+		
+		$scope.saveReceiptPrinter = function(){
+			if($scope.selectedReceiptPrinterManufacturer == null || $scope.selectedReceiptPrinterManufacturer == ''){
+				console.log("Please Select Receipt Printer Manufacturer.")
+			} else {
+				var jsonData = JSON.stringify({
+					'receipt_printer_manufacturer' : $scope.selectedReceiptPrinterManufacturer,
+				});
+				console.log("Saved Printer Data: " + jsonData);
+				
+				$http.post("${pageContext.request.contextPath}/rc/configuration/save_receipt_printer", jsonData)
+				.then(function(response) {
+					alert("Receipt Printer Successfully Set.");
+					$scope.getPrinterList();
 				},
 				function(response) {
 					alert("Session TIME OUT");

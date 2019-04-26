@@ -102,7 +102,7 @@
 			<version>1.9.13</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
-		<dependency>
+ 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4</version>
@@ -146,18 +146,41 @@
 		    <artifactId>ooxml-schemas</artifactId>
 		    <version>1.4</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/fr.opensagres.xdocreport/org.apache.poi.xwpf.converter.pdf -->
+		<!-- https://mvnrepository.com/artifact/fr.opensagres.xdocreport/fr.opensagres.poi.xwpf.converter.core -->
 		<dependency>
 		    <groupId>fr.opensagres.xdocreport</groupId>
-		    <artifactId>org.apache.poi.xwpf.converter.pdf</artifactId>
-		    <version>1.0.6</version>
+		    <artifactId>fr.opensagres.poi.xwpf.converter.core</artifactId>
+		    <version>2.0.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/fr.opensagres.xdocreport/org.apache.poi.xwpf.converter.xhtml -->
+
+		<!-- https://mvnrepository.com/artifact/fr.opensagres.xdocreport/fr.opensagres.poi.xwpf.converter.pdf -->
 		<dependency>
 		    <groupId>fr.opensagres.xdocreport</groupId>
-		    <artifactId>org.apache.poi.xwpf.converter.xhtml</artifactId>
-		    <version>1.0.6</version>
+		    <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+		    <version>2.0.2</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+		<dependency>
+		    <groupId>commons-logging</groupId>
+		    <artifactId>commons-logging</artifactId>
+		    <version>1.2</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>pdfbox</artifactId>
+		    <version>2.0.15</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/fontbox -->
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>fontbox</artifactId>
+		    <version>2.0.15</version>
+		</dependency>
+		
 		<!-- https://mvnrepository.com/artifact/net.sf.jasperreports/jasperreports -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>

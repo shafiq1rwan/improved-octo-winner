@@ -1,7 +1,14 @@
 package mpay.ecpos_manager.general.utility.hardware;
 
+import java.awt.print.PrinterJob;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -14,13 +21,26 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.printing.PDFPageable;
+import org.apache.poi.xwpf.usermodel.Borders;
+import org.apache.poi.xwpf.usermodel.BreakClear;
+import org.apache.poi.xwpf.usermodel.BreakType;
+import org.apache.poi.xwpf.usermodel.LineSpacingRule;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
+import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
+import org.apache.poi.xwpf.usermodel.VerticalAlign;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFStyle;
 import org.apache.poi.xwpf.usermodel.XWPFStyles;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
@@ -28,23 +48,44 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTFonts;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHpsMeasure;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTOnOff;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSpacing;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTString;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTStyle;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGrid;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTc;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcBorders;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STBorder;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STLineSpacingRule;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STOnOff;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import fr.opensagres.poi.xwpf.converter.pdf.PdfConverter;
+import fr.opensagres.poi.xwpf.converter.pdf.PdfOptions;
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @Service
 public class ReceiptPrinter {
@@ -56,6 +97,10 @@ public class ReceiptPrinter {
 	DataSource dataSource;
 
 	private static final String RECEIPT_FONT_FAMILY = "Arial";
+	
+	
+	private static final String RECEIPT_HEADER_STYLE = "Receipt Header Paragraph";
+	private static final String RECEIPT_PARAGRAPH_STYLE = "Receipt Paragraph";
 
 	// receipt header
 	private JSONObject getReceiptHeader() {
@@ -332,6 +377,58 @@ public class ReceiptPrinter {
 		System.out.println("Printable Result: " + jsonResult.toString());
 		return jsonResult;
 	}
+	
+	private JSONObject getSelectedReceiptPrinter() {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(
+					"select receipt_printer_manufacturer from receipt_printer;");
+			rs = stmt.executeQuery();
+			
+			if(rs.next()) {
+				stmt2 = connection.prepareStatement(
+						"select name from receipt_printer_manufacturer_lookup where id = ?;");
+				stmt2.setLong(1, rs.getLong("receipt_printer_manufacturer"));
+				rs2 = stmt2.executeQuery();
+				
+				if(rs2.next()) {
+					jsonResult.put("receipt_printer", rs2.getString("name"));
+				}
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
+	}
 
 	private JSONObject printReceiptData(String staffName, JSONObject receiptHeaderJson, JSONObject receiptContentJson,
 			JSONObject receiptFooterJson) {
@@ -349,18 +446,44 @@ public class ReceiptPrinter {
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Item Not Available");
 				} else {
 					new File("C:/receipt").mkdirs();
+					
+					PrintService myPrintService = null;
+					String templateName = "";
 
-					try (XWPFDocument doc = new XWPFDocument()) {
-						if (doc.getStyles() == null) {
-							XWPFStyles styles = doc.createStyles();
+					JSONObject printerResult = getSelectedReceiptPrinter();
+					
+					if(printerResult.has("receipt_printer")) {
+						
+						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+						
+						if(printerResult.getString("receipt_printer").equals("EPSON"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else if(printerResult.getString("receipt_printer").equals("Posiflex"))
+							templateName = "ReceiptStyleTemplate_Posiflex";
+					}
+					
+					System.out.println("Template Name: "+ templateName);
 
-							//set default font
+					try (XWPFDocument doc = new XWPFDocument(new FileInputStream("C:\\receipt\\"+ templateName +".docx"))) {
+						if (doc.getStyles() != null) {
+							
+							XWPFStyles styles = doc.getStyles();
 							CTFonts fonts = CTFonts.Factory.newInstance();
 							fonts.setAscii(RECEIPT_FONT_FAMILY);
 							styles.setDefaultFonts(fonts);
-						}
+							
+							//XWPFStyles styles = doc.createStyles();
 
-						CTDocument1 ctdoc = doc.getDocument();
+							//set default font
+	/*						CTFonts fonts = CTFonts.Factory.newInstance();
+							fonts.setAscii(RECEIPT_FONT_FAMILY);
+							styles.setDefaultFonts(fonts);*/
+							
+							//addCustomParagraphStyle(doc, styles, RECEIPT_HEADER_STYLE, "24");
+							//addCustomParagraphStyle(doc, styles, RECEIPT_PARAGRAPH_STYLE, "18"); */
+						} 
+
+/*						CTDocument1 ctdoc = doc.getDocument();
 						CTBody ctbody = ctdoc.getBody();
 						if (!ctbody.isSetSectPr()) {
 							ctbody.addNewSectPr();
@@ -369,25 +492,24 @@ public class ReceiptPrinter {
 
 						if (!section.isSetPgSz()) {
 							section.addNewPgSz();
-						}
-						CTPageSz pageSize = section.getPgSz();
-						pageSize.setOrient(STPageOrientation.PORTRAIT);
+						}*/
+						
+						//CTPageSz pageSize = section.getPgSz();
+						//pageSize.setOrient(STPageOrientation.PORTRAIT);
 						// 226 point x 20
-						pageSize.setW(BigInteger.valueOf(4520));
+						//pageSize.setW(BigInteger.valueOf(4520));
 						// 641
-						pageSize.setH(BigInteger.valueOf(16820));
-
-						//System.out.println(section.getPgSz());
+						//pageSize.setH(BigInteger.valueOf(16820));
 
 						// Set Margin
-						CTPageMar pageMar = section.addNewPgMar();
+/*						CTPageMar pageMar = section.addNewPgMar();
 						pageMar.setGutter(BigInteger.valueOf(0));
 						pageMar.setHeader(BigInteger.valueOf(720L));
 						pageMar.setFooter(BigInteger.valueOf(720L));
-						pageMar.setLeft(BigInteger.valueOf(280L));
-						pageMar.setTop(BigInteger.valueOf(280L));
-						pageMar.setRight(BigInteger.valueOf(280L));
-						pageMar.setBottom(BigInteger.valueOf(560L));
+						pageMar.setLeft(BigInteger.valueOf(100L));
+						pageMar.setTop(BigInteger.valueOf(220L));
+						pageMar.setRight(BigInteger.valueOf(100L));
+						pageMar.setBottom(BigInteger.valueOf(440L));*/
 
 						// Header Store Name
 						XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
@@ -400,7 +522,7 @@ public class ReceiptPrinter {
 						runHeaderStoreNameParagraph.setFontSize(12);
 						runHeaderStoreNameParagraph.setText(receiptHeaderJson.getString("storeName"));
 
-						// Header Store Address and other info					
+						// Header Store Address					
 						XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
 						headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
 						headerStoreAddressParagraph.setSpacingAfter(0);
@@ -413,17 +535,15 @@ public class ReceiptPrinter {
 						runHeaderStoreAddressParagraph.addBreak();
 						
 						// Receipt Info Table
-						XWPFTable receiptInfoTable = doc.createTable(4, 2);
-						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
-																															// Layout
-						receiptInfoTableType.setType(STTblLayoutType.FIXED);
-						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no border
-
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-						
-						List<String> receiptInfoLabels = Arrays.asList("Check No", "Order At", "Printed At","Staff");
-						List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"),
+						List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Order At", "Printed At","Staff");
+						List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"), receiptContentJson.getString("tableNo"),
 								receiptContentJson.getString("createdDate"), sdf.format(new Date()),staffName);
+
+						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
+						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set																									// Layout
+						receiptInfoTableType.setType(STTblLayoutType.FIXED);
+						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
 
 						for (int i = 0; i < receiptInfoLabels.size(); i++) {
 							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
@@ -434,6 +554,10 @@ public class ReceiptPrinter {
 						}
 
 						long receiptInfoTableWidths[] = { 1400, 2000 };
+						
+						CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
+				        cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+				        cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
 
 						for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
 							XWPFTableRow row = receiptInfoTable.getRow(x);
@@ -446,6 +570,7 @@ public class ReceiptPrinter {
 						}
 
 						XWPFParagraph receiptInfoBreak = doc.createParagraph();
+						receiptInfoBreak.setSpacingAfter(0);
 						receiptInfoBreak.createRun().addBreak();
 						receiptInfoBreak.removeRun(0);
 
@@ -461,25 +586,46 @@ public class ReceiptPrinter {
 
 						XWPFParagraph tableHeaderOne = tableRowOne.getCell(0).getParagraphs().get(0);
 						tableHeaderOne.setSpacingAfter(0);
+						tableHeaderOne.setVerticalAlignment(TextAlignment.CENTER);
 						XWPFRun tableHeaderOneRun = tableHeaderOne.createRun();
 						tableHeaderOneRun.setFontSize(9);
-						//tableHeaderOneRun.setBold(true);
+						tableHeaderOneRun.setBold(true);
 						tableHeaderOneRun.setText("Qty");
 
 						XWPFParagraph tableHeaderTwo = tableRowOne.addNewTableCell().getParagraphs().get(0);
 						tableHeaderTwo.setSpacingAfter(0);
+						tableHeaderTwo.setVerticalAlignment(TextAlignment.CENTER);
 						XWPFRun tableHeaderTwoRun = tableHeaderTwo.createRun();
 						tableHeaderTwoRun.setFontSize(9);
-						//tableHeaderTwoRun.setBold(true);
+						tableHeaderTwoRun.setBold(true);
 						tableHeaderTwoRun.setText("Name");
 
 						XWPFParagraph tableHeaderThree = tableRowOne.addNewTableCell().getParagraphs().get(0);
 						tableHeaderThree.setSpacingAfter(0);
+						tableHeaderThree.setVerticalAlignment(TextAlignment.CENTER);
 						tableHeaderThree.setAlignment(ParagraphAlignment.RIGHT);
 						XWPFRun tableHeaderThreeRun = tableHeaderThree.createRun();
 						tableHeaderThreeRun.setFontSize(9);
-						//tableHeaderThreeRun.setBold(true);
+						tableHeaderThreeRun.setBold(true);
 						tableHeaderThreeRun.setText("Amt(" + receiptHeaderJson.getString("storeCurrency") + ")");
+
+						CTTc cellOne = table.getRow(0).getCell(0).getCTTc();
+						CTTcPr tcPr = cellOne.addNewTcPr(); 
+						CTTcBorders border = tcPr.addNewTcBorders();
+						border.addNewTop().setVal(STBorder.SINGLE);
+						border.addNewBottom().setVal(STBorder.SINGLE);
+
+						CTTc cellTwo = table.getRow(0).getCell(1).getCTTc();
+						CTTcPr tcPr2 = cellTwo.addNewTcPr(); 
+						CTTcBorders border2 = tcPr2.addNewTcBorders();
+						border2.addNewTop().setVal(STBorder.SINGLE);
+						border2.addNewBottom().setVal(STBorder.SINGLE);
+							  
+						CTTc cellThree = table.getRow(0).getCell(2).getCTTc();
+						CTTcPr tcPr3 = cellThree.addNewTcPr(); 
+						CTTcBorders border3 = tcPr3.addNewTcBorders();
+						border3.addNewTop().setVal(STBorder.SINGLE);
+						border3.addNewBottom().setVal(STBorder.SINGLE);
 
 						// Grand parent loop
 						for (int k = 0; k < jsonGrandParentArray.length(); k++) {
@@ -548,8 +694,13 @@ public class ReceiptPrinter {
 							}
 						}
 
-						// 128x20, 28x20, 43x20
-						long columnWidths[] = {560, 2560 ,860};
+						// 121x20, 28x20, 50x20
+						long columnWidths[] = {560, 2420 ,1000};
+						
+						CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2420"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1000"));
 
 						for (int x = 0; x < table.getNumberOfRows(); x++) {
 							XWPFTableRow row = table.getRow(x);
@@ -559,12 +710,9 @@ public class ReceiptPrinter {
 								cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(columnWidths[y]));
 							}
 						}
-						
-						setTableTopBottomBorder(table.getRow(0).getCell(0).getCTTc());
-						setTableTopBottomBorder(table.getRow(0).getCell(1).getCTTc());
-						setTableTopBottomBorder(table.getRow(0).getCell(2).getCTTc());
 
 						XWPFParagraph receiptContentBreak = doc.createParagraph();
+						receiptContentBreak.setSpacingAfter(0);
 						receiptContentBreak.createRun().addBreak();
 						receiptContentBreak.removeRun(0);
 
@@ -593,11 +741,12 @@ public class ReceiptPrinter {
 											ParagraphAlignment.RIGHT);
 									
 									CTTc cell = receiptResultRow.getCell(1).getCTTc();
-									CTTcPr tcPr = cell.addNewTcPr(); 
-									CTTcBorders border = tcPr.addNewTcBorders();
+									CTTcPr tcPr4 = cell.addNewTcPr(); 
+									CTTcBorders border4 = tcPr4.addNewTcBorders();
 							
-									border.addNewBottom().setVal(STBorder.DASHED);
-									border.addNewTop().setVal(STBorder.DASHED);
+									border4.addNewBottom().setVal(STBorder.SINGLE);
+									border4.addNewTop().setVal(STBorder.SINGLE);
+	
 								} else {
 									createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
 											ParagraphAlignment.LEFT);
@@ -607,9 +756,12 @@ public class ReceiptPrinter {
 								}
 							}
 
-						  //long receiptResultTableWidths[] = { 1990, 1990 };
-						  long receiptResultTableWidths[] = { 3120, 860 };
+						 long receiptResultTableWidths[] = { 2980, 1000 };
 						  
+						CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
+						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2980"));
+						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
+  
 						  for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) { 
 							  XWPFTableRow row = receiptResultTable.getRow(x); 
 							  int numberOfCell = row.getTableCells().size(); 
@@ -619,8 +771,7 @@ public class ReceiptPrinter {
 										  receiptResultTableWidths[y])); 
 							  } 
 						  }
-						  
-				 
+
 						// Cashless Payment (Coming Soon)
 
 						XWPFRun finalParagraph = doc.createParagraph().createRun();
@@ -630,31 +781,64 @@ public class ReceiptPrinter {
 						try (FileOutputStream out = new FileOutputStream("C:\\receipt\\receipt.docx")) {
 							doc.write(out);
 						}
-
+						
+/*						 ByteArrayOutputStream out = new ByteArrayOutputStream();
+						  doc.write(out);
+						  doc.close();
+						  
+						  XWPFDocument document = new XWPFDocument(new ByteArrayInputStream(out.toByteArray()));
+						  PdfOptions options = PdfOptions.create();
+						  PdfConverter converter = (PdfConverter)PdfConverter.getInstance();
+						  converter.convert(document, new FileOutputStream(new File("C:\\receipt\\receipt.pdf")), options);
+						  
+						  document.close();
+						  out.close();*/
 					}
-
+					
+					XWPFDocument document = new XWPFDocument(new FileInputStream(new File("C:\\receipt\\receipt.docx")));
+					 PdfOptions options = PdfOptions.create();
+					 OutputStream out = new FileOutputStream(new File("C:\\receipt\\receipt.pdf"));
+					 PdfConverter.getInstance().convert(document, out, options);
+					 document.close();
+					 out.close();
+					 
+					 //print pdf
+					 if(myPrintService != null) {
+						 PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\receipt.pdf")));
+						 //PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
+						 //PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
+						 
+						 PrinterJob job = PrinterJob.getPrinterJob();
+						 job.setPageable(new PDFPageable(printablePdf));
+						 job.setPrintService(myPrintService);
+						 job.print();
+						 
+						 printablePdf.close();
+					 }
+					 
+					 jsonResult.put(Constant.RESPONSE_CODE, "00");
+					 jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				}
-
 			}
-
-			/*
-			 * XWPFDocument document = new XWPFDocument(new FileInputStream(new
-			 * File("C:\\XX\\document.docx"))); File outFile = new File(
-			 * "C:\\XX\\document.pdf" ); OutputStream out = new FileOutputStream( outFile );
-			 * PdfOptions options = PdfOptions.create().fontEncoding( "windows-1250" );
-			 * PdfConverter.getInstance().convert(document, out, options );
-			 * 
-			 * File file = new File("C:\\XX\\document.docx");
-			 */
-
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception :", HARDWARE_FOLDER);
 			e.printStackTrace();
 		}
-
 		return jsonResult;
 	}
-
+	
+	//Print Receipt
+	private PrintService findPrintService(String printerName) {
+		PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
+		for (PrintService printService : printServices) {
+			System.out.println(printService.getName());
+			if (printService.getName().trim().contains(printerName)) {
+				return printService;
+			}
+		}
+		return null;
+	}
+	
 	private List<CTSectPr> getAllSectPr(XWPFDocument document) {
 		List<CTSectPr> allSectPr = new ArrayList<>();
 		for (XWPFParagraph paragraph : document.getParagraphs()) {
@@ -674,6 +858,7 @@ public class ReceiptPrinter {
 		} else {
 			paragraph = cell.addParagraph();
 		}
+		
 		paragraph.setAlignment(alignment);
 		paragraph.setSpacingBefore(0);
 		paragraph.setSpacingAfter(0);
@@ -683,22 +868,65 @@ public class ReceiptPrinter {
 		run.setFontSize(9);
 	}
 	
-	private void setTableTopBottomBorder(CTTc cell) {
-		  CTTcPr tcPr = cell.addNewTcPr(); 
-		  CTTcBorders border = tcPr.addNewTcBorders();
-		  
-		  border.addNewBottom().setVal(STBorder.DASH_SMALL_GAP);
-		  //border.addNewRight().setVal(STBorder.SINGLE);
-		  //border.addNewLeft().setVal(STBorder.SINGLE);
-		  border.addNewTop().setVal(STBorder.DASH_SMALL_GAP);
-	}
-
 	private String formatDecimalString(String amountText) {
 		return String.format("%.2f", new BigDecimal(amountText));
 	}
 	
 	private String formatDecimalString(BigDecimal amountDecimal) {
 		return String.format("%.2f", amountDecimal);
+	}
+	
+	private void addCustomParagraphStyle(XWPFDocument docxDocument, XWPFStyles styles, String strStyleId, String fontSize) {
+		CTStyle ctStyle = CTStyle.Factory.newInstance();
+		 ctStyle.setStyleId(strStyleId);
+		 
+		 CTString styleName = CTString.Factory.newInstance();
+		 styleName.setVal(strStyleId);
+		 ctStyle.setName(styleName);
+
+		 CTDecimalNumber indentNumber = CTDecimalNumber.Factory.newInstance();
+		 indentNumber.setVal(BigInteger.valueOf(1));
+
+		    // lower number > style is more prominent in the formats bar
+		    ctStyle.setUiPriority(indentNumber);
+
+		    CTOnOff onoffnull = CTOnOff.Factory.newInstance();
+		    ctStyle.setUnhideWhenUsed(onoffnull);
+
+		    // style shows up in the formats bar
+		    ctStyle.setQFormat(onoffnull);
+
+		    CTSpacing lineSpacing = CTSpacing.Factory.newInstance();
+		    lineSpacing.setBefore(BigInteger.valueOf(0));
+		    lineSpacing.setBeforeLines(BigInteger.valueOf(0));
+		    lineSpacing.setAfter(BigInteger.valueOf(0));
+		    lineSpacing.setAfterLines(BigInteger.valueOf(0));
+		   
+		    //lineSpacing.setLineRule(STLineSpacingRule.EXACT);
+
+		    // style defines a heading of the given level
+		    CTPPr ppr = CTPPr.Factory.newInstance();
+		    ppr.setSpacing(lineSpacing);
+		    ctStyle.setPPr(ppr);
+
+		    XWPFStyle style = new XWPFStyle(ctStyle);
+
+		    CTHpsMeasure size = CTHpsMeasure.Factory.newInstance();
+		    size.setVal(new BigInteger(fontSize));
+
+		    CTFonts fonts = CTFonts.Factory.newInstance();
+		    fonts.setAscii(RECEIPT_FONT_FAMILY);
+		    fonts.setHAnsi(RECEIPT_FONT_FAMILY);
+		    
+		    CTRPr rpr = CTRPr.Factory.newInstance();
+		    rpr.setRFonts(fonts);
+		    rpr.setSz(size);
+		    
+		    style.getCTStyle().setRPr(rpr);
+		    // is a null op if already defined
+		    
+		    style.setType(STStyleType.PARAGRAPH);
+		    styles.addStyle(style);
 	}
 
 }
