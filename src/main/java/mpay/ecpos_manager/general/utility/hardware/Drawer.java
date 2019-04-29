@@ -58,7 +58,7 @@ public class Drawer {
 		JSONObject response = new JSONObject();
 		
 		try {
-			String drawerPath = getClass().getClassLoader().getResource("mpay/ecpos_manager/general/utility/hardware/UniDrawer_v1.0.exe").getFile();
+			String drawerPath = getClass().getClassLoader().getResource("mpay/ecpos_manager/general/utility/hardware/UniDrawer.exe").getFile();
 			drawerPath = URLDecoder.decode(drawerPath, "UTF-8");
 			if (drawerPath.startsWith("/")) {
 				drawerPath.substring(1);
