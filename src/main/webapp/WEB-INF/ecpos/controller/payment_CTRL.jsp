@@ -191,20 +191,20 @@
 							<%if (user.getStoreType() == 2) {%>
 							if ($scope.orderType == "table") {
 								if ($scope.paymentType == "full") {
-									$location.path("${pageContext.request.contextPath}/table_order");
+									$location.path("/table_order");
 								} else {
 									location.reload();
 								}
 							} else if ($scope.orderType == "take_away") {
 								if ($scope.paymentType == "full") {
-									$location.path("${pageContext.request.contextPath}/take_away_order");
+									$location.path("/take_away_order");
 								} else {
 									location.reload();
 								}
 							}
 							<%} else {%>
 							if ($scope.paymentType == "full") {
-								$location.path("${pageContext.request.contextPath}/take_away_order");
+								$location.path("/take_away_order");
 							} else {
 								location.reload();
 							}
@@ -344,20 +344,20 @@
 						<%if (user.getStoreType() == 2) {%>
 						if ($scope.orderType == "table") {
 							if ($scope.paymentType == "full") {
-								$location.path("${pageContext.request.contextPath}/table_order");
+								$location.path("/table_order");
 							} else {
 								location.reload();
 							}
 						} else if ($scope.orderType == "take_away") {
 							if ($scope.paymentType == "full") {
-								$location.path("${pageContext.request.contextPath}/take_away_order");
+								$location.path("/take_away_order");
 							} else {
 								location.reload();
 							}
 						}
 						<%} else {%>
 						if ($scope.paymentType == "full") {
-							$location.path("${pageContext.request.contextPath}/take_away_order");
+							$location.path("/take_away_order");
 						} else {
 							location.reload();
 						}

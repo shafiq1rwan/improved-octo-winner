@@ -455,14 +455,18 @@ public class ReceiptPrinter {
 					if(printerResult.has("receipt_printer")) {
 						
 						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
-						
+						System.out.println("Selected Printer: " + myPrintService.getName());
+						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer") , ECPOS_FOLDER);
+						Logger.writeActivity("Selected Printer: " + myPrintService.getName() , ECPOS_FOLDER);
+
 						if(printerResult.getString("receipt_printer").equals("EPSON"))
 							templateName = "ReceiptStyleTemplate_EPSON";
 						else if(printerResult.getString("receipt_printer").equals("Posiflex"))
 							templateName = "ReceiptStyleTemplate_Posiflex";
 					}
 					
-					System.out.println("Template Name: "+ templateName);
+					System.out.println("Template Name: " + templateName);
+					Logger.writeActivity("Template Name: " + templateName , ECPOS_FOLDER);
 
 					try (XWPFDocument doc = new XWPFDocument(new FileInputStream("C:\\receipt\\"+ templateName +".docx"))) {
 						if (doc.getStyles() != null) {
@@ -831,7 +835,8 @@ public class ReceiptPrinter {
 	private PrintService findPrintService(String printerName) {
 		PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
 		for (PrintService printService : printServices) {
-			System.out.println(printService.getName());
+			Logger.writeActivity("Available Printer: " + printService.getName(), ECPOS_FOLDER);
+			System.out.println("Available Printer: " + printService.getName());
 			if (printService.getName().trim().contains(printerName)) {
 				return printService;
 			}
