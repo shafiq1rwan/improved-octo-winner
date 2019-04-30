@@ -217,17 +217,8 @@
 						alert("Session TIME OUT");
 						window.location.href = "${pageContext.request.contextPath}/signout";
 					}); 
-				} else if($scope.paymentMethod == "Card"){
-					
-					var context = "${pageContext.request.contextPath}";
-					var wsURL = "";
-					if (context == "") {
-						wsURL = "ws://localhost:8080/paymentSocket";
-					} else {
-						wsURL = "ws://localhost:8080/${pageContext.request.contextPath}/paymentSocket";
-					}
-					
-					var paymentSocket = new WebSocket(wsURL);
+				} else if($scope.paymentMethod == "Card"){					
+					var paymentSocket = new WebSocket("ws://localhost:8080${pageContext.request.contextPath}/paymentSocket");
 					
 					paymentSocket.onopen = function(event) {
 						console.log("Connection established");
