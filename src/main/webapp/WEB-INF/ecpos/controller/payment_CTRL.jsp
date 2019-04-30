@@ -278,7 +278,11 @@
 						console.log("Connection closed");
 						$('#loading_modal').modal('hide');
 						$scope.socketMessage = "";
+
+						//Check is here
 						window.location.href = "${pageContext.request.contextPath}/";
+						console.log($scope.checkNo)
+						printReceipt($scope.checkNo)
 					};
 				}
 			}

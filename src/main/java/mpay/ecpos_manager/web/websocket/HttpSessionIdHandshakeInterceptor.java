@@ -26,8 +26,8 @@ public class HttpSessionIdHandshakeInterceptor implements HandshakeInterceptor{
 	@Autowired
 	private Card iposCard;
 	
-	@Value("${ipos_exe}")
-	private String iposExe;
+/*	@Value("${ipos_exe}")
+	private String iposExe;*/
 
 	@Override
 	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
@@ -38,7 +38,7 @@ public class HttpSessionIdHandshakeInterceptor implements HandshakeInterceptor{
 			if(session!=null) {
 				attributes.put("session_user", session.getAttribute("session_user"));
 				attributes.put("dataSource", dataSource);
-				attributes.put("ipos_exe", iposExe);
+				//attributes.put("ipos_exe", iposExe);
 				attributes.put("ipos_card", iposCard);
 			}
 		

@@ -149,8 +149,10 @@ public class ReceiptPrinter {
 		try {
 			JSONObject receiptHeader = getReceiptHeader();
 			JSONObject receiptContent = getReceiptContent(checkNo);
-			// JSONObject receiptFooter
-			JSONObject printReceiptResponse = printReceiptData(staffName, receiptHeader, receiptContent, null);
+			JSONObject receiptFooter = getReceiptCashlessPayment(checkNo);
+			System.out.println("Cashless Transaction: " + receiptFooter.toString());
+			
+			JSONObject printReceiptResponse = printReceiptData(staffName, receiptHeader, receiptContent, receiptFooter);
 
 			if (printReceiptResponse.length() > 0) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -378,6 +380,70 @@ public class ReceiptPrinter {
 		return jsonResult;
 	}
 	
+	//Reciept Cashless Transaction
+	private JSONObject getReceiptCashlessPayment(String checkNo) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		
+		try {
+			System.out.println("CheckNumber :" + checkNo);
+			
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("select * from transaction where check_number = ?;");
+			stmt.setString(1, checkNo);
+			rs = stmt.executeQuery();
+
+			if(rs.next()) {
+				
+				//System.out.println("data :"+ rs.getString("card_issuer_name"));
+				
+				jsonResult.put("card_issuer_name", rs.getString("card_issuer_name"));
+				jsonResult.put("bank_tid", rs.getString("bank_tid"));
+				jsonResult.put("bank_mid", rs.getString("bank_mid"));
+				jsonResult.put("transaction_date", rs.getString("transaction_date"));
+				jsonResult.put("transaction_time", rs.getString("transaction_time"));
+				jsonResult.put("masked_card_number", rs.getString("masked_card_number"));
+				jsonResult.put("card_expiry_date", rs.getString("card_expiry_date"));
+				jsonResult.put("approval_code", rs.getString("approval_code"));
+				jsonResult.put("rrn", rs.getString("rrn"));
+				jsonResult.put("batch_number", rs.getString("batch_number"));
+				jsonResult.put("invoice_number", rs.getString("invoice_number"));
+				jsonResult.put("tc", rs.getString("tc"));
+				jsonResult.put("aid", rs.getString("aid"));
+				jsonResult.put("app_label", rs.getString("app_label"));
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
+	}
+
 	private JSONObject getSelectedReceiptPrinter() {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -434,6 +500,8 @@ public class ReceiptPrinter {
 			JSONObject receiptFooterJson) {
 		JSONObject jsonResult = new JSONObject();
 
+		System.out.println("receiptFooterJson data " + receiptFooterJson.toString());
+		
 		try {
 			if (receiptHeaderJson.length() == 0 || receiptContentJson.length() == 0) {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -468,7 +536,7 @@ public class ReceiptPrinter {
 					System.out.println("Template Name: " + templateName);
 					Logger.writeActivity("Template Name: " + templateName , ECPOS_FOLDER);
 
-					try (XWPFDocument doc = new XWPFDocument(new FileInputStream("C:\\receipt\\"+ templateName +".docx"))) {
+					try (XWPFDocument doc = new XWPFDocument(new FileInputStream("C:\\receipt\\ReceiptStyleTemplate_EPSON.docx"))) {
 						if (doc.getStyles() != null) {
 							
 							XWPFStyles styles = doc.getStyles();
@@ -773,11 +841,77 @@ public class ReceiptPrinter {
 								  XWPFTableCell cell = row.getCell(y);
 								  cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(
 										  receiptResultTableWidths[y])); 
+								  System.out.println("receiptResultTableWidths ");
 							  } 
 						  }
+						  
+						  System.out.println("receiptResultTable ");
 
-						// Cashless Payment (Coming Soon)
+		/*				  if(receiptFooterJson.length() > 0) {
+							  System.out.println("Experiment Print ");
+							  
+							XWPFParagraph receiptCashlessTransactionBreak = doc.createParagraph();
+							receiptCashlessTransactionBreak.setSpacingAfter(0);
+							receiptCashlessTransactionBreak.createRun().addBreak();
+							receiptCashlessTransactionBreak.removeRun(0);
 
+							List<String> cashlessTransactionTableLabels = 
+									  Arrays.asList("CARD TYPE", "TID", "MID", "DATE", "TIME", "CARD NUM","EXPIRY DATE", "APPR CODE", "RREF NUM", "BATCH NUM","INV NUM", "TC", "AID", "APP");
+							  
+							List<String> cashlessTransactionTableContents = Arrays.asList(receiptFooterJson.getString("card_issuer_name"), receiptFooterJson.getString("bank_tid"), receiptFooterJson.getString("bank_mid"),   
+									receiptFooterJson.getString("transaction_date"), receiptFooterJson.getString("transaction_time"), 
+									receiptFooterJson.getString("masked_card_number"), receiptFooterJson.getString("card_expiry_date"), 
+									receiptFooterJson.getString("approval_code"), receiptFooterJson.getString("rrn"), 
+									receiptFooterJson.getString("batch_number"), receiptFooterJson.getString("invoice_number"), 
+									receiptFooterJson.getString("tc"), receiptFooterJson.getString("aid"), receiptFooterJson.getString("app_label"));
+							  
+							//Cashless Transaction Label
+							XWPFParagraph cashlessTransactionParagraph = doc.createParagraph();
+							cashlessTransactionParagraph.setAlignment(ParagraphAlignment.CENTER);
+							cashlessTransactionParagraph.setSpacingAfter(0);
+
+							XWPFRun runCashlessTransactionParagraph = headerStoreNameParagraph.createRun();
+							runCashlessTransactionParagraph.setFontSize(9);
+							runCashlessTransactionParagraph.setText("***Cashless Transaction Information***");
+							
+							//Cashless Transaction Table
+							XWPFTable receiptCashlessTransactionTable = doc.createTable(cashlessTransactionTableLabels.size(),2);
+							receiptCashlessTransactionTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+							receiptCashlessTransactionTable.getCTTbl().getTblPr().unsetTblBorders();
+							
+							for (int i = 0; i < cashlessTransactionTableLabels.size(); i++) {
+								XWPFTableRow cashlessTransactionRow = receiptCashlessTransactionTable.getRow(i);
+								createCellText(cashlessTransactionRow.getCell(0), cashlessTransactionTableContents.get(i), false,
+										ParagraphAlignment.LEFT);
+								createCellText(cashlessTransactionRow.getCell(1), cashlessTransactionTableContents.get(i), false,
+										ParagraphAlignment.LEFT);
+							}
+
+							CTTblGrid cttblgridReceiptCashlessTransaction = receiptCashlessTransactionTable.getCTTbl().addNewTblGrid();
+							cttblgridReceiptCashlessTransaction.addNewGridCol().setW(new BigInteger("1400"));
+							cttblgridReceiptCashlessTransaction.addNewGridCol().setW(new BigInteger("2000"));
+	  
+							  for (int x = 0; x < receiptCashlessTransactionTable.getNumberOfRows(); x++) { 
+								  XWPFTableRow row = receiptCashlessTransactionTable.getRow(x); 
+								  int numberOfCell = row.getTableCells().size(); 
+								  for (int y = 0; y < numberOfCell; y++) {
+									  XWPFTableCell cell = row.getCell(y);
+									  cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(
+											  receiptInfoTableWidths[y])); 
+								  } 
+							  }
+							
+								XWPFParagraph cashlessTransactionSignatureParagraph = doc.createParagraph();
+								cashlessTransactionSignatureParagraph.setAlignment(ParagraphAlignment.CENTER);
+								cashlessTransactionSignatureParagraph.setSpacingAfter(0);
+							  
+								XWPFRun runCashlessTransactionSignatureParagraph = cashlessTransactionSignatureParagraph.createRun();
+								runCashlessTransactionSignatureParagraph.setFontSize(9);
+								runCashlessTransactionSignatureParagraph.addCarriageReturn();
+								runCashlessTransactionSignatureParagraph.addCarriageReturn();
+								runCashlessTransactionSignatureParagraph.setText("No Signature Required");
+						  }*/
+						  
 						XWPFRun finalParagraph = doc.createParagraph().createRun();
 						finalParagraph.addCarriageReturn();
 
@@ -807,18 +941,17 @@ public class ReceiptPrinter {
 					 out.close();
 					 
 					 //print pdf
-					 if(myPrintService != null) {
+/*					 if(myPrintService != null) {
 						 PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\receipt.pdf")));
 						 //PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
 						 //PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
-						 
 						 PrinterJob job = PrinterJob.getPrinterJob();
 						 job.setPageable(new PDFPageable(printablePdf));
 						 job.setPrintService(myPrintService);
 						 job.print();
 						 
 						 printablePdf.close();
-					 }
+					 }*/
 					 
 					 jsonResult.put(Constant.RESPONSE_CODE, "00");
 					 jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");

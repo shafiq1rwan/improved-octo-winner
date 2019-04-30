@@ -12,9 +12,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
 	
 	@Autowired
 	private HttpSessionIdHandshakeInterceptor httpSessionIdHandshakeInterceptor;
+	
+	@Autowired
+	private PrinterHandshakeInterceptor printerHandshakeInterceptor;
 
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 		registry.addHandler(new SocketHandler(), "/paymentSocket").addInterceptors(httpSessionIdHandshakeInterceptor);
+		registry.addHandler(new PrinterSocketHandler(), "/printerSocket").addInterceptors(printerHandshakeInterceptor);
 	}
 }

@@ -191,7 +191,11 @@ public class SocketHandler extends TextWebSocketHandler {
 							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
 							
 							if (!uniqueTranNumber.equals(null)) {
-								transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, session);
+								//transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, session);
+								transactionResult = new JSONObject("{\"tranType\":\"card-sale\",\"uniqueTranNumber\":\"201904300001010000231\",\"responseCode\":\"00\",\"responseMessage\":\"APPROVED\",\"cardResponse\":{\"approvalCode\":\"001784\",\"invoiceNumber\":\"000022\",\"merchantInfo\":null,\"bankTerminalID\":\"99990023\",\"bankMerchantID\":\"000027031314099\",\"cardIssuerName\":\"VISA Wave \",\"cardNumber\":\"************2267\",\"expiryDate\":\"**\\/**\",\"batchNumber\":\"000001\",\"transactionDate\":\"190430\",\"transactionTime\":\"091849\",\"retrievalReferenceNumber\":\"000011100036\",\"cardIssuerID\":null,\"cardHolderName\":\" \\/\",\"AID\":\"A0000000031010\",\"APP\":\"MAYBANK VISA\",\"TC\":\"5B6AD4C0A136DCE2\",\"terminalVerificationResult\":\"3\"},\"qrResponse\":null,\"settlementResponse\":null,\"wifiIP\":\"\",\"wifiPort\":\"\"}");
+								transactionResult.put("uniqueTranNumber", uniqueTranNumber);
+								System.out.println("Card Transaction Result: "+ transactionResult.toString());
+								
 								
 								if(transactionResult.has("responseCode")) {
 									if (transactionResult.getString("responseCode").equals("00")) {
