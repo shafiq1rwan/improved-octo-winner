@@ -9,20 +9,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import mpay.ecpos_manager.general.property.Property;
-
 public class Logger {
 
-	final static String PROJECT_LOG_PATH = Property.getPROJECT_LOG_PATH();
+	public static String logPath = "ecpos-log";
 
 	public static void writeActivity(String logActivity, String foldername) {
 		Date toFDate = new Date();
 		SimpleDateFormat f = new SimpleDateFormat("dd-MM-yyyy");
 		String date = f.format(toFDate);
 		FileWriter log;
-
+		
 		try {
-			String activitylogpath = PROJECT_LOG_PATH + "/" + foldername;
+			String activitylogpath = logPath + "/" + foldername;
 			File detectFile = new File(activitylogpath);
 			detectFile.mkdirs();
 
@@ -50,7 +48,7 @@ public class Logger {
 			exception.printStackTrace(pw);
 			String sStackTrace = sw.toString(); // stack trace as a string
 
-			String errorlogpath = PROJECT_LOG_PATH + "/" + foldername;
+			String errorlogpath = logPath + "/" + foldername;
 			File detectFile = new File(errorlogpath);
 			detectFile.mkdirs();
 

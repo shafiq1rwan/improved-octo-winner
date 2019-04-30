@@ -147,9 +147,13 @@ public class SocketHandler extends TextWebSocketHandler {
 			}
 			long storeId = storeDetail.getLong("id");
 
-			stmt = connection.prepareStatement("select * from `check` where table_number = ? and check_number = ? and check_status in (1, 2);");
-			stmt.setInt(1, jsonObj.getInt("tableNo"));
-			stmt.setString(2, jsonObj.getString("checkNo"));
+			String tableNoCondition = "table_number is null";
+			if (jsonObj.getInt("tableNo") > 0) {
+				tableNoCondition = "table_number = " + jsonObj.getInt("tableNo");
+			}
+			
+			stmt = connection.prepareStatement("select * from `check` where " + tableNoCondition + " and check_number = ? and check_status in (1, 2);");
+			stmt.setString(1, jsonObj.getString("checkNo"));
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {

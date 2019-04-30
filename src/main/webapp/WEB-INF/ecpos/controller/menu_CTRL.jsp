@@ -3,6 +3,8 @@
 		$scope.tableNo = $routeParams.tableNo;
 		$scope.checkNo = $routeParams.checkNo;
 		
+		$scope.screenWidth = screen.width;
+		
 		$scope.categories = {};
 		$scope.menuItems = {};
 		$scope.tiers = {};

@@ -39,7 +39,7 @@ hr {
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 
 						<!-- START of menu well -->
-						<div id="menuWell">
+						<div ng-if="mode == 1" id="menuWell">
 							<div class="col-sm-6" style="padding-right: 2px; padding-left: 2px;">
 								<jsp:include page="/WEB-INF/ecpos/views/menu.jsp" flush="true"></jsp:include>
 							</div>
@@ -63,16 +63,21 @@ hr {
 											</div>
 										</div>
 										<div class="col-sm-5">
-											<%if (user.getStoreType() == 2) {%>
-											<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="generateQR()">
-												<i class="fa fa-qrcode"></i> Generate QR
-											</button>
-											<br>
-											<br>
-											<%}%>
-											<button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
-												<i class="fa fa-barcode"></i> Barcode Order
-											</button>
+											<div ng-if="mode == 1">
+												<%if (user.getStoreType() == 2) {%>
+												<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="generateQR()">
+													<i class="fa fa-qrcode"></i> Generate QR
+												</button>
+												<br>
+												<br>
+												<%}%>
+												<button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
+													<i class="fa fa-barcode"></i> Barcode Order
+												</button>
+											</div>
+											<div ng-if="mode == 2">
+												<button class="btn btn-block btn-info" ng-click="redirect(1)">Back To Previous</button>
+											</div>
 										</div>
 									</div>
 									<div>
@@ -174,7 +179,7 @@ hr {
 												<button id="cancelItemButton" class="btn btn-block btn-info" ng-click="cancelItem()">CANCEL ITEM</button>
 											</div>
 											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-												<button id="paymentButton" class="btn btn-block btn-info" ng-click="redirectPayment()">PAYMENT</button>
+												<button id="paymentButton" class="btn btn-block btn-info" ng-click="redirect(2)">PAYMENT</button>
 											</div>
 										</div>
 										<div class="row">
@@ -189,7 +194,7 @@ hr {
 						<!-- END of check well -->
 						
 						<!-- START of payment well -->
-						<div id="paymentWell">
+						<div ng-if="mode == 2" id ="paymentWell">
 							<div class="col-md-6" style="padding-right: 2px; padding-left: 2px;">
 								<jsp:include page="/WEB-INF/ecpos/views/payment.jsp" flush="true"></jsp:include>
 							</div>

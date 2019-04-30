@@ -179,6 +179,60 @@ public class RestC_transaction {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/get_previous_payment" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String getPreviousPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				JSONObject jsonObj = new JSONObject(data);
+				
+				String tableNoCondition = "c.table_number is null and";
+				if (jsonObj.getInt("tableNo") > 0) {
+					tableNoCondition = "c.table_number = " + jsonObj.getInt("tableNo") + " and";
+				}
+				
+				stmt = connection.prepareStatement("select c.id,c.check_number,t.payment_type,pt.name from `check` c " + 
+						"inner join transaction t on c.id = t.check_id and c.check_number = t.check_number " + 
+						"inner join payment_type pt on t.payment_type = pt.id " + 
+						"where " + tableNoCondition + " c.check_number = ? and t.transaction_status = 3 " + 
+						"group by c.id,c.check_number,t.payment_type,pt.name;");
+				stmt.setString(1, jsonObj.getString("checkNo"));
+				rs = stmt.executeQuery();
+	
+				String previousPayment = "0";
+				
+				while (rs.next()) {
+					previousPayment = previousPayment + rs.getString("payment_type");
+				}
+				jsonResult.put("data", previousPayment);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/submit_payment" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String submitPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);

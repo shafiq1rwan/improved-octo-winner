@@ -6,8 +6,8 @@
 		
 		$scope.checkDetail = {};
 		
-		$('#menuWell').show();
-		$('#paymentWell').hide();
+		$scope.mode = 1;
+		
 		$('#generateQRButton').show();
 		$('#barcodeOrderButton').show();
 		$('#checkActionButtons').show();
@@ -39,9 +39,11 @@
 				$scope.checkDetail = response.data;
 				
 				if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
+					$("#allGrandParentItemCheckbox").hide();
 					$('#cancelItemButton').prop('disabled', true);
 					$('#paymentButton').prop('disabled', true);
 				} else {
+					$("#allGrandParentItemCheckbox").show();
 					$('#cancelItemButton').prop('disabled', false);
 					$('#paymentButton').prop('disabled', false);
 				}
@@ -267,16 +269,24 @@
 			}
 		}
 		
-		$scope.redirectPayment = function() {
-			$('#menuWell').hide();
-			$('#paymentWell').show();
-			$('#generateQRButton').hide();
-			$('#barcodeOrderButton').hide();
-			$('#checkActionButtons').hide();
-			$("#allGrandParentItemCheckbox").hide();
-			$("input[name=grandParentItemCheckbox]").hide();
+		$scope.redirect = function(mode) {
+			$scope.mode = mode;
 			
-			$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
+			if ($scope.mode == 1) {
+				$('#generateQRButton').show();
+				$('#barcodeOrderButton').show();
+				$('#checkActionButtons').show();
+				$("#allGrandParentItemCheckbox").show();
+				$("input[name=grandParentItemCheckbox]").show();
+			} else if ($scope.mode == 2) {
+				$('#generateQRButton').hide();
+				$('#barcodeOrderButton').hide();
+				$('#checkActionButtons').hide();
+				$("#allGrandParentItemCheckbox").hide();
+				$("input[name=grandParentItemCheckbox]").hide();
+				
+				$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
+			}
 		}
 	});
 </script>
