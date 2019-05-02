@@ -8,6 +8,8 @@
 		
 		$scope.mode = 1;
 		
+		$('#menuWell').show();
+		$('#paymentWell').hide();
 		$('#generateQRButton').show();
 		$('#barcodeOrderButton').show();
 		$('#checkActionButtons').show();
@@ -39,11 +41,9 @@
 				$scope.checkDetail = response.data;
 				
 				if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
-					$("#allGrandParentItemCheckbox").hide();
 					$('#cancelItemButton').prop('disabled', true);
 					$('#paymentButton').prop('disabled', true);
 				} else {
-					$("#allGrandParentItemCheckbox").show();
 					$('#cancelItemButton').prop('disabled', false);
 					$('#paymentButton').prop('disabled', false);
 				}
@@ -269,24 +269,28 @@
 			}
 		}
 		
-		$scope.redirect = function(mode) {
-			$scope.mode = mode;
+		$scope.redirectPayment = function() {
+			$scope.mode = 2;
+			$('#menuWell').hide();
+			$('#paymentWell').show();
+			$('#generateQRButton').hide();
+			$('#barcodeOrderButton').hide();
+			$('#checkActionButtons').hide();
+			$("#allGrandParentItemCheckbox").hide();
+			$("input[name=grandParentItemCheckbox]").hide();
 			
-			if ($scope.mode == 1) {
-				$('#generateQRButton').show();
-				$('#barcodeOrderButton').show();
-				$('#checkActionButtons').show();
-				$("#allGrandParentItemCheckbox").show();
-				$("input[name=grandParentItemCheckbox]").show();
-			} else if ($scope.mode == 2) {
-				$('#generateQRButton').hide();
-				$('#barcodeOrderButton').hide();
-				$('#checkActionButtons').hide();
-				$("#allGrandParentItemCheckbox").hide();
-				$("input[name=grandParentItemCheckbox]").hide();
-				
-				$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
-			}
+			$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
+		}
+		
+		$scope.redirectMenu = function() {
+			$scope.mode = 1;
+			$('#menuWell').show();
+			$('#paymentWell').hide();
+			$('#generateQRButton').show();
+			$('#barcodeOrderButton').show();
+			$('#checkActionButtons').show();
+			$('#allGrandParentItemCheckbox').show();
+			$('input[name=grandParentItemCheckbox]').show();
 		}
 	});
 </script>
