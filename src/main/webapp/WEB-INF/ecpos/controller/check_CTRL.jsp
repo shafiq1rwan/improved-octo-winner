@@ -38,21 +38,34 @@
 		$scope.getCheckDetails = function() {
 			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + $scope.orderType + "/" + $scope.checkNo + "/" + $scope.tableNo)
 			.then(function(response) {
-				$scope.checkDetail = response.data;
-				
-				if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
-					$('#cancelItemButton').prop('disabled', true);
-					$('#paymentButton').prop('disabled', true);
+				if (response.data.hasOwnProperty('response_code') && response.data.response_code == "01") {
+					if ($scope.orderType == "table") {
+						alert(response.data.response_message);
+						$location.path("/table_order");
+					} else if ($scope.orderType == "take_away") {
+						alert(response.data.response_message);
+						$location.path("/take_away_order");
+					} else if ($scope.orderType == "deposit") {
+						alert(response.data.response_message);
+						$location.path("/deposit_order");
+					}
 				} else {
-					$('#cancelItemButton').prop('disabled', false);
-					$('#paymentButton').prop('disabled', false);
+					$scope.checkDetail = response.data;
+					
+					if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
+						$('#cancelItemButton').prop('disabled', true);
+						$('#paymentButton').prop('disabled', true);
+					} else {
+						$('#cancelItemButton').prop('disabled', false);
+						$('#paymentButton').prop('disabled', false);
+					}
+					
+					setTimeout(function() {
+						$('input[name=itemQuantity]').click(function(){
+						    $(this).select();
+						});
+					},100);
 				}
-				
-				setTimeout(function() {
-					$('input[name=itemQuantity]').click(function(){
-					    $(this).select();
-					});
-				},100);
 			},
 			function(response) {
 				alert("Session TIME OUT");
@@ -253,7 +266,13 @@
 					if (response.data.response_code === "00") {
 						alert("Check has been cancelled.")
 
-						window.location.href = "${pageContext.request.contextPath}";
+						if ($scope.orderType == "table") {
+							$location.path("/table_order");
+						} else if ($scope.orderType == "take_away") {
+							$location.path("/take_away_order");
+						} else if ($scope.orderType == "deposit") {
+							$location.path("/deposit_order");
+						}
 					} else {
 						if (response.data.response_message != null) {
 							alert(response.data.response_message);
@@ -280,6 +299,8 @@
 			$("input[name=grandParentItemCheckbox]").hide();
 			
 			$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
+			
+			$('#paymentCarousel').carousel(0);
 		}
 		
 		$scope.redirectMenu = function() {

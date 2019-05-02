@@ -1,9 +1,3 @@
-<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
-
-<%
-	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
-%>
-
 <script>
 	app.controller('payment_CTRL',function($scope, $http, $timeout, $location, $route,$routeParams) {
 		$scope.paymentType = "";
@@ -228,27 +222,25 @@
 							//Print Receipt here
 							printReceipt($scope.checkNo)
 
-							<%if (user.getStoreType() == 2) {%>
 							if ($scope.orderType == "table") {
-								if ($scope.paymentType == "full") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/table_order");
 								} else {
 									location.reload();
 								}
 							} else if ($scope.orderType == "take_away") {
-								if ($scope.paymentType == "full") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/take_away_order");
 								} else {
 									location.reload();
 								}
+							} else if ($scope.orderType == "deposit") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/deposit_order");
+								} else {
+									location.reload();
+								}
 							}
-							<%} else {%>
-							if ($scope.paymentType == "full") {
-								$location.path("/take_away_order");
-							} else {
-								location.reload();
-							}
-							<%}%>
 						} else {
 							alert(response.data.response_message);
 						}
@@ -325,27 +317,25 @@
 						if ($scope.jsonResult.response_code == "01") {
 							location.reload();
 						} else {
-							<%if (user.getStoreType() == 2) {%>
 							if ($scope.orderType == "table") {
-								if ($scope.paymentType == "full") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/table_order");
 								} else {
 									location.reload();
 								}
 							} else if ($scope.orderType == "take_away") {
-								if ($scope.paymentType == "full") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/take_away_order");
 								} else {
 									location.reload();
 								}
+							} else if ($scope.orderType == "deposit") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/deposit_order");
+								} else {
+									location.reload();
+								}
 							}
-							<%} else {%>
-							if ($scope.paymentType == "full") {
-								$location.path("/take_away_order");
-							} else {
-								location.reload();
-							}
-							<%}%>
 						}
 					};
 				}
@@ -418,27 +408,25 @@
 						//Print Receipt here
 						printReceipt($scope.checkNo)
 						
-						<%if (user.getStoreType() == 2) {%>
 						if ($scope.orderType == "table") {
-							if ($scope.paymentType == "full") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 								$location.path("/table_order");
 							} else {
 								location.reload();
 							}
 						} else if ($scope.orderType == "take_away") {
-							if ($scope.paymentType == "full") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 								$location.path("/take_away_order");
 							} else {
 								location.reload();
 							}
+						} else if ($scope.orderType == "deposit") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+								$location.path("/deposit_order");
+							} else {
+								location.reload();
+							}
 						}
-						<%} else {%>
-						if ($scope.paymentType == "full") {
-							$location.path("/take_away_order");
-						} else {
-							location.reload();
-						}
-						<%}%>
 					} else {
 						$('#loading_modal').modal('hide');
 						console.log("failed")

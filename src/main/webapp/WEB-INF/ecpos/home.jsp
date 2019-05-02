@@ -158,42 +158,6 @@
 	app.config(['$routeProvider', '$compileProvider', function($routeProvider, $compileProvider) {
 		$compileProvider.imgSrcSanitizationWhitelist(/^\s*(local|http|https|app|tel|ftp|file|blob|content|ms-appx|x-wmapp0|cdvfile):|data:image\//);
 		$routeProvider
-/* 		.when("/sales",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/sales",
-				controller : "show_sales_CTRL"
-			})
-		.when("/checks/:check_no",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/checks",
-				controller : "show_checks_CTRL"
-			})
-		.when("/trans",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/trans",
-				controller : "show_trans_CTRL"
-			})
- 		.when("/items",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/items"
-			})
-		.when("/reports",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/reports"
-			})
-		.when("/setting",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/ecpos_manager_setting"
-			})
- 		.when("/take_away_order",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/takeaway",
-				controller : "show_take_away_order_CTRL"
-			})
- 		.when("/payment/:check_no",
-			{
-				templateUrl : "${pageContext.request.contextPath}/ecpos/views/payment"
-			}) */
 		.when("/connection_qr",
 			{
 				templateUrl : "${pageContext.request.contextPath}/ecpos/views/qr_scan"
@@ -214,6 +178,11 @@
 			{
 				templateUrl : "${pageContext.request.contextPath}/views/table_order",
 				controller : "table_order_CTRL"
+			})
+		.when("/deposit_order",
+			{
+				templateUrl : "${pageContext.request.contextPath}/views/deposit_order",
+				controller : "deposit_order_CTRL"
 			})
 		.when("/check/:orderType/:checkNo/:tableNo",
 			{
@@ -254,23 +223,12 @@
 </script>
 
 <!-- ***** ANGULAR JS CONTROLLER ***** -->
-<%-- <jsp:include page="/WEB-INF/ecpos/c_bk/show_sales_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/show_checks_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/show_take_away_order_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/show_payment_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/show_trans_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/show_items_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/printer_configuration.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/ecpos_manager_setting_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/show_reports_CTRL.jsp" />
-<jsp:include page="/WEB-INF/ecpos/c_bk/connection_qr_CTRL.jsp" /> --%>
-
-
 <jsp:include page="/WEB-INF/ecpos/controller/table_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/check_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/menu_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/payment_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/take_away_order_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/deposit_order_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/items_listing_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/checks_listing_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/transactions_listing_CTRL.jsp" />

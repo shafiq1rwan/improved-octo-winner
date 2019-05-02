@@ -142,6 +142,13 @@ public class EcposManagerController {
 		return model;
 	}
 	
+	@RequestMapping(value = {"/views/deposit_order"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_deposit_order() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/deposit_order");
+		return model;
+	}
+	
 	@RequestMapping(value = {"/views/items_listing"}, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecpos_items_listing() {
 		ModelAndView model = new ModelAndView();
@@ -177,92 +184,6 @@ public class EcposManagerController {
 		return model;
 	}
 	
-	
-//	// USER - SHOW SALES
-//	@RequestMapping(value = { "/views/sales" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView ecpos_sales() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_sales");
-//		return model;
-//	}
-//
-//	@RequestMapping(value = { "/views/checks" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView ecpos_check_details() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_check_detail");
-//		return model;
-//	}
-//
-//	@RequestMapping(value = { "/views/trans" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView ecpos_trans_data() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_trans");
-//		return model;
-//	}
-//
-//	@RequestMapping(value = { "/views/items" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView ecpos_items_data() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_items");
-//		return model;
-//	}
-//
-//	@RequestMapping(value = { "/views/dummy" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView ecpos_dummy_data() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_dummy");
-//		return model;
-//	}
-//
-//	@RequestMapping(value = { "/views/activation" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView ecpos_manager_activation() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/activation");
-//		return model;
-//	}
-//
-//	@RequestMapping(value = { "/views/branch_selection" }, method = { RequestMethod.GET, RequestMethod.POST })
-//	public ModelAndView branch_selection() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/branch_selection");
-//		return model;
-//	}
-//
-//	@GetMapping("/views/printer_config")
-//	public ModelAndView printer_config() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/printer_configuration");
-//		return model;
-//	}
-//
-//	@GetMapping("/views/ecpos_manager_setting")
-//	public ModelAndView ecpos_manager_setting() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/ecpos_manager_setting");
-//		return model;
-//	}
-//
-//	@GetMapping("/views/takeaway")
-//	public ModelAndView ecpos_take_away_order() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_takeaway_order");
-//		return model;
-//	}
-//
-//	@GetMapping("/views/payment")
-//	public ModelAndView ecpos_payment() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_payment");
-//		return model;
-//	}
-//
-//	@GetMapping("/views/reports")
-//	public ModelAndView ecpos_report() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/show_reports");
-//		return model;
-//	}
-//
 //	@GetMapping("/views/qr_scan")
 //	public ModelAndView ecpos_connection_qr() {
 //		ModelAndView model = new ModelAndView();

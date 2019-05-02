@@ -157,110 +157,117 @@ public class SocketHandler extends TextWebSocketHandler {
 			rs = stmt.executeQuery();
 			
 			if (rs.next()) {
-				long checkId = rs.getLong("id");
-				String checkNo = rs.getString("check_number");
-				BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
-				BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
-				BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
-				
-				stmt.close();
-				stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
-						"values (?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
-				stmt.setLong(1, staffId);
-				stmt.setLong(2, checkId);
-				stmt.setString(3, checkNo);
-				stmt.setInt(4, 1);
-				stmt.setInt(5, paymentMethod);
-				stmt.setInt(6, paymentType);
-				stmt.setString(7, terminalSerialNumber);
-				stmt.setString(8, "RM");
-				stmt.setBigDecimal(9, paymentAmount);
-				stmt.setInt(10, transactionStatus);
-				int insertTransaction = stmt.executeUpdate();
-				
-				if (insertTransaction > 0) {
-					rs2 = stmt.getGeneratedKeys();
+				if (rs.getBigDecimal("overdue_amount").compareTo(paymentAmount) >= 0) {
+					long checkId = rs.getLong("id");
+					String checkNo = rs.getString("check_number");
+					BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
+					BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
+					BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 					
-					if (rs2.next()) {
-						long transactionId = rs2.getLong(1);
-
-						JSONObject terminalWifiIPPort = new JSONObject();
-						JSONObject transactionResult = new JSONObject();
-						JSONObject updateTransactionResult = new JSONObject();
+					stmt.close();
+					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
+							"values (?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
+					stmt.setLong(1, staffId);
+					stmt.setLong(2, checkId);
+					stmt.setString(3, checkNo);
+					stmt.setInt(4, 1);
+					stmt.setInt(5, paymentMethod);
+					stmt.setInt(6, paymentType);
+					stmt.setString(7, terminalSerialNumber);
+					stmt.setString(8, "RM");
+					stmt.setBigDecimal(9, paymentAmount);
+					stmt.setInt(10, transactionStatus);
+					int insertTransaction = stmt.executeUpdate();
+					
+					if (insertTransaction > 0) {
+						rs2 = stmt.getGeneratedKeys();
 						
-						boolean paymentFlag = false;
-						
-						if(paymentMethod == 2) {
-							terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
-							String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
+						if (rs2.next()) {
+							long transactionId = rs2.getLong(1);
+	
+							JSONObject terminalWifiIPPort = new JSONObject();
+							JSONObject transactionResult = new JSONObject();
+							JSONObject updateTransactionResult = new JSONObject();
 							
-							if (!uniqueTranNumber.equals(null)) {
-								transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, session);
+							boolean paymentFlag = false;
+							
+							if(paymentMethod == 2) {
+								terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
+								String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
 								
-								if(transactionResult.has("responseCode")) {
-									if (transactionResult.getString("responseCode").equals("00")) {
-										paymentFlag = true;
-										updateTransactionResult = updateTransactionResult(transactionResult,"card");
+								if (!uniqueTranNumber.equals(null)) {
+									transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, session);
+									
+									if(transactionResult.has("responseCode")) {
+										if (transactionResult.getString("responseCode").equals("00")) {
+											paymentFlag = true;
+											updateTransactionResult = updateTransactionResult(transactionResult,"card");
+										} else {
+											Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
+										}
 									} else {
+										Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
+									}
+								} else {
+									Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
+								}
+							}
+							
+							if(paymentFlag) {
+								if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
+									if (updateTransactionResult.getString(Constant.RESPONSE_CODE).equals("00")) {
+										JSONObject updateCheckResult = new JSONObject();
+										
+										if (paymentType == 1) {
+											updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+										} else if (paymentType == 3) {
+											updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount, grandTotalAmount, depositAmount, tenderAmount);
+										} else {
+											updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+										}
+										
+										if (updateCheckResult.getString("status").equals("success")) {
+											Logger.writeActivity("Transaction has been successfully performed", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "00");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
+											jsonResult.put("check_status", updateCheckResult.getString("checkStatus"));
+										} else {
+											Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+										}
+									} else {
+										Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, updateTransactionResult.getString(Constant.RESPONSE_MESSAGE));
+									}
+								} else {
 										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
 										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
-									}
-								} else {
-									Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
 								}
-							} else {
-								Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
 							}
+	
+						} else {
+							Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
 						}
-						
-						if(paymentFlag) {
-							if(updateTransactionResult.has(Constant.RESPONSE_CODE)) {
-								if (updateTransactionResult.getString(Constant.RESPONSE_CODE).equals("00")) {
-									boolean updateCheckResult = false;
-									
-									if (paymentType == 1) {
-										updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
-									} else if (paymentType == 3) {
-										updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount, grandTotalAmount, depositAmount, tenderAmount);
-									} else {
-										updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
-									}
-									
-									if (updateCheckResult) {
-										Logger.writeActivity("Transaction has been successfully performed", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "00");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
-									} else {
-										Logger.writeActivity("Check Failed To Close", ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Close");
-									}
-								} else {
-									Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, updateTransactionResult.getString(Constant.RESPONSE_MESSAGE));
-								}
-							} else {
-									Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
-							}
-						}
-
 					} else {
-						Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
+						Logger.writeActivity("Transaction Failed To Insert", ECPOS_FOLDER);
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Insert");
 					}
 				} else {
-					Logger.writeActivity("Transaction Failed To Insert", ECPOS_FOLDER);
+					Logger.writeActivity("Payment Amount Is Greater Than Amount Need To Be Paid", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Insert");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Payment Amount Is Greater Than Amount Need To Be Paid");
 				}
 			} else {
 				Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
@@ -454,35 +461,41 @@ public class SocketHandler extends TextWebSocketHandler {
 		return null;
 	}
 	
-	private boolean updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private JSONObject updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
-		boolean response = false;
+		JSONObject result = new JSONObject();
 		
 		try {
 			connection = dataSource.getConnection();
 			
 			tenderAmount = tenderAmount.add(paymentAmount);
 			
-			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
+			String tableNoCondition = "table_number is null";
+			if (tableNo > 0) {
+				tableNoCondition = "table_number = " + tableNo;
+			}
+			
+			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and " + tableNoCondition + " and check_status in (1, 2);");
 			stmt.setBigDecimal(1, tenderAmount);
 			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
 			stmt.setString(3, checkNo);
-			stmt.setInt(4, tableNo);
 			int updateCheck = stmt.executeUpdate();
 			
 			if (updateCheck > 0) {
 				stmt.close();
 				stmt = connection.prepareStatement("update check_detail set check_detail_status = 3, transaction_id = ?, updated_date = now() " + 
-						"where check_id = (select id from `check` where check_number = ? and table_number = ?) and check_number = ? and check_detail_status in (1, 2); ");
+						"where check_id = (select id from `check` where check_number = ? and " + tableNoCondition + ") and check_number = ? and check_detail_status in (1, 2); ");
 				stmt.setLong(1, transactionId);
 				stmt.setString(2, checkNo);
-				stmt.setInt(3, tableNo);
-				stmt.setString(4, checkNo);
+				stmt.setString(3, checkNo);
 				int updateCheckDetail = stmt.executeUpdate();
 				
 				if (updateCheckDetail > 0) {
-					response = true;
+					result.put("status", "success");
+					result.put("checkStatus", "closed");
+				} else {
+					result.put("status", "fail");
 				}
 			}
 		} catch (Exception e) {
@@ -497,13 +510,13 @@ public class SocketHandler extends TextWebSocketHandler {
 				e.printStackTrace();
 			}
 		}
-		return response;
+		return result;
 	}
 	
-	private boolean updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private JSONObject updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
-		boolean response = false;
+		JSONObject result = new JSONObject();
 		
 		try {
 			connection = dataSource.getConnection();
@@ -521,15 +534,29 @@ public class SocketHandler extends TextWebSocketHandler {
 				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(tenderAmount);
 			}
 			
-			stmt = connection.prepareStatement("update `check` set " + amountType + " = ?, overdue_amount = ?, updated_date = now() where check_number = ? and table_number = ? and check_status in (1, 2);");
+			String tableNoCondition = "table_number is null";
+			if (tableNo > 0) {
+				tableNoCondition = "table_number = " + tableNo;
+			}
+			
+			String checkStatusCondition = "";
+			String checkStatus = "open";
+			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0) {
+				checkStatusCondition = "check_status = 3, ";
+				checkStatus = "closed";
+			}
+			
+			stmt = connection.prepareStatement("update `check` set " + amountType + " = ?, overdue_amount = ?, " + checkStatusCondition + "updated_date = now() where check_number = ? and " + tableNoCondition + " and check_status in (1, 2);");
 			stmt.setBigDecimal(1, paidAmount);
 			stmt.setBigDecimal(2, overdueAmount);
 			stmt.setString(3, checkNo);
-			stmt.setInt(4, tableNo);
 			int updateCheck = stmt.executeUpdate();
 			
 			if (updateCheck > 0) {
-				response = true;
+				result.put("status", "success");
+				result.put("checkStatus", checkStatus);
+			} else {
+				result.put("status", "fail");
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -543,15 +570,15 @@ public class SocketHandler extends TextWebSocketHandler {
 				e.printStackTrace();
 			}
 		}
-		return response;
+		return result;
 	}
 	
-	private boolean updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private JSONObject updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		boolean response = false;
+		JSONObject result = new JSONObject();
 		
 		try {
 			connection = dataSource.getConnection();
@@ -589,8 +616,10 @@ public class SocketHandler extends TextWebSocketHandler {
 					}
 					
 					String checkStatusCondition = "";
+					String checkStatus = "open";
 					if (empty) {
 						checkStatusCondition = "check_status = 3, ";
+						checkStatus = "closed";
 					}
 					
 					tenderAmount = tenderAmount.add(paymentAmount);
@@ -603,7 +632,10 @@ public class SocketHandler extends TextWebSocketHandler {
 					int updateCheck = stmt.executeUpdate();
 					
 					if (updateCheck> 0) {
-						response = true;
+						result.put("status", "success");
+						result.put("checkStatus", checkStatus);
+					} else {
+						result.put("status", "fail");
 					}
 				}
 			}
@@ -621,7 +653,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				e.printStackTrace();
 			}
 		}
-		return response;
+		return result;
 	}
 	
 	private JSONObject updateTransactionResult(JSONObject transactionResult, String transactionCategory) {

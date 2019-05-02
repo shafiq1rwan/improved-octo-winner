@@ -29,7 +29,13 @@
 					<%} else {%>
 						<span>Purchase</span> 
 					<%}%>
-						
+						<span class="pull-right-container"></span>
+					</a>
+				</li>
+				<li>
+					<a href="${pageContext.request.contextPath}/#!deposit_order">
+						<i class="fa fa-save"></i> 
+						<span>Deposit Order</span> 
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
