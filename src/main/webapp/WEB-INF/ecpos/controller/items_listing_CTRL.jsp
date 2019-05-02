@@ -44,8 +44,8 @@
 				"order" : [ [ 0, "asc" ] ],
 				destroy : true,
 				"columns" : [{"data" : "id", "width": "5%"}, 
-					{"data" : "backendId", "width": "13%"}, 
-					{"data" : "name", "width": "54%"},
+					{"data" : "backendId", "width": "15%"}, 
+					{"data" : "name", "width": "50%"},
 					{"render" : function(data, type, full, meta) {
 						var buttonValue;
 
@@ -57,7 +57,7 @@
 						
 						return '<button class="btn btn-sm btn-info" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button>' +
 						'&nbsp;<button class="btn btn-sm btn-info green-button" style="background-color: #00FA9A; border-color: #00FA9A;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button>';
-					}, "width": "28%"}],
+					}, "width": "30%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
 				}

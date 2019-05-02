@@ -26,7 +26,7 @@
 					}
 				},
 				"searching": false,
-				"pageLength": 12,
+				"pageLength": 8,
 				"bLengthChange": false,
 				"order" : [ [ 0, "desc" ] ],
 				destroy : true,
@@ -62,7 +62,6 @@
 					$scope.getCheckDetails(data.orderType + '/' + data.checkNumber + '/' + data.tableNumber);
 				}
 			});
-
 		}
 		
 		$scope.getCheckDetails = function(params) {
