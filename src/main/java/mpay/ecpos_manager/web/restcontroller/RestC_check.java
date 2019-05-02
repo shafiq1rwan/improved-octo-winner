@@ -429,7 +429,7 @@ public class RestC_check {
 				String tableNoCondition = null;
 				if (orderType.equals("table")) {
 					tableNoCondition = "table_number = " + tableNo;
-				} else if (orderType.equals("take_away")) {
+				} else if (orderType.equals("take_away") || orderType.equals("deposit")) {
 					tableNoCondition = "table_number is null";
 				}
 				
@@ -442,6 +442,7 @@ public class RestC_check {
 				if (rs.next()) {
 					long id = rs.getLong("id");
 					
+					jsonResult.put("orderType", rs.getString("order_type"));
 					jsonResult.put("checkNo", rs.getString("check_number"));
 					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 					jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
