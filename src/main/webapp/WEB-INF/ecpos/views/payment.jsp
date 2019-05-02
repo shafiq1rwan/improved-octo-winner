@@ -207,8 +207,8 @@ ul.select2-results__options li {
 														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="three" type="button" value="3" class="calculator" ng-click="enterCalculator('amount',3)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('amount',0)" /></div>
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('amount',00)" /></div>
+														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('amount',10)" /></div>
+														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('amount',100)" /></div>
 													</div>
 												</div>
 												<div class="col-sm-3">

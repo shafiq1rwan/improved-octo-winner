@@ -148,16 +148,18 @@
 	
 		$scope.enterCalculator = function(id, number) {
 			var amount = document.getElementById(id).innerHTML;
-	
+			
 			if (amount < 0.00) {
 				alert("Amount should not be less than 0.00");
 			} else if (number != -10) {
 				if (amount.length < 12) {
-					amount = amount + number;
+					if (number != 100 && number != 10) {
+						amount = amount + number;
+					}
 					
 					var floatAmount = parseFloat(amount);
 					
-					if (number == 00) {
+					if (number == 100) {
 						floatAmount = floatAmount * 100;
 					} else {
 						floatAmount = floatAmount * 10;
