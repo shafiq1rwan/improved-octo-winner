@@ -46,6 +46,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSpacing;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTString;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTStyle;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGrid;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGridCol;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTc;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcBorders;
@@ -71,7 +72,7 @@ public class ReceiptPrinter {
 	DataSource dataSource;
 
 	private static final String RECEIPT_FONT_FAMILY = "Arial";
-	
+
 	private static final String RECEIPT_HEADER_STYLE = "Receipt Header Paragraph";
 	private static final String RECEIPT_PARAGRAPH_STYLE = "Receipt Paragraph";
 
@@ -149,12 +150,14 @@ public class ReceiptPrinter {
 		PreparedStatement stmt4 = null;
 		PreparedStatement stmt5 = null;
 		PreparedStatement stmtA = null;
+		PreparedStatement stmt6 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
 		ResultSet rs4 = null;
 		ResultSet rs5 = null;
 		ResultSet rsA = null;
+		ResultSet rs6 = null;
 
 		try {
 			connection = dataSource.getConnection();
@@ -296,6 +299,35 @@ public class ReceiptPrinter {
 				}
 				jsonResult.put("grandParentItemArray", grandParentItemArray);
 
+				stmt6 = connection
+						.prepareStatement("SELECT * FROM transaction WHERE check_number = ? ORDER BY id DESC;");
+				stmt6.setString(1, checkNo);
+				rs6 = stmt6.executeQuery();
+				if (rs6.next()) {
+					jsonResult.put("paymentMethod", rs6.getInt("payment_method"));
+					if (rs6.getInt("payment_method") == 2) {
+						JSONObject cardData = new JSONObject();
+						cardData.put("uid", rs6.getString("unique_trans_number"));
+						cardData.put("approvalCode", rs6.getString("approval_code"));
+						cardData.put("mid", rs6.getString("bank_mid"));
+						cardData.put("tid", rs6.getString("bank_tid"));
+						cardData.put("date", rs6.getString("transaction_date"));
+						cardData.put("time", rs6.getString("transaction_time"));
+						cardData.put("invoiceNo", rs6.getString("invoice_number"));
+						cardData.put("cardType", rs6.getString("card_issuer_name"));
+						cardData.put("app", rs6.getString("app_label"));
+						cardData.put("aid", rs6.getString("aid"));
+						cardData.put("maskedCardNo", rs6.getString("masked_card_number"));
+						cardData.put("cardExpiry", rs6.getString("card_expiry_date"));
+						cardData.put("batchNo", rs6.getString("batch_number"));
+						cardData.put("rRefNo", rs6.getString("rrn"));
+						cardData.put("tc", rs6.getString("tc"));
+						cardData.put("terminalVerification", rs6.getString("terminal_verification_result"));
+
+						jsonResult.put("cardData", cardData);
+					}
+				}
+
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			} else {
@@ -319,6 +351,10 @@ public class ReceiptPrinter {
 					stmt4.close();
 				if (stmt5 != null)
 					stmt5.close();
+				if (stmtA != null)
+					stmtA.close();
+				if (stmt6 != null)
+					stmt6.close();
 				if (rs != null) {
 					rs.close();
 					rs = null;
@@ -339,6 +375,14 @@ public class ReceiptPrinter {
 					rs5.close();
 					rs5 = null;
 				}
+				if (rsA != null) {
+					rsA.close();
+					rsA = null;
+				}
+				if (rs6 != null) {
+					rs6.close();
+					rs6 = null;
+				}
 				if (connection != null) {
 					connection.close();
 				}
@@ -350,7 +394,7 @@ public class ReceiptPrinter {
 		System.out.println("Printable Result: " + jsonResult.toString());
 		return jsonResult;
 	}
-	
+
 	private JSONObject getSelectedReceiptPrinter() {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -361,21 +405,20 @@ public class ReceiptPrinter {
 
 		try {
 			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(
-					"select receipt_printer_manufacturer from receipt_printer;");
+			stmt = connection.prepareStatement("select receipt_printer_manufacturer from receipt_printer;");
 			rs = stmt.executeQuery();
-			
-			if(rs.next()) {
-				stmt2 = connection.prepareStatement(
-						"select name from receipt_printer_manufacturer_lookup where id = ?;");
+
+			if (rs.next()) {
+				stmt2 = connection
+						.prepareStatement("select name from receipt_printer_manufacturer_lookup where id = ?;");
 				stmt2.setLong(1, rs.getLong("receipt_printer_manufacturer"));
 				rs2 = stmt2.executeQuery();
-				
-				if(rs2.next()) {
+
+				if (rs2.next()) {
 					jsonResult.put("receipt_printer", rs2.getString("name"));
 				}
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
@@ -405,6 +448,7 @@ public class ReceiptPrinter {
 
 	private JSONObject printReceiptData(String staffName, JSONObject receiptHeaderJson, JSONObject receiptContentJson,
 			JSONObject receiptFooterJson) {
+		XWPFParagraph emptyParagraph = null;
 		JSONObject jsonResult = new JSONObject();
 
 		try {
@@ -419,74 +463,76 @@ public class ReceiptPrinter {
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Item Not Available");
 				} else {
 					new File("C:/receipt").mkdirs();
-					
+
 					PrintService myPrintService = null;
 					String templateName = "";
 
 					JSONObject printerResult = getSelectedReceiptPrinter();
-					
-					if(printerResult.has("receipt_printer")) {
-						
+
+					if (printerResult.has("receipt_printer")) {
+
 						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
 						System.out.println("Selected Printer: " + myPrintService.getName());
-						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer") , ECPOS_FOLDER);
-						Logger.writeActivity("Selected Printer: " + myPrintService.getName() , ECPOS_FOLDER);
+						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+								ECPOS_FOLDER);
+						Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
 
-						if(printerResult.getString("receipt_printer").equals("EPSON"))
+						if (printerResult.getString("receipt_printer").equals("EPSON"))
 							templateName = "ReceiptStyleTemplate_EPSON";
-						else if(printerResult.getString("receipt_printer").equals("Posiflex"))
+						else if (printerResult.getString("receipt_printer").equals("Posiflex"))
 							templateName = "ReceiptStyleTemplate_Posiflex";
 					}
-					
-					System.out.println("Template Name: " + templateName);
-					Logger.writeActivity("Template Name: " + templateName , ECPOS_FOLDER);
 
-					try (XWPFDocument doc = new XWPFDocument(new FileInputStream("C:\\receipt\\"+ templateName +".docx"))) {
+					System.out.println("Template Name: " + templateName);
+					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+
+					try (XWPFDocument doc = new XWPFDocument(
+							new FileInputStream("C:\\receipt\\" + templateName + ".docx"))) {
 						if (doc.getStyles() != null) {
-							
+
 							XWPFStyles styles = doc.getStyles();
 							CTFonts fonts = CTFonts.Factory.newInstance();
 							fonts.setAscii(RECEIPT_FONT_FAMILY);
 							styles.setDefaultFonts(fonts);
-							
-							//XWPFStyles styles = doc.createStyles();
 
-							//set default font
-	/*						CTFonts fonts = CTFonts.Factory.newInstance();
-							fonts.setAscii(RECEIPT_FONT_FAMILY);
-							styles.setDefaultFonts(fonts);*/
-							
-							//addCustomParagraphStyle(doc, styles, RECEIPT_HEADER_STYLE, "24");
-							//addCustomParagraphStyle(doc, styles, RECEIPT_PARAGRAPH_STYLE, "18"); */
-						} 
+							// XWPFStyles styles = doc.createStyles();
 
-/*						CTDocument1 ctdoc = doc.getDocument();
-						CTBody ctbody = ctdoc.getBody();
-						if (!ctbody.isSetSectPr()) {
-							ctbody.addNewSectPr();
+							// set default font
+							/*
+							 * CTFonts fonts = CTFonts.Factory.newInstance();
+							 * fonts.setAscii(RECEIPT_FONT_FAMILY); styles.setDefaultFonts(fonts);
+							 */
+
+							// addCustomParagraphStyle(doc, styles, RECEIPT_HEADER_STYLE, "24");
+							// addCustomParagraphStyle(doc, styles, RECEIPT_PARAGRAPH_STYLE, "18"); */
 						}
-						CTSectPr section = ctbody.getSectPr();
 
-						if (!section.isSetPgSz()) {
-							section.addNewPgSz();
-						}*/
-						
-						//CTPageSz pageSize = section.getPgSz();
-						//pageSize.setOrient(STPageOrientation.PORTRAIT);
+						/*
+						 * CTDocument1 ctdoc = doc.getDocument(); CTBody ctbody = ctdoc.getBody(); if
+						 * (!ctbody.isSetSectPr()) { ctbody.addNewSectPr(); } CTSectPr section =
+						 * ctbody.getSectPr();
+						 * 
+						 * if (!section.isSetPgSz()) { section.addNewPgSz(); }
+						 */
+
+						// CTPageSz pageSize = section.getPgSz();
+						// pageSize.setOrient(STPageOrientation.PORTRAIT);
 						// 226 point x 20
-						//pageSize.setW(BigInteger.valueOf(4520));
+						// pageSize.setW(BigInteger.valueOf(4520));
 						// 641
-						//pageSize.setH(BigInteger.valueOf(16820));
+						// pageSize.setH(BigInteger.valueOf(16820));
 
 						// Set Margin
-/*						CTPageMar pageMar = section.addNewPgMar();
-						pageMar.setGutter(BigInteger.valueOf(0));
-						pageMar.setHeader(BigInteger.valueOf(720L));
-						pageMar.setFooter(BigInteger.valueOf(720L));
-						pageMar.setLeft(BigInteger.valueOf(100L));
-						pageMar.setTop(BigInteger.valueOf(220L));
-						pageMar.setRight(BigInteger.valueOf(100L));
-						pageMar.setBottom(BigInteger.valueOf(440L));*/
+						/*
+						 * CTPageMar pageMar = section.addNewPgMar();
+						 * pageMar.setGutter(BigInteger.valueOf(0));
+						 * pageMar.setHeader(BigInteger.valueOf(720L));
+						 * pageMar.setFooter(BigInteger.valueOf(720L));
+						 * pageMar.setLeft(BigInteger.valueOf(100L));
+						 * pageMar.setTop(BigInteger.valueOf(220L));
+						 * pageMar.setRight(BigInteger.valueOf(100L));
+						 * pageMar.setBottom(BigInteger.valueOf(440L));
+						 */
 
 						// Header Store Name
 						XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
@@ -499,7 +545,7 @@ public class ReceiptPrinter {
 						runHeaderStoreNameParagraph.setFontSize(12);
 						runHeaderStoreNameParagraph.setText(receiptHeaderJson.getString("storeName"));
 
-						// Header Store Address					
+						// Header Store Address
 						XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
 						headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
 						headerStoreAddressParagraph.setSpacingAfter(0);
@@ -508,17 +554,27 @@ public class ReceiptPrinter {
 						runHeaderStoreAddressParagraph.setFontSize(9);
 						runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
 						runHeaderStoreAddressParagraph.addBreak();
-						runHeaderStoreAddressParagraph.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
+						runHeaderStoreAddressParagraph
+								.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
 						runHeaderStoreAddressParagraph.addBreak();
 						
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().addBreak();
+						emptyParagraph.removeRun(0);
+
 						// Receipt Info Table
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-						List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Order At", "Printed At","Staff");
-						List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"), receiptContentJson.getString("tableNo"),
-								receiptContentJson.getString("createdDate"), sdf.format(new Date()),staffName);
+						List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Order At", "Printed At",
+								"Staff");
+						List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"),
+								receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
+								sdf.format(new Date()), staffName);
 
 						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
-						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set																									// Layout
+						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
+																															// //
+																															// Layout
 						receiptInfoTableType.setType(STTblLayoutType.FIXED);
 						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
 
@@ -531,10 +587,10 @@ public class ReceiptPrinter {
 						}
 
 						long receiptInfoTableWidths[] = { 1400, 2000 };
-						
+
 						CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
-				        cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
-				        cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
+						cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+						cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
 
 						for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
 							XWPFTableRow row = receiptInfoTable.getRow(x);
@@ -587,19 +643,19 @@ public class ReceiptPrinter {
 						tableHeaderThreeRun.setText("Amt(" + receiptHeaderJson.getString("storeCurrency") + ")");
 
 						CTTc cellOne = table.getRow(0).getCell(0).getCTTc();
-						CTTcPr tcPr = cellOne.addNewTcPr(); 
+						CTTcPr tcPr = cellOne.addNewTcPr();
 						CTTcBorders border = tcPr.addNewTcBorders();
 						border.addNewTop().setVal(STBorder.SINGLE);
 						border.addNewBottom().setVal(STBorder.SINGLE);
 
 						CTTc cellTwo = table.getRow(0).getCell(1).getCTTc();
-						CTTcPr tcPr2 = cellTwo.addNewTcPr(); 
+						CTTcPr tcPr2 = cellTwo.addNewTcPr();
 						CTTcBorders border2 = tcPr2.addNewTcBorders();
 						border2.addNewTop().setVal(STBorder.SINGLE);
 						border2.addNewBottom().setVal(STBorder.SINGLE);
-							  
+
 						CTTc cellThree = table.getRow(0).getCell(2).getCTTc();
-						CTTcPr tcPr3 = cellThree.addNewTcPr(); 
+						CTTcPr tcPr3 = cellThree.addNewTcPr();
 						CTTcBorders border3 = tcPr3.addNewTcBorders();
 						border3.addNewTop().setVal(STBorder.SINGLE);
 						border3.addNewBottom().setVal(STBorder.SINGLE);
@@ -609,10 +665,10 @@ public class ReceiptPrinter {
 							JSONObject grandParentItem = jsonGrandParentArray.optJSONObject(k);
 
 							XWPFTableRow grandParentTableRow = table.createRow();
-							
+
 							createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
 									false, ParagraphAlignment.LEFT);
-							
+
 							createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
 									ParagraphAlignment.LEFT);
 
@@ -628,14 +684,14 @@ public class ReceiptPrinter {
 								for (int p = 0; p < jsonParentArray.length(); p++) {
 									JSONObject parentItem = jsonParentArray.optJSONObject(p);
 
-									String parentItemPrice = (formatDecimalString(
-											parentItem.getString("totalAmount")).equals("0.00")) ? ""
+									String parentItemPrice = (formatDecimalString(parentItem.getString("totalAmount"))
+											.equals("0.00")) ? ""
 													: formatDecimalString(parentItem.getString("totalAmount"));
 
 									XWPFTableRow parentTableRow = table.createRow();
-									
+
 									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
-									
+
 									createCellText(parentTableRow.getCell(1), "  " + parentItem.getString("itemName"),
 											false, ParagraphAlignment.LEFT);
 
@@ -654,14 +710,14 @@ public class ReceiptPrinter {
 															: formatDecimalString(childItem.getString("totalAmount"));
 
 											XWPFTableRow childTableRow = table.createRow();
-											
+
 											createCellText(childTableRow.getCell(0), "", false,
 													ParagraphAlignment.LEFT);
-											
+
 											createCellText(childTableRow.getCell(1),
 													"    " + childItem.getString("itemName"), false,
 													ParagraphAlignment.LEFT);
-																				
+
 											createCellText(childTableRow.getCell(2), childItemPrice, false,
 													ParagraphAlignment.RIGHT);
 										}
@@ -672,8 +728,8 @@ public class ReceiptPrinter {
 						}
 
 						// 121x20, 28x20, 50x20
-						long columnWidths[] = {560, 2420 ,1000};
-						
+						long columnWidths[] = { 560, 2420, 1000 };
+
 						CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
 						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
 						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2420"));
@@ -694,107 +750,172 @@ public class ReceiptPrinter {
 						receiptContentBreak.removeRun(0);
 
 						// Receipt Result
-						  XWPFTable receiptResultTable = doc.createTable(5,2);
-						  receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
-						  receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
-						  
-						  List<String> receiptResultLabels = Arrays.asList("Subtotal","Service Charge","Tax Charge","Rounding Adjustment","Net Total"); 
-						  List<String> receiptResultContents = new ArrayList<String>();
-						  
-						  receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmount")));
-						  receiptResultContents.add(formatDecimalString("0.00"));
-						  receiptResultContents.add(formatDecimalString("0.00"));
-						  receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmountWithTaxRoundingAdjustment")));
-						  receiptResultContents.add(formatDecimalString(receiptContentJson.getString("grandTotalAmount")));
-						  
-							for (int i = 0; i < receiptResultLabels.size(); i++) {
-								XWPFTableRow receiptResultRow = receiptResultTable.getRow(i);
-								
-								if(receiptResultLabels.get(i).equals("Net Total")) {
-									createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), true,
-											ParagraphAlignment.LEFT);
+						XWPFTable receiptResultTable = doc.createTable(5, 2);
+						receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+						receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
 
-									createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), true,
-											ParagraphAlignment.RIGHT);
-									
-									CTTc cell = receiptResultRow.getCell(1).getCTTc();
-									CTTcPr tcPr4 = cell.addNewTcPr(); 
-									CTTcBorders border4 = tcPr4.addNewTcBorders();
-							
-									border4.addNewBottom().setVal(STBorder.SINGLE);
-									border4.addNewTop().setVal(STBorder.SINGLE);
-	
-								} else {
-									createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
-											ParagraphAlignment.LEFT);
-									
-									createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
-											ParagraphAlignment.RIGHT);
-								}
+						List<String> receiptResultLabels = Arrays.asList("Subtotal", "Service Charge", "Tax Charge",
+								"Rounding Adjustment", "Net Total");
+						List<String> receiptResultContents = new ArrayList<String>();
+
+						receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmount")));
+						receiptResultContents.add(formatDecimalString("0.00"));
+						receiptResultContents.add(formatDecimalString("0.00"));
+						receiptResultContents.add(formatDecimalString(
+								receiptContentJson.getString("totalAmountWithTaxRoundingAdjustment")));
+						receiptResultContents
+								.add(formatDecimalString(receiptContentJson.getString("grandTotalAmount")));
+
+						for (int i = 0; i < receiptResultLabels.size(); i++) {
+							XWPFTableRow receiptResultRow = receiptResultTable.getRow(i);
+
+							if (receiptResultLabels.get(i).equals("Net Total")) {
+								createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), true,
+										ParagraphAlignment.LEFT);
+
+								createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), true,
+										ParagraphAlignment.RIGHT);
+
+								CTTc cell = receiptResultRow.getCell(1).getCTTc();
+								CTTcPr tcPr4 = cell.addNewTcPr();
+								CTTcBorders border4 = tcPr4.addNewTcBorders();
+
+								border4.addNewBottom().setVal(STBorder.SINGLE);
+								border4.addNewTop().setVal(STBorder.SINGLE);
+							} else {
+								createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
+										ParagraphAlignment.LEFT);
+
+								createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
+										ParagraphAlignment.RIGHT);
 							}
+						}
 
-						 long receiptResultTableWidths[] = { 2980, 1000 };
-						  
+						long receiptResultTableWidths[] = { 2980, 1000 };
+
 						CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
 						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2980"));
 						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
-  
-						  for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) { 
-							  XWPFTableRow row = receiptResultTable.getRow(x); 
-							  int numberOfCell = row.getTableCells().size(); 
-							  for (int y = 0; y < numberOfCell; y++) {
-								  XWPFTableCell cell = row.getCell(y);
-								  cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(
-										  receiptResultTableWidths[y])); 
-							  } 
-						  }
+
+						for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
+							XWPFTableRow row = receiptResultTable.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW()
+										.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
+							}
+						}
 
 						// Cashless Payment (Coming Soon)
+						if (receiptContentJson.getInt("paymentMethod") == 2) {
+							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.createRun().addBreak();
+							emptyParagraph.removeRun(0);
+							
+							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
+							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
+							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
+							cashlessHeaderParagraph.setSpacingAfter(0);
+							cashlessHeaderParagraph.setSpacingAfterLines(0);
 
-						XWPFRun finalParagraph = doc.createParagraph().createRun();
-						finalParagraph.addCarriageReturn();
+							XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
+							runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
+
+							XWPFTable receiptResultTable2 = doc.createTable(15, 2);
+							receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+							receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+
+							JSONObject cardData = receiptContentJson.getJSONObject("cardData");
+							
+							List<String> receiptResultLabels2 = Arrays.asList("CARD TYPE", "TID", "MID", "DATE", "TIME",
+									"CARD NUM", "EXPIRY DATE", "APPR CODE", "RREF NUM", "BATCH NUM", "INV NUM", "UID",
+									"TC", "AID", "APP");
+							List<String> receiptResultContents2 = new ArrayList<String>();
+							receiptResultContents2.add(cardData.getString("cardType"));
+							receiptResultContents2.add(cardData.getString("tid"));
+							receiptResultContents2.add(cardData.getString("mid"));
+							receiptResultContents2.add(cardData.getString("date"));
+							receiptResultContents2.add(cardData.getString("time"));
+							receiptResultContents2.add(cardData.getString("maskedCardNo"));
+							receiptResultContents2.add(cardData.getString("cardExpiry"));
+							receiptResultContents2.add(cardData.getString("approvalCode"));
+							receiptResultContents2.add(cardData.getString("rRefNo"));
+							receiptResultContents2.add(cardData.getString("batchNo"));
+							receiptResultContents2.add(cardData.getString("invoiceNo"));
+							receiptResultContents2.add(cardData.getString("uid"));
+							receiptResultContents2.add(cardData.getString("tc"));
+							receiptResultContents2.add(cardData.getString("aid"));
+							receiptResultContents2.add(cardData.getString("app"));
+
+							for (int i = 0; i < receiptResultLabels2.size(); i++) {
+								XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
+									createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
+											ParagraphAlignment.LEFT);
+
+									createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
+											ParagraphAlignment.RIGHT);
+							}
+
+							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
+							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
+							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
+						}
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().setText(".");
+						
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().setText(".");
 
 						// output the result as doc file
 						try (FileOutputStream out = new FileOutputStream("C:\\receipt\\receipt.docx")) {
 							doc.write(out);
 						}
-						
-/*						 ByteArrayOutputStream out = new ByteArrayOutputStream();
-						  doc.write(out);
-						  doc.close();
-						  
-						  XWPFDocument document = new XWPFDocument(new ByteArrayInputStream(out.toByteArray()));
-						  PdfOptions options = PdfOptions.create();
-						  PdfConverter converter = (PdfConverter)PdfConverter.getInstance();
-						  converter.convert(document, new FileOutputStream(new File("C:\\receipt\\receipt.pdf")), options);
-						  
-						  document.close();
-						  out.close();*/
+
+						/*
+						 * ByteArrayOutputStream out = new ByteArrayOutputStream(); doc.write(out);
+						 * doc.close();
+						 * 
+						 * XWPFDocument document = new XWPFDocument(new
+						 * ByteArrayInputStream(out.toByteArray())); PdfOptions options =
+						 * PdfOptions.create(); PdfConverter converter =
+						 * (PdfConverter)PdfConverter.getInstance(); converter.convert(document, new
+						 * FileOutputStream(new File("C:\\receipt\\receipt.pdf")), options);
+						 * 
+						 * document.close(); out.close();
+						 */
 					}
-					
-					XWPFDocument document = new XWPFDocument(new FileInputStream(new File("C:\\receipt\\receipt.docx")));
-					 PdfOptions options = PdfOptions.create();
-					 OutputStream out = new FileOutputStream(new File("C:\\receipt\\receipt.pdf"));
-					 PdfConverter.getInstance().convert(document, out, options);
-					 document.close();
-					 out.close();
-					 
-					 //print pdf
-					 if(myPrintService != null) {
-						 PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\receipt.pdf")));
-						 //PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
-						 //PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
-						 
-						 PrinterJob job = PrinterJob.getPrinterJob();
-						 job.setPageable(new PDFPageable(printablePdf));
-						 job.setPrintService(myPrintService);
-						 job.print();
-						 
-						 printablePdf.close();
-					 }
-					 
-					 jsonResult.put(Constant.RESPONSE_CODE, "00");
-					 jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+
+					XWPFDocument document = new XWPFDocument(
+							new FileInputStream(new File("C:\\receipt\\receipt.docx")));
+					PdfOptions options = PdfOptions.create();
+					OutputStream out = new FileOutputStream(new File("C:\\receipt\\receipt.pdf"));
+					PdfConverter.getInstance().convert(document, out, options);
+					document.close();
+					out.close();
+
+					// print pdf
+					if (myPrintService != null) {
+						PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\receipt.pdf")));
+						// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
+						// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
+
+						PrinterJob job = PrinterJob.getPrinterJob();
+						job.setPageable(new PDFPageable(printablePdf));
+						job.setPrintService(myPrintService);
+						job.print();
+
+						printablePdf.close();
+					}
+
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				}
 			}
 		} catch (Exception e) {
@@ -803,8 +924,8 @@ public class ReceiptPrinter {
 		}
 		return jsonResult;
 	}
-	
-	//Print Receipt
+
+	// Print Receipt
 	private PrintService findPrintService(String printerName) {
 		PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
 		for (PrintService printService : printServices) {
@@ -816,7 +937,7 @@ public class ReceiptPrinter {
 		}
 		return null;
 	}
-	
+
 	private List<CTSectPr> getAllSectPr(XWPFDocument document) {
 		List<CTSectPr> allSectPr = new ArrayList<>();
 		for (XWPFParagraph paragraph : document.getParagraphs()) {
@@ -836,7 +957,7 @@ public class ReceiptPrinter {
 		} else {
 			paragraph = cell.addParagraph();
 		}
-		
+
 		paragraph.setAlignment(alignment);
 		paragraph.setSpacingBefore(0);
 		paragraph.setSpacingAfter(0);
@@ -845,66 +966,67 @@ public class ReceiptPrinter {
 		run.setText(content);
 		run.setFontSize(9);
 	}
-	
+
 	private String formatDecimalString(String amountText) {
 		return String.format("%.2f", new BigDecimal(amountText));
 	}
-	
+
 	private String formatDecimalString(BigDecimal amountDecimal) {
 		return String.format("%.2f", amountDecimal);
 	}
-	
-	private void addCustomParagraphStyle(XWPFDocument docxDocument, XWPFStyles styles, String strStyleId, String fontSize) {
+
+	private void addCustomParagraphStyle(XWPFDocument docxDocument, XWPFStyles styles, String strStyleId,
+			String fontSize) {
 		CTStyle ctStyle = CTStyle.Factory.newInstance();
-		 ctStyle.setStyleId(strStyleId);
-		 
-		 CTString styleName = CTString.Factory.newInstance();
-		 styleName.setVal(strStyleId);
-		 ctStyle.setName(styleName);
+		ctStyle.setStyleId(strStyleId);
 
-		 CTDecimalNumber indentNumber = CTDecimalNumber.Factory.newInstance();
-		 indentNumber.setVal(BigInteger.valueOf(1));
+		CTString styleName = CTString.Factory.newInstance();
+		styleName.setVal(strStyleId);
+		ctStyle.setName(styleName);
 
-		    // lower number > style is more prominent in the formats bar
-		    ctStyle.setUiPriority(indentNumber);
+		CTDecimalNumber indentNumber = CTDecimalNumber.Factory.newInstance();
+		indentNumber.setVal(BigInteger.valueOf(1));
 
-		    CTOnOff onoffnull = CTOnOff.Factory.newInstance();
-		    ctStyle.setUnhideWhenUsed(onoffnull);
+		// lower number > style is more prominent in the formats bar
+		ctStyle.setUiPriority(indentNumber);
 
-		    // style shows up in the formats bar
-		    ctStyle.setQFormat(onoffnull);
+		CTOnOff onoffnull = CTOnOff.Factory.newInstance();
+		ctStyle.setUnhideWhenUsed(onoffnull);
 
-		    CTSpacing lineSpacing = CTSpacing.Factory.newInstance();
-		    lineSpacing.setBefore(BigInteger.valueOf(0));
-		    lineSpacing.setBeforeLines(BigInteger.valueOf(0));
-		    lineSpacing.setAfter(BigInteger.valueOf(0));
-		    lineSpacing.setAfterLines(BigInteger.valueOf(0));
-		   
-		    //lineSpacing.setLineRule(STLineSpacingRule.EXACT);
+		// style shows up in the formats bar
+		ctStyle.setQFormat(onoffnull);
 
-		    // style defines a heading of the given level
-		    CTPPr ppr = CTPPr.Factory.newInstance();
-		    ppr.setSpacing(lineSpacing);
-		    ctStyle.setPPr(ppr);
+		CTSpacing lineSpacing = CTSpacing.Factory.newInstance();
+		lineSpacing.setBefore(BigInteger.valueOf(0));
+		lineSpacing.setBeforeLines(BigInteger.valueOf(0));
+		lineSpacing.setAfter(BigInteger.valueOf(0));
+		lineSpacing.setAfterLines(BigInteger.valueOf(0));
 
-		    XWPFStyle style = new XWPFStyle(ctStyle);
+		// lineSpacing.setLineRule(STLineSpacingRule.EXACT);
 
-		    CTHpsMeasure size = CTHpsMeasure.Factory.newInstance();
-		    size.setVal(new BigInteger(fontSize));
+		// style defines a heading of the given level
+		CTPPr ppr = CTPPr.Factory.newInstance();
+		ppr.setSpacing(lineSpacing);
+		ctStyle.setPPr(ppr);
 
-		    CTFonts fonts = CTFonts.Factory.newInstance();
-		    fonts.setAscii(RECEIPT_FONT_FAMILY);
-		    fonts.setHAnsi(RECEIPT_FONT_FAMILY);
-		    
-		    CTRPr rpr = CTRPr.Factory.newInstance();
-		    rpr.setRFonts(fonts);
-		    rpr.setSz(size);
-		    
-		    style.getCTStyle().setRPr(rpr);
-		    // is a null op if already defined
-		    
-		    style.setType(STStyleType.PARAGRAPH);
-		    styles.addStyle(style);
+		XWPFStyle style = new XWPFStyle(ctStyle);
+
+		CTHpsMeasure size = CTHpsMeasure.Factory.newInstance();
+		size.setVal(new BigInteger(fontSize));
+
+		CTFonts fonts = CTFonts.Factory.newInstance();
+		fonts.setAscii(RECEIPT_FONT_FAMILY);
+		fonts.setHAnsi(RECEIPT_FONT_FAMILY);
+
+		CTRPr rpr = CTRPr.Factory.newInstance();
+		rpr.setRFonts(fonts);
+		rpr.setSz(size);
+
+		style.getCTStyle().setRPr(rpr);
+		// is a null op if already defined
+
+		style.setType(STStyleType.PARAGRAPH);
+		styles.addStyle(style);
 	}
 
 }

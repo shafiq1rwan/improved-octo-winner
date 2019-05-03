@@ -254,12 +254,12 @@
 					var context = "${pageContext.request.contextPath}";
 					var wsURL = "";
 					if (context == "") {
-						wsURL = "ws://localhost:8080/paymentSocket";
+						wsURL = "ws://localhost:8081/paymentSocket";
 					} else {
-						wsURL = "ws://localhost:8080/${pageContext.request.contextPath}/paymentSocket";
+						wsURL = "ws://localhost:8081/${pageContext.request.contextPath}/paymentSocket";
 					}
 					
-					var paymentSocket = new WebSocket("ws://localhost:8080${pageContext.request.contextPath}/paymentSocket");
+					var paymentSocket = new WebSocket("ws://localhost:8081${pageContext.request.contextPath}/paymentSocket");
 					
 					paymentSocket.onopen = function(event) {
 						console.log("Connection established");
@@ -298,6 +298,7 @@
 							$scope.jsonResult = jsonResult;
 							console.log($scope.jsonResult);
 							alert(jsonResult.response_message);
+							printReceipt($scope.checkNo)
 						}
 					}
 
@@ -406,7 +407,7 @@
 						alert(response.data.response_message);
 						
 						//Print Receipt here
-						printReceipt($scope.checkNo)
+						printReceipt($scope.checkNo);
 						
 						if ($scope.orderType == "table") {
 							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
