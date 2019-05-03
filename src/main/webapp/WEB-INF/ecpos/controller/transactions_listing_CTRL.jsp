@@ -26,23 +26,38 @@
 					}
 				},
 				"searching": false,
-				"pageLength": 9,
+				"pageLength": 8,
 				"bLengthChange": false,
 				"order" : [ [ 0, "desc" ] ],
 				destroy : true,
-				"columns" : [{"data" : "id"},
-					{"data" : "checkNumber"},
+				"columns" : [{"data" : "checkNumber"},
 					{"data" : "staffName"}, 
 					{"data" : "transactionType"},
+					{"data" : "paymentMethod"},
 					{"data" : "paymentType"},
 					{"data" : "transactionAmount"},
 					{"data" : "transactionStatus"},
-					{"data" : "transactionDate"}/* ,
-					{"render" : function(data, type, full, meta) {
-						return '<div><button class="btn btn-sm btn-info" ng-click="getTransactionDetails('+ full.id + ')">Details</button></div>';
-					}} */],
+					{"data" : "transactionDate"}],
+				rowCallback: function(row, data, index){
+			    	$(row).find('td:eq(1)').css('color', 'blue');
+			    	
+			    	$(row).mouseenter (function() {
+			    		$(row).find('td:eq(1)').css('text-decoration', 'underline');
+		    		});
+			    	
+			    	$(row).mouseleave (function() {
+			    		$(row).find('td:eq(1)').css('text-decoration', 'none');
+		    		});
+				},
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
+				}
+			});
+			
+			$('#datatable_transactions tbody').off('click', 'td');
+			$('#datatable_transactions tbody').on('click', 'td', function(){
+				if ($(this).index() == 1) {
+					alert("hihi")
 				}
 			});
 		}

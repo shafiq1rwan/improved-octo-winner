@@ -59,9 +59,10 @@ public class RestC_transaction {
 				connection = dataSource.getConnection();
 				
 				stmt = connection.prepareStatement("select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, " + 
-						"pt.name as payment_type,case when terminal.name is null then '-' else terminal.name end as terminal, " + 
+						"pt.name as payment_type,case when pm.id = 1 then '-' else case when t.terminal_serial_number is null then '' else t.terminal_serial_number end end as terminal, " + 
 						"t.transaction_amount,tss.name as transaction_status, " + 
-						"case when t.transaction_date is null then t.created_date else t.transaction_date end as transaction_date  " + 
+						"case when pm.id = 1 then t.created_date else case when t.transaction_date is not null and t.transaction_time is not null then " + 
+						"concat('20',SUBSTRING(t.transaction_date, 1, 2),'-',SUBSTRING(t.transaction_date, 3, 2),'-',SUBSTRING(t.transaction_date, 5, 2),' ',SUBSTRING(t.transaction_time, 1, 2),':',SUBSTRING(t.transaction_time, 3, 2),':',SUBSTRING(t.transaction_time, 5, 2)) else '' end end as transaction_date " + 
 						"from transaction t " + 
 						"inner join staff s on s.id = t.staff_id " + 
 						"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
@@ -79,7 +80,7 @@ public class RestC_transaction {
 					transaction.put("staffName", rs.getString("staff_name"));
 					transaction.put("checkNumber", rs.getString("check_number"));
 					transaction.put("transactionType", rs.getString("transaction_type"));
-					transaction.put("paymentMethod", rs.getString("payment_method"));
+					transaction.put("paymentMethod", rs.getString("payment_method") + " (" + rs.getString("terminal") + ")");
 					transaction.put("paymentType", rs.getString("payment_type"));
 					transaction.put("terminal", rs.getString("terminal"));
 					transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
