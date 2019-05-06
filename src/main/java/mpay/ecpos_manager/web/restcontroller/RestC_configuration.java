@@ -741,6 +741,61 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/print_qr" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String printQR(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+			connection = dataSource.getConnection();
+			
+			JSONObject jsonRequest = new JSONObject(data); 
+			
+			if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo") && jsonRequest.has("qrImage")) {
+				JSONObject printableJson = receiptPrinter.printQR(jsonRequest, user.getName());
+			
+				if(printableJson.getString("response_code").equals("00")) {
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "PRINTER PROBLEM");
+				}
+			} else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Table No or Check No or QR Content Not Found");
+				Logger.writeActivity("Table No or Check No or QR Content Not Found", ECPOS_FOLDER);
+			}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+
 	public JSONObject getSelectedPrinter() {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
