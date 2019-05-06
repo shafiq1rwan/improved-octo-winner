@@ -217,10 +217,10 @@
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
-							alert(response.data.response_message);
-							
 							//Print Receipt here
 							printReceipt($scope.checkNo)
+							
+							alert(response.data.response_message);
 
 							if ($scope.orderType == "table") {
 								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
@@ -297,8 +297,8 @@
 							var jsonResult = JSON.parse(event.data);
 							$scope.jsonResult = jsonResult;
 							console.log($scope.jsonResult);
-							alert(jsonResult.response_message);
 							printReceipt($scope.checkNo)
+							alert(jsonResult.response_message);
 						}
 					}
 
@@ -398,16 +398,18 @@
 				console.log(jsonData)
 	
 				$('#loading_modal').modal('show');
+				$scope.socketMessage = "Contacting Bank. Please wait.";
 	
 				$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment",jsonData)
 				.then(function(response) {
 					if (response.data.response_code === "00") {
 						$('#loading_modal').modal('hide');
 						console.log("success")
-						alert(response.data.response_message);
 						
 						//Print Receipt here
 						printReceipt($scope.checkNo);
+						
+						alert(response.data.response_message);
 						
 						if ($scope.orderType == "table") {
 							if ($scope.paymentType == "full" || response.data.check_status == "closed") {

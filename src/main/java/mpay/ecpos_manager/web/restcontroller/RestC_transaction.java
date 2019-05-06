@@ -356,8 +356,8 @@ public class RestC_transaction {
 						BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 						
 						stmt.close();
-						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
-								"values (?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
+						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date,qr_content) " + 
+								"values (?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
 						stmt.setLong(1, staffId);
 						stmt.setLong(2, checkId);
 						stmt.setString(3, checkNo);
@@ -368,6 +368,12 @@ public class RestC_transaction {
 						stmt.setString(8, "RM");
 						stmt.setBigDecimal(9, paymentAmount);
 						stmt.setInt(10, transactionStatus);
+						if (paymentMethod == 3) {
+							String qrContent = jsonObj.getString("qrContent");
+							stmt.setString(11, qrContent);
+						} else {
+							stmt.setString(11, null);
+						}
 						int insertTransaction = stmt.executeUpdate();
 						
 						if (insertTransaction > 0) {
@@ -1086,7 +1092,7 @@ public class RestC_transaction {
 										
 					stmt = connection.prepareStatement("update transaction set response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
 							+ "bank_tid = ?,bank_mid = ?,mpay_mid = ?,mpay_tid = ?,transaction_date = ?,transaction_time = ?,trace_number = ?,qr_ref_id = ?,qr_user_id =?, "
-							+ "qr_amount_myr = ?,qr_amount_rmb = ?, transaction_status = ? where unique_trans_number = ? and transaction_type = ?;");
+							+ "qr_amount_myr = ?,qr_amount_rmb = ?, auth_number = ?, transaction_status = ? where unique_trans_number = ? and transaction_type = ?;");
 
 					stmt.setString(1, transactionResult.getString("responseCode"));
 					stmt.setString(2, transactionResult.getString("responseMessage"));
@@ -1104,9 +1110,10 @@ public class RestC_transaction {
 					stmt.setString(14, qrResponse.getString("qrUserID"));
 					stmt.setString(15, qrResponse.getString("amountMYR"));
 					stmt.setString(16, qrResponse.getString("amountRMB"));
-					stmt.setInt(17, transactionStatus);
-					stmt.setString(18, transactionResult.getString("uniqueTranNumber"));
-					stmt.setInt(19, transactionType);
+					stmt.setString(17, qrResponse.getString("authNo"));
+					stmt.setInt(18, transactionStatus);
+					stmt.setString(19, transactionResult.getString("uniqueTranNumber"));
+					stmt.setInt(20, transactionType);
 					int updateTransaction = stmt.executeUpdate();
 					
 					if (updateTransaction > 0) {

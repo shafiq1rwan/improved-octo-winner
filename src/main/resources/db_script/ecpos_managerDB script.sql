@@ -338,6 +338,7 @@ create table `transaction` (
 	`qr_user_id` varchar(255) NULL,
 	`qr_amount_myr` varchar(255) NULL,
 	`qr_amount_rmb` varchar(255) NULL,
+	`auth_number` varchar(255) NULL,
     PRIMARY KEY (`id`)
 );
 

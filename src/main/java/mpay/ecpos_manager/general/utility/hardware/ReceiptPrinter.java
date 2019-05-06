@@ -1,9 +1,11 @@
 package mpay.ecpos_manager.general.utility.hardware;
 
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
+import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -61,6 +64,7 @@ import fr.opensagres.poi.xwpf.converter.pdf.PdfOptions;
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.QRGenerate;
 
 @Service
 public class ReceiptPrinter {
@@ -325,6 +329,22 @@ public class ReceiptPrinter {
 						cardData.put("terminalVerification", rs6.getString("terminal_verification_result"));
 
 						jsonResult.put("cardData", cardData);
+					} else if (rs6.getInt("payment_method") == 3) {
+						JSONObject qrData = new JSONObject();
+						qrData.put("issuerType", rs6.getString("qr_issuer_type"));
+						qrData.put("uid", rs6.getString("unique_trans_number"));
+						qrData.put("mid", rs6.getString("bank_mid"));
+						qrData.put("tid", rs6.getString("bank_tid"));
+						qrData.put("date", rs6.getString("transaction_date"));
+						qrData.put("time", rs6.getString("transaction_time"));
+						qrData.put("traceNo", rs6.getString("trace_number"));
+						qrData.put("authNo", rs6.getString("auth_number"));
+						qrData.put("amountMYR", rs6.getString("qr_amount_myr"));
+						qrData.put("amountRMB", rs6.getString("qr_amount_rmb"));
+						qrData.put("userID", rs6.getString("qr_user_id"));
+						qrData.put("refID", rs6.getString("qr_ref_id"));
+
+						jsonResult.put("qrData", qrData);
 					}
 				}
 
@@ -557,7 +577,7 @@ public class ReceiptPrinter {
 						runHeaderStoreAddressParagraph
 								.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
 						runHeaderStoreAddressParagraph.addBreak();
-						
+
 						emptyParagraph = doc.createParagraph();
 						emptyParagraph.setSpacingAfter(0);
 						emptyParagraph.createRun().addBreak();
@@ -754,13 +774,23 @@ public class ReceiptPrinter {
 						receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
 						receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
 
-						List<String> receiptResultLabels = Arrays.asList("Subtotal", "Service Charge", "Tax Charge",
-								"Rounding Adjustment", "Net Total");
+						JSONArray taxCharges = receiptContentJson.getJSONArray("taxCharges");
+
+						List<String> receiptResultLabels = new ArrayList<>();
+						receiptResultLabels.add("Subtotal");
+						for (int x = 0; x < taxCharges.length(); x++) {
+							receiptResultLabels.add(taxCharges.getJSONObject(x).getString("name") + "("
+									+ taxCharges.getJSONObject(x).getString("rate") + "%)");
+						}
+						receiptResultLabels.add("Rounding Adjustment");
+						receiptResultLabels.add("Net Total");
 						List<String> receiptResultContents = new ArrayList<String>();
 
 						receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmount")));
-						receiptResultContents.add(formatDecimalString("0.00"));
-						receiptResultContents.add(formatDecimalString("0.00"));
+						for (int x = 0; x < taxCharges.length(); x++) {
+							receiptResultContents
+									.add(formatDecimalString(taxCharges.getJSONObject(x).getString("chargeAmount")));
+						}
 						receiptResultContents.add(formatDecimalString(
 								receiptContentJson.getString("totalAmountWithTaxRoundingAdjustment")));
 						receiptResultContents
@@ -813,7 +843,7 @@ public class ReceiptPrinter {
 							emptyParagraph.setSpacingAfter(0);
 							emptyParagraph.createRun().addBreak();
 							emptyParagraph.removeRun(0);
-							
+
 							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
 							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
 							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
@@ -828,7 +858,7 @@ public class ReceiptPrinter {
 							receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
 
 							JSONObject cardData = receiptContentJson.getJSONObject("cardData");
-							
+
 							List<String> receiptResultLabels2 = Arrays.asList("CARD TYPE", "TID", "MID", "DATE", "TIME",
 									"CARD NUM", "EXPIRY DATE", "APPR CODE", "RREF NUM", "BATCH NUM", "INV NUM", "UID",
 									"TC", "AID", "APP");
@@ -851,23 +881,99 @@ public class ReceiptPrinter {
 
 							for (int i = 0; i < receiptResultLabels2.size(); i++) {
 								XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
-									createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
-											ParagraphAlignment.LEFT);
+								createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
+										ParagraphAlignment.LEFT);
 
-									createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
-											ParagraphAlignment.RIGHT);
+								createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
+										ParagraphAlignment.RIGHT);
 							}
 
 							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
+							
+							XWPFParagraph terminalVerificationParagraph = doc.createParagraph();
+							terminalVerificationParagraph.setAlignment(ParagraphAlignment.CENTER);
+							terminalVerificationParagraph.setVerticalAlignment(TextAlignment.TOP);
+							terminalVerificationParagraph.setSpacingAfter(0);
+							terminalVerificationParagraph.setSpacingAfterLines(0);
+							XWPFRun runTerminalVerificationParagraph = terminalVerificationParagraph.createRun();
+							if (cardData.getString("terminalVerification").equals("1")) {
+								runTerminalVerificationParagraph.setText("Pin Verified Success,");
+								runTerminalVerificationParagraph.addBreak();
+								runTerminalVerificationParagraph.setText("No Signature Required");
+							} else if (cardData.getString("terminalVerification").equals("2")) {
+								runTerminalVerificationParagraph.setText("Signature Required");
+							} else if (cardData.getString("terminalVerification").equals("3")) {
+								runTerminalVerificationParagraph.setText("No Signature Required");
+							}
+						} else if (receiptContentJson.getInt("paymentMethod") == 3) {
+							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.createRun().addBreak();
+							emptyParagraph.removeRun(0);
+
+							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
+							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
+							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
+							cashlessHeaderParagraph.setSpacingAfter(0);
+							cashlessHeaderParagraph.setSpacingAfterLines(0);
+
+							XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
+							runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
+
+							XWPFTable receiptResultTable2 = doc.createTable(15, 2);
+							receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+							receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+
+							JSONObject qrData = receiptContentJson.getJSONObject("qrData");
+
+							List<String> receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE",
+									"TIME", "TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)", "AMOUNT (RMB)");
+							List<String> receiptResultContents2 = new ArrayList<String>();
+							receiptResultContents2.add(qrData.getString("issuerType"));
+							receiptResultContents2.add(qrData.getString("uid"));
+							receiptResultContents2.add(qrData.getString("tid"));
+							receiptResultContents2.add(qrData.getString("mid"));
+							receiptResultContents2.add(qrData.getString("date"));
+							receiptResultContents2.add(qrData.getString("time"));
+							receiptResultContents2.add(qrData.getString("traceNo"));
+							receiptResultContents2.add(qrData.getString("authNo"));
+							receiptResultContents2.add(qrData.getString("userID"));
+							receiptResultContents2.add(formatDecimalString(
+									String.valueOf(new Double(qrData.getString("amountMYR")) / 100.0)));
+							receiptResultContents2.add(formatDecimalString(
+									String.valueOf(new Double(qrData.getString("amountRMB")) / 100.0)));
+
+							for (int i = 0; i < receiptResultLabels2.size(); i++) {
+								XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
+								createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
+										ParagraphAlignment.LEFT);
+
+								createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
+										ParagraphAlignment.RIGHT);
+							}
+
+							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
+							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
+							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2330"));
+
+							byte[] qrByteData = QRGenerate.generateQRImage(qrData.getString("refID"), 300, 300);
+
+							XWPFParagraph qrParagraph = doc.createParagraph();
+							qrParagraph.setAlignment(ParagraphAlignment.CENTER);
+							qrParagraph.setSpacingAfter(0);
+							qrParagraph.setSpacingBefore(0);
+							XWPFRun runQrParagraph = qrParagraph.createRun();
+							runQrParagraph.addPicture(new ByteArrayInputStream(qrByteData),
+									XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125), Units.toEMU(125));
 						}
 
 						emptyParagraph = doc.createParagraph();
 						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
 						emptyParagraph.setSpacingAfter(0);
 						emptyParagraph.createRun().setText(".");
-						
+
 						emptyParagraph = doc.createParagraph();
 						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
 						emptyParagraph.setSpacingAfter(0);
@@ -907,6 +1013,7 @@ public class ReceiptPrinter {
 						// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
 
 						PrinterJob job = PrinterJob.getPrinterJob();
+						job.setJobName("Receipt - " + receiptContentJson.getString("checkNo"));
 						job.setPageable(new PDFPageable(printablePdf));
 						job.setPrintService(myPrintService);
 						job.print();
