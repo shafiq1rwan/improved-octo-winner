@@ -1,9 +1,3 @@
-<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
-
-<%
-	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
-%>
-
 <script>
 	app.controller('payment_CTRL',function($scope, $http, $timeout, $location, $route,$routeParams) {
 		$scope.paymentType = "";
@@ -12,8 +6,46 @@
 		$scope.terminalSerialNo = "";
 		$scope.qrContent = "";
 		$scope.socketMessage = "";
+		$scope.jsonResult;
 	
 		var counter = 0;
+		
+		$('#fullPayment').prop('disabled', false);
+		$('#partialPayment').prop('disabled', false);
+		$('#splitPayment').prop('disabled', false);
+		$('#depositPayment').prop('disabled', false);
+		
+		$scope.paymentInitiation = function() {
+			var jsonData = JSON.stringify({
+				"tableNo" : $scope.tableNo,
+				"checkNo" : $scope.checkNo
+			});
+			console.log(jsonData)
+
+			$http.post("${pageContext.request.contextPath}/rc/transaction/get_previous_payment", jsonData)
+			.then(function(response) {
+				if (response.data.data == "0") {
+					$('#fullPayment').prop('disabled', false);
+					$('#partialPayment').prop('disabled', false);
+					$('#splitPayment').prop('disabled', false);
+					$('#depositPayment').prop('disabled', false);
+				} else if (response.data.data.includes("3")) {
+					$('#fullPayment').prop('disabled', true);
+					$('#partialPayment').prop('disabled', true);
+					$('#splitPayment').prop('disabled', false);
+					$('#depositPayment').prop('disabled', true);
+				} else {
+					$('#fullPayment').prop('disabled', false);
+					$('#partialPayment').prop('disabled', false);
+					$('#splitPayment').prop('disabled', true);
+					$('#depositPayment').prop('disabled', false);
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
 		
 		$scope.proceedPaymentMethod = function(type) {
 			$scope.paymentType = type;
@@ -110,16 +142,18 @@
 	
 		$scope.enterCalculator = function(id, number) {
 			var amount = document.getElementById(id).innerHTML;
-	
+			
 			if (amount < 0.00) {
 				alert("Amount should not be less than 0.00");
 			} else if (number != -10) {
 				if (amount.length < 12) {
-					amount = amount + number;
+					if (number != 100 && number != 10) {
+						amount = amount + number;
+					}
 					
 					var floatAmount = parseFloat(amount);
 					
-					if (number == 00) {
+					if (number == 100) {
 						floatAmount = floatAmount * 100;
 					} else {
 						floatAmount = floatAmount * 10;
@@ -188,27 +222,25 @@
 							//Print Receipt here
 							printReceipt($scope.checkNo)
 
-							<%if (user.getStoreType() == 2) {%>
 							if ($scope.orderType == "table") {
-								if ($scope.paymentType == "full") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/table_order");
 								} else {
 									location.reload();
 								}
 							} else if ($scope.orderType == "take_away") {
-								if ($scope.paymentType == "full") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/take_away_order");
 								} else {
 									location.reload();
 								}
+							} else if ($scope.orderType == "deposit") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/deposit_order");
+								} else {
+									location.reload();
+								}
 							}
-							<%} else {%>
-							if ($scope.paymentType == "full") {
-								$location.path("/take_away_order");
-							} else {
-								location.reload();
-							}
-							<%}%>
 						} else {
 							alert(response.data.response_message);
 						}
@@ -222,12 +254,12 @@
 					var context = "${pageContext.request.contextPath}";
 					var wsURL = "";
 					if (context == "") {
-						wsURL = "ws://localhost:8080/paymentSocket";
+						wsURL = "ws://localhost:8081/paymentSocket";
 					} else {
-						wsURL = "ws://localhost:8080/${pageContext.request.contextPath}/paymentSocket";
+						wsURL = "ws://localhost:8081/${pageContext.request.contextPath}/paymentSocket";
 					}
 					
-					var paymentSocket = new WebSocket(wsURL);
+					var paymentSocket = new WebSocket("ws://localhost:8081${pageContext.request.contextPath}/paymentSocket");
 					
 					paymentSocket.onopen = function(event) {
 						console.log("Connection established");
@@ -263,10 +295,13 @@
 							console.log("Received message " + $scope.socketMessage)
 						} else {
 							var jsonResult = JSON.parse(event.data);
+							$scope.jsonResult = jsonResult;
+							console.log($scope.jsonResult);
 							alert(jsonResult.response_message);
+							printReceipt($scope.checkNo)
 						}
 					}
-					
+
 					paymentSocket.onerror = function(event) {
 						console.error("WebSocket error observed:", event);
 						$('#loading_modal').modal('hide');
@@ -275,14 +310,34 @@
 					}
 							
 					paymentSocket.onclose = function(event) {
+						console.log($scope.jsonResult);
 						console.log("Connection closed");
 						$('#loading_modal').modal('hide');
 						$scope.socketMessage = "";
-
-						//Check is here
-						window.location.href = "${pageContext.request.contextPath}/";
-						console.log($scope.checkNo)
-						printReceipt($scope.checkNo)
+						
+						if ($scope.jsonResult.response_code == "01") {
+							location.reload();
+						} else {
+							if ($scope.orderType == "table") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/table_order");
+								} else {
+									location.reload();
+								}
+							} else if ($scope.orderType == "take_away") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/take_away_order");
+								} else {
+									location.reload();
+								}
+							} else if ($scope.orderType == "deposit") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/deposit_order");
+								} else {
+									location.reload();
+								}
+							}
+						}
 					};
 				}
 			}
@@ -352,29 +407,27 @@
 						alert(response.data.response_message);
 						
 						//Print Receipt here
-						printReceipt($scope.checkNo)
+						printReceipt($scope.checkNo);
 						
-						<%if (user.getStoreType() == 2) {%>
 						if ($scope.orderType == "table") {
-							if ($scope.paymentType == "full") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 								$location.path("/table_order");
 							} else {
 								location.reload();
 							}
 						} else if ($scope.orderType == "take_away") {
-							if ($scope.paymentType == "full") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 								$location.path("/take_away_order");
 							} else {
 								location.reload();
 							}
+						} else if ($scope.orderType == "deposit") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+								$location.path("/deposit_order");
+							} else {
+								location.reload();
+							}
 						}
-						<%} else {%>
-						if ($scope.paymentType == "full") {
-							$location.path("/take_away_order");
-						} else {
-							location.reload();
-						}
-						<%}%>
 					} else {
 						$('#loading_modal').modal('hide');
 						console.log("failed")

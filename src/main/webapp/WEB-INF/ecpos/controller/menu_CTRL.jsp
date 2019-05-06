@@ -3,6 +3,8 @@
 		$scope.tableNo = $routeParams.tableNo;
 		$scope.checkNo = $routeParams.checkNo;
 		
+		$scope.screenWidth = screen.width;
+		
 		$scope.categories = {};
 		$scope.menuItems = {};
 		$scope.tiers = {};
@@ -289,7 +291,7 @@
 						for (var j = 0; j < $scope.temporaryTiers[i].items.length; j++) {
 							var index = $scope.temporaryTiers[i].items[j].sequence;
 							var itemId = "#selectedItem"+index;
-							console.log(itemId);
+							
 							$(itemId).html($scope.temporaryTiers[i].items[j].name.bold());
 							
 							var modifierId = "#selectedModifiers"+index;
@@ -341,6 +343,8 @@
 				orderType = 1;
 			} else if ($scope.orderType == "take_away") {
 				orderType = 2;
+			} else if ($scope.orderType == "deposit") {
+				orderType = 3;
 			}
 			
 			var jsonData = JSON.stringify({

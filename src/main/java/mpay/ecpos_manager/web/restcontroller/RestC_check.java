@@ -56,7 +56,7 @@ public class RestC_check {
 					
 					connection = dataSource.getConnection();
 	
-					stmt = connection.prepareStatement("SELECT * FROM `check` WHERE table_number = ? AND check_status IN (1,2);");
+					stmt = connection.prepareStatement("SELECT * FROM `check` WHERE table_number = ? AND check_status IN (1,2) order by check_number asc;");
 					stmt.setString(1, table_no);
 					rs = stmt.executeQuery();
 	
@@ -71,6 +71,49 @@ public class RestC_check {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
 				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_deposit_checks" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String getDepositChecks(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("SELECT * FROM `check` WHERE order_type = 3 AND check_status IN (1,2) order by check_number asc;");
+				rs = stmt.executeQuery();
+
+				JSONArray checks = new JSONArray();
+				while (rs.next()) {
+					checks.put(rs.getString("check_number"));
+				}
+				jsonResult.put("checks", checks);
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 			} else {
 				response.setStatus(408);
 			}
@@ -182,136 +225,148 @@ public class RestC_check {
 				String tableNoCondition = null;
 				if (orderType.equals("table")) {
 					tableNoCondition = "table_number = " + tableNo;
-				} else if (orderType.equals("take_away")) {
+				} else if (orderType.equals("take_away") || orderType.equals("deposit")) {
 					tableNoCondition = "table_number is null";
 				}
 				
 				stmt = connection.prepareStatement("select * from `check` c "
 						+ "inner join check_status cs on cs.id = c.check_status "
-						+ "where " + tableNoCondition + " and check_number = ? and check_status in (1, 2);");
+						+ "where " + tableNoCondition + " and check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
 				
 				if (rs.next()) {
-					long id = rs.getLong("id");
-					
-					jsonResult.put("checkNo", rs.getString("check_number"));
-					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
-					jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
-					jsonResult.put("totalAmount", new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
-					jsonResult.put("totalAmountWithTax", new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00" : rs.getString("total_amount_with_tax")));
-					jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));
-					jsonResult.put("grandTotalAmount", new BigDecimal(rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
-					jsonResult.put("status", rs.getString("name"));
-					jsonResult.put("depositAmount", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
-					jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
-					jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
-					
-					stmt2 = connection.prepareStatement("select * from tax_charge tc " + 
-							"inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id " + 
-							"where ctc.check_id = ? and ctc.check_number = ?" + 
-							"order by tc.charge_type;");
-					stmt2.setLong(1, id);
-					stmt2.setString(2, checkNo);
-					rs2 = stmt2.executeQuery();
-					
-					JSONArray taxCharges = new JSONArray();
-					while (rs2.next()) {
-						JSONObject taxCharge = new JSONObject();
-						taxCharge.put("name", rs2.getString("tax_charge_name"));
-						taxCharge.put("rate", rs2.getBigDecimal("rate"));
-						taxCharge.put("chargeAmount", new BigDecimal(rs2.getString("grand_total_charge_amount")));
+					if (rs.getInt("check_status") == 1 || rs.getInt("check_status") == 2) {
+						long id = rs.getLong("id");
 						
-						taxCharges.put(taxCharge);
-					}
-					jsonResult.put("taxCharges", taxCharges);
-	
-					stmt3 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2) order by id asc;");
-					stmt3.setLong(1, id);
-					stmt3.setString(2, checkNo);
-					rs3 = stmt3.executeQuery();
-					
-					JSONArray grandParentItemArray = new JSONArray();
-					while (rs3.next()) {
-						long grandParentId = rs3.getLong("id");
+						jsonResult.put("checkNo", rs.getString("check_number"));
+						jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
+						jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
+						jsonResult.put("totalAmount", new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
+						jsonResult.put("totalAmountWithTax", new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00" : rs.getString("total_amount_with_tax")));
+						jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));
+						jsonResult.put("grandTotalAmount", new BigDecimal(rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
+						jsonResult.put("status", rs.getString("name"));
+						jsonResult.put("depositAmount", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
+						jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
+						jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
 						
-						JSONObject grandParentItem = new JSONObject();
-						grandParentItem.put("checkDetailId", rs3.getString("id"));
-						grandParentItem.put("itemId", rs3.getString("menu_item_id"));
-						grandParentItem.put("itemCode", rs3.getString("menu_item_code"));
-						grandParentItem.put("itemName", rs3.getString("menu_item_name"));
-						grandParentItem.put("itemPrice", rs3.getString("menu_item_price"));
-						grandParentItem.put("itemQuantity", rs3.getInt("quantity"));
-						grandParentItem.put("totalAmount", rs3.getString("total_amount"));
+						stmt2 = connection.prepareStatement("select * from tax_charge tc " + 
+								"inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id " + 
+								"where ctc.check_id = ? and ctc.check_number = ?" + 
+								"order by tc.charge_type;");
+						stmt2.setLong(1, id);
+						stmt2.setString(2, checkNo);
+						rs2 = stmt2.executeQuery();
 						
-						stmtA = connection.prepareStatement("select * from menu_item mi " + 
-								"left join menu_item_modifier_group mimg on mimg.menu_item_id = mi.id " + 
-								"where mi.id = ?;");
-						stmtA.setString(1, rs3.getString("menu_item_id"));
-						rsA = stmtA.executeQuery();
-	
-						if (rsA.next()) {
-							if (rsA.getInt("menu_item_type") == 0) {
-								grandParentItem.put("isAlaCarte", true);
-								
-								if (rsA.getLong("menu_item_id") > 0) {
-									grandParentItem.put("hasModified", true);
+						JSONArray taxCharges = new JSONArray();
+						while (rs2.next()) {
+							JSONObject taxCharge = new JSONObject();
+							taxCharge.put("name", rs2.getString("tax_charge_name"));
+							taxCharge.put("rate", rs2.getBigDecimal("rate"));
+							taxCharge.put("chargeAmount", new BigDecimal(rs2.getString("grand_total_charge_amount")));
+							
+							taxCharges.put(taxCharge);
+						}
+						jsonResult.put("taxCharges", taxCharges);
+		
+						stmt3 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2) order by id asc;");
+						stmt3.setLong(1, id);
+						stmt3.setString(2, checkNo);
+						rs3 = stmt3.executeQuery();
+						
+						JSONArray grandParentItemArray = new JSONArray();
+						while (rs3.next()) {
+							long grandParentId = rs3.getLong("id");
+							
+							JSONObject grandParentItem = new JSONObject();
+							grandParentItem.put("checkDetailId", rs3.getString("id"));
+							grandParentItem.put("itemId", rs3.getString("menu_item_id"));
+							grandParentItem.put("itemCode", rs3.getString("menu_item_code"));
+							grandParentItem.put("itemName", rs3.getString("menu_item_name"));
+							grandParentItem.put("itemPrice", rs3.getString("menu_item_price"));
+							grandParentItem.put("itemQuantity", rs3.getInt("quantity"));
+							grandParentItem.put("totalAmount", rs3.getString("total_amount"));
+							
+							stmtA = connection.prepareStatement("select * from menu_item mi " + 
+									"left join menu_item_modifier_group mimg on mimg.menu_item_id = mi.id " + 
+									"where mi.id = ?;");
+							stmtA.setString(1, rs3.getString("menu_item_id"));
+							rsA = stmtA.executeQuery();
+		
+							if (rsA.next()) {
+								if (rsA.getInt("menu_item_type") == 0) {
+									grandParentItem.put("isAlaCarte", true);
+									
+									if (rsA.getLong("menu_item_id") > 0) {
+										grandParentItem.put("hasModified", true);
+									} else {
+										grandParentItem.put("hasModified", false);
+									}
 								} else {
-									grandParentItem.put("hasModified", false);
+									grandParentItem.put("isAlaCarte", false);
 								}
 							} else {
 								grandParentItem.put("isAlaCarte", false);
 							}
-						} else {
-							grandParentItem.put("isAlaCarte", false);
-						}
-						
-						stmt4 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2) order by id asc;");
-						stmt4.setLong(1, id);
-						stmt4.setString(2, checkNo);
-						stmt4.setLong(3, grandParentId);
-						rs4 = stmt4.executeQuery();
-						
-						JSONArray parentItemArray = new JSONArray();
-						while (rs4.next()) {
-							long parentId = rs4.getLong("id");
 							
-							JSONObject parentItem = new JSONObject();
-							parentItem.put("itemId", rs4.getString("menu_item_id"));
-							parentItem.put("itemCode", rs4.getString("menu_item_code"));
-							parentItem.put("itemName", rs4.getString("menu_item_name"));
-							parentItem.put("itemPrice", rs4.getString("menu_item_price"));
-							parentItem.put("itemQuantity", rs4.getString("quantity"));
-							parentItem.put("totalAmount", rs4.getString("total_amount"));
+							stmt4 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2) order by id asc;");
+							stmt4.setLong(1, id);
+							stmt4.setString(2, checkNo);
+							stmt4.setLong(3, grandParentId);
+							rs4 = stmt4.executeQuery();
 							
-							stmt5 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2) order by id asc;");
-							stmt5.setLong(1, id);
-							stmt5.setString(2, checkNo);
-							stmt5.setLong(3, parentId);
-							rs5 = stmt5.executeQuery();
-							
-							JSONArray childItemArray = new JSONArray();
-							while (rs5.next()) {
-								JSONObject childItem = new JSONObject();
-								childItem.put("itemId", rs5.getString("menu_item_id"));
-								childItem.put("itemCode", rs5.getString("menu_item_code"));
-								childItem.put("itemName", rs5.getString("menu_item_name"));
-								childItem.put("itemPrice", rs5.getString("menu_item_price"));
-								childItem.put("itemQuantity", rs5.getString("quantity"));
-								childItem.put("totalAmount", rs5.getString("total_amount"));
+							JSONArray parentItemArray = new JSONArray();
+							while (rs4.next()) {
+								long parentId = rs4.getLong("id");
 								
-								childItemArray.put(childItem);
+								JSONObject parentItem = new JSONObject();
+								parentItem.put("itemId", rs4.getString("menu_item_id"));
+								parentItem.put("itemCode", rs4.getString("menu_item_code"));
+								parentItem.put("itemName", rs4.getString("menu_item_name"));
+								parentItem.put("itemPrice", rs4.getString("menu_item_price"));
+								parentItem.put("itemQuantity", rs4.getString("quantity"));
+								parentItem.put("totalAmount", rs4.getString("total_amount"));
+								
+								stmt5 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (1, 2) order by id asc;");
+								stmt5.setLong(1, id);
+								stmt5.setString(2, checkNo);
+								stmt5.setLong(3, parentId);
+								rs5 = stmt5.executeQuery();
+								
+								JSONArray childItemArray = new JSONArray();
+								while (rs5.next()) {
+									JSONObject childItem = new JSONObject();
+									childItem.put("itemId", rs5.getString("menu_item_id"));
+									childItem.put("itemCode", rs5.getString("menu_item_code"));
+									childItem.put("itemName", rs5.getString("menu_item_name"));
+									childItem.put("itemPrice", rs5.getString("menu_item_price"));
+									childItem.put("itemQuantity", rs5.getString("quantity"));
+									childItem.put("totalAmount", rs5.getString("total_amount"));
+									
+									childItemArray.put(childItem);
+								}
+								parentItem.put("childItemArray", childItemArray);
+								parentItemArray.put(parentItem);
 							}
-							parentItem.put("childItemArray", childItemArray);
-							parentItemArray.put(parentItem);
+							grandParentItem.put("parentItemArray", parentItemArray);
+							grandParentItemArray.put(grandParentItem);
 						}
-						grandParentItem.put("parentItemArray", parentItemArray);
-						grandParentItemArray.put(grandParentItem);
+						jsonResult.put("grandParentItemArray", grandParentItemArray);
+						
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					} else if (rs.getInt("check_status") == 3) {
+						Logger.writeActivity("Check Is Closed", ECPOS_FOLDER);
+						
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Is Closed");
+					} else if (rs.getInt("check_status") == 4) {
+						Logger.writeActivity("Check Is Cancelled", ECPOS_FOLDER);
+						
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Is Cancelled");
 					}
-					jsonResult.put("grandParentItemArray", grandParentItemArray);
-					
-					jsonResult.put(Constant.RESPONSE_CODE, "00");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				} else {
 					Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
 					
@@ -374,7 +429,7 @@ public class RestC_check {
 				String tableNoCondition = null;
 				if (orderType.equals("table")) {
 					tableNoCondition = "table_number = " + tableNo;
-				} else if (orderType.equals("take_away")) {
+				} else if (orderType.equals("take_away") || orderType.equals("deposit")) {
 					tableNoCondition = "table_number is null";
 				}
 				
@@ -387,6 +442,7 @@ public class RestC_check {
 				if (rs.next()) {
 					long id = rs.getLong("id");
 					
+					jsonResult.put("orderType", rs.getString("order_type"));
 					jsonResult.put("checkNo", rs.getString("check_number"));
 					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 					jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
@@ -777,6 +833,108 @@ public class RestC_check {
 			}
 		}
 		Logger.writeActivity("----------- CREATE TAKE AWAY END ---------", ECPOS_FOLDER);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/create/deposit" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String createDepositCheck(HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("----------- CREATE DEPOSIT CHECK START ---------", ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				String username = user.getUsername();
+				
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+	
+				stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
+				stmt.setString(1, username);
+				rs = stmt.executeQuery();
+	
+				if (rs.next()) {
+					long staffId = rs.getLong("id");
+					
+					stmt2 = connection.prepareStatement("select * from master where type = 'check';");
+					rs2 = stmt2.executeQuery();
+	
+					if (rs2.next()) {
+						int currentCheckNo = rs2.getInt("count");
+						int newCheckNo = currentCheckNo + 1;
+						
+						stmt3 = connection.prepareStatement("update master set count = ? where type = 'check';");
+						stmt3.setString(1, Integer.toString(newCheckNo));
+						int rs3 = stmt3.executeUpdate();
+	
+						if (rs3 > 0) {
+							stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+									"values (?,?,3,0,0,0,0,0,0,0,0,1,now());");
+							stmt4.setString(1, Integer.toString(newCheckNo));
+							stmt4.setLong(2, staffId);
+							int rs4 = stmt4.executeUpdate();
+	
+							if (rs4 > 0) {
+								connection.commit();
+								Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+								jsonResult.put(Constant.CHECK_NO, newCheckNo);
+								jsonResult.put(Constant.RESPONSE_CODE, "00");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+							} else {
+								connection.rollback();
+								Logger.writeActivity("Check Master Failed To Insert", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Master Failed To Insert");
+							}
+						} else {
+							connection.rollback();
+							Logger.writeActivity("Check Count Failed To Update", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Failed To Update");
+						}
+					} else {
+						connection.rollback();
+						Logger.writeActivity("Check Count Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Not Found");
+					}
+				} else {
+					connection.rollback();
+					Logger.writeActivity("Staff Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- CREATE DEPOSIT CHECK END ---------", ECPOS_FOLDER);
 		return jsonResult.toString();
 	}
 	

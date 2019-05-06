@@ -117,12 +117,30 @@
 								<div class="row" style="text-align: center">
 									<div class="col-sm-4" style="padding: 0px;"></div>
 									<div class="col-sm-4" style="padding: 0px;">
-										<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+										<div ng-if="screenWidth > 1050" style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 											<img ng-src="${pageContext.request.contextPath}{{tiers.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+										</div>
+										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+											<img ng-src="${pageContext.request.contextPath}{{tiers.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 									</div>
 									<div class="col-sm-4" style="padding: 0px;">
-										<div style="width: 120px; height: 135px; align-items: flex-end; display: flex;">
+										<div ng-if="screenWidth > 1050" style="width: 120px; height: 135px; align-items: flex-end; display: flex;">
+											<div class="input-group input-group-sm">
+												<span class="input-group-btn" ng-click="minusItemQuantity()">
+													<button type="button" class="btn btn-number">
+														<span class="glyphicon glyphicon-minus"></span>
+													</button>
+												</span> 
+												<input id="itemQuantity" type="text" style="text-align: center;" class="form-control input-number" value="1"> 
+												<span class="input-group-btn" ng-click="addItemQuantity()">
+													<button type="button" class="btn btn-number">
+														<span class="glyphicon glyphicon-plus"></span>
+													</button>
+												</span>
+											</div>
+										</div>
+										<div ng-if="screenWidth < 1050" style="width: 120px; height: 120px; align-items: flex-end; display: flex;">
 											<div class="input-group input-group-sm">
 												<span class="input-group-btn" ng-click="minusItemQuantity()">
 													<button type="button" class="btn btn-number">
@@ -197,12 +215,30 @@
 								<div class="row" style="text-align: center">
 									<div class="col-sm-4" style="padding: 0px;"></div>
 									<div class="col-sm-4" style="padding: 0px;">
-										<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+										<div ng-if="screenWidth > 1050" style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+											<img ng-src="${pageContext.request.contextPath}{{alaCarte.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+										</div>
+										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 											<img ng-src="${pageContext.request.contextPath}{{alaCarte.imagePath}}" style="max-width: 135px; max-height: 135px;" />
 										</div>
 									</div>
 									<div class="col-sm-4" style="padding: 0px;">
-										<div style="width: 120px; height: 135px; align-items: flex-end; display: flex;">
+										<div ng-if="screenWidth > 1050" style="width: 120px; height: 135px; align-items: flex-end; display: flex;">
+											<div class="input-group input-group-sm">
+												<span class="input-group-btn" ng-click="minusAlaCarteItemQuantity()">
+													<button type="button" class="btn btn-number">
+														<span class="glyphicon glyphicon-minus"></span>
+													</button>
+												</span> 
+												<input id="alaCarteItemQuantity" type="text" style="text-align: center;" class="form-control input-number" value="1"> 
+												<span class="input-group-btn" ng-click="addAlaCarteItemQuantity()">
+													<button type="button" class="btn btn-number">
+														<span class="glyphicon glyphicon-plus"></span>
+													</button>
+												</span>
+											</div>
+										</div>
+										<div ng-if="screenWidth < 1050" style="width: 120px; height: 120px; align-items: flex-end; display: flex;">
 											<div class="input-group input-group-sm">
 												<span class="input-group-btn" ng-click="minusAlaCarteItemQuantity()">
 													<button type="button" class="btn btn-number">

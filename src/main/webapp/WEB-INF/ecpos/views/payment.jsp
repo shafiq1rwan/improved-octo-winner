@@ -1,9 +1,3 @@
-<%@ page import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
-
-<%
-	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
-%>
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <html>
 <head>
@@ -66,6 +60,11 @@
   background-color: #dddddd;
   cursor: not-allowed;
 }
+
+ul.select2-results__options li {
+  padding: 0;
+  font-size: 20px;
+}
 </style>
 </head>
 
@@ -85,31 +84,32 @@
 								</div>
 								<br><br><br>
 								<div class="row">
-									<div class="col-sm-6" style="margin-top: 15px;">
-										<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('full')">
-											<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Full Payment</i></font></label>
-										</div>
+									<div class="col-sm-6" style="margin-top: 15px; margin-bottom: 15px;">
+										<button id="fullPayment" class="btn btn-block" style="margin: auto; background: white; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('full')">
+											<font size="4"><i>Full Payment</i></font>
+										</button>
 									</div>
-									<div class="col-sm-6" style="margin-top: 15px;">
-										<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('partial')">
-											<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Partial Payment</i></font></label>
-										</div>
+									<div class="col-sm-6" style="margin-top: 15px; margin-bottom: 15px;">
+										<button id="partialPayment" class="btn btn-block" style="margin: auto; background: white; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('partial')">
+											<font size="4"><i>Partial Payment</i></font>
+										</button>
 									</div>
 								</div>
-								<br><br>
 								<div class="row">
-									<div class="col-sm-6" style="margin-top: 15px;">
-										<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('split')">
-											<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Split Payment</i></font></label>
+									<div ng-if="orderType != 'deposit'">
+										<div class="col-sm-6" style="margin-top: 15px; margin-bottom: 15px;">
+											<button id="splitPayment" class="btn btn-block" style="margin: auto; background: white; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('split')">
+												<font size="4"><i>Split Payment</i></font>
+											</button>
 										</div>
 									</div>
-									<%if (user.getStoreType() == 2) {%>
-									<div class="col-sm-6" style="margin-top: 15px;">
-										<div style="margin: auto; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px; text-align: center;" ng-click="proceedPaymentMethod('deposit')">
-											<label style="max-width: 165px; max-height: 125px; padding-top: 30%; padding-bottom: 30%;"><font size="4"><i>Deposit Payment</i></font></label>
+									<div ng-if="orderType == 'deposit'">
+										<div class="col-sm-6" style="margin-top: 15px; margin-bottom: 15px;">
+											<button id="depositPayment" class="btn btn-block" style="margin: auto; background: white; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('deposit')">
+												<font size="4"><i>Deposit Payment</i></font>
+											</button>
 										</div>
 									</div>
-									<%}%>
 								</div>
 							</div>
 						</div>
@@ -164,8 +164,8 @@
 										<label>Terminal</label>
 										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
 											<select class="select2" id="terminal" style="width: 100%;">
-												<option value="" selected>----- Select -----</option>
-												<option ng-repeat="terminal in terminalList.terminals" value="{{terminal.serialNo}}">{{terminal.name}} ({{terminal.serialNo}})</option>
+												<option value="" selected>&nbsp;----- Select -----</option>
+												<option ng-repeat="terminal in terminalList.terminals" value="{{terminal.serialNo}}">&nbsp;{{terminal.name}} ({{terminal.serialNo}})</option>
 											</select>
 										</div>
 									</div>
@@ -202,8 +202,8 @@
 														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="three" type="button" value="3" class="calculator" ng-click="enterCalculator('amount',3)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('amount',0)" /></div>
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('amount',00)" /></div>
+														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('amount',10)" /></div>
+														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('amount',100)" /></div>
 													</div>
 												</div>
 												<div class="col-sm-3">

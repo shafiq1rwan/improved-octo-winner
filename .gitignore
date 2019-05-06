@@ -21,3 +21,4 @@
 /nbdist/
 /.nb-gradle/
 /ecpos-query/
+/ecpos-log/

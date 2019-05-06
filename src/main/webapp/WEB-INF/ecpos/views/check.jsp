@@ -63,6 +63,7 @@ hr {
 											</div>
 										</div>
 										<div class="col-sm-5">
+											<div ng-if="mode == 1">
 											<%if (user.getStoreType() == 2) {%>
 											<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="generateQR()">
 												<i class="fa fa-qrcode"></i> Generate QR
@@ -73,6 +74,10 @@ hr {
 											<button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
 												<i class="fa fa-barcode"></i> Barcode Order
 											</button>
+											</div>
+											<div ng-if="mode == 2">
+												<button class="btn btn-block btn-info" ng-click="redirectMenu()">Back To Previous</button>
+											</div>
 										</div>
 									</div>
 									<div>
