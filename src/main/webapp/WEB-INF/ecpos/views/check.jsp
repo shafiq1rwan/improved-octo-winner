@@ -222,7 +222,7 @@ hr {
  							<div class="row">
 								<div class="col-sm-12" >
 									<div class="pull-right">
-										<!-- <input type="button" class="btn bg-maroon" ng-click="printQR()" value="Print" /> -->
+										<input type="button" class="btn bg-maroon" ng-click="printQR()" value="Print" />
 									</div>
 								</div>
 							</div>

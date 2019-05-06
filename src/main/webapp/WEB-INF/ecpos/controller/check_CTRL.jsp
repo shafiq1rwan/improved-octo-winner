@@ -94,6 +94,28 @@
 			});
 		}
 		
+		$scope.printQR = function(){
+ 			var jsonData = JSON.stringify({
+				"tableNo" : $scope.tableNo,
+				"checkNo" : $scope.checkNo,
+				"qrImage" : $('#QRImage').attr('src')
+			}); 
+
+			$http.post("${pageContext.request.contextPath}/rc/configuration/print_qr", jsonData)
+			.then(function(response) {
+				if (response.data.response_code == "00") {
+					$('#QRImageModal').modal('hide');
+				} else {
+					$('#QRImageModal').modal('hide');
+					alert(response.data.response_message);
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
 		$scope.openBarcodeModal = function () {
 			$('#barcodeModal').modal('show');
 		}

@@ -1,9 +1,11 @@
 package mpay.ecpos_manager.general.utility.hardware;
 
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
+import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -56,11 +59,15 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.sun.org.apache.xml.internal.security.utils.Base64;
+
 import fr.opensagres.poi.xwpf.converter.pdf.PdfConverter;
 import fr.opensagres.poi.xwpf.converter.pdf.PdfOptions;
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.QRGenerate;
 
 @Service
 public class ReceiptPrinter {
@@ -113,6 +120,168 @@ public class ReceiptPrinter {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
 				e.printStackTrace();
 			}
+		}
+		return jsonResult;
+	}
+	
+	public JSONObject printQR(JSONObject receiptContent, String staffName) {
+		JSONObject jsonResult = new JSONObject();
+		
+		try {
+			JSONObject receiptHeader = getReceiptHeader();
+			if(receiptHeader.length()==0 || receiptContent.length()==0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
+			} else {
+				new File("C:/receipt").mkdirs();
+
+				PrintService myPrintService = null;
+				String templateName = "";
+
+				JSONObject printerResult = getSelectedReceiptPrinter();
+				
+				if (printerResult.has("receipt_printer")) {
+
+					myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+					Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+							ECPOS_FOLDER);
+					Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+
+					if (printerResult.getString("receipt_printer").equals("EPSON"))
+						templateName = "ReceiptStyleTemplate_EPSON";
+					else if (printerResult.getString("receipt_printer").equals("Posiflex"))
+						templateName = "ReceiptStyleTemplate_Posiflex";
+				}
+				
+				Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+				
+				try (XWPFDocument doc = new XWPFDocument(
+						new FileInputStream("C:\\receipt\\" + templateName + ".docx"))) {
+					
+					XWPFParagraph emptyParagraph = null;
+					
+					if (doc.getStyles() != null) {
+						XWPFStyles styles = doc.getStyles();
+						CTFonts fonts = CTFonts.Factory.newInstance();
+						fonts.setAscii(RECEIPT_FONT_FAMILY);
+						styles.setDefaultFonts(fonts);
+					}
+				
+					// Header Store Name
+					XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
+					headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
+					headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
+					headerStoreNameParagraph.setSpacingAfter(0);
+
+					XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
+					runHeaderStoreNameParagraph.setBold(true);
+					runHeaderStoreNameParagraph.setFontSize(12);
+					runHeaderStoreNameParagraph.setText(receiptHeader.getString("storeName"));
+
+					// Header Store Address
+					XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
+					headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+					headerStoreAddressParagraph.setSpacingAfter(0);
+
+					XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
+					runHeaderStoreAddressParagraph.setFontSize(9);
+					runHeaderStoreAddressParagraph.setText(receiptHeader.getString("storeAddress"));
+					runHeaderStoreAddressParagraph.addBreak();
+					
+					emptyParagraph = doc.createParagraph();
+					emptyParagraph.setSpacingAfter(0);
+					emptyParagraph.createRun().addBreak();
+					emptyParagraph.removeRun(0);
+					
+					//info table
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+					List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Date Time", "Staff");
+					List<String> receiptInfoContents = Arrays.asList(receiptContent.getString("checkNo"),
+							receiptContent.getString("tableNo"),
+							sdf.format(new Date()), staffName);
+
+					XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
+					CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout();																											
+					receiptInfoTableType.setType(STTblLayoutType.FIXED);
+					receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
+
+					for (int i = 0; i < receiptInfoLabels.size(); i++) {
+						XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
+						createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
+								ParagraphAlignment.LEFT);
+						createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
+								ParagraphAlignment.LEFT);
+					}
+
+					long receiptInfoTableWidths[] = { 1400, 2000 };
+
+					CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
+					cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+					cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
+
+					for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
+						XWPFTableRow row = receiptInfoTable.getRow(x);
+						int numberOfCell = row.getTableCells().size();
+						for (int y = 0; y < numberOfCell; y++) {
+							XWPFTableCell cell = row.getCell(y);
+							cell.getCTTc().addNewTcPr().addNewTcW()
+									.setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+						}
+					}
+
+					emptyParagraph = doc.createParagraph();
+					emptyParagraph.setSpacingAfter(0);
+					emptyParagraph.createRun().addBreak();
+					emptyParagraph.removeRun(0);
+
+					//QR image centralized
+					XWPFParagraph qrImageParagraph = doc.createParagraph();
+					qrImageParagraph.setAlignment(ParagraphAlignment.CENTER);
+					XWPFRun runQrImageParagraph = qrImageParagraph.createRun();
+					
+					//InputStream is = new ByteArrayInputStream(QRGenerate.generateQRImage(, 125, 125));
+					InputStream is = new ByteArrayInputStream(Base64.decode(receiptContent.getString("qrImage").split(",")[1].getBytes()));
+					runQrImageParagraph.addPicture(is, XWPFDocument.PICTURE_TYPE_JPEG, "Generated" ,Units.toEMU(125), Units.toEMU(125));
+					is.close();
+								
+					emptyParagraph = doc.createParagraph();
+					emptyParagraph.setSpacingAfter(0);
+					emptyParagraph.createRun().addBreak();
+					emptyParagraph.removeRun(0);
+					
+					// output the result as doc file
+					try (FileOutputStream out = new FileOutputStream("C:\\receipt\\qrReciept.docx")) {
+						doc.write(out);
+					}
+					
+					//convert docx to pdf
+					XWPFDocument document = new XWPFDocument(
+							new FileInputStream(new File("C:\\receipt\\qrReciept.docx")));
+					PdfOptions options = PdfOptions.create();
+					OutputStream out = new FileOutputStream(new File("C:\\receipt\\qrReciept.pdf"));
+					PdfConverter.getInstance().convert(document, out, options);
+					document.close();
+					out.close();
+					
+					// print pdf
+					if (myPrintService != null) {
+						PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\qrReciept.pdf")));
+
+						PrinterJob job = PrinterJob.getPrinterJob();
+						job.setPageable(new PDFPageable(printablePdf));
+						job.setPrintService(myPrintService);
+						job.print();
+
+						printablePdf.close();
+					}
+					
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				}
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
 		}
 		return jsonResult;
 	}
