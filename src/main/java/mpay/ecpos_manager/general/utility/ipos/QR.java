@@ -1,12 +1,16 @@
 package mpay.ecpos_manager.general.utility.ipos;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
+import org.aspectj.util.FileUtil;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +27,14 @@ public class QR {
 	@Autowired
 	DataSource dataSource;
 	
-	@Value("${ipos_exe}")
-	private String iposExe;
+	@Value("${ipos-path}")
+	private String iposPath;
+	
+	@Value("${ipos-exe}")
+	private String iposEXE;
+	
+	@Value("${ipos-demo-exe}")
+	private String iposDemoEXE;
 	
 	//Sales
 	public JSONObject qrSalePayment(String storeId, String tranType, BigDecimal amount, String tips, String uniqueTranNumber, String qrContent, JSONObject terminalWifiIPPort) {
@@ -111,7 +121,38 @@ public class QR {
 	private JSONObject submitIPOS(String request){
 		JSONObject response = new JSONObject();
 		try {
-			Process executeIPOS = Runtime.getRuntime().exec(iposExe + " " + request);
+			new File(iposPath).mkdirs();
+			File iposFile = new File(Paths.get(iposPath, iposEXE).toString());
+			File iposDemoFile = new File(Paths.get(iposPath, iposDemoEXE).toString());
+			
+			String iposOriPath = getClass().getClassLoader().getResource(Paths.get("mpay/ecpos_manager/general/utility/ipos/ipos_application/", iposEXE).toString()).getFile();
+			iposOriPath = URLDecoder.decode(iposOriPath, "UTF-8");
+			if (iposOriPath.startsWith("file:")) {
+				iposOriPath = iposOriPath.substring("file:".length());
+			}
+			if (iposOriPath.startsWith("/")) {
+				iposOriPath = iposOriPath.substring("/".length());
+			}
+			File iposOriFile = new File(iposOriPath);
+			
+			String iposDemoOriPath = getClass().getClassLoader().getResource(Paths.get("mpay/ecpos_manager/general/utility/ipos/ipos_application/", iposDemoEXE).toString()).getFile();
+			iposDemoOriPath = URLDecoder.decode(iposDemoOriPath, "UTF-8");
+			if (iposDemoOriPath.startsWith("file:")) {
+				iposDemoOriPath = iposDemoOriPath.substring("file:".length());
+			}
+			if (iposDemoOriPath.startsWith("/")) {
+				iposDemoOriPath = iposDemoOriPath.substring("/".length());
+			}
+			File iposDemoOriFile = new File(iposDemoOriPath);
+			
+			if (!iposFile.exists()) {
+				FileUtil.copyFile(iposOriFile, iposFile);
+			}
+			if (!iposDemoFile.exists()) {
+				FileUtil.copyFile(iposDemoOriFile, iposDemoFile);
+			}
+			
+			Process executeIPOS = Runtime.getRuntime().exec(new String[] {Paths.get(iposPath, iposEXE).toString(), request});
 					
 			if(!executeIPOS.waitFor(2, TimeUnit.MINUTES)) {
 				//destroy the process if exceed  timeout

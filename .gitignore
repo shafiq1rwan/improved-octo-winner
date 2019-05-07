@@ -24,4 +24,5 @@
 ### ECPOS Manager ###
 /ecpos-query/
 /ecpos-log/
-/receipt
+/receipt/
+/ipos-application/

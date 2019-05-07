@@ -59,9 +59,12 @@ public class Drawer {
 		
 		try {
 			String drawerPath = getClass().getClassLoader().getResource("mpay/ecpos_manager/general/utility/hardware/UniDrawer.exe").getFile();
+			if (drawerPath.startsWith("file:")) {
+				drawerPath = drawerPath.substring("file:".length());
+			}
 			drawerPath = URLDecoder.decode(drawerPath, "UTF-8");
 			if (drawerPath.startsWith("/")) {
-				drawerPath.substring(1);
+				drawerPath = drawerPath.substring(1);
 			}
 			
 			Process executeDrawer = Runtime.getRuntime().exec(new String[] {drawerPath, request});
