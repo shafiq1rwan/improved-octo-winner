@@ -20,5 +20,8 @@
 /dist/
 /nbdist/
 /.nb-gradle/
+
+### ECPOS Manager ###
 /ecpos-query/
 /ecpos-log/
+/receipt

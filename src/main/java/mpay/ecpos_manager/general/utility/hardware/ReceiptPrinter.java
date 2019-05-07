@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URLDecoder;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -58,6 +60,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STBorder;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.sun.org.apache.xml.internal.security.utils.Base64;
@@ -77,6 +80,9 @@ public class ReceiptPrinter {
 
 	@Autowired
 	DataSource dataSource;
+	
+	@Value("${receipt-path}")
+	private String receiptPath;
 
 	private static final String RECEIPT_FONT_FAMILY = "Arial";
 
@@ -133,7 +139,7 @@ public class ReceiptPrinter {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
 			} else {
-				new File("C:/receipt").mkdirs();
+				new File(receiptPath).mkdirs();
 
 				PrintService myPrintService = null;
 				String templateName = "";
@@ -154,9 +160,8 @@ public class ReceiptPrinter {
 				}
 				
 				Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
-				
 				try (XWPFDocument doc = new XWPFDocument(
-						new FileInputStream("C:\\receipt\\" + templateName + ".docx"))) {
+						new FileInputStream(URLDecoder.decode(getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString()).toString().substring("file:/".length()), "UTF-8")))) {
 					
 					XWPFParagraph emptyParagraph = null;
 					
@@ -250,24 +255,25 @@ public class ReceiptPrinter {
 					emptyParagraph.removeRun(0);
 					
 					// output the result as doc file
-					try (FileOutputStream out = new FileOutputStream("C:\\receipt\\qrReciept.docx")) {
+					try (FileOutputStream out = new FileOutputStream(Paths.get(receiptPath, "qrReciept.docx").toString())) {
 						doc.write(out);
 					}
 					
 					//convert docx to pdf
 					XWPFDocument document = new XWPFDocument(
-							new FileInputStream(new File("C:\\receipt\\qrReciept.docx")));
+							new FileInputStream(new File(Paths.get(receiptPath, "qrReciept.docx").toString())));
 					PdfOptions options = PdfOptions.create();
-					OutputStream out = new FileOutputStream(new File("C:\\receipt\\qrReciept.pdf"));
+					OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
 					PdfConverter.getInstance().convert(document, out, options);
 					document.close();
 					out.close();
 					
 					// print pdf
 					if (myPrintService != null) {
-						PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\qrReciept.pdf")));
+						PDDocument printablePdf = PDDocument.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
 
 						PrinterJob job = PrinterJob.getPrinterJob();
+						job.setJobName("QR - " + receiptContent.getString("checkNo"));
 						job.setPageable(new PDFPageable(printablePdf));
 						job.setPrintService(myPrintService);
 						job.print();
@@ -647,7 +653,7 @@ public class ReceiptPrinter {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Item Not Available");
 				} else {
-					new File("C:/receipt").mkdirs();
+					new File(receiptPath).mkdirs();
 
 					PrintService myPrintService = null;
 					String templateName = "";
@@ -670,9 +676,9 @@ public class ReceiptPrinter {
 
 					System.out.println("Template Name: " + templateName);
 					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
-
+					;
 					try (XWPFDocument doc = new XWPFDocument(
-							new FileInputStream("C:\\receipt\\" + templateName + ".docx"))) {
+							new FileInputStream(URLDecoder.decode(getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString()).toString().substring("file:/".length()), "UTF-8")))) {
 						if (doc.getStyles() != null) {
 
 							XWPFStyles styles = doc.getStyles();
@@ -1145,7 +1151,7 @@ public class ReceiptPrinter {
 						emptyParagraph.createRun().setText(".");
 
 						// output the result as doc file
-						try (FileOutputStream out = new FileOutputStream("C:\\receipt\\receipt.docx")) {
+						try (FileOutputStream out = new FileOutputStream(Paths.get(receiptPath, "receipt.docx").toString())) {
 							doc.write(out);
 						}
 
@@ -1164,16 +1170,16 @@ public class ReceiptPrinter {
 					}
 
 					XWPFDocument document = new XWPFDocument(
-							new FileInputStream(new File("C:\\receipt\\receipt.docx")));
+							new FileInputStream(new File(Paths.get(receiptPath, "receipt.docx").toString())));
 					PdfOptions options = PdfOptions.create();
-					OutputStream out = new FileOutputStream(new File("C:\\receipt\\receipt.pdf"));
+					OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
 					PdfConverter.getInstance().convert(document, out, options);
 					document.close();
 					out.close();
 
 					// print pdf
 					if (myPrintService != null) {
-						PDDocument printablePdf = PDDocument.load(new File(("C:\\receipt\\receipt.pdf")));
+						PDDocument printablePdf = PDDocument.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
 						// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
 						// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
 
