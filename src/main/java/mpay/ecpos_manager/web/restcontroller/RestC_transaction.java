@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.constant.Constant;
@@ -109,6 +110,59 @@ public class RestC_transaction {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/get_transaction_details" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getTransactionDetails(HttpServletRequest request, HttpServletResponse response, @RequestParam(name = "id") String transactionId) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try 
+		{
+			if(user!=null) {
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("select * from transaction where id = ?;");
+				stmt.setString(1, transactionId);
+				rs = stmt.executeQuery();
+				
+				if(rs.next()) {
+					boolean isVoid = false;
+					boolean isApproved = false;
+
+					if(rs.getLong("transaction_type") == 2) {
+						isVoid = true;
+					}
+					
+					if(rs.getLong("transaction_status") == 3) {
+						isApproved = true;
+					}
+
+					jsonResult.put("id", rs.getLong("id"));
+					jsonResult.put("isVoid", isVoid);
+					jsonResult.put("isApproved", isApproved);
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+
 	@RequestMapping(value = { "/get_accumulated_amount" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String getAccumulatedAmount(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
@@ -288,6 +342,15 @@ public class RestC_transaction {
 					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 				} else if (jsonObj.getString("paymentMethod").equals("QR")) {
 					paymentMethod = 3;
+					
+					if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
+						Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
+						
+						return jsonResult.toString();
+					}
+					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 				} else {
 					Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -522,6 +585,133 @@ public class RestC_transaction {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = {"/void_transaction"}, method = { RequestMethod.POST}, produces = "application/json")
+	public String voidTransaction (@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) { 
+				connection = dataSource.getConnection();
+				JSONObject jsonObj = new JSONObject(data);
+				
+				stmt = connection.prepareStatement("select * from transaction where id = ?;");
+				stmt.setLong(1, jsonObj.getLong("transactionId"));
+				rs = stmt.executeQuery();
+				
+				if(rs.next()) {						
+					JSONObject terminalWifiIPPort = getTerminalWifiIPPort(rs.getString("terminal_serial_number"));
+					JSONObject storeDetail = getStoreDetail();
+					
+					if(storeDetail.length()<= 0) {
+						Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
+					}
+					else {
+						
+						//card void
+						if(rs.getLong("payment_method") == 2) {
+							if(rs.getString("invoice_number")!= null) {
+								JSONObject cardVoidResponse = iposCard.cardVoidPayment(storeDetail.getString("id"), "card-void", rs.getString("invoice_number"), terminalWifiIPPort);
+								System.out.println("Card Voiding Response: " + cardVoidResponse.toString());
+								
+								if(cardVoidResponse.has("responseCode")) {
+									if(cardVoidResponse.getString("responseCode").equals("00")) {
+										//update transaction status
+										stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5 where id = ?");
+										stmt2.setLong(1, 2); //2 for "void"
+										stmt2.setLong(2, jsonObj.getLong("transactionId"));
+										stmt2.executeUpdate();
+										
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+									} else {
+										Logger.writeActivity(cardVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, cardVoidResponse.getString("responseMessage"));
+									}
+								} else {
+									Logger.writeActivity(cardVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, cardVoidResponse.getString("responseMessage"));
+								}
+							}
+							else {
+								Logger.writeActivity("Invoice Number Not Found", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Invoice Number Not Found");
+							}
+						}
+						
+						//qr void
+						else if(rs.getLong("payment_method") == 3) {
+							if(rs.getString("unique_trans_number")!= null && rs.getString("trace_number")!= null) {
+								JSONObject qrVoidResponse = iposQR.qrVoid(storeDetail.getString("id"), "qr-void", rs.getString("unique_trans_number"), rs.getString("qr_ref_id"), terminalWifiIPPort);
+								System.out.println("QR Voiding Response: " + qrVoidResponse.toString());
+								
+								if(qrVoidResponse.has("responseCode")) {
+									if(qrVoidResponse.getString("responseCode").equals("00")) {
+										//update transaction status
+										stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5 where id = ?");
+										stmt2.setLong(1, 2); //2 for "void"
+										stmt2.setLong(2, jsonObj.getLong("transactionId"));
+										stmt2.executeUpdate();
+										
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+									} else {
+										Logger.writeActivity(qrVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("responseMessage"));
+									}
+								}
+								else {
+									Logger.writeActivity(qrVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("responseMessage"));
+								}
+							} else 
+							{
+								Logger.writeActivity("Transaction Number or Trace Number Not Found", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Number or Trace Number Not Found");
+							}
+						}
+						
+					}
+				} else {
+					Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt.close();
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println("Final Result: " + jsonResult.toString());
+		return jsonResult.toString();
+	}
+
 	@RequestMapping(value = { "/request_settlement" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String requestSettlement(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);

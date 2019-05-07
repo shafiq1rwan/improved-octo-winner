@@ -40,6 +40,7 @@
 											<th>Amount</th>
 											<th>Status</th>
 											<th>Date</th>
+											<th></th> 
 										</tr>
 									</thead>
 									<tbody></tbody>
@@ -50,6 +51,49 @@
 					</div>
 				</section>
 			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="transactionDetailsModal" role="dialog">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-body" style="padding: 20px;">
+							<button class="close" data-dismiss="modal">&times;</button>
+					
+					<!-- upper button group control -->
+								<div class="row">
+									<div class="col-sm-4">
+										<div ng-if="!transaction.isVoid && transaction.isApproved">
+											<button class="btn btn-block btn-primary" ng-click="voidTransaction(transaction.id)">Void</button>
+										</div>
+									</div>
+									<div class="col-sm-4">
+										<div ng-if="">
+											<button class="btn btn-block btn-info" ng-click="">Print Receipt</button>
+										</div>
+									</div>
+									<div class="col-sm-4">
+										<div ng-if="">
+											<button class="btn btn-block btn-info" ng-click="">Continue Action</button>
+										</div>
+									</div>
+								</div>
+					
+					
+						</div>
+					</div>
+				</div>		
+			</div>
+			
+			
+			<!-- Loading Modal [START] -->
+			<div id="loading_modal" class="modal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static" role="dialog">
+					<div class="modal-content">
+						<div class="modal-body text-center">
+							<p>{{voidMessage}}</p>
+						</div>
+					</div>
+			</div>
+			<!-- Loading Modal [END] -->
+
 		</div>
 	</div>
 </body>

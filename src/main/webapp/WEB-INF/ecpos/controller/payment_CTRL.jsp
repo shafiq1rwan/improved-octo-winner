@@ -254,12 +254,12 @@
 					var context = "${pageContext.request.contextPath}";
 					var wsURL = "";
 					if (context == "") {
-						wsURL = "ws://localhost:8081/paymentSocket";
+						wsURL = "ws://localhost:8080/paymentSocket";
 					} else {
-						wsURL = "ws://localhost:8081/${pageContext.request.contextPath}/paymentSocket";
+						wsURL = "ws://localhost:8080/${pageContext.request.contextPath}/paymentSocket";
 					}
 					
-					var paymentSocket = new WebSocket("ws://localhost:8081${pageContext.request.contextPath}/paymentSocket");
+					var paymentSocket = new WebSocket("ws://localhost:8080${pageContext.request.contextPath}/paymentSocket");
 					
 					paymentSocket.onopen = function(event) {
 						console.log("Connection established");
