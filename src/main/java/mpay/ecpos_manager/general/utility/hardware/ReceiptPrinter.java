@@ -249,10 +249,16 @@ public class ReceiptPrinter {
 					runQrImageParagraph.addPicture(is, XWPFDocument.PICTURE_TYPE_JPEG, "Generated" ,Units.toEMU(125), Units.toEMU(125));
 					is.close();
 								
-					emptyParagraph = doc.createParagraph();
+	/*				emptyParagraph = doc.createParagraph();
 					emptyParagraph.setSpacingAfter(0);
 					emptyParagraph.createRun().addBreak();
-					emptyParagraph.removeRun(0);
+					emptyParagraph.removeRun(0);*/
+					
+					emptyParagraph = doc.createParagraph();
+					emptyParagraph.setSpacingAfter(0);
+					emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+					emptyParagraph.createRun().setText("Have a nice day");
+					emptyParagraph.createRun().addBreak();
 					
 					// output the result as doc file
 					try (FileOutputStream out = new FileOutputStream(Paths.get(receiptPath, "qrReciept.docx").toString())) {
@@ -940,12 +946,11 @@ public class ReceiptPrinter {
 						receiptContentBreak.createRun().addBreak();
 						receiptContentBreak.removeRun(0);
 
+						JSONArray taxCharges = receiptContentJson.getJSONArray("taxCharges");
 						// Receipt Result
-						XWPFTable receiptResultTable = doc.createTable(5, 2);
+						XWPFTable receiptResultTable = doc.createTable(3 + taxCharges.length(), 2);
 						receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
 						receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
-
-						JSONArray taxCharges = receiptContentJson.getJSONArray("taxCharges");
 
 						List<String> receiptResultLabels = new ArrayList<>();
 						receiptResultLabels.add("Subtotal");
@@ -1007,19 +1012,19 @@ public class ReceiptPrinter {
 										.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
 							}
 						}
+						
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().addBreak();
+						emptyParagraph.removeRun(0);
 
 						// Cashless Payment (Coming Soon)
 						if (receiptContentJson.getInt("paymentMethod") == 2) {
-							emptyParagraph = doc.createParagraph();
-							emptyParagraph.setSpacingAfter(0);
-							emptyParagraph.createRun().addBreak();
-							emptyParagraph.removeRun(0);
-
 							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
 							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
 							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
 							cashlessHeaderParagraph.setSpacingAfter(0);
-							cashlessHeaderParagraph.setSpacingAfterLines(0);
+							cashlessHeaderParagraph.setSpacingBefore(0);
 
 							XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
 							runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
@@ -1063,6 +1068,11 @@ public class ReceiptPrinter {
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
 							
+							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.createRun().addBreak();
+							emptyParagraph.removeRun(0);
+							
 							XWPFParagraph terminalVerificationParagraph = doc.createParagraph();
 							terminalVerificationParagraph.setAlignment(ParagraphAlignment.CENTER);
 							terminalVerificationParagraph.setVerticalAlignment(TextAlignment.TOP);
@@ -1078,12 +1088,12 @@ public class ReceiptPrinter {
 							} else if (cardData.getString("terminalVerification").equals("3")) {
 								runTerminalVerificationParagraph.setText("No Signature Required");
 							}
-						} else if (receiptContentJson.getInt("paymentMethod") == 3) {
+							
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setSpacingAfter(0);
 							emptyParagraph.createRun().addBreak();
 							emptyParagraph.removeRun(0);
-
+						} else if (receiptContentJson.getInt("paymentMethod") == 3) {
 							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
 							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
 							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
@@ -1093,7 +1103,7 @@ public class ReceiptPrinter {
 							XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
 							runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
 
-							XWPFTable receiptResultTable2 = doc.createTable(15, 2);
+							XWPFTable receiptResultTable2 = doc.createTable(11, 2);
 							receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
 							receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
 
@@ -1128,6 +1138,11 @@ public class ReceiptPrinter {
 							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2330"));
+							
+							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.createRun().addBreak();
+							emptyParagraph.removeRun(0);
 
 							byte[] qrByteData = QRGenerate.generateQRImage(qrData.getString("refID"), 300, 300);
 
@@ -1143,12 +1158,7 @@ public class ReceiptPrinter {
 						emptyParagraph = doc.createParagraph();
 						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
 						emptyParagraph.setSpacingAfter(0);
-						emptyParagraph.createRun().setText(".");
-
-						emptyParagraph = doc.createParagraph();
-						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
-						emptyParagraph.setSpacingAfter(0);
-						emptyParagraph.createRun().setText(".");
+						emptyParagraph.createRun().setText("Please Come Again");
 
 						// output the result as doc file
 						try (FileOutputStream out = new FileOutputStream(Paths.get(receiptPath, "receipt.docx").toString())) {
