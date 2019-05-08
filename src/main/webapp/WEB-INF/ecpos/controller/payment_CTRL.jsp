@@ -250,16 +250,18 @@
 						window.location.href = "${pageContext.request.contextPath}/signout";
 					}); 
 				} else if($scope.paymentMethod == "Card"){
+					var wsProtocol = window.location.protocol;
+					var wsHost = window.location.host;
+					var wsURLHeader = "";
 					
-					var context = "${pageContext.request.contextPath}";
-					var wsURL = "";
-					if (context == "") {
-						wsURL = "ws://localhost:8080/paymentSocket";
+					if (wsProtocol.includes("https")) {
+						wsURLHeader = "wss://"
 					} else {
-						wsURL = "ws://localhost:8080/${pageContext.request.contextPath}/paymentSocket";
+						wsURLHeader = "ws://"
 					}
+					wsURLHeader += wsHost;
 					
-					var paymentSocket = new WebSocket("ws://localhost:8080${pageContext.request.contextPath}/paymentSocket");
+					var paymentSocket = new WebSocket(wsURLHeader + "${pageContext.request.contextPath}/paymentSocket");
 					
 					paymentSocket.onopen = function(event) {
 						console.log("Connection established");
