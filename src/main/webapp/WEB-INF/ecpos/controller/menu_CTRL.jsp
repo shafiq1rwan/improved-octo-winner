@@ -3,7 +3,7 @@
 		$scope.tableNo = $routeParams.tableNo;
 		$scope.checkNo = $routeParams.checkNo;
 		
-		$scope.screenWidth = screen.width;
+		$scope.screenWidth = $("html").innerWidth();
 		
 		$scope.categories = {};
 		$scope.menuItems = {};
