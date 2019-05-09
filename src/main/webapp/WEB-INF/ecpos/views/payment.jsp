@@ -305,6 +305,7 @@ ul.select2-results__options li {
 						<div class="modal-content">
 							<!-- <div class="modal-header"></div> -->
 							<div class="modal-body">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
 								<div style="padding-bottom: 15px; padding-left: 30px; padding-right: 30px;">
 									<label>Received Amount</label>
 									<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
