@@ -169,13 +169,13 @@
 		            this.checked = true;                        
 		        });
 		        
-				$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
+				$('#tenderAmount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
 		    } else {
 		        $('[name=grandParentItemCheckbox]').each(function() {
 		            this.checked = false;                       
 		        });
 		        
-		        $('#amount').html(parseFloat(0).toFixed(2));
+		        $('#tenderAmount').html(parseFloat(0).toFixed(2));
 		    }
 		}
 		
@@ -191,7 +191,7 @@
 		
 		$scope.getAccumulatedAmount = function() {
 			$scope.checkedValue = [];
-			$('#amount').html(parseFloat(0).toFixed(2));
+			$('#tenderAmount').html(parseFloat(0).toFixed(2));
 			
 			$("input[name=grandParentItemCheckbox]:checked").each(function(){
 				$scope.checkedValue.push($(this).val());
@@ -204,7 +204,7 @@
 				
 				$http.post("${pageContext.request.contextPath}/rc/transaction/get_accumulated_amount/", jsonData)
 				.then(function(response) {
-					$('#amount').html(parseFloat(response.data.accumulatedAmount).toFixed(2));
+					$('#tenderAmount').html(parseFloat(response.data.accumulatedAmount).toFixed(2));
 				},
 				function(response) {
 					alert("Session TIME OUT");
@@ -320,7 +320,7 @@
 			$("#allGrandParentItemCheckbox").hide();
 			$("input[name=grandParentItemCheckbox]").hide();
 			
-			$('#amount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
+			$('#tenderAmount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
 			
 			$('#paymentCarousel').carousel(0);
 		}

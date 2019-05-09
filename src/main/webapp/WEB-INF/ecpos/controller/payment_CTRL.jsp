@@ -54,11 +54,11 @@
 	
 			counter += 1;
 			if (counter == 1) {
-				$scope.fullPaymentAmount = $('#amount').text();
+				$scope.fullPaymentAmount = $('#tenderAmount').text();
 			}
 			
 			if ($scope.paymentType == "full") {
-				$('#amount').html(parseFloat($scope.fullPaymentAmount).toFixed(2));
+				$('#tenderAmount').html(parseFloat($scope.fullPaymentAmount).toFixed(2));
 	
 				$("#one").prop('disabled', true);
 				$("#two").prop('disabled', true);
@@ -80,7 +80,7 @@
 				$("#allGrandParentItemCheckbox").show();
 				$("input[name=grandParentItemCheckbox]").show();
 	
-				$('#amount').html(parseFloat(0).toFixed(2));
+				$('#tenderAmount').html(parseFloat(0).toFixed(2));
 	
 				$("#one").prop('disabled', true);
 				$("#two").prop('disabled', true);
@@ -95,7 +95,7 @@
 				$("#zerozero").prop('disabled', true);
 				$("#remove").prop('disabled', true);
 			} else {
-				$('#amount').html(parseFloat(0).toFixed(2));
+				$('#tenderAmount').html(parseFloat(0).toFixed(2));
 	
 				$("#one").prop('disabled', false);
 				$("#two").prop('disabled', false);
@@ -112,9 +112,15 @@
 			}
 		}
 	
-		$('#paymentMethodBack').click(function() {
+		$('#backToPaymentType').click(function() {
 			$("#allGrandParentItemCheckbox").hide();
 			$("input[name=grandParentItemCheckbox]").hide();
+		})
+		
+		$('#backToPaymentMethod').click(function() {
+			if ($scope.paymentType != "full") {
+				$('#tenderAmount').html(parseFloat(0).toFixed(2));
+			}
 		})
 	
 		$scope.proceedPayment = function(method) {
@@ -141,6 +147,40 @@
 		}
 	
 		$scope.enterCalculator = function(id, number) {
+			var amount = document.getElementById(id).innerHTML;
+			
+			if (amount < 0.00) {
+				alert("Tender Amount should not be less than 0.00");
+			} else if (number != -10) {
+				if (amount.length < 12) {
+					if (number != 100 && number != 10) {
+						amount = amount + number;
+					}
+					
+					var floatAmount = parseFloat(amount);
+					
+					if (number == 100) {
+						floatAmount = floatAmount * 100;
+					} else {
+						floatAmount = floatAmount * 10;
+					}
+					
+					var temp = floatAmount.toFixed(3);
+					temp = temp.substring(0, temp.length - 1);
+					document.getElementById(id).innerHTML = temp;
+				}
+			} else if (number == -10) {
+				var floatAmount = parseFloat(amount);
+				
+				floatAmount = floatAmount / 10;
+				
+				var temp = floatAmount.toFixed(3);
+				temp = temp.substring(0, temp.length - 1);
+				document.getElementById(id).innerHTML = temp;
+			}
+		}
+		
+		$scope.enterCalculator2 = function(id, number) {
 			var amount = document.getElementById(id).innerHTML;
 			
 			if (amount < 0.00) {
@@ -173,55 +213,64 @@
 				document.getElementById(id).innerHTML = temp;
 			}
 		}
-	
+		
 		$scope.submitPayment = function() {
-			if ($scope.paymentMethod == "QR") {
-				if ($('#terminal').val() == "") {
-					return alert("Kindly select terminal for QR payment");
-				} else {
+			if ($scope.paymentType == "split") {
+				$("input[name=grandParentItemCheckbox]:checked").each(function() {
+					$scope.checkedValue.push($(this).val());
+				});
+
+				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
+					return alert("Kindly tick at least an item to proceed");
+				}
+			} else if (($scope.paymentMethod == "Card" || $scope.paymentMethod == "QR") && $('#terminal').val() == "") {
+				return alert("Kindly select terminal");
+			} else if ($('#tenderAmount').text() == "0.00") {
+				return alert("Kindly enter payment amount");
+			} else {
+				if ($scope.paymentMethod == "Cash") {
+					$('#receivedAmount').html(parseFloat(0).toFixed(2));
+					$('#receivedAmountModal').modal('show');
+				} else if ($scope.paymentMethod == "Card") {
+					$scope.executePayment();
+				} else if ($scope.paymentMethod == "QR") {
+					$scope.qrContent = "";
 					$('#scan_qr_modal').modal('toggle');
 	
 					$('#scan_qr_modal').on('shown.bs.modal',function() {
 						$('#qr_content').focus();
 					})
 				}
-			} else {
-				$scope.checkedValue = [];
-	
-				if ($scope.paymentType == "split") {
-					$("input[name=grandParentItemCheckbox]:checked").each(function() {
-						$scope.checkedValue.push($(this).val());
+			}
+		};
+		
+		$scope.executePayment = function() {
+			if($scope.paymentMethod == "Cash") {
+				if (document.getElementById('tenderAmount').innerHTML > document.getElementById('receivedAmount').innerHTML) {
+					return alert("Received amount should be greater than or equal to Tender Amount");
+				} else {
+					var jsonData = JSON.stringify({
+						"checkDetailIdArray" : $scope.checkedValue,
+						"paymentType" : $scope.paymentType,
+						"paymentMethod" : $scope.paymentMethod,
+						"paymentAmount" : $('#tenderAmount').text(),
+						"tableNo" : $scope.tableNo,
+						"checkNo" : $scope.checkNo,
+						"receivedAmount" : $('#receivedAmount').text()
 					});
-	
-					if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
-						return alert("Kindly tick at least an item to proceed");
-					}
-				} else if ($scope.paymentMethod == "Card" && $('#terminal').val() == "") {
-					return alert("Kindly select terminal");
-				} else if ($('#amount').text() == "0.00") {
-					return alert("Kindly enter payment amount");
-				}
-	
-				var jsonData = JSON.stringify({
-					"terminalSerialNo" : $('#terminal').val(),
-					"checkDetailIdArray" : $scope.checkedValue,
-					"paymentType" : $scope.paymentType,
-					"paymentMethod" : $scope.paymentMethod,
-					"paymentAmount" : $('#amount').text(),
-					"tableNo" : $scope.tableNo,
-					"checkNo" : $scope.checkNo
-				});
-				console.log("Send data: " + jsonData)
-				
-				if($scope.paymentMethod == "Cash"){
+					console.log("Send data: " + jsonData)
+					
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
 							//Print Receipt here
 							printReceipt($scope.checkNo)
-							
-							alert(response.data.response_message);
 
+							alert(response.data.response_message + "\n" + "Change: RM" + response.data.change_amount);
+							$('#receivedAmountModal').modal('hide');
+							$('.modal-backdrop').remove();
+							$('#receivedAmount').html(parseFloat(0).toFixed(2));
+	
 							if ($scope.orderType == "table") {
 								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/table_order");
@@ -248,78 +297,142 @@
 					function(response) {
 						alert("Session TIME OUT");
 						window.location.href = "${pageContext.request.contextPath}/signout";
-					}); 
-				} else if($scope.paymentMethod == "Card"){
-					var wsProtocol = window.location.protocol;
-					var wsHost = window.location.host;
-					var wsURLHeader = "";
-					
-					if (wsProtocol.includes("https")) {
-						wsURLHeader = "wss://"
-					} else {
-						wsURLHeader = "ws://"
-					}
-					wsURLHeader += wsHost;
-					
-					var paymentSocket = new WebSocket(wsURLHeader + "${pageContext.request.contextPath}/paymentSocket");
-					
-					paymentSocket.onopen = function(event) {
-						console.log("Connection established");
-						if (paymentSocket != null) {
-							paymentSocket.send(jsonData);
-						}
-						
-						$scope.socketMessage = "Perform Transaction. Please Wait.";
-						$('#loading_modal').modal('show');
-					}
-					
-					paymentSocket.onmessage = function(event) {
-						console.log("onMessage :" + event.data);
-						if(event.data.includes("IPOS")){
-							switch (getPaymentSocketMessage(event.data)) {
-							case "insertCard":
-								$scope.socketMessage = "Please present card.";
-								$scope.$apply();
-								break;
-							case "contactingBank":
-								$scope.socketMessage = "Contacting Bank. Please wait.";
-								$scope.$apply();
-								break;
-							case "enterPin":
-								$scope.socketMessage = "Waiting for PIN input.";
-								$scope.$apply();
-								break;
-							case "finalResult":
-								$scope.socketMessage = getIposResponseMessage(event.data);
-								$scope.$apply();
-								break;
-							}
-							console.log("Received message " + $scope.socketMessage)
-						} else {
-							var jsonResult = JSON.parse(event.data);
-							$scope.jsonResult = jsonResult;
-							console.log($scope.jsonResult);
-							printReceipt($scope.checkNo)
-							alert(jsonResult.response_message);
-						}
-					}
+					});
+				}
+			} else if($scope.paymentMethod == "Card") {	
+				var jsonData = JSON.stringify({
+					"terminalSerialNo" : $('#terminal').val(),
+					"checkDetailIdArray" : $scope.checkedValue,
+					"paymentType" : $scope.paymentType,
+					"paymentMethod" : $scope.paymentMethod,
+					"paymentAmount" : $('#tenderAmount').text(),
+					"tableNo" : $scope.tableNo,
+					"checkNo" : $scope.checkNo
+				});
+				console.log("Send data: " + jsonData)
 
-					paymentSocket.onerror = function(event) {
-						console.error("WebSocket error observed:", event);
-						$('#loading_modal').modal('hide');
-						alert(event);
-						$scope.socketMessage = "";
+				var wsProtocol = window.location.protocol;
+				var wsHost = window.location.host;
+				var wsURLHeader = "";
+			
+				if (wsProtocol.includes("https")) {
+					wsURLHeader = "wss://"
+				} else {
+					wsURLHeader = "ws://"
+				}
+				wsURLHeader += wsHost;
+					
+				var paymentSocket = new WebSocket(wsURLHeader + "${pageContext.request.contextPath}/paymentSocket");
+				
+				paymentSocket.onopen = function(event) {
+					console.log("Connection established");
+					if (paymentSocket != null) {
+						paymentSocket.send(jsonData);
 					}
-							
-					paymentSocket.onclose = function(event) {
+					
+					$scope.socketMessage = "Perform Transaction. Please Wait.";
+					$('#loading_modal').modal('show');
+				}
+				
+				paymentSocket.onmessage = function(event) {
+					console.log("onMessage :" + event.data);
+					if(event.data.includes("IPOS")){
+						switch (getPaymentSocketMessage(event.data)) {
+						case "insertCard":
+							$scope.socketMessage = "Please present card.";
+							$scope.$apply();
+							break;
+						case "contactingBank":
+							$scope.socketMessage = "Contacting Bank. Please wait.";
+							$scope.$apply();
+							break;
+						case "enterPin":
+							$scope.socketMessage = "Waiting for PIN input.";
+							$scope.$apply();
+							break;
+						case "finalResult":
+							$scope.socketMessage = getIposResponseMessage(event.data);
+							$scope.$apply();
+							break;
+						}
+						console.log("Received message " + $scope.socketMessage)
+					} else {
+						var jsonResult = JSON.parse(event.data);
+						$scope.jsonResult = jsonResult;
 						console.log($scope.jsonResult);
-						console.log("Connection closed");
-						$('#loading_modal').modal('hide');
-						$scope.socketMessage = "";
+						printReceipt($scope.checkNo)
+						alert(jsonResult.response_message);
+					}
+				}
+
+				paymentSocket.onerror = function(event) {
+					console.error("WebSocket error observed:", event);
+					$('#loading_modal').modal('hide');
+					alert(event);
+					$scope.socketMessage = "";
+				}
 						
-						if ($scope.jsonResult.response_code == "01") {
-							location.reload();
-						} else {
+				paymentSocket.onclose = function(event) {
+					console.log($scope.jsonResult);
+					console.log("Connection closed");
+					$('#loading_modal').modal('hide');
+					$scope.socketMessage = "";
+					
+					if ($scope.jsonResult.response_code == "01") {
+						location.reload();
+					} else {
+						if ($scope.orderType == "table") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+								$location.path("/table_order");
+							} else {
+								location.reload();
+							}
+						} else if ($scope.orderType == "take_away") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+								$location.path("/take_away_order");
+							} else {
+								location.reload();
+							}
+						} else if ($scope.orderType == "deposit") {
+							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+								$location.path("/deposit_order");
+							} else {
+								location.reload();
+							}
+						}
+					}
+				}
+			} else  if($scope.paymentMethod == "QR"){
+				if ($scope.qrContent === null || $scope.qrContent === "") {
+					$('#scan_qr_modal').modal('toggle');
+					return alert("The QR content is empty.");
+				} else {
+					var jsonData = JSON.stringify({
+						"terminalSerialNo" : $('#terminal').val(),
+						"checkDetailIdArray" : $scope.checkedValue,
+						"paymentType" : $scope.paymentType,
+						"paymentMethod" : $scope.paymentMethod,
+						"paymentAmount" : $('#tenderAmount').text(),
+						"tableNo" : $scope.tableNo,
+						"checkNo" : $scope.checkNo,
+						"qrContent" : qrContentHolder
+					});
+					console.log(jsonData)
+		
+					$('#loading_modal').modal('show');
+					$scope.socketMessage = "Contacting Bank. Please wait.";
+		
+					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment",jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							$('#loading_modal').modal('hide');
+							console.log("success")
+							
+							//Print Receipt here
+							printReceipt($scope.checkNo);
+							
+							alert(response.data.response_message);
+							
 							if ($scope.orderType == "table") {
 								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 									$location.path("/table_order");
@@ -339,8 +452,17 @@
 									location.reload();
 								}
 							}
+						} else {
+							$('#loading_modal').modal('hide');
+							console.log("failed")
+							alert(response.data.response_message);
 						}
-					};
+					},
+					function(response) {
+						$('#loading_modal').modal('hide');
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					});
 				}
 			}
 		}
@@ -364,91 +486,6 @@
 	
 			return responseJSON['responseCode'] === '00' ? 'Transaction Approved' : responseJSON['responseMessage'];
 		}
-	
-		$scope.proceedToQRPayment = function() {
-			if ($scope.qrContent === null || $scope.qrContent === "") {
-				$('#scan_qr_modal').modal('toggle');
-				return alert("The QR content is empty.");
-			} else {
-				$('#scan_qr_modal').modal('toggle');
-				var qrContentHolder = $scope.qrContent;
-				$scope.qrContent = "";
-	
-				$scope.checkedValue = [];
-				if ($scope.paymentType == "split") {
-					$("input[name=grandParentItemCheckbox]:checked").each(function() {
-						$scope.checkedValue.push($(this).val());
-					});
-	
-					if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
-						return alert("Kindly tick at least an item to proceed");
-					}
-				} else if ($('#amount').text() == "0.00") {
-					return alert("Kindly enter payment amount");
-				}
-	
-				var jsonData = JSON.stringify({
-					"terminalSerialNo" : $('#terminal').val(),
-					"checkDetailIdArray" : $scope.checkedValue,
-					"paymentType" : $scope.paymentType,
-					"paymentMethod" : $scope.paymentMethod,
-					"paymentAmount" : $('#amount').text(),
-					"tableNo" : $scope.tableNo,
-					"checkNo" : $scope.checkNo,
-					"qrContent" : qrContentHolder
-				});
-				console.log(jsonData)
-	
-				$('#loading_modal').modal('show');
-				$scope.socketMessage = "Contacting Bank. Please wait.";
-	
-				$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment",jsonData)
-				.then(function(response) {
-					if (response.data.response_code === "00") {
-						$('#loading_modal').modal('hide');
-						console.log("success")
-						
-						//Print Receipt here
-						printReceipt($scope.checkNo);
-						
-						alert(response.data.response_message);
-						
-						if ($scope.orderType == "table") {
-							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-								$location.path("/table_order");
-							} else {
-								location.reload();
-							}
-						} else if ($scope.orderType == "take_away") {
-							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-								$location.path("/take_away_order");
-							} else {
-								location.reload();
-							}
-						} else if ($scope.orderType == "deposit") {
-							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-								$location.path("/deposit_order");
-							} else {
-								location.reload();
-							}
-						}
-					} else {
-						$('#loading_modal').modal('hide');
-						console.log("failed")
-						alert(response.data.response_message);
-					}
-				},
-				function(response) {
-					$('#loading_modal').modal('hide');
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
-				});
-			}
-		}
-	
-		$('#scan_qr_modal').on('hidden.bs.modal', function() {
-			$scope.qrContent = "";
-		});
 		
 		//Used upon success payment
 		function printReceipt(checkNo) {
@@ -467,7 +504,5 @@
 				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
-
-		
 	});
 </script>

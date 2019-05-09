@@ -1,6 +1,7 @@
 package mpay.ecpos_manager.web.restcontroller;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -167,12 +168,18 @@ public class RestC_transaction {
 	public String getAccumulatedAmount(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		BigDecimal accumulatedAmount = new BigDecimal("0.00");
-		BigDecimal itemAmount = new BigDecimal("0.00");
+		BigDecimal itemAmount = BigDecimal.ZERO;
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
 		
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -191,26 +198,63 @@ public class RestC_transaction {
 					rs = stmt.executeQuery();
 					
 					if (rs.next()) {
-						itemAmount = rs.getBigDecimal("total_amount");
-						
-						stmt.close();
-						stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-						stmt.setLong(1, checkDetailId);
-						rs2 = stmt.executeQuery();
-						
-						while (rs2.next()) {
-							itemAmount = itemAmount.add(rs2.getBigDecimal("total_amount"));
+						stmt2 = connection.prepareStatement("select * from menu_item where id = ? and backend_id = ?;");
+						stmt2.setLong(1, rs.getLong("menu_item_id"));
+						stmt2.setString(2, rs.getString("menu_item_code"));
+						rs2 = stmt2.executeQuery();
+
+						if (rs2.next()) {
+							boolean isItemTaxable = rs2.getBoolean("is_taxable");
+
+							JSONObject charges = new JSONObject();
+							JSONArray totalTaxes = new JSONArray();
+							JSONArray overallTaxes = new JSONArray();
+
+							if (isItemTaxable) {
+								stmt3 = connection.prepareStatement("select tc.* from tax_charge tc " + 
+										"inner join charge_type_lookup ctlu on ctlu.charge_type_number = tc.charge_type " + 
+										"where tc.is_active = 1;");
+								rs3 = stmt3.executeQuery();
+
+								while (rs3.next()) {
+									JSONObject taxInfo = new JSONObject();
+									
+									if (rs3.getInt("charge_type") == 1) {
+										taxInfo.put("id", rs3.getString("id"));
+										taxInfo.put("rate", rs3.getString("rate"));
+										
+										totalTaxes.put(taxInfo);
+									} else if (rs3.getInt("charge_type") == 2) {
+										taxInfo.put("id", rs3.getString("id"));
+										taxInfo.put("rate", rs3.getString("rate"));
+										
+										overallTaxes.put(taxInfo);
+									}
+								}
+								charges.put("totalTaxes", totalTaxes);
+								charges.put("overallTaxes", overallTaxes);
+							}
 							
-							stmt = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
-							stmt.setLong(1, rs2.getLong("id"));
-							rs3 = stmt.executeQuery();
+							itemAmount = itemAmount.add(taxesCalculation(rs.getBigDecimal("total_amount"), isItemTaxable, charges));
 							
-							while (rs3.next()) {
-								itemAmount = itemAmount.add(rs3.getBigDecimal("total_amount"));
+							stmt4 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+							stmt4.setLong(1, checkDetailId);
+							rs4 = stmt4.executeQuery();
+							
+							while (rs4.next()) {
+								itemAmount = itemAmount.add(taxesCalculation(rs4.getBigDecimal("total_amount"), isItemTaxable, charges));
+								
+								stmt5 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+								stmt5.setLong(1, rs4.getLong("id"));
+								rs5 = stmt5.executeQuery();
+								
+								while (rs5.next()) {
+									itemAmount = itemAmount.add(taxesCalculation(rs5.getBigDecimal("total_amount"), isItemTaxable, charges));
+								}
 							}
 						}
 					}
-					accumulatedAmount = accumulatedAmount.add(itemAmount);
+					accumulatedAmount = roundToNearest(accumulatedAmount.add(itemAmount));
 				}
 				jsonResult.put("accumulatedAmount", accumulatedAmount);
 			} else {
@@ -326,11 +370,14 @@ public class RestC_transaction {
 				int paymentMethod = -1;
 				int transactionStatus = 1;
 				String terminalSerialNumber = null;
+				BigDecimal receivedAmount = BigDecimal.ZERO;
 				if (jsonObj.getString("paymentMethod").equals("Cash")) {
 					paymentMethod = 1;
 					transactionStatus = 3;
+					receivedAmount = new BigDecimal(jsonObj.getString("receivedAmount"));
 				} else if (jsonObj.getString("paymentMethod").equals("Card")) {
 					paymentMethod = 2;
+					receivedAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 					
 					if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
 						Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
@@ -338,10 +385,12 @@ public class RestC_transaction {
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
 						
 						return jsonResult.toString();
+					} else {
+						terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 					}
-					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 				} else if (jsonObj.getString("paymentMethod").equals("QR")) {
 					paymentMethod = 3;
+					receivedAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 					
 					if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
 						Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
@@ -349,8 +398,9 @@ public class RestC_transaction {
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
 						
 						return jsonResult.toString();
+					} else {
+						terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 					}
-					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 				} else {
 					Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -368,38 +418,47 @@ public class RestC_transaction {
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found For Split Payment");
 						
 						return jsonResult.toString();
+					} else {
+						checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
 					}
-					checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
 				}
 				
+				BigDecimal paymentAmount = BigDecimal.ZERO;
 				if (!(jsonObj.has("paymentAmount") && !jsonObj.getString("paymentAmount").equals(null))) {
 					Logger.writeActivity("Invalid Payment Amount", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Amount");
 					
 					return jsonResult.toString();
+				} else {					
+					paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 				}
-				BigDecimal paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
+				
+				BigDecimal changeAmount = receivedAmount.subtract(paymentAmount);
 				
 				JSONObject staffDetail = getStaffDetail(user.getUsername());
+				long staffId = -1;
 				if (staffDetail.length() <= 0) {
 					Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
 					
 					return jsonResult.toString();
+				} else {
+					staffId = staffDetail.getLong("id");
 				}
-				long staffId = staffDetail.getLong("id");
 				
 				JSONObject storeDetail = getStoreDetail();
+				long storeId = -1;
 				if (storeDetail.length() <= 0) {
 					Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
 					
 					return jsonResult.toString();
+				} else {
+					storeId = storeDetail.getLong("id");
 				}
-				long storeId = storeDetail.getLong("id");
 	
 				String tableNoCondition = "table_number is null";
 				if (jsonObj.getInt("tableNo") > 0) {
@@ -419,8 +478,8 @@ public class RestC_transaction {
 						BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 						
 						stmt.close();
-						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date,qr_content) " + 
-								"values (?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
+						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date) " + 
+								"values (?,?,?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
 						stmt.setLong(1, staffId);
 						stmt.setLong(2, checkId);
 						stmt.setString(3, checkNo);
@@ -430,13 +489,9 @@ public class RestC_transaction {
 						stmt.setString(7, terminalSerialNumber);
 						stmt.setString(8, "RM");
 						stmt.setBigDecimal(9, paymentAmount);
-						stmt.setInt(10, transactionStatus);
-						if (paymentMethod == 3) {
-							String qrContent = jsonObj.getString("qrContent");
-							stmt.setString(11, qrContent);
-						} else {
-							stmt.setString(11, null);
-						}
+						stmt.setBigDecimal(10, receivedAmount);
+						stmt.setBigDecimal(11, changeAmount);
+						stmt.setInt(12, transactionStatus);
 						int insertTransaction = stmt.executeUpdate();
 						
 						if (insertTransaction > 0) {
@@ -528,6 +583,7 @@ public class RestC_transaction {
 												jsonResult.put(Constant.RESPONSE_CODE, "00");
 												jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
 												jsonResult.put("check_status", updateCheckResult.getString("checkStatus"));
+												jsonResult.put("change_amount", changeAmount);
 											} else {
 												Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
 												jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -1334,4 +1390,54 @@ public class RestC_transaction {
 		return jsonResult;
 	}
 	
+	public BigDecimal taxesCalculation(BigDecimal amount, boolean isItemTaxable, JSONObject charges) {
+		BigDecimal resultAmount = amount;
+	
+		try {
+			if (isItemTaxable) {
+				boolean proceed = false;
+				if (!(charges.has("totalTaxes") && !charges.isNull("totalTaxes") && charges.getJSONArray("totalTaxes").length() > 0)) {
+					proceed = true;
+				} else {
+					JSONArray totalTaxes = charges.getJSONArray("totalTaxes");
+					
+					for (int i = 0; i < totalTaxes.length(); i++) {
+						JSONObject totalTax = totalTaxes.getJSONObject(i);
+						BigDecimal totalTaxAmount = amount.multiply(new BigDecimal(totalTax.getString("rate")).divide(new BigDecimal("100")));
+						BigDecimal grandTotalTaxAmount = totalTaxAmount.setScale(2, RoundingMode.HALF_UP);
+						
+						proceed = true;
+						resultAmount = resultAmount.add(grandTotalTaxAmount);
+					}
+				}
+				
+				if (proceed) {
+					if (!(charges.has("overallTaxes") && !charges.isNull("overallTaxes") && charges.getJSONArray("overallTaxes").length() > 0)) {
+						//Do nothing
+					} else {
+						JSONArray overallTaxes = charges.getJSONArray("overallTaxes");
+						
+						for (int i = 0; i < overallTaxes.length(); i++) {
+							JSONObject overallTax = overallTaxes.getJSONObject(i);
+							BigDecimal overallTaxAmount = resultAmount.multiply(new BigDecimal(overallTax.getString("rate")).divide(new BigDecimal("100")));
+							BigDecimal grandOverallTaxAmount = overallTaxAmount.setScale(2, RoundingMode.HALF_UP);
+
+							resultAmount = resultAmount.add(grandOverallTaxAmount);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+		return resultAmount;
+	}
+	
+	public BigDecimal roundToNearest(BigDecimal value) {
+		double d = value.doubleValue();
+		double rounded = Math.round(d * 20.0) / 20.0;
+		
+		return BigDecimal.valueOf(rounded);
+	}
 }

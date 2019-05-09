@@ -80,8 +80,10 @@ public class SocketHandler extends TextWebSocketHandler {
 			int paymentMethod = -1;
 			int transactionStatus = 1;
 			String terminalSerialNumber = null;
+			BigDecimal receivedAmount = BigDecimal.ZERO;
 			if (jsonObj.getString("paymentMethod").equals("Card")) {
 				paymentMethod = 2;
+				receivedAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 				
 				if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
 					Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
@@ -90,8 +92,9 @@ public class SocketHandler extends TextWebSocketHandler {
 					
 					session.sendMessage(new TextMessage(jsonResult.toString()));
 					session.close();
+				} else {
+					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 				}
-				terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 			} else {
 				Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -111,10 +114,12 @@ public class SocketHandler extends TextWebSocketHandler {
 					
 					session.sendMessage(new TextMessage(jsonResult.toString()));
 					session.close();
+				} else {
+					checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
 				}
-				checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
 			}
 			
+			BigDecimal paymentAmount = BigDecimal.ZERO;
 			if (!(jsonObj.has("paymentAmount") && !jsonObj.getString("paymentAmount").equals(null))) {
 				Logger.writeActivity("Invalid Payment Amount", ECPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -122,10 +127,14 @@ public class SocketHandler extends TextWebSocketHandler {
 				
 				session.sendMessage(new TextMessage(jsonResult.toString()));
 				session.close();
+			} else {					
+				paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 			}
-			BigDecimal paymentAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
+			
+			BigDecimal changeAmount = receivedAmount.subtract(paymentAmount);
 			
 			JSONObject staffDetail = getStaffDetail(user.getUsername());
+			long staffId = -1;
 			if (staffDetail.length() <= 0) {
 				Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -133,10 +142,12 @@ public class SocketHandler extends TextWebSocketHandler {
 				
 				session.sendMessage(new TextMessage(jsonResult.toString()));
 				session.close();
+			} else {
+				staffId = staffDetail.getLong("id");
 			}
-			long staffId = staffDetail.getLong("id");
 			
 			JSONObject storeDetail = getStoreDetail();
+			long storeId = -1;
 			if (storeDetail.length() <= 0) {
 				Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -144,8 +155,9 @@ public class SocketHandler extends TextWebSocketHandler {
 				
 				session.sendMessage(new TextMessage(jsonResult.toString()));
 				session.close();
+			} else {
+				storeId = storeDetail.getLong("id");
 			}
-			long storeId = storeDetail.getLong("id");
 
 			String tableNoCondition = "table_number is null";
 			if (jsonObj.getInt("tableNo") > 0) {
@@ -165,8 +177,8 @@ public class SocketHandler extends TextWebSocketHandler {
 					BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 					
 					stmt.close();
-					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,transaction_status,created_date) " + 
-							"values (?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
+					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date) " + 
+							"values (?,?,?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
 					stmt.setLong(1, staffId);
 					stmt.setLong(2, checkId);
 					stmt.setString(3, checkNo);
@@ -176,7 +188,9 @@ public class SocketHandler extends TextWebSocketHandler {
 					stmt.setString(7, terminalSerialNumber);
 					stmt.setString(8, "RM");
 					stmt.setBigDecimal(9, paymentAmount);
-					stmt.setInt(10, transactionStatus);
+					stmt.setBigDecimal(10, receivedAmount);
+					stmt.setBigDecimal(11, changeAmount);
+					stmt.setInt(12, transactionStatus);
 					int insertTransaction = stmt.executeUpdate();
 					
 					if (insertTransaction > 0) {
@@ -239,6 +253,7 @@ public class SocketHandler extends TextWebSocketHandler {
 											jsonResult.put(Constant.RESPONSE_CODE, "00");
 											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
 											jsonResult.put("check_status", updateCheckResult.getString("checkStatus"));
+											jsonResult.put("change_amount", changeAmount);
 										} else {
 											Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
 											jsonResult.put(Constant.RESPONSE_CODE, "01");

@@ -443,6 +443,8 @@ public class DataSync {
 				transaction.put("qr_user_id", rs.getString("qr_user_id") == null ? JSONObject.NULL : rs.getString("qr_user_id"));
 				transaction.put("qr_amount_myr", rs.getString("qr_amount_myr") == null ? JSONObject.NULL : rs.getString("qr_amount_myr"));
 				transaction.put("qr_amount_rmb", rs.getString("qr_amount_rmb") == null ? JSONObject.NULL : rs.getString("qr_amount_rmb"));
+				transaction.put("received_amount", rs.getString("received_amount") == null ? JSONObject.NULL : rs.getString("received_amount"));
+				transaction.put("change_amount", rs.getString("change_amount") == null ? JSONObject.NULL : rs.getString("change_amount"));
 				
 				jary.put(transaction);
 			}
