@@ -246,7 +246,7 @@
 		
 		$scope.executePayment = function() {
 			if($scope.paymentMethod == "Cash") {
-				if (document.getElementById('tenderAmount').innerHTML > document.getElementById('receivedAmount').innerHTML) {
+				if (parseFloat(document.getElementById('tenderAmount').innerHTML) > parseFloat(document.getElementById('receivedAmount').innerHTML)) {
 					return alert("Received amount should be greater than or equal to Tender Amount");
 				} else {
 					var jsonData = JSON.stringify({
@@ -263,10 +263,12 @@
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
+							openDrawer();
+							
 							//Print Receipt here
 							printReceipt($scope.checkNo)
 
-							alert(response.data.response_message + "\n" + "Change: RM" + response.data.change_amount);
+							alert(response.data.response_message + "\n" + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2));
 							$('#receivedAmountModal').modal('hide');
 							$('.modal-backdrop').remove();
 							$('#receivedAmount').html(parseFloat(0).toFixed(2));
@@ -502,6 +504,26 @@
 			function(response) {
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
+		function openDrawer() {
+			$.ajax({
+				type : 'post',
+				url : '${pageContext.request.contextPath}/rc/configuration/open_cash_drawer',
+				success : function(data) {
+					if (data.response_code == 01) {
+						alert(data.response_message);
+					}
+				},
+				error : function(jqXHR) {
+					if (jqXHR.status == 408) {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					} else {
+						alert('Drawer cannot open. Please kindly check the cash drawer printer.');
+					}
+				}
 			});
 		}
 	});
