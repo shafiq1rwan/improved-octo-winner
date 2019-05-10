@@ -156,6 +156,7 @@ hr {
 											<div class='col-sm-2 text-center' style="margin-top: 7px;">{{terminal.wifiPort}}</div>
 											<div class='col-sm-3 text-left' style="padding: 0px;">
 												<button class="btn btn-info" ng-click="showSettlementModal(terminal.serialNo)">Settlement</button>
+												<button class="btn btn-default" ng-click="pingTerminal(terminal.id)"><i class="fa fa-crosshairs"></i></button>
 												<button class="btn btn-primary" ng-click="showTerminalModal('update', terminal.id)"><i class="fa fa-edit"></i></button>
 												<button class="btn btn-danger" ng-click="removeTerminal(terminal.id)"><i class="fa fa-trash-o"></i></button>
 											</div>
@@ -344,7 +345,22 @@ hr {
 				</div>
 			</div>
 			<!-- Loading Modal [END] -->
-		
+			
+			<!-- Ping Loading Modal [START] -->
+			<div class="modal fade" data-backdrop="static" id="ping_loading_modal" role="dialog">
+				<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-body">
+						<div class="text-center">
+							<img style="height:25vh;" src="${pageContext.request.contextPath}/img/gif/loading.gif"><br>
+								<span>Pinging Terminal...</span>
+						</div>
+					</div>
+				</div>
+				</div>
+			</div>
+			<!-- Ping Loading Modal [END] -->
+			
 			<div class="modal fade" id="modal-dialog" tabindex="-1" role="dialog"
 				aria-hidden="true">
 				<div class="modal-dialog modal-sm">

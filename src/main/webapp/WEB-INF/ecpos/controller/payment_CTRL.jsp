@@ -7,6 +7,8 @@
 		$scope.qrContent = "";
 		$scope.socketMessage = "";
 		$scope.jsonResult;
+		
+		$scope.selectedTerminal;
 	
 		var counter = 0;
 		
@@ -136,6 +138,12 @@
 				$http.get("${pageContext.request.contextPath}/rc/configuration/get_terminal_list/" + "all")
 				.then(function(response) {
 					$scope.terminalList = response.data;
+					if($scope.terminalList.terminals.length == 0){
+						$('#terminal').val("");
+					} 
+					else {
+						$scope.selectedTerminal = $scope.terminalList.terminals[0].serialNo;
+					}
 				},
 				function(response) {
 					alert("Session TIME OUT");
@@ -409,6 +417,10 @@
 					$('#scan_qr_modal').modal('toggle');
 					return alert("The QR content is empty.");
 				} else {
+					$('#scan_qr_modal').modal('toggle');
+					var qrContentHolder = $scope.qrContent;
+					$scope.qrContent = "";					
+
 					var jsonData = JSON.stringify({
 						"terminalSerialNo" : $('#terminal').val(),
 						"checkDetailIdArray" : $scope.checkedValue,
@@ -489,6 +501,10 @@
 			return responseJSON['responseCode'] === '00' ? 'Transaction Approved' : responseJSON['responseMessage'];
 		}
 		
+		$('#scan_qr_modal').on('hidden.bs.modal', function() {
+			$scope.qrContent = "";
+		});
+
 		//Used upon success payment
 		function printReceipt(checkNo) {
 			var jsonData = JSON.stringify({
