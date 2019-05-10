@@ -392,7 +392,7 @@ public class RestC_syncmenu {
 					resultCode = "E02";
 					resultMessage = "Current store is not published at cloud. Please contact support.";
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("00")) {
-					if(responseData.has("storeInfo") && responseData.has("staffRole") && responseData.has("staffInfo")) {
+					if(responseData.has("storeInfo") && responseData.has("staffRole") && responseData.has("staffInfo") && responseData.has("tableSetting")) {
 						connection.setAutoCommit(false);
 						DataSync.resetDBStoreData(connection);
 						// store info
@@ -400,11 +400,17 @@ public class RestC_syncmenu {
 						if(storeInfo!=null) {
 							if(DataSync.insertStoreInfo(connection, storeInfo, imagePath)) {					
 								JSONArray staffRole = responseData.getJSONArray("staffRole");
+								JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 								JSONArray staffInfo = responseData.getJSONArray("staffInfo");
 								
 								if(staffRole.length()!=0) {
 									// insert staff role
 									DataSync.insertStaffRole(connection, staffRole);
+								}
+								
+								if(staffRole.length()!=0) {
+									// insert table setting
+									DataSync.insertTableSetting(connection, tableSetting);
 								}
 								
 								if(staffInfo.length()!=0) {

@@ -105,7 +105,6 @@ CREATE TABLE store (
 		store_latitude DECIMAL(10,8),
 		store_country NVARCHAR(100),
 		store_currency NVARCHAR(50),
-		store_table_count INT DEFAULT 0,
 		store_start_operating_time time NOT NULL,
 		store_end_operating_time time NOT NULL,
 		store_contact_person VARCHAR(150) NOT NULL,
@@ -120,6 +119,21 @@ CREATE TABLE store (
 
 CREATE TABLE store_db_sync (
 		sync_date datetime not null
+);
+
+CREATE TABLE table_setting 
+(
+		id BIGINT PRIMARY KEY NOT NULL,
+		table_name NVARCHAR(150) NOT NULL,
+		status_lookup_id BIGINT,
+		created_date DATETIME NOT NULL,
+		last_update_date DATETIME
+);
+
+CREATE TABLE status_lookup
+(
+		id INT UNIQUE NOT NULL, 
+		name NVARCHAR(50) NOT NULL UNIQUE 
 );
 
 CREATE TABLE staff  (
@@ -463,3 +477,7 @@ insert into port_name_lookup values
 (1, 'COM1'), (2, 'COM2'), (3, 'COM3'), (4, 'COM4'), (5, 'COM5'), (6, 'COM6'), (7, 'COM7'), (8, 'COM8');
 
 insert into receipt_printer_manufacturer_lookup values (1, 'Posiflex'), (2,'EPSON');
+
+INSERT INTO status_lookup (id, name) VALUES (1, 'PENDING');
+INSERT INTO status_lookup (id, name) VALUES (2, 'ACTIVE');
+INSERT INTO status_lookup (id, name) VALUES (3, 'INACTIVE');

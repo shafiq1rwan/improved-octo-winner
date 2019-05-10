@@ -115,7 +115,7 @@ public class RestC_activation {
 		
 				// publish menu before
 				if (responseData.has("queryMySqlFilePath") && responseData.has("imageFilePath")
-						&& responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole")) {
+						&& responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole") && responseData.has("tableSetting")) {
 					String queryFilePathStr = responseData.getString("queryMySqlFilePath");
 					String imageFilePathStr = responseData.getString("imageFilePath");
 					
@@ -184,11 +184,17 @@ public class RestC_activation {
 					if(storeInfo!=null) {
 						if(DataSync.insertStoreInfo(connection, storeInfo, imagePath)) {					
 							JSONArray staffRole = responseData.getJSONArray("staffRole");
+							JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 							JSONArray staffInfo = responseData.getJSONArray("staffInfo");
 							
 							if(staffRole.length()!=0) {
 								// insert staff role
 								DataSync.insertStaffRole(connection, staffRole);
+							}
+							
+							if(tableSetting.length()!=0) {
+								// insert table setting
+								DataSync.insertTableSetting(connection, tableSetting);
 							}
 							
 							if(staffInfo.length()!=0) {
@@ -223,7 +229,7 @@ public class RestC_activation {
 				}
 				
 			} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("01")) {
-				if (responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole")) {
+				if (responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole") && responseData.has("tableSetting")){
 					// successful
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
@@ -234,11 +240,17 @@ public class RestC_activation {
 					if(storeInfo!=null) {
 						if(DataSync.insertStoreInfo(connection, storeInfo, imagePath)) {					
 							JSONArray staffRole = responseData.getJSONArray("staffRole");
+							JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 							JSONArray staffInfo = responseData.getJSONArray("staffInfo");
 							
 							if(staffRole.length()!=0) {
 								// insert staff role
 								DataSync.insertStaffRole(connection, staffRole);
+							}
+							
+							if(tableSetting.length()!=0) {
+								// insert table setting
+								DataSync.insertTableSetting(connection, tableSetting);
 							}
 							
 							if(staffInfo.length()!=0) {
