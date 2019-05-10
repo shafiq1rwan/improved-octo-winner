@@ -93,6 +93,11 @@ public class DataSync {
 		ps1 = connection.prepareStatement(sqlStatement);
 		ps1.executeUpdate();
 		ps1.close();
+		
+		sqlStatement = "DELETE FROM table_setting;";
+		ps1 = connection.prepareStatement(sqlStatement);
+		ps1.executeUpdate();
+		ps1.close();
 	}
 	
 	public static boolean insertStoreInfo(Connection connection, JSONObject storeInfo, String imagePath) throws Exception {
@@ -118,8 +123,8 @@ public class DataSync {
 			}
 			
 			String sqlStatement = "INSERT INTO store (id, backend_id, store_name, store_logo_path, store_address, store_longitude, store_latitude, "
-					+ "store_country, store_currency, store_table_count, store_start_operating_time, store_end_operating_time, last_update_date, is_publish, created_date, store_contact_person, store_contact_hp_number, store_contact_email, store_type_id, kiosk_payment_delay_id, byod_payment_delay_id) "
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+					+ "store_country, store_currency, store_start_operating_time, store_end_operating_time, last_update_date, is_publish, created_date, store_contact_person, store_contact_hp_number, store_contact_email, store_type_id, kiosk_payment_delay_id, byod_payment_delay_id) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 			ps1 = connection.prepareStatement(sqlStatement);
 			int count = 1;
 			ps1.setLong(count++, storeInfo.getLong("storeId"));
@@ -131,7 +136,6 @@ public class DataSync {
 			ps1.setString(count++, storeInfo.getString("latitude"));
 			ps1.setString(count++, storeInfo.getString("country"));
 			ps1.setString(count++, storeInfo.getString("currency"));
-			ps1.setString(count++, storeInfo.getString("tableCount"));
 			ps1.setString(count++, storeInfo.getString("startOperatingTime"));
 			ps1.setString(count++, storeInfo.getString("endOperatingTime"));
 			ps1.setString(count++, storeInfo.has("lastUpdateDate")?storeInfo.getString("lastUpdateDate"):null);
@@ -238,6 +242,43 @@ public class DataSync {
 				ps1.setString(count++, obj.getString("phoneNumber"));
 				ps1.setString(count++, obj.getString("email"));
 				ps1.setLong(count++, obj.getLong("isActive"));
+				ps1.setString(count++, obj.getString("createdDate"));
+				ps1.setString(count++, obj.getString("lastUpdateDate").equals("")?null:obj.getString("lastUpdateDate"));
+			}
+			
+			int rowAffected = ps1.executeUpdate();
+			if(rowAffected != 0) {
+				flag = true;
+			}	
+		} catch (Exception ex) {
+			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
+			throw ex;
+		} finally {
+			if (ps1 != null) {
+				ps1.close();
+			}
+		}
+		return flag;
+	}
+	
+	public static boolean insertTableSetting(Connection connection, JSONArray tableSetting) throws Exception {
+		boolean flag = false;
+		PreparedStatement ps1 = null;
+		try {
+			String sqlStatement = "INSERT INTO table_setting (id, table_name, status_lookup_id, created_date, last_update_date) VALUES ";
+			for(int a=0; a < tableSetting.length(); a++) {
+				if(a!=0)
+					sqlStatement += ", ";
+				sqlStatement += "(?, ?, ?, ?, ?)";	
+			}
+			
+			ps1 = connection.prepareStatement(sqlStatement);		
+			int count = 1;
+			for(int a=0; a < tableSetting.length(); a++) {
+				JSONObject obj = tableSetting.getJSONObject(a);
+				ps1.setLong(count++, obj.getLong("id"));
+				ps1.setString(count++, obj.getString("tableName"));
+				ps1.setLong(count++, obj.getLong("statusLookupId"));
 				ps1.setString(count++, obj.getString("createdDate"));
 				ps1.setString(count++, obj.getString("lastUpdateDate").equals("")?null:obj.getString("lastUpdateDate"));
 			}

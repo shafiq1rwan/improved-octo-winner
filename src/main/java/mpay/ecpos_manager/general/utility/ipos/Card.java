@@ -60,11 +60,11 @@ public class Card {
 			
 			if (response.getString("responseCode").equals("00")) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "PING SUCCESS");
 				Logger.writeActivity("PING SUCCESS", IPOS_FOLDER);
 			} else {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "FAIL");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "PING FAIL");
 				Logger.writeActivity("PING FAIL", IPOS_FOLDER);
 			}
 		} catch (Exception e) {

@@ -163,7 +163,7 @@ ul.select2-results__options li {
 									<div class="col-sm-12 form-group">
 										<label>Terminal</label>
 										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
-											<select class="select2" id="terminal" style="width: 100%;">
+											<select class="select2" id="terminal" style="width: 100%;" ng-model="selectedTerminal">
 												<option value="" selected>&nbsp;----- Select -----</option>
 												<option ng-repeat="terminal in terminalList.terminals" value="{{terminal.serialNo}}">&nbsp;{{terminal.name}} ({{terminal.serialNo}})</option>
 											</select>

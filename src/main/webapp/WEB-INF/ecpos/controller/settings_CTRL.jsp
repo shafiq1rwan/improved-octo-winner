@@ -413,5 +413,40 @@
 			$scope.dialogData.isButton2 = typeof $scope.dialogData.button2 !== "undefined";
 			$('#modal-dialog').modal({backdrop: 'static', keyboard: false});
 		}
+		
+		$scope.specialPopOut = function(message, title) {
+			$('#ping_loading_modal').modal('hide');
+			var dialogOption = {};
+			dialogOption.title = title;
+			dialogOption.message = message;
+			dialogOption.button1 = {
+				name: "OK",
+				fn: function() {
+					$("div#modal-dialog").modal("hide");
+				}
+			}
+			$scope.displayDialog(dialogOption);
+		}
+
+		$scope.pingTerminal = function(id){	
+			var jsonData = JSON.stringify({
+				"id" : id
+			});
+
+			$('#ping_loading_modal').modal('show');
+			
+			$http.post("${pageContext.request.contextPath}/rc/configuration/ping_terminal", jsonData)
+			.then(function(response) {
+				if(response.data.response_code == "00"){
+					$scope.specialPopOut(response.data.response_message, response.data.response_message);
+				} else {
+					$scope.specialPopOut(response.data.response_message, response.data.response_message);
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
 	});
 </script>

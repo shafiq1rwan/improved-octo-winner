@@ -31,6 +31,7 @@ import mpay.ecpos_manager.general.utility.AesEncryption;
 import mpay.ecpos_manager.general.utility.QRGenerate;
 import mpay.ecpos_manager.general.utility.hardware.Drawer;
 import mpay.ecpos_manager.general.utility.hardware.ReceiptPrinter;
+import mpay.ecpos_manager.general.utility.ipos.Card;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
 import mpay.ecpos_manager.general.utility.WebComponents;
 
@@ -48,6 +49,9 @@ public class RestC_configuration {
 	
 	@Autowired
 	ReceiptPrinter receiptPrinter;
+	
+	@Autowired
+	Card iposCard;
 	
 /*	@Value("${printer_exe}")
 	private String printerExe;*/
@@ -631,7 +635,63 @@ public class RestC_configuration {
 		}
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/ping_terminal" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String pingTerminal(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+			connection = dataSource.getConnection();
+			String terminalId = new JSONObject(data).getString("id");
+			
+			stmt = connection.prepareStatement("select * from terminal where id = ?;");
+			stmt.setString(1, terminalId);
+			rs = stmt.executeQuery();
+			
+				if (rs.next()) {
+					JSONObject terminalWifiIPPort = new JSONObject();
+					if(rs.getString("wifi_IP") == null || rs.getString("wifi_Port") == null) {
+						terminalWifiIPPort.put("wifi_IP", rs.getString("wifi_IP"));
+						terminalWifiIPPort.put("wifi_Port", rs.getString("wifi_Port"));
+					}
+					JSONObject pingResponse = iposCard.pingTest("ping-test", terminalWifiIPPort);
 
+					jsonResult.put(Constant.RESPONSE_CODE, pingResponse.getString(Constant.RESPONSE_CODE));
+					jsonResult.put(Constant.RESPONSE_MESSAGE, pingResponse.getString(Constant.RESPONSE_MESSAGE));
+					Logger.writeActivity(Constant.RESPONSE_MESSAGE, ECPOS_FOLDER);
+					
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Not Found");
+					Logger.writeActivity("Terminal NOT Found", ECPOS_FOLDER);
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/generate_qr" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String generateQR(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
