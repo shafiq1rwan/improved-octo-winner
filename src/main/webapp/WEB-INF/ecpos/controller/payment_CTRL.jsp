@@ -263,10 +263,10 @@
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
-							openDrawer();
-							
 							//Print Receipt here
-							printReceipt($scope.checkNo)
+							printReceipt($scope.checkNo);
+							
+							openDrawer();
 
 							alert(response.data.response_message + "\n" + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2));
 							$('#receivedAmountModal').modal('hide');

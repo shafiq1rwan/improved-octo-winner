@@ -84,7 +84,7 @@
 					<%if (!http_message.equals("")) { %>
 					<span style="color: red;">${http_message}</span>
 					<%} %>
-					<form role="form" ng-submit="submitActivation()" class="form-signin">
+					<form role="form" ng-submit="submitActivation()" class="form-signin" autocomplete="off">
 						<fieldset>
 							<label class="login-label" style="color: white;">Brand ID</label>
 							<input class="form-control" name="brandId" placeholder="Brand ID" type="text" ng-model="activationData.brand_id" required> 
