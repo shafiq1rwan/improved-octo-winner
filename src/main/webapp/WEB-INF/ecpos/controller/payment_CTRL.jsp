@@ -9,6 +9,8 @@
 		$scope.jsonResult;
 		
 		$scope.selectedTerminal;
+		$scope.alertMessage = "";
+		$scope.paymentButtonFn;
 	
 		var counter = 0;
 		
@@ -237,7 +239,7 @@
 				return alert("Kindly enter payment amount");
 			} else {
 				if ($scope.paymentMethod == "Cash") {
-					$('#receivedAmount').html(parseFloat(0).toFixed(2));
+					$('#receivedAmount').html(parseFloat(0).toFixed(2)); 
 					$('#receivedAmountModal').modal('show');
 				} else if ($scope.paymentMethod == "Card") {
 					$scope.executePayment();
@@ -267,39 +269,42 @@
 						"receivedAmount" : $('#receivedAmount').text()
 					});
 					console.log("Send data: " + jsonData)
-					
+
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
+							$scope.alertMessage = response.data.response_message + "\n" + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2);
+							$scope.paymentButtonFn = function() {
+								$('#receivedAmountModal').modal('hide');
+								$('.modal-backdrop').remove();
+								$('#receivedAmount').html(parseFloat(0).toFixed(2)); 
+								
+								if ($scope.orderType == "table") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/table_order");
+									} else {
+										location.reload();
+									}
+								} else if ($scope.orderType == "take_away") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/take_away_order");
+									} else {
+										location.reload();
+									}
+								} else if ($scope.orderType == "deposit") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/deposit_order");
+									} else {
+										location.reload();
+									}
+								}
+							}
+							$('#paymentAlertModal').modal('show'); 
+							
 							//Print Receipt here
 							printReceipt($scope.checkNo);
 							
 							openDrawer();
-
-							alert(response.data.response_message + "\n" + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2));
-							$('#receivedAmountModal').modal('hide');
-							$('.modal-backdrop').remove();
-							$('#receivedAmount').html(parseFloat(0).toFixed(2));
-	
-							if ($scope.orderType == "table") {
-								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-									$location.path("/table_order");
-								} else {
-									location.reload();
-								}
-							} else if ($scope.orderType == "take_away") {
-								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-									$location.path("/take_away_order");
-								} else {
-									location.reload();
-								}
-							} else if ($scope.orderType == "deposit") {
-								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-									$location.path("/deposit_order");
-								} else {
-									location.reload();
-								}
-							}
 						} else {
 							alert(response.data.response_message);
 						}
@@ -370,8 +375,9 @@
 						var jsonResult = JSON.parse(event.data);
 						$scope.jsonResult = jsonResult;
 						console.log($scope.jsonResult);
+						$scope.alertMessage = jsonResult.response_message;
+						$('#paymentAlertModal').modal('show');
 						printReceipt($scope.checkNo)
-						alert(jsonResult.response_message);
 					}
 				}
 
@@ -388,26 +394,28 @@
 					$('#loading_modal').modal('hide');
 					$scope.socketMessage = "";
 					
-					if ($scope.jsonResult.response_code == "01") {
-						location.reload();
-					} else {
-						if ($scope.orderType == "table") {
-							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-								$location.path("/table_order");
-							} else {
-								location.reload();
-							}
-						} else if ($scope.orderType == "take_away") {
-							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-								$location.path("/take_away_order");
-							} else {
-								location.reload();
-							}
-						} else if ($scope.orderType == "deposit") {
-							if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-								$location.path("/deposit_order");
-							} else {
-								location.reload();
+					$scope.paymentButtonFn = function() {
+						if ($scope.jsonResult.response_code == "01") {
+							location.reload();
+						} else {
+							if ($scope.orderType == "table") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/table_order");
+								} else {
+									location.reload();
+								}
+							} else if ($scope.orderType == "take_away") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/take_away_order");
+								} else {
+									location.reload();
+								}
+							} else if ($scope.orderType == "deposit") {
+								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+									$location.path("/deposit_order");
+								} else {
+									location.reload();
+								}
 							}
 						}
 					}
@@ -440,35 +448,36 @@
 					.then(function(response) {
 						if (response.data.response_code === "00") {
 							$('#loading_modal').modal('hide');
-							console.log("success")
+							$scope.alertMessage = response.data.response_message;
+							
+							$scope.paymentButtonFn = function() {
+						 		if ($scope.orderType == "table") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/table_order");
+									} else {
+										location.reload();
+									}
+								} else if ($scope.orderType == "take_away") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/take_away_order");
+									} else {
+										location.reload();
+									}
+								} else if ($scope.orderType == "deposit") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/deposit_order");
+									} else {
+										location.reload();
+									}
+								} 
+							}
+							
+							$('#paymentAlertModal').modal('show'); 
 							
 							//Print Receipt here
 							printReceipt($scope.checkNo);
-							
-							alert(response.data.response_message);
-							
-							if ($scope.orderType == "table") {
-								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-									$location.path("/table_order");
-								} else {
-									location.reload();
-								}
-							} else if ($scope.orderType == "take_away") {
-								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-									$location.path("/take_away_order");
-								} else {
-									location.reload();
-								}
-							} else if ($scope.orderType == "deposit") {
-								if ($scope.paymentType == "full" || response.data.check_status == "closed") {
-									$location.path("/deposit_order");
-								} else {
-									location.reload();
-								}
-							}
 						} else {
 							$('#loading_modal').modal('hide');
-							console.log("failed")
 							alert(response.data.response_message);
 						}
 					},

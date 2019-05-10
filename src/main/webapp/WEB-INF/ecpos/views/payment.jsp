@@ -240,7 +240,9 @@ ul.select2-results__options li {
 					</div>
 				</div>
 				<!-- Loading Modal [END] -->
-	
+				
+
+
 				<!-- Scan QR Modal [START] -->
 				<div class="modal fade" id="scan_qr_modal" tabindex="-1" role="dialog" aria-labelledby="scan_qr_modal" aria-hidden="true" data-keyboard="false" data-backdrop="static">
 					<div class="modal-dialog">
@@ -367,6 +369,26 @@ ul.select2-results__options li {
 						</div>
 					</div>
 				</div>
+				
+				<!-- Alert Message Modal [START] -->
+				<div class="modal fade" id="paymentAlertModal" tabindex="-1" role="dialog" aria-labelledby="paymentAlertModal" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+				  <div class="modal-dialog modal-dialog-centered">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="paymentButtonFn()">
+				          <span aria-hidden="true">&times;</span>
+				        </button>
+				      </div>
+				      <div class="modal-body text-center">
+				        {{alertMessage}}
+				      </div>
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="paymentButtonFn()">Close</button>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+				<!-- Alert Message Modal [END] -->
 	
 			</div>
 		</div>
