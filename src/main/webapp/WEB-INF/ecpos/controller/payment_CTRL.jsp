@@ -420,7 +420,7 @@
 						}
 					}
 				}
-			} else  if($scope.paymentMethod == "QR"){
+			} else if($scope.paymentMethod == "QR") {
 				if ($scope.qrContent === null || $scope.qrContent === "") {
 					$('#scan_qr_modal').modal('toggle');
 					return alert("The QR content is empty.");

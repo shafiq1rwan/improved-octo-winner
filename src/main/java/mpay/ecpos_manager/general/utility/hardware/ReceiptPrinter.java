@@ -80,7 +80,7 @@ public class ReceiptPrinter {
 
 	@Autowired
 	DataSource dataSource;
-	
+
 	@Value("${receipt-path}")
 	private String receiptPath;
 
@@ -129,13 +129,13 @@ public class ReceiptPrinter {
 		}
 		return jsonResult;
 	}
-	
+
 	public JSONObject printQR(JSONObject receiptContent, String staffName) {
 		JSONObject jsonResult = new JSONObject();
-		
+
 		try {
 			JSONObject receiptHeader = getReceiptHeader();
-			if(receiptHeader.length()==0 || receiptContent.length()==0) {
+			if (receiptHeader.length() == 0 || receiptContent.length() == 0) {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
 			} else {
@@ -145,7 +145,7 @@ public class ReceiptPrinter {
 				String templateName = "";
 
 				JSONObject printerResult = getSelectedReceiptPrinter();
-				
+
 				if (printerResult.has("receipt_printer")) {
 
 					myPrintService = findPrintService(printerResult.getString("receipt_printer"));
@@ -158,20 +158,22 @@ public class ReceiptPrinter {
 					else if (printerResult.getString("receipt_printer").equals("Posiflex"))
 						templateName = "ReceiptStyleTemplate_Posiflex";
 				}
-				
+
 				Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
-				try (XWPFDocument doc = new XWPFDocument(
-						new FileInputStream(URLDecoder.decode(getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString()).toString().substring("file:/".length()), "UTF-8")))) {
-					
+				try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(
+						getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+								.toString().substring("file:/".length()),
+						"UTF-8")))) {
+
 					XWPFParagraph emptyParagraph = null;
-					
+
 					if (doc.getStyles() != null) {
 						XWPFStyles styles = doc.getStyles();
 						CTFonts fonts = CTFonts.Factory.newInstance();
 						fonts.setAscii(RECEIPT_FONT_FAMILY);
 						styles.setDefaultFonts(fonts);
 					}
-				
+
 					// Header Store Name
 					XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
 					headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
@@ -192,21 +194,20 @@ public class ReceiptPrinter {
 					runHeaderStoreAddressParagraph.setFontSize(9);
 					runHeaderStoreAddressParagraph.setText(receiptHeader.getString("storeAddress"));
 					runHeaderStoreAddressParagraph.addBreak();
-					
+
 					emptyParagraph = doc.createParagraph();
 					emptyParagraph.setSpacingAfter(0);
 					emptyParagraph.createRun().addBreak();
 					emptyParagraph.removeRun(0);
-					
-					//info table
+
+					// info table
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 					List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Date Time", "Staff");
 					List<String> receiptInfoContents = Arrays.asList(receiptContent.getString("checkNo"),
-							receiptContent.getString("tableNo"),
-							sdf.format(new Date()), staffName);
+							receiptContent.getString("tableNo"), sdf.format(new Date()), staffName);
 
 					XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
-					CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout();																											
+					CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout();
 					receiptInfoTableType.setType(STTblLayoutType.FIXED);
 					receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
 
@@ -229,8 +230,7 @@ public class ReceiptPrinter {
 						int numberOfCell = row.getTableCells().size();
 						for (int y = 0; y < numberOfCell; y++) {
 							XWPFTableCell cell = row.getCell(y);
-							cell.getCTTc().addNewTcPr().addNewTcW()
-									.setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+							cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
 						}
 					}
 
@@ -239,44 +239,50 @@ public class ReceiptPrinter {
 					emptyParagraph.createRun().addBreak();
 					emptyParagraph.removeRun(0);
 
-					//QR image centralized
+					// QR image centralized
 					XWPFParagraph qrImageParagraph = doc.createParagraph();
 					qrImageParagraph.setAlignment(ParagraphAlignment.CENTER);
 					XWPFRun runQrImageParagraph = qrImageParagraph.createRun();
-					
-					//InputStream is = new ByteArrayInputStream(QRGenerate.generateQRImage(, 125, 125));
-					InputStream is = new ByteArrayInputStream(Base64.decode(receiptContent.getString("qrImage").split(",")[1].getBytes()));
-					runQrImageParagraph.addPicture(is, XWPFDocument.PICTURE_TYPE_JPEG, "Generated" ,Units.toEMU(125), Units.toEMU(125));
+
+					// InputStream is = new ByteArrayInputStream(QRGenerate.generateQRImage(, 125,
+					// 125));
+					InputStream is = new ByteArrayInputStream(
+							Base64.decode(receiptContent.getString("qrImage").split(",")[1].getBytes()));
+					runQrImageParagraph.addPicture(is, XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125),
+							Units.toEMU(125));
 					is.close();
-								
-	/*				emptyParagraph = doc.createParagraph();
-					emptyParagraph.setSpacingAfter(0);
-					emptyParagraph.createRun().addBreak();
-					emptyParagraph.removeRun(0);*/
-					
+
+					/*
+					 * emptyParagraph = doc.createParagraph(); emptyParagraph.setSpacingAfter(0);
+					 * emptyParagraph.createRun().addBreak(); emptyParagraph.removeRun(0);
+					 */
+
 					emptyParagraph = doc.createParagraph();
 					emptyParagraph.setSpacingAfter(0);
 					emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
 					emptyParagraph.createRun().setText("Have a nice day");
 					emptyParagraph.createRun().addBreak();
-					
+
 					// output the result as doc file
-					try (FileOutputStream out = new FileOutputStream(Paths.get(receiptPath, "qrReciept.docx").toString())) {
+					try (FileOutputStream out = new FileOutputStream(
+							Paths.get(receiptPath, "qrReciept.docx").toString())) {
 						doc.write(out);
 					}
-					
-					//convert docx to pdf
+
+					// convert docx to pdf
 					XWPFDocument document = new XWPFDocument(
 							new FileInputStream(new File(Paths.get(receiptPath, "qrReciept.docx").toString())));
 					PdfOptions options = PdfOptions.create();
-					OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
+					OutputStream out = new FileOutputStream(
+							new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
 					PdfConverter.getInstance().convert(document, out, options);
 					document.close();
 					out.close();
-					
+
 					// print pdf
 					if (myPrintService != null) {
-						PDDocument printablePdf = PDDocument.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
+						PDDocument printablePdf = PDDocument
+								.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
 
 						PrinterJob job = PrinterJob.getPrinterJob();
 						job.setJobName("QR - " + receiptContent.getString("checkNo"));
@@ -286,12 +292,12 @@ public class ReceiptPrinter {
 
 						printablePdf.close();
 					}
-					
+
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				}
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
 		}
@@ -683,8 +689,9 @@ public class ReceiptPrinter {
 					System.out.println("Template Name: " + templateName);
 					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
 					;
-					try (XWPFDocument doc = new XWPFDocument(
-							new FileInputStream(URLDecoder.decode(getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString()).toString().substring("file:/".length()), "UTF-8")))) {
+					try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
+							.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+							.toString().substring("file:/".length()), "UTF-8")))) {
 						if (doc.getStyles() != null) {
 
 							XWPFStyles styles = doc.getStyles();
@@ -1012,7 +1019,7 @@ public class ReceiptPrinter {
 										.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
 							}
 						}
-						
+
 						emptyParagraph = doc.createParagraph();
 						emptyParagraph.setSpacingAfter(0);
 						emptyParagraph.createRun().addBreak();
@@ -1067,12 +1074,12 @@ public class ReceiptPrinter {
 							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
-							
+
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setSpacingAfter(0);
 							emptyParagraph.createRun().addBreak();
 							emptyParagraph.removeRun(0);
-							
+
 							XWPFParagraph terminalVerificationParagraph = doc.createParagraph();
 							terminalVerificationParagraph.setAlignment(ParagraphAlignment.CENTER);
 							terminalVerificationParagraph.setVerticalAlignment(TextAlignment.TOP);
@@ -1088,7 +1095,7 @@ public class ReceiptPrinter {
 							} else if (cardData.getString("terminalVerification").equals("3")) {
 								runTerminalVerificationParagraph.setText("No Signature Required");
 							}
-							
+
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setSpacingAfter(0);
 							emptyParagraph.createRun().addBreak();
@@ -1109,8 +1116,14 @@ public class ReceiptPrinter {
 
 							JSONObject qrData = receiptContentJson.getJSONObject("qrData");
 
-							List<String> receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE",
-									"TIME", "TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)", "AMOUNT (RMB)");
+							List<String> receiptResultLabels2 = null;
+							if (qrData.has("amountRMB")) {
+								receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE", "TIME",
+										"TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)", "AMOUNT (RMB)");
+							} else {
+								receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE", "TIME",
+										"TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)");
+							}
 							List<String> receiptResultContents2 = new ArrayList<String>();
 							receiptResultContents2.add(qrData.getString("issuerType"));
 							receiptResultContents2.add(qrData.getString("uid"));
@@ -1123,8 +1136,10 @@ public class ReceiptPrinter {
 							receiptResultContents2.add(qrData.getString("userID"));
 							receiptResultContents2.add(formatDecimalString(
 									String.valueOf(new Double(qrData.getString("amountMYR")) / 100.0)));
-							receiptResultContents2.add(formatDecimalString(
-									String.valueOf(new Double(qrData.getString("amountRMB")) / 100.0)));
+							if (qrData.has("amountRMB")) {
+								receiptResultContents2.add(formatDecimalString(
+										String.valueOf(new Double(qrData.getString("amountRMB")) / 100.0)));
+							}
 
 							for (int i = 0; i < receiptResultLabels2.size(); i++) {
 								XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
@@ -1138,7 +1153,7 @@ public class ReceiptPrinter {
 							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
 							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2330"));
-							
+
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setSpacingAfter(0);
 							emptyParagraph.createRun().addBreak();
@@ -1161,7 +1176,8 @@ public class ReceiptPrinter {
 						emptyParagraph.createRun().setText("Please Come Again");
 
 						// output the result as doc file
-						try (FileOutputStream out = new FileOutputStream(Paths.get(receiptPath, "receipt.docx").toString())) {
+						try (FileOutputStream out = new FileOutputStream(
+								Paths.get(receiptPath, "receipt.docx").toString())) {
 							doc.write(out);
 						}
 
@@ -1189,7 +1205,8 @@ public class ReceiptPrinter {
 
 					// print pdf
 					if (myPrintService != null) {
-						PDDocument printablePdf = PDDocument.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+						PDDocument printablePdf = PDDocument
+								.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
 						// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
 						// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
 
