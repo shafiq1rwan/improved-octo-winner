@@ -279,6 +279,9 @@
 								$('.modal-backdrop').remove();
 								$('#receivedAmount').html(parseFloat(0).toFixed(2)); 
 								
+								$('#paymentAlertModal').modal('hide'); 
+								$('.modal-backdrop').remove();
+								
 								if ($scope.orderType == "table") {
 									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 										$location.path("/table_order");
@@ -395,6 +398,9 @@
 					$scope.socketMessage = "";
 					
 					$scope.paymentButtonFn = function() {
+						$('#paymentAlertModal').modal('hide');
+						$('.modal-backdrop').remove();
+						
 						if ($scope.jsonResult.response_code == "01") {
 							location.reload();
 						} else {
@@ -448,9 +454,18 @@
 					.then(function(response) {
 						if (response.data.response_code === "00") {
 							$('#loading_modal').modal('hide');
+					
 							$scope.alertMessage = response.data.response_message;
+
+							$('#paymentAlertModal').modal('show'); 
+							
+							//Print Receipt here
+							printReceipt($scope.checkNo);
 							
 							$scope.paymentButtonFn = function() {
+								$('#paymentAlertModal').modal('hide'); 
+								$('.modal-backdrop').remove();
+								
 						 		if ($scope.orderType == "table") {
 									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
 										$location.path("/table_order");
@@ -471,11 +486,7 @@
 									}
 								} 
 							}
-							
-							$('#paymentAlertModal').modal('show'); 
-							
-							//Print Receipt here
-							printReceipt($scope.checkNo);
+
 						} else {
 							$('#loading_modal').modal('hide');
 							alert(response.data.response_message);
