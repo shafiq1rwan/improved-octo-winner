@@ -8,6 +8,8 @@
 		
 		$scope.mode = 1;
 		
+		$scope.fullPaymentAmount = "";
+		
 		$('#menuWell').show();
 		$('#paymentWell').hide();
 		$('#generateQRButton').show();
@@ -321,7 +323,8 @@
 			$("input[name=grandParentItemCheckbox]").hide();
 			
 			$('#tenderAmount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
-			
+			$scope.fullPaymentAmount = $('#tenderAmount').text();
+
 			$('#paymentCarousel').carousel(0);
 		}
 		

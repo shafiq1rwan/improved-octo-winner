@@ -2,7 +2,6 @@
 	app.controller('payment_CTRL',function($scope, $http, $timeout, $location, $route,$routeParams) {
 		$scope.paymentType = "";
 		$scope.paymentMethod = "";
-		$scope.fullPaymentAmount = "";
 		$scope.terminalSerialNo = "";
 		$scope.qrContent = "";
 		$scope.socketMessage = "";
@@ -55,12 +54,7 @@
 			$scope.paymentType = type;
 	
 			$('#paymentCarousel').carousel(1);
-	
-			counter += 1;
-			if (counter == 1) {
-				$scope.fullPaymentAmount = $('#tenderAmount').text();
-			}
-			
+
 			if ($scope.paymentType == "full") {
 				$('#tenderAmount').html(parseFloat($scope.fullPaymentAmount).toFixed(2));
 	
