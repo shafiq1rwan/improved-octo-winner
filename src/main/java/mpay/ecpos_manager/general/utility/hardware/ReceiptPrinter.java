@@ -139,160 +139,165 @@ public class ReceiptPrinter {
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
 			} else {
-				new File(receiptPath).mkdirs();
-
-				PrintService myPrintService = null;
-				String templateName = "";
-
 				JSONObject printerResult = getSelectedReceiptPrinter();
+				
+				if(!printerResult.getString("receipt_printer").equals("No Printing")) {
+					new File(receiptPath).mkdirs();
 
-				if (printerResult.has("receipt_printer")) {
+					PrintService myPrintService = null;
+					String templateName = "";
 
-					myPrintService = findPrintService(printerResult.getString("receipt_printer"));
-					Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
-							ECPOS_FOLDER);
-					Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+					if (printerResult.has("receipt_printer")) {
 
-					if (printerResult.getString("receipt_printer").equals("EPSON"))
-						templateName = "ReceiptStyleTemplate_EPSON";
-					else if (printerResult.getString("receipt_printer").equals("Posiflex"))
-						templateName = "ReceiptStyleTemplate_Posiflex";
-				}
+						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+								ECPOS_FOLDER);
+						Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
 
-				Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
-				try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(
-						getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
-								.toString().substring("file:/".length()),
-						"UTF-8")))) {
-
-					XWPFParagraph emptyParagraph = null;
-
-					if (doc.getStyles() != null) {
-						XWPFStyles styles = doc.getStyles();
-						CTFonts fonts = CTFonts.Factory.newInstance();
-						fonts.setAscii(RECEIPT_FONT_FAMILY);
-						styles.setDefaultFonts(fonts);
+						if (printerResult.getString("receipt_printer").equals("EPSON"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else if (printerResult.getString("receipt_printer").equals("Posiflex"))
+							templateName = "ReceiptStyleTemplate_Posiflex";
 					}
 
-					// Header Store Name
-					XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
-					headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
-					headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
-					headerStoreNameParagraph.setSpacingAfter(0);
+					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+					try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(
+							getClass().getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+									.toString().substring("file:/".length()),
+							"UTF-8")))) {
 
-					XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
-					runHeaderStoreNameParagraph.setBold(true);
-					runHeaderStoreNameParagraph.setFontSize(12);
-					runHeaderStoreNameParagraph.setText(receiptHeader.getString("storeName"));
+						XWPFParagraph emptyParagraph = null;
 
-					// Header Store Address
-					XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
-					headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
-					headerStoreAddressParagraph.setSpacingAfter(0);
-
-					XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
-					runHeaderStoreAddressParagraph.setFontSize(9);
-					runHeaderStoreAddressParagraph.setText(receiptHeader.getString("storeAddress"));
-					runHeaderStoreAddressParagraph.addBreak();
-
-					emptyParagraph = doc.createParagraph();
-					emptyParagraph.setSpacingAfter(0);
-					emptyParagraph.createRun().addBreak();
-					emptyParagraph.removeRun(0);
-
-					// info table
-					SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-					List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Date Time", "Staff");
-					List<String> receiptInfoContents = Arrays.asList(receiptContent.getString("checkNo"),
-							receiptContent.getString("tableNo"), sdf.format(new Date()), staffName);
-
-					XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
-					CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout();
-					receiptInfoTableType.setType(STTblLayoutType.FIXED);
-					receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
-
-					for (int i = 0; i < receiptInfoLabels.size(); i++) {
-						XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
-						createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
-								ParagraphAlignment.LEFT);
-						createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
-								ParagraphAlignment.LEFT);
-					}
-
-					long receiptInfoTableWidths[] = { 1400, 2000 };
-
-					CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
-					cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
-					cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
-
-					for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
-						XWPFTableRow row = receiptInfoTable.getRow(x);
-						int numberOfCell = row.getTableCells().size();
-						for (int y = 0; y < numberOfCell; y++) {
-							XWPFTableCell cell = row.getCell(y);
-							cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+						if (doc.getStyles() != null) {
+							XWPFStyles styles = doc.getStyles();
+							CTFonts fonts = CTFonts.Factory.newInstance();
+							fonts.setAscii(RECEIPT_FONT_FAMILY);
+							styles.setDefaultFonts(fonts);
 						}
+
+						// Header Store Name
+						XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
+						headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
+						headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
+						headerStoreNameParagraph.setSpacingAfter(0);
+
+						XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
+						runHeaderStoreNameParagraph.setBold(true);
+						runHeaderStoreNameParagraph.setFontSize(12);
+						runHeaderStoreNameParagraph.setText(receiptHeader.getString("storeName"));
+
+						// Header Store Address
+						XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
+						headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+						headerStoreAddressParagraph.setSpacingAfter(0);
+
+						XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
+						runHeaderStoreAddressParagraph.setFontSize(9);
+						runHeaderStoreAddressParagraph.setText(receiptHeader.getString("storeAddress"));
+						runHeaderStoreAddressParagraph.addBreak();
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().addBreak();
+						emptyParagraph.removeRun(0);
+
+						// info table
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+						List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Date Time", "Staff");
+						List<String> receiptInfoContents = Arrays.asList(receiptContent.getString("checkNo"),
+								receiptContent.getString("tableNo"), sdf.format(new Date()), staffName);
+
+						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
+						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout();
+						receiptInfoTableType.setType(STTblLayoutType.FIXED);
+						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
+
+						for (int i = 0; i < receiptInfoLabels.size(); i++) {
+							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
+							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
+									ParagraphAlignment.LEFT);
+							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
+									ParagraphAlignment.LEFT);
+						}
+
+						long receiptInfoTableWidths[] = { 1400, 2000 };
+
+						CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
+						cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+						cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
+
+						for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
+							XWPFTableRow row = receiptInfoTable.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+							}
+						}
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().addBreak();
+						emptyParagraph.removeRun(0);
+
+						// QR image centralized
+						XWPFParagraph qrImageParagraph = doc.createParagraph();
+						qrImageParagraph.setAlignment(ParagraphAlignment.CENTER);
+						XWPFRun runQrImageParagraph = qrImageParagraph.createRun();
+
+						// InputStream is = new ByteArrayInputStream(QRGenerate.generateQRImage(, 125,
+						// 125));
+						InputStream is = new ByteArrayInputStream(
+								Base64.decode(receiptContent.getString("qrImage").split(",")[1].getBytes()));
+						runQrImageParagraph.addPicture(is, XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125),
+								Units.toEMU(125));
+						is.close();
+
+						/*
+						 * emptyParagraph = doc.createParagraph(); emptyParagraph.setSpacingAfter(0);
+						 * emptyParagraph.createRun().addBreak(); emptyParagraph.removeRun(0);
+						 */
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+						emptyParagraph.createRun().setText("Have a nice day");
+						emptyParagraph.createRun().addBreak();
+
+						// output the result as doc file
+						try (FileOutputStream out = new FileOutputStream(
+								Paths.get(receiptPath, "qrReciept.docx").toString())) {
+							doc.write(out);
+						}
+
+						// convert docx to pdf
+						XWPFDocument document = new XWPFDocument(
+								new FileInputStream(new File(Paths.get(receiptPath, "qrReciept.docx").toString())));
+						PdfOptions options = PdfOptions.create();
+						OutputStream out = new FileOutputStream(
+								new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
+						PdfConverter.getInstance().convert(document, out, options);
+						document.close();
+						out.close();
+
+						// print pdf
+						if (myPrintService != null) {
+							PDDocument printablePdf = PDDocument
+									.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
+
+							PrinterJob job = PrinterJob.getPrinterJob();
+							job.setJobName("QR - " + receiptContent.getString("checkNo"));
+							job.setPageable(new PDFPageable(printablePdf));
+							job.setPrintService(myPrintService);
+							job.print();
+
+							printablePdf.close();
+						}
+
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 					}
-
-					emptyParagraph = doc.createParagraph();
-					emptyParagraph.setSpacingAfter(0);
-					emptyParagraph.createRun().addBreak();
-					emptyParagraph.removeRun(0);
-
-					// QR image centralized
-					XWPFParagraph qrImageParagraph = doc.createParagraph();
-					qrImageParagraph.setAlignment(ParagraphAlignment.CENTER);
-					XWPFRun runQrImageParagraph = qrImageParagraph.createRun();
-
-					// InputStream is = new ByteArrayInputStream(QRGenerate.generateQRImage(, 125,
-					// 125));
-					InputStream is = new ByteArrayInputStream(
-							Base64.decode(receiptContent.getString("qrImage").split(",")[1].getBytes()));
-					runQrImageParagraph.addPicture(is, XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125),
-							Units.toEMU(125));
-					is.close();
-
-					/*
-					 * emptyParagraph = doc.createParagraph(); emptyParagraph.setSpacingAfter(0);
-					 * emptyParagraph.createRun().addBreak(); emptyParagraph.removeRun(0);
-					 */
-
-					emptyParagraph = doc.createParagraph();
-					emptyParagraph.setSpacingAfter(0);
-					emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
-					emptyParagraph.createRun().setText("Have a nice day");
-					emptyParagraph.createRun().addBreak();
-
-					// output the result as doc file
-					try (FileOutputStream out = new FileOutputStream(
-							Paths.get(receiptPath, "qrReciept.docx").toString())) {
-						doc.write(out);
-					}
-
-					// convert docx to pdf
-					XWPFDocument document = new XWPFDocument(
-							new FileInputStream(new File(Paths.get(receiptPath, "qrReciept.docx").toString())));
-					PdfOptions options = PdfOptions.create();
-					OutputStream out = new FileOutputStream(
-							new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
-					PdfConverter.getInstance().convert(document, out, options);
-					document.close();
-					out.close();
-
-					// print pdf
-					if (myPrintService != null) {
-						PDDocument printablePdf = PDDocument
-								.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
-
-						PrinterJob job = PrinterJob.getPrinterJob();
-						job.setJobName("QR - " + receiptContent.getString("checkNo"));
-						job.setPageable(new PDFPageable(printablePdf));
-						job.setPrintService(myPrintService);
-						job.print();
-
-						printablePdf.close();
-					}
-
+				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				}
@@ -665,562 +670,569 @@ public class ReceiptPrinter {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Item Not Available");
 				} else {
-					new File(receiptPath).mkdirs();
-
-					PrintService myPrintService = null;
-					String templateName = "";
-
 					JSONObject printerResult = getSelectedReceiptPrinter();
+					
+					if(printerResult.getString("receipt_printer").equals("No Printing")) {
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					} else {
+						new File(receiptPath).mkdirs();
 
-					if (printerResult.has("receipt_printer")) {
+						PrintService myPrintService = null;
+						String templateName = "";
 
-						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
-						System.out.println("Selected Printer: " + myPrintService.getName());
-						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
-								ECPOS_FOLDER);
-						Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+						if (printerResult.has("receipt_printer")) {
 
-						if (printerResult.getString("receipt_printer").equals("EPSON"))
-							templateName = "ReceiptStyleTemplate_EPSON";
-						else if (printerResult.getString("receipt_printer").equals("Posiflex"))
-							templateName = "ReceiptStyleTemplate_Posiflex";
-					}
+							myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+							System.out.println("Selected Printer: " + myPrintService.getName());
+							Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+									ECPOS_FOLDER);
+							Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
 
-					System.out.println("Template Name: " + templateName);
-					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
-					;
-					try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
-							.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
-							.toString().substring("file:/".length()), "UTF-8")))) {
-						if (doc.getStyles() != null) {
+							if (printerResult.getString("receipt_printer").equals("EPSON"))
+								templateName = "ReceiptStyleTemplate_EPSON";
+							else if (printerResult.getString("receipt_printer").equals("Posiflex"))
+								templateName = "ReceiptStyleTemplate_Posiflex";
+						}
 
-							XWPFStyles styles = doc.getStyles();
-							CTFonts fonts = CTFonts.Factory.newInstance();
-							fonts.setAscii(RECEIPT_FONT_FAMILY);
-							styles.setDefaultFonts(fonts);
+						System.out.println("Template Name: " + templateName);
+						Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+						;
+						try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
+								.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+								.toString().substring("file:/".length()), "UTF-8")))) {
+							if (doc.getStyles() != null) {
 
-							// XWPFStyles styles = doc.createStyles();
+								XWPFStyles styles = doc.getStyles();
+								CTFonts fonts = CTFonts.Factory.newInstance();
+								fonts.setAscii(RECEIPT_FONT_FAMILY);
+								styles.setDefaultFonts(fonts);
 
-							// set default font
+								// XWPFStyles styles = doc.createStyles();
+
+								// set default font
+								/*
+								 * CTFonts fonts = CTFonts.Factory.newInstance();
+								 * fonts.setAscii(RECEIPT_FONT_FAMILY); styles.setDefaultFonts(fonts);
+								 */
+
+								// addCustomParagraphStyle(doc, styles, RECEIPT_HEADER_STYLE, "24");
+								// addCustomParagraphStyle(doc, styles, RECEIPT_PARAGRAPH_STYLE, "18"); */
+							}
+
 							/*
-							 * CTFonts fonts = CTFonts.Factory.newInstance();
-							 * fonts.setAscii(RECEIPT_FONT_FAMILY); styles.setDefaultFonts(fonts);
+							 * CTDocument1 ctdoc = doc.getDocument(); CTBody ctbody = ctdoc.getBody(); if
+							 * (!ctbody.isSetSectPr()) { ctbody.addNewSectPr(); } CTSectPr section =
+							 * ctbody.getSectPr();
+							 * 
+							 * if (!section.isSetPgSz()) { section.addNewPgSz(); }
 							 */
 
-							// addCustomParagraphStyle(doc, styles, RECEIPT_HEADER_STYLE, "24");
-							// addCustomParagraphStyle(doc, styles, RECEIPT_PARAGRAPH_STYLE, "18"); */
-						}
+							// CTPageSz pageSize = section.getPgSz();
+							// pageSize.setOrient(STPageOrientation.PORTRAIT);
+							// 226 point x 20
+							// pageSize.setW(BigInteger.valueOf(4520));
+							// 641
+							// pageSize.setH(BigInteger.valueOf(16820));
 
-						/*
-						 * CTDocument1 ctdoc = doc.getDocument(); CTBody ctbody = ctdoc.getBody(); if
-						 * (!ctbody.isSetSectPr()) { ctbody.addNewSectPr(); } CTSectPr section =
-						 * ctbody.getSectPr();
-						 * 
-						 * if (!section.isSetPgSz()) { section.addNewPgSz(); }
-						 */
+							// Set Margin
+							/*
+							 * CTPageMar pageMar = section.addNewPgMar();
+							 * pageMar.setGutter(BigInteger.valueOf(0));
+							 * pageMar.setHeader(BigInteger.valueOf(720L));
+							 * pageMar.setFooter(BigInteger.valueOf(720L));
+							 * pageMar.setLeft(BigInteger.valueOf(100L));
+							 * pageMar.setTop(BigInteger.valueOf(220L));
+							 * pageMar.setRight(BigInteger.valueOf(100L));
+							 * pageMar.setBottom(BigInteger.valueOf(440L));
+							 */
 
-						// CTPageSz pageSize = section.getPgSz();
-						// pageSize.setOrient(STPageOrientation.PORTRAIT);
-						// 226 point x 20
-						// pageSize.setW(BigInteger.valueOf(4520));
-						// 641
-						// pageSize.setH(BigInteger.valueOf(16820));
+							// Header Store Name
+							XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
+							headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
+							headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
+							headerStoreNameParagraph.setSpacingAfter(0);
 
-						// Set Margin
-						/*
-						 * CTPageMar pageMar = section.addNewPgMar();
-						 * pageMar.setGutter(BigInteger.valueOf(0));
-						 * pageMar.setHeader(BigInteger.valueOf(720L));
-						 * pageMar.setFooter(BigInteger.valueOf(720L));
-						 * pageMar.setLeft(BigInteger.valueOf(100L));
-						 * pageMar.setTop(BigInteger.valueOf(220L));
-						 * pageMar.setRight(BigInteger.valueOf(100L));
-						 * pageMar.setBottom(BigInteger.valueOf(440L));
-						 */
+							XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
+							runHeaderStoreNameParagraph.setBold(true);
+							runHeaderStoreNameParagraph.setFontSize(12);
+							runHeaderStoreNameParagraph.setText(receiptHeaderJson.getString("storeName"));
 
-						// Header Store Name
-						XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
-						headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
-						headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
-						headerStoreNameParagraph.setSpacingAfter(0);
+							// Header Store Address
+							XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
+							headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+							headerStoreAddressParagraph.setSpacingAfter(0);
 
-						XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
-						runHeaderStoreNameParagraph.setBold(true);
-						runHeaderStoreNameParagraph.setFontSize(12);
-						runHeaderStoreNameParagraph.setText(receiptHeaderJson.getString("storeName"));
+							XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
+							runHeaderStoreAddressParagraph.setFontSize(9);
+							runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
+							runHeaderStoreAddressParagraph.addBreak();
+							runHeaderStoreAddressParagraph
+									.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
+							runHeaderStoreAddressParagraph.addBreak();
 
-						// Header Store Address
-						XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
-						headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
-						headerStoreAddressParagraph.setSpacingAfter(0);
+							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.createRun().addBreak();
+							emptyParagraph.removeRun(0);
 
-						XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
-						runHeaderStoreAddressParagraph.setFontSize(9);
-						runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
-						runHeaderStoreAddressParagraph.addBreak();
-						runHeaderStoreAddressParagraph
-								.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
-						runHeaderStoreAddressParagraph.addBreak();
+							// Receipt Info Table
+							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+							List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Order At", "Printed At",
+									"Staff");
+							List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"),
+									receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
+									sdf.format(new Date()), staffName);
 
-						emptyParagraph = doc.createParagraph();
-						emptyParagraph.setSpacingAfter(0);
-						emptyParagraph.createRun().addBreak();
-						emptyParagraph.removeRun(0);
+							XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
+							CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
+																																// //
+																																// Layout
+							receiptInfoTableType.setType(STTblLayoutType.FIXED);
+							receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
 
-						// Receipt Info Table
-						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-						List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Order At", "Printed At",
-								"Staff");
-						List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"),
-								receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
-								sdf.format(new Date()), staffName);
-
-						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
-						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
-																															// //
-																															// Layout
-						receiptInfoTableType.setType(STTblLayoutType.FIXED);
-						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
-
-						for (int i = 0; i < receiptInfoLabels.size(); i++) {
-							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
-							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
-									ParagraphAlignment.LEFT);
-							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
-									ParagraphAlignment.LEFT);
-						}
-
-						long receiptInfoTableWidths[] = { 1400, 2000 };
-
-						CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
-						cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
-						cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
-
-						for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
-							XWPFTableRow row = receiptInfoTable.getRow(x);
-							int numberOfCell = row.getTableCells().size();
-							for (int y = 0; y < numberOfCell; y++) {
-								XWPFTableCell cell = row.getCell(y);
-								cell.getCTTc().addNewTcPr().addNewTcW()
-										.setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+							for (int i = 0; i < receiptInfoLabels.size(); i++) {
+								XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
+								createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
+										ParagraphAlignment.LEFT);
+								createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
+										ParagraphAlignment.LEFT);
 							}
-						}
 
-						XWPFParagraph receiptInfoBreak = doc.createParagraph();
-						receiptInfoBreak.setSpacingAfter(0);
-						receiptInfoBreak.createRun().addBreak();
-						receiptInfoBreak.removeRun(0);
+							long receiptInfoTableWidths[] = { 1400, 2000 };
 
-						// Receipt Content
-						XWPFTable table = doc.createTable();
-						CTTblLayoutType type = table.getCTTbl().getTblPr().addNewTblLayout(); // set Layout
-						type.setType(STTblLayoutType.FIXED);
+							CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
+							cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+							cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
 
-						table.getCTTbl().getTblPr().unsetTblBorders(); // set table no border
-
-						// First row header
-						XWPFTableRow tableRowOne = table.getRow(0);
-
-						XWPFParagraph tableHeaderOne = tableRowOne.getCell(0).getParagraphs().get(0);
-						tableHeaderOne.setSpacingAfter(0);
-						tableHeaderOne.setVerticalAlignment(TextAlignment.CENTER);
-						XWPFRun tableHeaderOneRun = tableHeaderOne.createRun();
-						tableHeaderOneRun.setFontSize(9);
-						tableHeaderOneRun.setBold(true);
-						tableHeaderOneRun.setText("Qty");
-
-						XWPFParagraph tableHeaderTwo = tableRowOne.addNewTableCell().getParagraphs().get(0);
-						tableHeaderTwo.setSpacingAfter(0);
-						tableHeaderTwo.setVerticalAlignment(TextAlignment.CENTER);
-						XWPFRun tableHeaderTwoRun = tableHeaderTwo.createRun();
-						tableHeaderTwoRun.setFontSize(9);
-						tableHeaderTwoRun.setBold(true);
-						tableHeaderTwoRun.setText("Name");
-
-						XWPFParagraph tableHeaderThree = tableRowOne.addNewTableCell().getParagraphs().get(0);
-						tableHeaderThree.setSpacingAfter(0);
-						tableHeaderThree.setVerticalAlignment(TextAlignment.CENTER);
-						tableHeaderThree.setAlignment(ParagraphAlignment.RIGHT);
-						XWPFRun tableHeaderThreeRun = tableHeaderThree.createRun();
-						tableHeaderThreeRun.setFontSize(9);
-						tableHeaderThreeRun.setBold(true);
-						tableHeaderThreeRun.setText("Amt(" + receiptHeaderJson.getString("storeCurrency") + ")");
-
-						CTTc cellOne = table.getRow(0).getCell(0).getCTTc();
-						CTTcPr tcPr = cellOne.addNewTcPr();
-						CTTcBorders border = tcPr.addNewTcBorders();
-						border.addNewTop().setVal(STBorder.SINGLE);
-						border.addNewBottom().setVal(STBorder.SINGLE);
-
-						CTTc cellTwo = table.getRow(0).getCell(1).getCTTc();
-						CTTcPr tcPr2 = cellTwo.addNewTcPr();
-						CTTcBorders border2 = tcPr2.addNewTcBorders();
-						border2.addNewTop().setVal(STBorder.SINGLE);
-						border2.addNewBottom().setVal(STBorder.SINGLE);
-
-						CTTc cellThree = table.getRow(0).getCell(2).getCTTc();
-						CTTcPr tcPr3 = cellThree.addNewTcPr();
-						CTTcBorders border3 = tcPr3.addNewTcBorders();
-						border3.addNewTop().setVal(STBorder.SINGLE);
-						border3.addNewBottom().setVal(STBorder.SINGLE);
-
-						// Grand parent loop
-						for (int k = 0; k < jsonGrandParentArray.length(); k++) {
-							JSONObject grandParentItem = jsonGrandParentArray.optJSONObject(k);
-
-							XWPFTableRow grandParentTableRow = table.createRow();
-
-							createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
-									false, ParagraphAlignment.LEFT);
-
-							createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
-									ParagraphAlignment.LEFT);
-
-							createCellText(grandParentTableRow.getCell(2),
-									grandParentItem.getString("totalAmount").substring(0,
-											grandParentItem.getString("totalAmount").length() - 2),
-									false, ParagraphAlignment.RIGHT);
-
-							if (grandParentItem.has("parentItemArray")) {
-								JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
-
-								// Parent loop
-								for (int p = 0; p < jsonParentArray.length(); p++) {
-									JSONObject parentItem = jsonParentArray.optJSONObject(p);
-
-									String parentItemPrice = (formatDecimalString(parentItem.getString("totalAmount"))
-											.equals("0.00")) ? ""
-													: formatDecimalString(parentItem.getString("totalAmount"));
-
-									XWPFTableRow parentTableRow = table.createRow();
-
-									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
-
-									createCellText(parentTableRow.getCell(1), "  " + parentItem.getString("itemName"),
-											false, ParagraphAlignment.LEFT);
-
-									createCellText(parentTableRow.getCell(2), parentItemPrice, false,
-											ParagraphAlignment.RIGHT);
-
-									// Child loop
-									if (parentItem.has("childItemArray")) {
-										JSONArray jsonChildArray = parentItem.getJSONArray("childItemArray");
-
-										for (int c = 0; c < jsonChildArray.length(); c++) {
-											JSONObject childItem = jsonChildArray.optJSONObject(c);
-
-											String childItemPrice = (formatDecimalString(
-													childItem.getString("totalAmount")).equals("0.00")) ? ""
-															: formatDecimalString(childItem.getString("totalAmount"));
-
-											XWPFTableRow childTableRow = table.createRow();
-
-											createCellText(childTableRow.getCell(0), "", false,
-													ParagraphAlignment.LEFT);
-
-											createCellText(childTableRow.getCell(1),
-													"    " + childItem.getString("itemName"), false,
-													ParagraphAlignment.LEFT);
-
-											createCellText(childTableRow.getCell(2), childItemPrice, false,
-													ParagraphAlignment.RIGHT);
-										}
-									}
-
+							for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
+								XWPFTableRow row = receiptInfoTable.getRow(x);
+								int numberOfCell = row.getTableCells().size();
+								for (int y = 0; y < numberOfCell; y++) {
+									XWPFTableCell cell = row.getCell(y);
+									cell.getCTTc().addNewTcPr().addNewTcW()
+											.setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
 								}
 							}
-						}
 
-						// 121x20, 28x20, 50x20
-						long columnWidths[] = { 560, 2420, 1000 };
+							XWPFParagraph receiptInfoBreak = doc.createParagraph();
+							receiptInfoBreak.setSpacingAfter(0);
+							receiptInfoBreak.createRun().addBreak();
+							receiptInfoBreak.removeRun(0);
 
-						CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
-						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
-						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2420"));
-						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1000"));
+							// Receipt Content
+							XWPFTable table = doc.createTable();
+							CTTblLayoutType type = table.getCTTbl().getTblPr().addNewTblLayout(); // set Layout
+							type.setType(STTblLayoutType.FIXED);
 
-						for (int x = 0; x < table.getNumberOfRows(); x++) {
-							XWPFTableRow row = table.getRow(x);
-							int numberOfCell = row.getTableCells().size();
-							for (int y = 0; y < numberOfCell; y++) {
-								XWPFTableCell cell = row.getCell(y);
-								cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(columnWidths[y]));
+							table.getCTTbl().getTblPr().unsetTblBorders(); // set table no border
+
+							// First row header
+							XWPFTableRow tableRowOne = table.getRow(0);
+
+							XWPFParagraph tableHeaderOne = tableRowOne.getCell(0).getParagraphs().get(0);
+							tableHeaderOne.setSpacingAfter(0);
+							tableHeaderOne.setVerticalAlignment(TextAlignment.CENTER);
+							XWPFRun tableHeaderOneRun = tableHeaderOne.createRun();
+							tableHeaderOneRun.setFontSize(9);
+							tableHeaderOneRun.setBold(true);
+							tableHeaderOneRun.setText("Qty");
+
+							XWPFParagraph tableHeaderTwo = tableRowOne.addNewTableCell().getParagraphs().get(0);
+							tableHeaderTwo.setSpacingAfter(0);
+							tableHeaderTwo.setVerticalAlignment(TextAlignment.CENTER);
+							XWPFRun tableHeaderTwoRun = tableHeaderTwo.createRun();
+							tableHeaderTwoRun.setFontSize(9);
+							tableHeaderTwoRun.setBold(true);
+							tableHeaderTwoRun.setText("Name");
+
+							XWPFParagraph tableHeaderThree = tableRowOne.addNewTableCell().getParagraphs().get(0);
+							tableHeaderThree.setSpacingAfter(0);
+							tableHeaderThree.setVerticalAlignment(TextAlignment.CENTER);
+							tableHeaderThree.setAlignment(ParagraphAlignment.RIGHT);
+							XWPFRun tableHeaderThreeRun = tableHeaderThree.createRun();
+							tableHeaderThreeRun.setFontSize(9);
+							tableHeaderThreeRun.setBold(true);
+							tableHeaderThreeRun.setText("Amt(" + receiptHeaderJson.getString("storeCurrency") + ")");
+
+							CTTc cellOne = table.getRow(0).getCell(0).getCTTc();
+							CTTcPr tcPr = cellOne.addNewTcPr();
+							CTTcBorders border = tcPr.addNewTcBorders();
+							border.addNewTop().setVal(STBorder.SINGLE);
+							border.addNewBottom().setVal(STBorder.SINGLE);
+
+							CTTc cellTwo = table.getRow(0).getCell(1).getCTTc();
+							CTTcPr tcPr2 = cellTwo.addNewTcPr();
+							CTTcBorders border2 = tcPr2.addNewTcBorders();
+							border2.addNewTop().setVal(STBorder.SINGLE);
+							border2.addNewBottom().setVal(STBorder.SINGLE);
+
+							CTTc cellThree = table.getRow(0).getCell(2).getCTTc();
+							CTTcPr tcPr3 = cellThree.addNewTcPr();
+							CTTcBorders border3 = tcPr3.addNewTcBorders();
+							border3.addNewTop().setVal(STBorder.SINGLE);
+							border3.addNewBottom().setVal(STBorder.SINGLE);
+
+							// Grand parent loop
+							for (int k = 0; k < jsonGrandParentArray.length(); k++) {
+								JSONObject grandParentItem = jsonGrandParentArray.optJSONObject(k);
+
+								XWPFTableRow grandParentTableRow = table.createRow();
+
+								createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
+										false, ParagraphAlignment.LEFT);
+
+								createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
+										ParagraphAlignment.LEFT);
+
+								createCellText(grandParentTableRow.getCell(2),
+										grandParentItem.getString("totalAmount").substring(0,
+												grandParentItem.getString("totalAmount").length() - 2),
+										false, ParagraphAlignment.RIGHT);
+
+								if (grandParentItem.has("parentItemArray")) {
+									JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
+
+									// Parent loop
+									for (int p = 0; p < jsonParentArray.length(); p++) {
+										JSONObject parentItem = jsonParentArray.optJSONObject(p);
+
+										String parentItemPrice = (formatDecimalString(parentItem.getString("totalAmount"))
+												.equals("0.00")) ? ""
+														: formatDecimalString(parentItem.getString("totalAmount"));
+
+										XWPFTableRow parentTableRow = table.createRow();
+
+										createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
+
+										createCellText(parentTableRow.getCell(1), "  " + parentItem.getString("itemName"),
+												false, ParagraphAlignment.LEFT);
+
+										createCellText(parentTableRow.getCell(2), parentItemPrice, false,
+												ParagraphAlignment.RIGHT);
+
+										// Child loop
+										if (parentItem.has("childItemArray")) {
+											JSONArray jsonChildArray = parentItem.getJSONArray("childItemArray");
+
+											for (int c = 0; c < jsonChildArray.length(); c++) {
+												JSONObject childItem = jsonChildArray.optJSONObject(c);
+
+												String childItemPrice = (formatDecimalString(
+														childItem.getString("totalAmount")).equals("0.00")) ? ""
+																: formatDecimalString(childItem.getString("totalAmount"));
+
+												XWPFTableRow childTableRow = table.createRow();
+
+												createCellText(childTableRow.getCell(0), "", false,
+														ParagraphAlignment.LEFT);
+
+												createCellText(childTableRow.getCell(1),
+														"    " + childItem.getString("itemName"), false,
+														ParagraphAlignment.LEFT);
+
+												createCellText(childTableRow.getCell(2), childItemPrice, false,
+														ParagraphAlignment.RIGHT);
+											}
+										}
+
+									}
+								}
 							}
-						}
 
-						XWPFParagraph receiptContentBreak = doc.createParagraph();
-						receiptContentBreak.setSpacingAfter(0);
-						receiptContentBreak.createRun().addBreak();
-						receiptContentBreak.removeRun(0);
+							// 121x20, 28x20, 50x20
+							long columnWidths[] = { 560, 2420, 1000 };
 
-						JSONArray taxCharges = receiptContentJson.getJSONArray("taxCharges");
-						// Receipt Result
-						XWPFTable receiptResultTable = doc.createTable(3 + taxCharges.length(), 2);
-						receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
-						receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+							CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
+							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
+							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2420"));
+							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1000"));
 
-						List<String> receiptResultLabels = new ArrayList<>();
-						receiptResultLabels.add("Subtotal");
-						for (int x = 0; x < taxCharges.length(); x++) {
-							receiptResultLabels.add(taxCharges.getJSONObject(x).getString("name") + "("
-									+ taxCharges.getJSONObject(x).getString("rate") + "%)");
-						}
-						receiptResultLabels.add("Rounding Adjustment");
-						receiptResultLabels.add("Net Total");
-						List<String> receiptResultContents = new ArrayList<String>();
+							for (int x = 0; x < table.getNumberOfRows(); x++) {
+								XWPFTableRow row = table.getRow(x);
+								int numberOfCell = row.getTableCells().size();
+								for (int y = 0; y < numberOfCell; y++) {
+									XWPFTableCell cell = row.getCell(y);
+									cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(columnWidths[y]));
+								}
+							}
 
-						receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmount")));
-						for (int x = 0; x < taxCharges.length(); x++) {
+							XWPFParagraph receiptContentBreak = doc.createParagraph();
+							receiptContentBreak.setSpacingAfter(0);
+							receiptContentBreak.createRun().addBreak();
+							receiptContentBreak.removeRun(0);
+
+							JSONArray taxCharges = receiptContentJson.getJSONArray("taxCharges");
+							// Receipt Result
+							XWPFTable receiptResultTable = doc.createTable(3 + taxCharges.length(), 2);
+							receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+							receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+
+							List<String> receiptResultLabels = new ArrayList<>();
+							receiptResultLabels.add("Subtotal");
+							for (int x = 0; x < taxCharges.length(); x++) {
+								receiptResultLabels.add(taxCharges.getJSONObject(x).getString("name") + "("
+										+ taxCharges.getJSONObject(x).getString("rate") + "%)");
+							}
+							receiptResultLabels.add("Rounding Adjustment");
+							receiptResultLabels.add("Net Total");
+							List<String> receiptResultContents = new ArrayList<String>();
+
+							receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmount")));
+							for (int x = 0; x < taxCharges.length(); x++) {
+								receiptResultContents
+										.add(formatDecimalString(taxCharges.getJSONObject(x).getString("chargeAmount")));
+							}
+							receiptResultContents.add(formatDecimalString(
+									receiptContentJson.getString("totalAmountWithTaxRoundingAdjustment")));
 							receiptResultContents
-									.add(formatDecimalString(taxCharges.getJSONObject(x).getString("chargeAmount")));
-						}
-						receiptResultContents.add(formatDecimalString(
-								receiptContentJson.getString("totalAmountWithTaxRoundingAdjustment")));
-						receiptResultContents
-								.add(formatDecimalString(receiptContentJson.getString("grandTotalAmount")));
+									.add(formatDecimalString(receiptContentJson.getString("grandTotalAmount")));
 
-						for (int i = 0; i < receiptResultLabels.size(); i++) {
-							XWPFTableRow receiptResultRow = receiptResultTable.getRow(i);
+							for (int i = 0; i < receiptResultLabels.size(); i++) {
+								XWPFTableRow receiptResultRow = receiptResultTable.getRow(i);
 
-							if (receiptResultLabels.get(i).equals("Net Total")) {
-								createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), true,
-										ParagraphAlignment.LEFT);
+								if (receiptResultLabels.get(i).equals("Net Total")) {
+									createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), true,
+											ParagraphAlignment.LEFT);
 
-								createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), true,
-										ParagraphAlignment.RIGHT);
+									createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), true,
+											ParagraphAlignment.RIGHT);
 
-								CTTc cell = receiptResultRow.getCell(1).getCTTc();
-								CTTcPr tcPr4 = cell.addNewTcPr();
-								CTTcBorders border4 = tcPr4.addNewTcBorders();
+									CTTc cell = receiptResultRow.getCell(1).getCTTc();
+									CTTcPr tcPr4 = cell.addNewTcPr();
+									CTTcBorders border4 = tcPr4.addNewTcBorders();
 
-								border4.addNewBottom().setVal(STBorder.SINGLE);
-								border4.addNewTop().setVal(STBorder.SINGLE);
-							} else {
-								createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
-										ParagraphAlignment.LEFT);
+									border4.addNewBottom().setVal(STBorder.SINGLE);
+									border4.addNewTop().setVal(STBorder.SINGLE);
+								} else {
+									createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
+											ParagraphAlignment.LEFT);
 
-								createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
-										ParagraphAlignment.RIGHT);
-							}
-						}
-
-						long receiptResultTableWidths[] = { 2980, 1000 };
-
-						CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
-						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2980"));
-						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
-
-						for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
-							XWPFTableRow row = receiptResultTable.getRow(x);
-							int numberOfCell = row.getTableCells().size();
-							for (int y = 0; y < numberOfCell; y++) {
-								XWPFTableCell cell = row.getCell(y);
-								cell.getCTTc().addNewTcPr().addNewTcW()
-										.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
-							}
-						}
-
-						emptyParagraph = doc.createParagraph();
-						emptyParagraph.setSpacingAfter(0);
-						emptyParagraph.createRun().addBreak();
-						emptyParagraph.removeRun(0);
-
-						// Cashless Payment (Coming Soon)
-						if (receiptContentJson.getInt("paymentMethod") == 2) {
-							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
-							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
-							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
-							cashlessHeaderParagraph.setSpacingAfter(0);
-							cashlessHeaderParagraph.setSpacingBefore(0);
-
-							XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
-							runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
-
-							XWPFTable receiptResultTable2 = doc.createTable(15, 2);
-							receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
-							receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
-
-							JSONObject cardData = receiptContentJson.getJSONObject("cardData");
-
-							List<String> receiptResultLabels2 = Arrays.asList("CARD TYPE", "TID", "MID", "DATE", "TIME",
-									"CARD NUM", "EXPIRY DATE", "APPR CODE", "RREF NUM", "BATCH NUM", "INV NUM", "UID",
-									"TC", "AID", "APP");
-							List<String> receiptResultContents2 = new ArrayList<String>();
-							receiptResultContents2.add(cardData.getString("cardType"));
-							receiptResultContents2.add(cardData.getString("tid"));
-							receiptResultContents2.add(cardData.getString("mid"));
-							receiptResultContents2.add(cardData.getString("date"));
-							receiptResultContents2.add(cardData.getString("time"));
-							receiptResultContents2.add(cardData.getString("maskedCardNo"));
-							receiptResultContents2.add(cardData.getString("cardExpiry"));
-							receiptResultContents2.add(cardData.getString("approvalCode"));
-							receiptResultContents2.add(cardData.getString("rRefNo"));
-							receiptResultContents2.add(cardData.getString("batchNo"));
-							receiptResultContents2.add(cardData.getString("invoiceNo"));
-							receiptResultContents2.add(cardData.getString("uid"));
-							receiptResultContents2.add(cardData.getString("tc"));
-							receiptResultContents2.add(cardData.getString("aid"));
-							receiptResultContents2.add(cardData.getString("app"));
-
-							for (int i = 0; i < receiptResultLabels2.size(); i++) {
-								XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
-								createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
-										ParagraphAlignment.LEFT);
-
-								createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
-										ParagraphAlignment.RIGHT);
+									createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
+											ParagraphAlignment.RIGHT);
+								}
 							}
 
-							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
-							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
-							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
+							long receiptResultTableWidths[] = { 2980, 1000 };
 
-							emptyParagraph = doc.createParagraph();
-							emptyParagraph.setSpacingAfter(0);
-							emptyParagraph.createRun().addBreak();
-							emptyParagraph.removeRun(0);
+							CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
+							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2980"));
+							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
 
-							XWPFParagraph terminalVerificationParagraph = doc.createParagraph();
-							terminalVerificationParagraph.setAlignment(ParagraphAlignment.CENTER);
-							terminalVerificationParagraph.setVerticalAlignment(TextAlignment.TOP);
-							terminalVerificationParagraph.setSpacingAfter(0);
-							terminalVerificationParagraph.setSpacingAfterLines(0);
-							XWPFRun runTerminalVerificationParagraph = terminalVerificationParagraph.createRun();
-							if (cardData.getString("terminalVerification").equals("1")) {
-								runTerminalVerificationParagraph.setText("Pin Verified Success,");
-								runTerminalVerificationParagraph.addBreak();
-								runTerminalVerificationParagraph.setText("No Signature Required");
-							} else if (cardData.getString("terminalVerification").equals("2")) {
-								runTerminalVerificationParagraph.setText("Signature Required");
-							} else if (cardData.getString("terminalVerification").equals("3")) {
-								runTerminalVerificationParagraph.setText("No Signature Required");
+							for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
+								XWPFTableRow row = receiptResultTable.getRow(x);
+								int numberOfCell = row.getTableCells().size();
+								for (int y = 0; y < numberOfCell; y++) {
+									XWPFTableCell cell = row.getCell(y);
+									cell.getCTTc().addNewTcPr().addNewTcW()
+											.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
+								}
 							}
 
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setSpacingAfter(0);
 							emptyParagraph.createRun().addBreak();
 							emptyParagraph.removeRun(0);
-						} else if (receiptContentJson.getInt("paymentMethod") == 3) {
-							XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
-							cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
-							cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
-							cashlessHeaderParagraph.setSpacingAfter(0);
-							cashlessHeaderParagraph.setSpacingAfterLines(0);
 
-							XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
-							runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
+							// Cashless Payment (Coming Soon)
+							if (receiptContentJson.getInt("paymentMethod") == 2) {
+								XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
+								cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
+								cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
+								cashlessHeaderParagraph.setSpacingAfter(0);
+								cashlessHeaderParagraph.setSpacingBefore(0);
 
-							XWPFTable receiptResultTable2 = doc.createTable(11, 2);
-							receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
-							receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+								XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
+								runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
 
-							JSONObject qrData = receiptContentJson.getJSONObject("qrData");
+								XWPFTable receiptResultTable2 = doc.createTable(15, 2);
+								receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+								receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
 
-							List<String> receiptResultLabels2 = null;
-							if (qrData.has("amountRMB")) {
-								receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE", "TIME",
-										"TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)", "AMOUNT (RMB)");
-							} else {
-								receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE", "TIME",
-										"TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)");
-							}
-							List<String> receiptResultContents2 = new ArrayList<String>();
-							receiptResultContents2.add(qrData.getString("issuerType"));
-							receiptResultContents2.add(qrData.getString("uid"));
-							receiptResultContents2.add(qrData.getString("tid"));
-							receiptResultContents2.add(qrData.getString("mid"));
-							receiptResultContents2.add(qrData.getString("date"));
-							receiptResultContents2.add(qrData.getString("time"));
-							receiptResultContents2.add(qrData.getString("traceNo"));
-							receiptResultContents2.add(qrData.getString("authNo"));
-							receiptResultContents2.add(qrData.getString("userID"));
-							receiptResultContents2.add(formatDecimalString(
-									String.valueOf(new Double(qrData.getString("amountMYR")) / 100.0)));
-							if (qrData.has("amountRMB")) {
+								JSONObject cardData = receiptContentJson.getJSONObject("cardData");
+
+								List<String> receiptResultLabels2 = Arrays.asList("CARD TYPE", "TID", "MID", "DATE", "TIME",
+										"CARD NUM", "EXPIRY DATE", "APPR CODE", "RREF NUM", "BATCH NUM", "INV NUM", "UID",
+										"TC", "AID", "APP");
+								List<String> receiptResultContents2 = new ArrayList<String>();
+								receiptResultContents2.add(cardData.getString("cardType"));
+								receiptResultContents2.add(cardData.getString("tid"));
+								receiptResultContents2.add(cardData.getString("mid"));
+								receiptResultContents2.add(cardData.getString("date"));
+								receiptResultContents2.add(cardData.getString("time"));
+								receiptResultContents2.add(cardData.getString("maskedCardNo"));
+								receiptResultContents2.add(cardData.getString("cardExpiry"));
+								receiptResultContents2.add(cardData.getString("approvalCode"));
+								receiptResultContents2.add(cardData.getString("rRefNo"));
+								receiptResultContents2.add(cardData.getString("batchNo"));
+								receiptResultContents2.add(cardData.getString("invoiceNo"));
+								receiptResultContents2.add(cardData.getString("uid"));
+								receiptResultContents2.add(cardData.getString("tc"));
+								receiptResultContents2.add(cardData.getString("aid"));
+								receiptResultContents2.add(cardData.getString("app"));
+
+								for (int i = 0; i < receiptResultLabels2.size(); i++) {
+									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
+									createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
+											ParagraphAlignment.LEFT);
+
+									createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
+											ParagraphAlignment.RIGHT);
+								}
+
+								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
+
+								emptyParagraph = doc.createParagraph();
+								emptyParagraph.setSpacingAfter(0);
+								emptyParagraph.createRun().addBreak();
+								emptyParagraph.removeRun(0);
+
+								XWPFParagraph terminalVerificationParagraph = doc.createParagraph();
+								terminalVerificationParagraph.setAlignment(ParagraphAlignment.CENTER);
+								terminalVerificationParagraph.setVerticalAlignment(TextAlignment.TOP);
+								terminalVerificationParagraph.setSpacingAfter(0);
+								terminalVerificationParagraph.setSpacingAfterLines(0);
+								XWPFRun runTerminalVerificationParagraph = terminalVerificationParagraph.createRun();
+								if (cardData.getString("terminalVerification").equals("1")) {
+									runTerminalVerificationParagraph.setText("Pin Verified Success,");
+									runTerminalVerificationParagraph.addBreak();
+									runTerminalVerificationParagraph.setText("No Signature Required");
+								} else if (cardData.getString("terminalVerification").equals("2")) {
+									runTerminalVerificationParagraph.setText("Signature Required");
+								} else if (cardData.getString("terminalVerification").equals("3")) {
+									runTerminalVerificationParagraph.setText("No Signature Required");
+								}
+
+								emptyParagraph = doc.createParagraph();
+								emptyParagraph.setSpacingAfter(0);
+								emptyParagraph.createRun().addBreak();
+								emptyParagraph.removeRun(0);
+							} else if (receiptContentJson.getInt("paymentMethod") == 3) {
+								XWPFParagraph cashlessHeaderParagraph = doc.createParagraph();
+								cashlessHeaderParagraph.setAlignment(ParagraphAlignment.CENTER);
+								cashlessHeaderParagraph.setVerticalAlignment(TextAlignment.TOP);
+								cashlessHeaderParagraph.setSpacingAfter(0);
+								cashlessHeaderParagraph.setSpacingAfterLines(0);
+
+								XWPFRun runCashlessHeaderParagraph = cashlessHeaderParagraph.createRun();
+								runCashlessHeaderParagraph.setText("***Cashless Transaction Information***");
+
+								XWPFTable receiptResultTable2 = doc.createTable(11, 2);
+								receiptResultTable2.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+								receiptResultTable2.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+
+								JSONObject qrData = receiptContentJson.getJSONObject("qrData");
+
+								List<String> receiptResultLabels2 = null;
+								if (qrData.has("amountRMB")) {
+									receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE", "TIME",
+											"TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)", "AMOUNT (RMB)");
+								} else {
+									receiptResultLabels2 = Arrays.asList("QR ISSUER", "UID", "TID", "MID", "DATE", "TIME",
+											"TRACE NUM", "AUTH NUM", "QR USER ID", "AMOUNT (MYR)");
+								}
+								List<String> receiptResultContents2 = new ArrayList<String>();
+								receiptResultContents2.add(qrData.getString("issuerType"));
+								receiptResultContents2.add(qrData.getString("uid"));
+								receiptResultContents2.add(qrData.getString("tid"));
+								receiptResultContents2.add(qrData.getString("mid"));
+								receiptResultContents2.add(qrData.getString("date"));
+								receiptResultContents2.add(qrData.getString("time"));
+								receiptResultContents2.add(qrData.getString("traceNo"));
+								receiptResultContents2.add(qrData.getString("authNo"));
+								receiptResultContents2.add(qrData.getString("userID"));
 								receiptResultContents2.add(formatDecimalString(
-										String.valueOf(new Double(qrData.getString("amountRMB")) / 100.0)));
+										String.valueOf(new Double(qrData.getString("amountMYR")) / 100.0)));
+								if (qrData.has("amountRMB")) {
+									receiptResultContents2.add(formatDecimalString(
+											String.valueOf(new Double(qrData.getString("amountRMB")) / 100.0)));
+								}
+
+								for (int i = 0; i < receiptResultLabels2.size(); i++) {
+									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
+									createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
+											ParagraphAlignment.LEFT);
+
+									createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
+											ParagraphAlignment.RIGHT);
+								}
+
+								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2330"));
+
+								emptyParagraph = doc.createParagraph();
+								emptyParagraph.setSpacingAfter(0);
+								emptyParagraph.createRun().addBreak();
+								emptyParagraph.removeRun(0);
+
+								byte[] qrByteData = QRGenerate.generateQRImage(qrData.getString("refID"), 300, 300);
+
+								XWPFParagraph qrParagraph = doc.createParagraph();
+								qrParagraph.setAlignment(ParagraphAlignment.CENTER);
+								qrParagraph.setSpacingAfter(0);
+								qrParagraph.setSpacingBefore(0);
+								XWPFRun runQrParagraph = qrParagraph.createRun();
+								runQrParagraph.addPicture(new ByteArrayInputStream(qrByteData),
+										XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125), Units.toEMU(125));
 							}
-
-							for (int i = 0; i < receiptResultLabels2.size(); i++) {
-								XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
-								createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
-										ParagraphAlignment.LEFT);
-
-								createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
-										ParagraphAlignment.RIGHT);
-							}
-
-							CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
-							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
-							cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2330"));
 
 							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
 							emptyParagraph.setSpacingAfter(0);
-							emptyParagraph.createRun().addBreak();
-							emptyParagraph.removeRun(0);
+							emptyParagraph.createRun().setText("Please Come Again");
 
-							byte[] qrByteData = QRGenerate.generateQRImage(qrData.getString("refID"), 300, 300);
+							// output the result as doc file
+							try (FileOutputStream out = new FileOutputStream(
+									Paths.get(receiptPath, "receipt.docx").toString())) {
+								doc.write(out);
+							}
 
-							XWPFParagraph qrParagraph = doc.createParagraph();
-							qrParagraph.setAlignment(ParagraphAlignment.CENTER);
-							qrParagraph.setSpacingAfter(0);
-							qrParagraph.setSpacingBefore(0);
-							XWPFRun runQrParagraph = qrParagraph.createRun();
-							runQrParagraph.addPicture(new ByteArrayInputStream(qrByteData),
-									XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125), Units.toEMU(125));
+							/*
+							 * ByteArrayOutputStream out = new ByteArrayOutputStream(); doc.write(out);
+							 * doc.close();
+							 * 
+							 * XWPFDocument document = new XWPFDocument(new
+							 * ByteArrayInputStream(out.toByteArray())); PdfOptions options =
+							 * PdfOptions.create(); PdfConverter converter =
+							 * (PdfConverter)PdfConverter.getInstance(); converter.convert(document, new
+							 * FileOutputStream(new File("C:\\receipt\\receipt.pdf")), options);
+							 * 
+							 * document.close(); out.close();
+							 */
 						}
 
-						emptyParagraph = doc.createParagraph();
-						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
-						emptyParagraph.setSpacingAfter(0);
-						emptyParagraph.createRun().setText("Please Come Again");
+						XWPFDocument document = new XWPFDocument(
+								new FileInputStream(new File(Paths.get(receiptPath, "receipt.docx").toString())));
+						PdfOptions options = PdfOptions.create();
+						OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+						PdfConverter.getInstance().convert(document, out, options);
+						document.close();
+						out.close();
 
-						// output the result as doc file
-						try (FileOutputStream out = new FileOutputStream(
-								Paths.get(receiptPath, "receipt.docx").toString())) {
-							doc.write(out);
+						// print pdf
+						if (myPrintService != null) {
+							PDDocument printablePdf = PDDocument
+									.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+							// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
+							// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
+
+							PrinterJob job = PrinterJob.getPrinterJob();
+							job.setJobName("Receipt - " + receiptContentJson.getString("checkNo"));
+							job.setPageable(new PDFPageable(printablePdf));
+							job.setPrintService(myPrintService);
+							job.print();
+
+							printablePdf.close();
 						}
 
-						/*
-						 * ByteArrayOutputStream out = new ByteArrayOutputStream(); doc.write(out);
-						 * doc.close();
-						 * 
-						 * XWPFDocument document = new XWPFDocument(new
-						 * ByteArrayInputStream(out.toByteArray())); PdfOptions options =
-						 * PdfOptions.create(); PdfConverter converter =
-						 * (PdfConverter)PdfConverter.getInstance(); converter.convert(document, new
-						 * FileOutputStream(new File("C:\\receipt\\receipt.pdf")), options);
-						 * 
-						 * document.close(); out.close();
-						 */
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+
 					}
-
-					XWPFDocument document = new XWPFDocument(
-							new FileInputStream(new File(Paths.get(receiptPath, "receipt.docx").toString())));
-					PdfOptions options = PdfOptions.create();
-					OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
-					PdfConverter.getInstance().convert(document, out, options);
-					document.close();
-					out.close();
-
-					// print pdf
-					if (myPrintService != null) {
-						PDDocument printablePdf = PDDocument
-								.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
-						// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
-						// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
-
-						PrinterJob job = PrinterJob.getPrinterJob();
-						job.setJobName("Receipt - " + receiptContentJson.getString("checkNo"));
-						job.setPageable(new PDFPageable(printablePdf));
-						job.setPrintService(myPrintService);
-						job.print();
-
-						printablePdf.close();
-					}
-
-					jsonResult.put(Constant.RESPONSE_CODE, "00");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					
 				}
 			}
 		} catch (Exception e) {
