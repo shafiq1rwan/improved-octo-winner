@@ -4,6 +4,7 @@
 		$scope.paymentMethod = "";
 		$scope.terminalSerialNo = "";
 		$scope.qrContent = "";
+		$scope.isQRExecuted = false;
 		$scope.socketMessage = "";
 		$scope.jsonResult;
 		
@@ -239,7 +240,7 @@
 					$scope.executePayment();
 				} else if ($scope.paymentMethod == "QR") {
 					$scope.qrContent = "";
-					$('#scan_qr_modal').modal('toggle');
+					$('#scan_qr_modal').modal('show');
 	
 					$('#scan_qr_modal').on('shown.bs.modal',function() {
 						$('#qr_content').focus();
@@ -422,10 +423,10 @@
 				}
 			} else if($scope.paymentMethod == "QR") {
 				if ($scope.qrContent === null || $scope.qrContent === "") {
-					$('#scan_qr_modal').modal('toggle');
+					$('#scan_qr_modal').modal('hide');
 					return alert("The QR content is empty.");
 				} else {
-					$('#scan_qr_modal').modal('toggle');
+					$('#scan_qr_modal').modal('hide');
 					var qrContentHolder = $scope.qrContent;
 					$scope.qrContent = "";					
 
@@ -439,7 +440,7 @@
 						"checkNo" : $scope.checkNo,
 						"qrContent" : qrContentHolder
 					});
-					console.log(jsonData)
+					console.log("QR payment: " + jsonData)
 		
 					$('#loading_modal').modal('show');
 					$scope.socketMessage = "Contacting Bank. Please wait.";
@@ -514,11 +515,6 @@
 	
 			return responseJSON['responseCode'] === '00' ? 'Transaction Approved' : responseJSON['responseMessage'];
 		}
-		
-		$('#scan_qr_modal').on('hidden.bs.modal', function() {
-			$scope.qrContent = "";
-		});
-
 		//Used upon success payment
 		function printReceipt(checkNo) {
 			var jsonData = JSON.stringify({
@@ -556,5 +552,42 @@
 				}
 			});
 		}
+
+		$('#scan_qr_modal').on('hidden.bs.modal', function() {
+			$scope.qrContent = "";
+			$(document).off("keydown");
+		});
+
+		$('#scan_qr_modal').on('shown.bs.modal', function (e) {
+			$scope.isQRExecuted = false;
+			$scope.qrContent = "";
+			$(document).off("keydown");
+			$(document).keydown(function(e){
+				//console.log(e.keyCode + ", " + e.which);
+				if (!$scope.isQRExecuted) {
+					if (e.which == 16) {
+						return;
+					} else if (e.which == 13){
+						$scope.isQRExecuted = true;
+						console.log("Fire event");
+						$scope.executePayment();
+						$(document).off("keydown");
+					} else if (e.which == 191) {
+						$scope.qrContent += "/";
+					} else if (e.which == 186) {
+						$scope.qrContent += ";";
+					} else if (e.which == 107) {
+						$scope.qrContent += "+";
+					} else {
+						if (e.shiftKey) {
+							$scope.qrContent += String.fromCharCode(e.keyCode || e.which).toUpperCase();
+						} else {
+							$scope.qrContent += String.fromCharCode(e.keyCode || e.which).toLowerCase();
+						}
+					}
+				}
+
+			});
+		});
 	});
 </script>
