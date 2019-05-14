@@ -672,8 +672,19 @@ public class RestC_transaction {
 					}
 					else {
 						
+						//cash void
+						if(rs.getLong("payment_method") == 1) {
+							stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
+							stmt2.setLong(1, 2); //2 for "void"
+							stmt2.setLong(2, jsonObj.getLong("transactionId"));
+							stmt2.executeUpdate();
+							
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+						}
+	
 						//card void
-						if(rs.getLong("payment_method") == 2) {
+						else if(rs.getLong("payment_method") == 2) {
 							if(rs.getString("invoice_number")!= null) {
 								JSONObject cardVoidResponse = iposCard.cardVoidPayment(storeDetail.getString("id"), "card-void", rs.getString("invoice_number"), terminalWifiIPPort);
 								System.out.println("Card Voiding Response: " + cardVoidResponse.toString());
@@ -681,7 +692,7 @@ public class RestC_transaction {
 								if(cardVoidResponse.has("responseCode")) {
 									if(cardVoidResponse.getString("responseCode").equals("00")) {
 										//update transaction status
-										stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5 where id = ?");
+										stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
 										stmt2.setLong(1, 2); //2 for "void"
 										stmt2.setLong(2, jsonObj.getLong("transactionId"));
 										stmt2.executeUpdate();
@@ -715,7 +726,7 @@ public class RestC_transaction {
 								if(qrVoidResponse.has("responseCode")) {
 									if(qrVoidResponse.getString("responseCode").equals("00")) {
 										//update transaction status
-										stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5 where id = ?");
+										stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
 										stmt2.setLong(1, 2); //2 for "void"
 										stmt2.setLong(2, jsonObj.getLong("transactionId"));
 										stmt2.executeUpdate();

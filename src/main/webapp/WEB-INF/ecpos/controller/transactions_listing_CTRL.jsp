@@ -76,7 +76,7 @@
 							$scope.transaction.id = response.data.id;
 							$scope.transaction.isVoid = response.data.isVoid;
 							$scope.transaction.isApproved = response.data.isApproved;
-							$('#transactionDetailsModal').modal('toggle');
+							$('#transactionDetailsModal').modal('show');
 						}
 					});
 				} 
@@ -89,7 +89,7 @@
 			});
 			
 			$scope.voidMessage = "Void In Progress";
-			$('#transactionDetailsModal').modal('toggle');
+			$('#transactionDetailsModal').modal('hide');
 			
 			$('#loading_modal').modal('show');
 
