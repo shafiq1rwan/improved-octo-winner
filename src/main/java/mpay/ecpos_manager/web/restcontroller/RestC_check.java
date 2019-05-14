@@ -150,12 +150,13 @@ public class RestC_check {
 				
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				
-				stmt = connection.prepareStatement("select c.id,c.check_number,s.staff_name,ot.name as order_type,c.table_number,c.total_item_quantity, " + 
+				stmt = connection.prepareStatement("select c.id,c.check_number,s.staff_name,ot.name as order_type,ts.table_name,c.table_number,c.total_item_quantity, " + 
 						"c.grand_total_amount,c.deposit_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
 						"from `check` c " + 
 						"inner join staff s on s.id = c.staff_id " + 
 						"inner join order_type ot on ot.id = c.order_type " + 
 						"inner join check_status cs on cs.id = c.check_status " + 
+						"inner join table_setting ts on ts.id = c.table_number " + 
 						"order by created_date desc;");
 				rs = stmt.executeQuery();
 	
@@ -166,6 +167,7 @@ public class RestC_check {
 					check.put("staffName", rs.getString("staff_name"));
 					check.put("orderType", rs.getString("order_type"));
 					check.put("tableNumber", rs.getInt("table_number") == 0 ? "-" : rs.getInt("table_number"));
+					check.put("tableName", rs.getString("table_name").equals(null) ? "-" : rs.getString("table_name"));
 					check.put("totalItemQuantity", rs.getInt("total_item_quantity"));
 					check.put("grandTotalAmount", String.format("%.2f", rs.getBigDecimal("grand_total_amount")));
 					check.put("depositAmount", String.format("%.2f", rs.getBigDecimal("deposit_amount")));
@@ -229,8 +231,9 @@ public class RestC_check {
 					tableNoCondition = "table_number is null";
 				}
 				
-				stmt = connection.prepareStatement("select * from `check` c "
-						+ "inner join check_status cs on cs.id = c.check_status "
+				stmt = connection.prepareStatement("select * from `check` c " + 
+						"inner join check_status cs on cs.id = c.check_status " + 
+						"inner join table_setting ts on ts.id = c.table_number "
 						+ "where " + tableNoCondition + " and check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
@@ -241,6 +244,7 @@ public class RestC_check {
 						
 						jsonResult.put("checkNo", rs.getString("check_number"));
 						jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
+						jsonResult.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 						jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
 						jsonResult.put("totalAmount", new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
 						jsonResult.put("totalAmountWithTax", new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00" : rs.getString("total_amount_with_tax")));
@@ -433,8 +437,9 @@ public class RestC_check {
 					tableNoCondition = "table_number is null";
 				}
 				
-				stmt = connection.prepareStatement("select * from `check` c "
-						+ "inner join check_status cs on cs.id = c.check_status "
+				stmt = connection.prepareStatement("select * from `check` c " + 
+						"inner join check_status cs on cs.id = c.check_status " + 
+						"inner join table_setting ts on ts.id = c.table_number "
 						+ "where " + tableNoCondition + " and check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
@@ -445,6 +450,7 @@ public class RestC_check {
 					jsonResult.put("orderType", rs.getString("order_type"));
 					jsonResult.put("checkNo", rs.getString("check_number"));
 					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
+					jsonResult.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 					jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
 					jsonResult.put("totalAmount", new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
 					jsonResult.put("totalAmountWithTax", new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00" : rs.getString("total_amount_with_tax")));

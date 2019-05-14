@@ -27,6 +27,7 @@
 		$scope.getTableList = function() {
 			$http.get("${pageContext.request.contextPath}/rc/configuration/get_table_list")
 			.then(function(response) {
+				console.log(response.data);
 				$scope.fields_TableInfo = response.data;
 				var table_list = $scope.fields_TableInfo.table_list;
 	
@@ -42,11 +43,13 @@
 			var i;
 			for (i = 0; i < array_table_list.length; i++) {
 				var table_number = array_table_list[i].split(",")[0];
-				var check_number = array_table_list[i].split(",")[1];
+				var table_name = array_table_list[i].split(",")[1];
+				var total_check = array_table_list[i].split(",")[2];
 
 				var result = {
-					'table' : table_number,
-					'check' : check_number
+					'table_number' : table_number,	
+					'table_name' : table_name,
+					'total_check' : total_check
 				};
 
 				$scope.manager_tablelist.push(result);

@@ -23,13 +23,13 @@
 				<section class="content sectioncalibrator" style="padding-top: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div ng-repeat="table in manager_tablelist" class="col-sm-2" style="padding-left: 2px; padding-right: 2px;">
-							<div ng-click="get_table_checklist(table.table)" ng-model="table.table">
+							<div ng-click="get_table_checklist(table.table_number)" ng-model="table.table_number">
 								<div class="panel text-center" style="margin: 5px;">
-									<div class="panel-heading" ng-style="{'background-color':display_table_check_no(table.check)}">
-										<h3 class="panel-title" ng-style="{'color':display_table_check_no_title_color(table.check)}">Checks ({{table.check}})</h3>
+									<div class="panel-heading" ng-style="{'background-color':display_table_check_no(table.total_check)}">
+										<h3 class="panel-title" ng-style="{'color':display_table_check_no_title_color(table.total_check)}">Checks ({{table.total_check}})</h3>
 									</div>
 									<div class="panel-body" style="color: grey; font-weight: bold; font-size: small;">
-										TABLE<br>{{table.table}}
+										TABLE<br>{{table.table_name}}
 									</div>
 								</div>
 							</div>

@@ -34,7 +34,7 @@
 					{"data" : "checkNumber"}, 
 					{"data" : "staffName"},
 					{"data" : "orderType"},
-					{"data" : "tableNumber"},
+					{"data" : "tableName"},
 					{"data" : "grandTotalAmount"},
 					{"data" : "overdueAmount"},
 					{"data" : "checkStatus"},

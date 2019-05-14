@@ -41,7 +41,7 @@ hr {
 											<th>Check No</th>
 											<th>By</th>
 											<th>Order Type</th>
-											<th>Table No</th>
+											<th>Table Name</th>
 											<th>Grand Total Amount</th>
 											<th>Overdue Amount</th>
 											<th>Status</th>
@@ -66,7 +66,7 @@ hr {
 							<div class="row">
 								<div class="col-sm-7">
 									<div>
-										<font><b>Check : {{checkDetail.checkNo}}</b> / <b>Table : {{checkDetail.tableNo}}</b></font>
+										<font><b>Check : {{checkDetail.checkNo}}</b> / <b>Table : {{checkDetail.tableName}}</b></font>
 									</div>
 									<div>
 										<font><b>Created Date : {{checkDetail.createdDate}}</b></font>

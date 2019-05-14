@@ -1,7 +1,5 @@
 package mpay.ecpos_manager.web.restcontroller;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -83,6 +81,7 @@ public class RestC_configuration {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 
@@ -91,33 +90,34 @@ public class RestC_configuration {
 		
 		try {
 			if (user != null) {
-			connection = dataSource.getConnection();
-
-			stmt = connection.prepareStatement("SELECT store_table_count FROM store;");
-			rs = stmt.executeQuery();
-
-			if (rs.next()) {
-				int table_count = rs.getInt("store_table_count");
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("SELECT * FROM table_setting where status_lookup_id = 2;");
+				rs = stmt.executeQuery();
 				
+				boolean isEmpty = true;
 				JSONArray tableList = new JSONArray();
-				for (int i = 0; i < table_count; i++) {
-
-					stmt = connection.prepareStatement("SELECT COUNT(*) AS count FROM `check` WHERE table_number = ? AND check_status IN (1,2)");
-					stmt.setInt(1, i + 1);
-					rs2 = stmt.executeQuery();
+				while (rs.next()) {
+					isEmpty = false;
+					
+					stmt2 = connection.prepareStatement("SELECT COUNT(*) AS count FROM `check` WHERE table_number = ? AND check_status IN (1,2)");
+					stmt2.setLong(1, rs.getLong("id"));
+					rs2 = stmt2.executeQuery();
 					
 					if (rs2.next()) {
-						String data = Integer.toString(i + 1) + "," + rs2.getString("count");
+						String data = Long.toString(rs.getLong("id")) + "," + rs.getString("table_name") + "," + rs2.getString("count");
 						tableList.put(data);
 					}
 				}
-				jsonResult.put(Constant.TABLE_LIST, tableList);
-				jsonResult.put(Constant.RESPONSE_CODE, "00");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-			} else {
-				jsonResult.put(Constant.RESPONSE_CODE, "01");
-				jsonResult.put(Constant.RESPONSE_MESSAGE, "NO TABLE FOUND, PLEASE TRY AGAIN");
-			}
+				
+				if (isEmpty) {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Table info not found");
+				} else {
+					jsonResult.put(Constant.TABLE_LIST, tableList);
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				}
 			} else {
 				response.setStatus(408);
 			}

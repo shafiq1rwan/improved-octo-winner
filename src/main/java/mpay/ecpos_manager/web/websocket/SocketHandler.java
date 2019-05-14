@@ -28,8 +28,6 @@ public class SocketHandler extends TextWebSocketHandler {
 
 	private static String IPOS_FOLDER = Property.getIPOS_FOLDER_NAME();
 	
-	private static String ECPOS_FOLDER = Property.getECPOS_FOLDER_NAME();
-	
 	private DataSource dataSource;
 	
 	private Card iposCard;
@@ -42,7 +40,7 @@ public class SocketHandler extends TextWebSocketHandler {
 		
 		System.out.println("Come on I am here");
 		String data = message.getPayload();
-		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Logger.writeActivity("data: " + data, IPOS_FOLDER);
 		
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -69,7 +67,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			} else if (jsonObj.getString("paymentType").equals("deposit")) {
 				paymentType = 4;
 			} else {
-				Logger.writeActivity("Invalid Payment Type", ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Payment Type", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Type");
 				
@@ -86,7 +84,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				receivedAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 				
 				if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
-					Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
+					Logger.writeActivity("Terminal Serial Number Not Found", IPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
 					
@@ -96,7 +94,7 @@ public class SocketHandler extends TextWebSocketHandler {
 					terminalSerialNumber = jsonObj.getString("terminalSerialNo");
 				}
 			} else {
-				Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Payment Method", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Method");
 				
@@ -108,7 +106,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			if (paymentType == 3) {
 			
 				if (!(jsonObj.has("checkDetailIdArray") && jsonObj.getJSONArray("checkDetailIdArray").length() > 0)) {
-					Logger.writeActivity("Item Not Found For Split Payment", ECPOS_FOLDER);
+					Logger.writeActivity("Item Not Found For Split Payment", IPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found For Split Payment");
 					
@@ -121,7 +119,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			
 			BigDecimal paymentAmount = BigDecimal.ZERO;
 			if (!(jsonObj.has("paymentAmount") && !jsonObj.getString("paymentAmount").equals(null))) {
-				Logger.writeActivity("Invalid Payment Amount", ECPOS_FOLDER);
+				Logger.writeActivity("Invalid Payment Amount", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Payment Amount");
 				
@@ -136,7 +134,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			JSONObject staffDetail = getStaffDetail(user.getUsername());
 			long staffId = -1;
 			if (staffDetail.length() <= 0) {
-				Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
+				Logger.writeActivity("Staff Detail Not Found", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Detail Not Found");
 				
@@ -149,7 +147,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			JSONObject storeDetail = getStoreDetail();
 			long storeId = -1;
 			if (storeDetail.length() <= 0) {
-				Logger.writeActivity("Store Detail Not Found", ECPOS_FOLDER);
+				Logger.writeActivity("Store Detail Not Found", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Store Detail Not Found");
 				
@@ -219,17 +217,17 @@ public class SocketHandler extends TextWebSocketHandler {
 											paymentFlag = true;
 											updateTransactionResult = updateTransactionResult(transactionResult,"card");
 										} else {
-											Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+											Logger.writeActivity("Transaction Failed To Perform", IPOS_FOLDER);
 											jsonResult.put(Constant.RESPONSE_CODE, "01");
 											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
 										}
 									} else {
-										Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
+										Logger.writeActivity("IPOS cannot be detected.", IPOS_FOLDER);
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
 										jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
 									}
 								} else {
-									Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
+									Logger.writeActivity("Transaction Data Failed To Gather", IPOS_FOLDER);
 									jsonResult.put(Constant.RESPONSE_CODE, "01");
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
 								}
@@ -249,50 +247,50 @@ public class SocketHandler extends TextWebSocketHandler {
 										}
 										
 										if (updateCheckResult.getString("status").equals("success")) {
-											Logger.writeActivity("Transaction has been successfully performed", ECPOS_FOLDER);
+											Logger.writeActivity("Transaction has been successfully performed", IPOS_FOLDER);
 											jsonResult.put(Constant.RESPONSE_CODE, "00");
 											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
 											jsonResult.put("check_status", updateCheckResult.getString("checkStatus"));
 											jsonResult.put("change_amount", changeAmount);
 										} else {
-											Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+											Logger.writeActivity("Check Failed To Update", IPOS_FOLDER);
 											jsonResult.put(Constant.RESPONSE_CODE, "01");
 											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
 										}
 									} else {
-										Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), ECPOS_FOLDER);
+										Logger.writeActivity(updateTransactionResult.getString(Constant.RESPONSE_MESSAGE), IPOS_FOLDER);
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
 										jsonResult.put(Constant.RESPONSE_MESSAGE, updateTransactionResult.getString(Constant.RESPONSE_MESSAGE));
 									}
 								} else {
-										Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+										Logger.writeActivity("Transaction Failed To Perform", IPOS_FOLDER);
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
 										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
 								}
 							}
 	
 						} else {
-							Logger.writeActivity("Transaction Id Not Found", ECPOS_FOLDER);
+							Logger.writeActivity("Transaction Id Not Found", IPOS_FOLDER);
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
 						}
 					} else {
-						Logger.writeActivity("Transaction Failed To Insert", ECPOS_FOLDER);
+						Logger.writeActivity("Transaction Failed To Insert", IPOS_FOLDER);
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Insert");
 					}
 				} else {
-					Logger.writeActivity("Payment Amount Is Greater Than Amount Need To Be Paid", ECPOS_FOLDER);
+					Logger.writeActivity("Payment Amount Is Greater Than Amount Need To Be Paid", IPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Payment Amount Is Greater Than Amount Need To Be Paid");
 				}
 			} else {
-				Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
+				Logger.writeActivity("Check Not Found", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -301,13 +299,13 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
 				
 		if(session.isOpen()) {
-			Logger.writeActivity("Card Payment Response: " + jsonResult.toString(), ECPOS_FOLDER);
+			Logger.writeActivity("Card Payment Response: " + jsonResult.toString(), IPOS_FOLDER);
 			session.sendMessage(new TextMessage(jsonResult.toString()));
 			session.close();
 		}
@@ -316,7 +314,7 @@ public class SocketHandler extends TextWebSocketHandler {
 	// onOpen
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		Logger.writeActivity("Open WS connection successfully.", ECPOS_FOLDER);
+		Logger.writeActivity("Open WS connection successfully.", IPOS_FOLDER);
 	}
 
 	// onError
@@ -326,14 +324,14 @@ public class SocketHandler extends TextWebSocketHandler {
 			session.close();
 		}
 		System.out.println("Error Occured. Connection Closed");
-		Logger.writeActivity("WS Connection Failed. Close the connection.", ECPOS_FOLDER);
+		Logger.writeActivity("WS Connection Failed. Close the connection.", IPOS_FOLDER);
 	}
 
 	// onClose
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 		System.out.println("Connection Closed");
-		Logger.writeActivity("Close WS connection successfully.", ECPOS_FOLDER);
+		Logger.writeActivity("Close WS connection successfully.", IPOS_FOLDER);
 	}
 	
 	private JSONObject getStoreDetail() {
@@ -352,7 +350,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				storeDetail.put("id",rs.getString("id"));
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -360,7 +358,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -386,7 +384,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				staffDetail.put("role",rs.getString("staff_role"));
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -394,7 +392,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -419,7 +417,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				terminalWifiIPPort.put("wifi_Port",rs.getString("wifi_Port"));
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -427,7 +425,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -463,7 +461,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				return null;
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -471,7 +469,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -516,14 +514,14 @@ public class SocketHandler extends TextWebSocketHandler {
 				}
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -576,14 +574,14 @@ public class SocketHandler extends TextWebSocketHandler {
 				result.put("status", "fail");
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -657,7 +655,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				}
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -666,7 +664,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
@@ -687,7 +685,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (transactionResult.getJSONObject("cardResponse").length() == 0) {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Card Sale Payment Response Not Found");
-					Logger.writeActivity("Card Sale Payment Response Not Found", ECPOS_FOLDER);
+					Logger.writeActivity("Card Sale Payment Response Not Found", IPOS_FOLDER);
 				} else {
 					JSONObject cardResponse = transactionResult.getJSONObject("cardResponse");
 					
@@ -737,18 +735,18 @@ public class SocketHandler extends TextWebSocketHandler {
 					if (updateTransaction > 0) {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						Logger.writeActivity("Card Sale Payment Response Successfully Update Transaction Table", ECPOS_FOLDER);
+						Logger.writeActivity("Card Sale Payment Response Successfully Update Transaction Table", IPOS_FOLDER);
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
-						Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
+						Logger.writeActivity(transactionResult.getString("responseMessage"), IPOS_FOLDER);
 					}
 				}
 			} else if(transactionCategory.equals("qr")) {
 				if(transactionResult.getJSONObject("qrResponse").length() == 0) {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "QR Sale Payment Response Not Found");
-					Logger.writeActivity("QR Sale Payment Response Not Found", ECPOS_FOLDER);
+					Logger.writeActivity("QR Sale Payment Response Not Found", IPOS_FOLDER);
 				} else {
 					JSONObject qrResponse = transactionResult.getJSONObject("qrResponse");
 					
@@ -794,16 +792,16 @@ public class SocketHandler extends TextWebSocketHandler {
 					if (updateTransaction > 0) {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						Logger.writeActivity("QR Sale Payment Response Successfully Update Transaction Table", ECPOS_FOLDER);
+						Logger.writeActivity("QR Sale Payment Response Successfully Update Transaction Table", IPOS_FOLDER);
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
-						Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
+						Logger.writeActivity(transactionResult.getString("responseMessage"), IPOS_FOLDER);
 					}
 				}
 			}
 		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -812,7 +810,7 @@ public class SocketHandler extends TextWebSocketHandler {
 				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
 				e.printStackTrace();
 			}
 		}
