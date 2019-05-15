@@ -167,7 +167,7 @@ public class RestC_check {
 					check.put("staffName", rs.getString("staff_name"));
 					check.put("orderType", rs.getString("order_type"));
 					check.put("tableNumber", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
-					check.put("tableName", rs.getString("table_name").equals(null) ? "-" : rs.getString("table_name"));
+					check.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 					check.put("totalItemQuantity", rs.getInt("total_item_quantity"));
 					check.put("grandTotalAmount", String.format("%.2f", rs.getBigDecimal("grand_total_amount")));
 					check.put("depositAmount", String.format("%.2f", rs.getBigDecimal("deposit_amount")));
