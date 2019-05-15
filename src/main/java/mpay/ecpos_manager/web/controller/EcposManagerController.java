@@ -93,6 +93,41 @@ public class EcposManagerController {
 		Logger.writeActivity("----------- ECPOS AUTHENTICATION END ---------", ECPOS_FOLDER);
 		return model;
 	}
+	@PostMapping("/authenticationQR")
+	public ModelAndView ecposLoginQR(@RequestParam(value = "qrContent", required = false) String qrContent, HttpServletRequest request) {
+		Logger.writeActivity("----------- ECPOS QR AUTHENTICATION START ---------", ECPOS_FOLDER);
+		ModelAndView model = new ModelAndView();
+		HttpSession session = request.getSession();
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		if (user != null) {
+			model.setViewName("ecpos/home");
+		} else {
+			try {
+				user = (UserAuthenticationModel) webComponent.performEcposQRAuthentication(qrContent, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
+				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
+				
+				if (user != null) {
+					session.setMaxInactiveInterval(0);
+					session.setAttribute("session_user", user);
+					model.setViewName("redirect:" + "/#");
+				} else if(activationInfo.has("activationId") && activationInfo.getString("activationId").equals("")) {
+					model.addObject("http_message", "Activation is required");
+					model.setViewName("ecpos/activation");
+				} else {
+					model.addObject("http_message", "User Account Does Not Exist.");
+					model.setViewName("ecpos/login");
+				}
+			} catch (Exception e) {
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- ECPOS QR AUTHENTICATION END ---------", ECPOS_FOLDER);
+		return model;
+	}
 	
 	// Logout
 	@RequestMapping(value = { "/signout" }, method = { RequestMethod.GET, RequestMethod.POST })

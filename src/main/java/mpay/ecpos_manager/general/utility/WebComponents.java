@@ -74,6 +74,67 @@ public class WebComponents {
 		}
 		return domainContainer;
 	}
+	
+	public UserAuthenticationModel performEcposQRAuthentication(String qrContent, DataSource dataSource, String key) {
+		UserAuthenticationModel domainContainer = null;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+
+		try {
+			String decryptedStr = AesEncryption.decrypt(key, qrContent);
+			String[] decryptedDataPart = decryptedStr.split(String.valueOf((char)28));
+			if (decryptedDataPart.length == 3) {
+				connection = dataSource.getConnection();
+
+				String query = "SELECT id, store_type_id FROM store;";
+				stmt = connection.prepareStatement(query);
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					if (rs.getLong("id") == Long.parseLong(decryptedDataPart[0])) {
+						stmt2 = connection.prepareStatement("SELECT * FROM staff WHERE staff_username = ? and is_active = 1;");
+						stmt2.setString(1, decryptedDataPart[1]);
+						rs2 = stmt2.executeQuery();
+
+						if (rs2.next()) {
+							if (rs2.getString("staff_password").equals(decryptedDataPart[2])) {
+								domainContainer = new UserAuthenticationModel();
+								domainContainer.setStoreType(rs.getInt("store_type_id"));
+								domainContainer.setUserLoginId(Integer.parseInt(rs2.getString("id")));
+								domainContainer.setName(rs2.getString("staff_name"));
+								domainContainer.setUsername(rs2.getString("staff_username"));
+								domainContainer.setRoleType(Integer.parseInt(rs2.getString("staff_role")));
+							} else {
+								domainContainer = null;
+							}
+						}
+					} else {
+						System.out.println("Invalid Store");
+						domainContainer = null;
+					}
+				}
+			}
+		} catch (Exception e) {
+			domainContainer = null;
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return domainContainer;
+	}
 
 	public void clearEcposSession(HttpServletRequest request) {
 		HttpSession session = request.getSession();
