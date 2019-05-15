@@ -156,7 +156,7 @@ public class RestC_check {
 						"inner join staff s on s.id = c.staff_id " + 
 						"inner join order_type ot on ot.id = c.order_type " + 
 						"inner join check_status cs on cs.id = c.check_status " + 
-						"inner join table_setting ts on ts.id = c.table_number " + 
+						"left join table_setting ts on ts.id = c.table_number " + 
 						"order by created_date desc;");
 				rs = stmt.executeQuery();
 	
@@ -166,7 +166,7 @@ public class RestC_check {
 					check.put("checkNumber", rs.getString("check_number"));
 					check.put("staffName", rs.getString("staff_name"));
 					check.put("orderType", rs.getString("order_type"));
-					check.put("tableNumber", rs.getInt("table_number") == 0 ? "-" : rs.getInt("table_number"));
+					check.put("tableNumber", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 					check.put("tableName", rs.getString("table_name").equals(null) ? "-" : rs.getString("table_name"));
 					check.put("totalItemQuantity", rs.getInt("total_item_quantity"));
 					check.put("grandTotalAmount", String.format("%.2f", rs.getBigDecimal("grand_total_amount")));
@@ -233,7 +233,7 @@ public class RestC_check {
 				
 				stmt = connection.prepareStatement("select * from `check` c " + 
 						"inner join check_status cs on cs.id = c.check_status " + 
-						"inner join table_setting ts on ts.id = c.table_number "
+						"left join table_setting ts on ts.id = c.table_number "
 						+ "where " + tableNoCondition + " and check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
@@ -439,7 +439,7 @@ public class RestC_check {
 				
 				stmt = connection.prepareStatement("select * from `check` c " + 
 						"inner join check_status cs on cs.id = c.check_status " + 
-						"inner join table_setting ts on ts.id = c.table_number "
+						"left join table_setting ts on ts.id = c.table_number "
 						+ "where " + tableNoCondition + " and check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
