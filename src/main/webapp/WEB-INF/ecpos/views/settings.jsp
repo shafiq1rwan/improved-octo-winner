@@ -190,35 +190,64 @@ hr {
 					<div class="modal-content">
 						<!-- <div class="modal-header"></div> -->
 						<div class="modal-body">
-							<form ng-submit="submitCashInfo()">
-								<div class="row" style="font-size: large">
-									<div class="col-sm-1"></div>
-									<div class="col-sm-10">
-										<div style="text-align: center">
-											<label ng-if="action=='cashIn'">Cash In</label>
-											<label ng-if="action=='cashOut'">Cash Out</label>
-										</div>
-									</div>
-									<div class="col-sm-1">
-										<button class="close" data-dismiss="modal">&times;</button>
+							<div class="row" style="font-size: large">
+								<div class="col-sm-1"></div>
+								<div class="col-sm-10">
+									<div style="text-align: center">
+										<label ng-if="action=='cashIn'">Cash In</label> <label
+											ng-if="action=='cashOut'">Cash Out</label>
 									</div>
 								</div>
-								<br>
-								<div class="row">
-									<div class="col-sm-6 form-group">
-										<label ng-if="action=='cashIn'">Cash In Amount</label>
-										<label ng-if="action=='cashOut'">Cash Out Amount</label>
-										<input type="number" min="0" step="0.01" class="form-control" ng-model="cashFlowAmount" required />
+								<div class="col-sm-1">
+									<button class="close" data-dismiss="modal">&times;</button>
+								</div>
+							</div>
+							<br>
+							<div class="row">
+								<div class="col-sm-6 form-group">
+									<label ng-if="action=='cashIn'">Cash In Amount</label> <label
+										ng-if="action=='cashOut'">Cash Out Amount</label> <input
+										type="text" class="form-control" ng-model="cashFlowAmount"
+										disabled />
+								</div>
+								<div class="col-sm-6 form-group">
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(1)">1</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(2)">2</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(3)">3</button>
+									<br>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(4)">4</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(5)">5</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(6)">6</button>
+									<br>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(7)">7</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(8)">8</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(9)">9</button>
+									<br>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px; visibility: hidden;">0</button>
+									<button class="btn btn-default btn-lg" type="button"
+										style="margin: 2px;" ng-click="updateCashAmount(0)">0</button>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-sm-12">
+									<div class="pull-right">
+										<input type="button" class="btn btn-info" value="Clear"
+											ng-click="clearCashAmount()" /> <input type="button"
+											class="btn btn-info" value="Update"
+											ng-click="submitCashInfo()" />
 									</div>
 								</div>
-								<div class="row">
-									<div class="col-sm-12" >
-										<div class="pull-right">
-											<input type="submit" class="btn btn-info" value="Update" />
-										</div>
-									</div>
-								</div>
-							</form>
+							</div>
 						</div>
 						<!-- <div class="modal-footer"></div> -->
 					</div>

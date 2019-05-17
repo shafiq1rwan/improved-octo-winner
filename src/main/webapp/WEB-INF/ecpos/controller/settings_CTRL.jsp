@@ -145,11 +145,29 @@
 		
 		$scope.showCashModal = function(action) {
 			$scope.action = action;
-			$scope.cashFlowAmount = 0;
+			$scope.cashFlowAmount = "0.00";
 			$("#cashModal").modal("show");
 		}
-		
+		$scope.updateCashAmount = function(number) {
+			if ($scope.cashFlowAmount.length < 10) {
+				if ($scope.cashFlowAmount == "0.00") {
+					if (number != 0) {
+						$scope.cashFlowAmount = "0.0" + number;
+					}
+				} else {
+					$scope.cashFlowAmount = parseFloat(($scope.cashFlowAmount + number) * 10).toFixed(2);
+				}
+			}
+		}
+		$scope.clearCashAmount = function() {
+			$scope.cashFlowAmount = "0.00";
+		}
 		$scope.submitCashInfo = function() {
+			if ($scope.cashFlowAmount == "0.00") {
+				alert("Please enter cash value.");
+				return;
+			}
+			
 			$("#cashModal").modal("hide");
 			$('#loading_modal').modal('show');
 			$http({
@@ -183,8 +201,10 @@
 			var dialogOption = {};
 			if ($scope.action == 'cashIn') {
 				dialogOption.title = "Cash In Success!";
+				dialogOption.message = "Cash In Performed Successfully!";
 			} else {
 				dialogOption.title = "Cash Out Success!";
+				dialogOption.message = "Cash Out Performed Successfully!";
 			}
 			dialogOption.button1 = {
 				name: "OK",
