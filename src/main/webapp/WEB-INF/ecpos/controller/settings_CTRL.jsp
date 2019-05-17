@@ -5,6 +5,8 @@
 		$scope.action = "";
 		$scope.settlementType = "";
 		
+		$scope.cashFlowAmount;
+		
 		$("#terminalList").hide();
 		
 		$scope.initiation = function() {
@@ -92,14 +94,19 @@
 		
 		$scope.saveCashDrawer = function(){
 			if($scope.selectedDeviceManufacturer == null || $scope.selectedPortName == null || $scope.selectedDeviceManufacturer == '' || $scope.selectedPortName == ''){
-				console.log("Please Select Both Device Manufacturer and Port Name.")
+				alert("Please Select Both Device Manufacturer and Port Name.");
+			} else if (typeof $scope.cashDrawerData.cash_alert === "undefined") {
+				alert("Invalid Cash Alert value.");
+			} else if ($scope.cashDrawerData.cash_alert < 0) {
+				alert("Cash Alert minimum value (0 as disable).");
 			} else {
 				console.log($scope.selectedDeviceManufacturer + " " + $scope.selectedPortName)
 				
 				//fire saved printer event
 				var jsonData = JSON.stringify({
 					'device_manufacturer' : $scope.selectedDeviceManufacturer,
-					'port_name' : $scope.selectedPortName
+					'port_name' : $scope.selectedPortName,
+					'cash_alert' : $scope.cashDrawerData.cash_alert
 				});
 				
 				$http.post("${pageContext.request.contextPath}/rc/configuration/save_cash_drawer", jsonData)
@@ -133,6 +140,75 @@
 					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
 			}
+		}
+		
+		$scope.showCashModal = function(action) {
+			$scope.action = action;
+			$scope.cashFlowAmount = 0;
+			$("#cashModal").modal("show");
+		}
+		
+		$scope.submitCashInfo = function() {
+			$("#cashModal").modal("hide");
+			$('#loading_modal').modal('show');
+			$http({
+				method : 'POST',
+				headers : {
+					'Content-Type' : 'application/json'
+				},
+				params : {
+					type : $scope.action,
+					amount : $scope.cashFlowAmount
+				},
+				url : '${pageContext.request.contextPath}/rc/configuration/updateCashFlow'
+			}).then(function(response) {
+				if (response != null && response.data != null
+						&& response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {
+						$scope.cashDrawerData.cash_amount = response.data.amount;
+						$scope.cashUpdateSuccess(response.data.resultMessage);
+					} else {
+						$scope.cashUpdateFailed(response.data.resultMessage);
+					}
+				} else {
+					$scope.cashUpdateFailed("Invalid server response!");
+				}
+			}, function(error) {
+				$scope.cashUpdateFailed("Unable to connect to server!");
+			});
+		}
+		$scope.cashUpdateSuccess = function() {
+			$('#loading_modal').modal('hide');
+			var dialogOption = {};
+			if ($scope.action == 'cashIn') {
+				dialogOption.title = "Cash In Success!";
+			} else {
+				dialogOption.title = "Cash Out Success!";
+			}
+			dialogOption.button1 = {
+				name: "OK",
+				fn: function() {
+					$("div#modal-dialog").modal("hide");
+				}
+			}
+			$scope.displayDialog(dialogOption);
+		}
+		$scope.cashUpdateFailed = function(message) {
+			$('#loading_modal').modal('hide');
+			var dialogOption = {};
+			if ($scope.action == 'cashIn') {
+				dialogOption.title = "Cash In Failed!";
+			} else {
+				dialogOption.title = "Cash Out Failed!";
+			}
+			dialogOption.message = message;
+			dialogOption.button1 = {
+				name: "OK",
+				fn: function() {
+					$("div#modal-dialog").modal("hide");
+				}
+			}
+			$scope.displayDialog(dialogOption);
 		}
 		
 		$scope.showTerminalModal = function(action, id) {

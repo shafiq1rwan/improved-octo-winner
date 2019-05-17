@@ -422,8 +422,12 @@ CREATE TABLE port_name_lookup (
 
 CREATE TABLE cash_drawer (
 	`device_manufacturer` bigint(20) NOT NULL,
-	`port_name` bigint(20) NOT NULL
+	`port_name` bigint(20) NOT NULL,
+	`cash_amount` DECIMAL(20,2) NOT NULL DEFAULT '0.00',
+	`cash_alert` bigint(20) NOT NULL DEFAULT '0'
 );
+
+INSERT INTO cash_drawer (device_manufacturer, port_name, cash_amount, cash_alert) VALUES (1, 1, 0, 0);
 
 CREATE TABLE receipt_printer_manufacturer_lookup (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,

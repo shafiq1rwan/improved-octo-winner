@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.constant.Constant;
@@ -897,8 +898,10 @@ public class RestC_configuration {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
+		ResultSet rs3 = null;
 		
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -927,6 +930,17 @@ public class RestC_configuration {
 					portNameJArray.put(portNameObj);
 				}
 				jsonResult.put("port_names", portNameJArray);
+				
+				stmt3 = connection.prepareStatement("select * from cash_drawer;");
+				rs3 = stmt3.executeQuery();
+				
+				if (rs3.next()) {
+					jsonResult.put("cash_amount", rs3.getLong("cash_amount"));
+					jsonResult.put("cash_alert", rs3.getLong("cash_alert"));
+				} else {
+					jsonResult.put("cash_amount", 0);
+					jsonResult.put("cash_alert", 0);
+				}
 				
 				//get selected cash drawer if available
 				JSONObject selectedCashDrawerObj = selectedCashDrawer();
@@ -1015,14 +1029,16 @@ public class RestC_configuration {
 				rs = stmt.executeQuery();
 				
 				if (rs.next()) {
-					stmt2 = connection.prepareStatement("update cash_drawer set device_manufacturer = ?, port_name = ?;");
+					stmt2 = connection.prepareStatement("update cash_drawer set device_manufacturer = ?, port_name = ?, cash_alert = ?;");
 					stmt2.setInt(1, cashDrawer.getInt("device_manufacturer"));
 					stmt2.setInt(2, cashDrawer.getInt("port_name"));
+					stmt2.setLong(3, cashDrawer.getLong("cash_alert"));
 					stmt2.executeUpdate();
 				} else {
-					stmt2 = connection.prepareStatement("insert into cash_drawer (device_manufacturer, port_name) values (?,?)");
+					stmt2 = connection.prepareStatement("insert into cash_drawer (device_manufacturer, port_name, cash_alert) values (?,?,?)");
 					stmt2.setInt(1, cashDrawer.getInt("device_manufacturer"));
 					stmt2.setInt(2, cashDrawer.getInt("port_name"));
+					stmt2.setLong(3, cashDrawer.getLong("cash_alert"));
 					stmt2.executeUpdate();
 				}
 			}
@@ -1043,6 +1059,86 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	@RequestMapping(value = { "/updateCashFlow" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String updateCashFlow(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "type", required = true) String type, 
+			@RequestParam(value = "amount", required = true) double amount) {
+		JSONObject result = new JSONObject();
+		String resultCode = "E01";
+		String resultMessage = "Server error. Please try again later.";
+		
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+					
+				stmt = connection.prepareStatement("select cash_amount from cash_drawer;");
+				rs = stmt.executeQuery();
+				
+				if (rs.next()) {
+					double currentCash = rs.getDouble("cash_amount");
+					double newCash = 0.00;
+					
+					if (type.equals("cashIn")) {
+						newCash = currentCash + amount;
+					} else {
+						newCash = currentCash - amount;
+					}
+					
+					if (newCash < 0) {
+						resultCode = "E03";
+						resultMessage = "Not enough cash to cash out.";
+					} else {
+						stmt2 = connection.prepareStatement("update cash_drawer set cash_amount = ?;");
+						stmt2.setDouble(1, newCash);
+						stmt2.executeUpdate();
+						
+						result.put("amount", newCash);
+						
+						resultCode = "00";
+						resultMessage = "Success";
+					}
+				} else {
+					resultCode = "E02";
+					resultMessage = "System Data Corrupted.";
+				}
+			}
+			else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+			
+			try {
+				Logger.writeActivity("resultCode: " + resultCode, ECPOS_FOLDER);
+				Logger.writeActivity("resultMessage: " + resultMessage, ECPOS_FOLDER);
+				result.put("resultCode", resultCode);
+				result.put("resultMessage", resultMessage);
+			} catch (Exception e) {
+			}
+		}
+		
+		return result.toString();
 	}
 	
 	@RequestMapping(value = { "/open_cash_drawer" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")

@@ -97,11 +97,26 @@ hr {
 										</div>
 									</div>
 									
-									<div class ="col-sm-4">
-										<font size="2"></font>
+									<div class="col-sm-4">
+										<font size="2">Max Cash Alert</font>
+										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+											<input type="number" step="1" class="form-control" ng-model="cashDrawerData.cash_alert">
+										</div>
+									</div>
+									
+									<div class ="col-sm-6">
 										<div style="padding: 10px;">
+											<font size="3"><b>Cash Amount: {{cashDrawerData.cash_amount | number : 2}}</b></font>
+											<button class="btn btn-info" ng-click="showCashModal('cashIn')">Cash In</button>
+											<button class="btn btn-info" ng-click="showCashModal('cashOut')">Cash Out</button>
+										</div>
+									</div>
+									
+									<div class ="col-sm-6">
+										<font size="2"></font>
+										<div style="padding: 10px; text-align: right">
 											<button class="btn btn-info" ng-click="saveCashDrawer()">Set</button>
-										</div>			
+										</div>
 									</div>
 								</div>
 								<hr>
@@ -168,6 +183,46 @@ hr {
 						</div>	
 					</div>
 				</section>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="cashModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+							<form ng-submit="submitCashInfo()">
+								<div class="row" style="font-size: large">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+										<div style="text-align: center">
+											<label ng-if="action=='cashIn'">Cash In</label>
+											<label ng-if="action=='cashOut'">Cash Out</label>
+										</div>
+									</div>
+									<div class="col-sm-1">
+										<button class="close" data-dismiss="modal">&times;</button>
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label ng-if="action=='cashIn'">Cash In Amount</label>
+										<label ng-if="action=='cashOut'">Cash Out Amount</label>
+										<input type="number" min="0" step="0.01" class="form-control" ng-model="cashFlowAmount" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<input type="submit" class="btn btn-info" value="Update" />
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
 			</div>
 			
 			<div class="modal fade" data-backdrop="static" id="terminalModal" role="dialog">
