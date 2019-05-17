@@ -470,12 +470,12 @@ insert into `payment_type` values
 (1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Split Payment'), (4, 'Deposit Payment');
 
 insert into `nii_type` values
-(1, 'VISA/MASTER/JCB'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');
+(1, 'NR'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');
 
 insert into general_configuration (description, parameter, value)
 values ('BYOD_QR_Encrypt_Key', 'BYOD QR ENCRYPT KEY', '8y0DtH3s3Cr3Tk3Y');
 
-insert into device_manufacturer_lookup values (1, 'Posiflex'), (2, 'ETech');
+insert into device_manufacturer_lookup values (1, 'No Cash Drawer'), (2, 'Posiflex'), (3, 'ETech');
 
 insert into port_name_lookup values 
 (1, 'COM1'), (2, 'COM2'), (3, 'COM3'), (4, 'COM4'), (5, 'COM5'), (6, 'COM6'), (7, 'COM7'), (8, 'COM8');

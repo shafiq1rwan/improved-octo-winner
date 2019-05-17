@@ -111,5 +111,25 @@
 			});
 		}
 		
+		$scope.printTransactionReceipt = function(transactionId){
+			var jsonData = JSON.stringify({
+				"transactionId" : transactionId
+			});
+			
+ 			$http.post("${pageContext.request.contextPath}/rc/configuration/print_transaction_receipt", jsonData)
+			.then(function(response) {
+				if(response.data.response_code == '00'){
+					$('#transactionDetailsModal').modal('hide');
+				} else {
+					alert(response.data.response_message);
+					$('#transactionDetailsModal').modal('hide');
+				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
 	});
 </script>

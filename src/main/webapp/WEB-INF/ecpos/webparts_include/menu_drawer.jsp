@@ -78,15 +78,20 @@
 						<span class="pull-right-container"> </span>
 					</a>
 				</li> --%>
-				<%if (user.getRoleType() == 1) {%>
-				<li>
+				<%if (user.getRoleType() == 1) {
+					boolean drawer = (boolean)request.getAttribute("cashDrawer");
+					if(drawer) {
+				%>
+				<li class="cashDrawerBtn">
 					<a onclick="openDrawer()" style="cursor: pointer;">
 						<i class="fa fa-money"></i>
 						<span>Open Cash Drawer</span> 
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
-				<%}%>
+				<%
+					}
+					}%>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!settings"> 
 						<i class="fa fa-cog"></i>
@@ -108,12 +113,46 @@
 </body>
 
 <script>
+/* 	$('li.cashDrawerBtn').hide();
+	
+	$(document).ready(function() {
+  			$.ajax({
+		        type: 'GET',
+		        url: '${pageContext.request.contextPath}/rc/configuration/get_cash_drawer_data/x',
+		        dataType: "json",
+		        async:false,
+		        success: function(data) {
+		        	console.log("hi my data " + data.device_manufacturer);
+					if(data.device_manufacturer == 1){
+						//sessionStorage.setItem("no_printing", true);
+						//isNoPrinting = true;
+						$('li.cashDrawerBtn').hide();
+						
+					}
+					else  {
+						//sessionStorage.setItem("no_printing", false);
+						//isNoPrinting = false;
+						$('li.cashDrawerBtn').show();
+					}
+		        },
+		        error: function(data){
+					if (data.status == 408) {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+					
+		        }
+		    });
+	}); */
+
 	function openDrawer() {
 		$.ajax({
 			type : 'post',
 			url : '${pageContext.request.contextPath}/rc/configuration/open_cash_drawer',
 			success : function(data) {
-				if (data.response_code == 01) {
+				if (data.response_code == '01') {
+					alert(data.response_message);
+				} else if(data.response_code == '02') {
 					alert(data.response_message);
 				}
 			},

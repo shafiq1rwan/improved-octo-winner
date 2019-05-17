@@ -60,14 +60,14 @@
 					
 					<!-- upper button group control -->
 								<div class="row">
-									<div class="col-sm-4">
-										<div ng-if="!transaction.isVoid && transaction.isApproved">
+									<div class="col-sm-4" ng-if="!transaction.isVoid && transaction.isApproved">
+										<div>
 											<button class="btn btn-block btn-primary" ng-click="voidTransaction(transaction.id)">Void</button>
 										</div>
 									</div>
 									<div class="col-sm-4">
-										<div ng-if="">
-											<button class="btn btn-block btn-info" ng-click="">Print Receipt</button>
+										<div>
+											<button class="btn btn-block btn-info" ng-click="printTransactionReceipt(transaction.id)">Print Receipt</button>
 										</div>
 									</div>
 									<div class="col-sm-4">

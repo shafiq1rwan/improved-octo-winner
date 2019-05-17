@@ -819,8 +819,8 @@ public class RestC_transaction {
 				if (jsonObj.has("terminalSerialNo") && jsonObj.has("settlementType")) {
 					String terminalSerialNo = jsonObj.getString("terminalSerialNo");
 					String settlementType = jsonObj.getString("settlementType");
+					String niiType = getSettlementNiiType(settlementType);
 					
-					//settlement status using transaction status look up
 					stmt = connection.prepareStatement("insert into settlement (staff_id,nii_type,settlement_status,created_date) " + 
 							"values (?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
 					stmt.setLong(1, staffId);
@@ -834,7 +834,7 @@ public class RestC_transaction {
 							long settlementId = rs.getLong(1);
 							
 							JSONObject terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNo);
-							JSONObject settlementResult = iposCard.cardSettlement(settlementId, String.format("%04d", storeId), "card-settlement", settlementType, terminalWifiIPPort);
+							JSONObject settlementResult = iposCard.cardSettlement(settlementId, String.format("%04d", storeId), "card-settlement", niiType, terminalWifiIPPort);
 								
 							if (settlementResult.getString("responseCode").equals("00")) {
 								if (settlementResult.getJSONObject("settlementResponse").length() > 0) {
@@ -879,7 +879,13 @@ public class RestC_transaction {
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "Card Sale Payment Response Not Found");
 									Logger.writeActivity("Card Sale Payment Response Not Found", ECPOS_FOLDER);
 								}
-							} else {
+							} 
+							else if (settlementResult.getString("responseCode").equals("BE")){
+								Logger.writeActivity("BATCH EMPTY", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "BE");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "BATCH EMPTY");
+							}
+							else {
 								Logger.writeActivity("Settlement Failed To Perform", ECPOS_FOLDER);
 								jsonResult.put(Constant.RESPONSE_CODE, "01");
 								jsonResult.put(Constant.RESPONSE_MESSAGE, "Settlement Failed To Perform");
@@ -916,7 +922,38 @@ public class RestC_transaction {
 		}
 		return jsonResult.toString();
 	}
-
+	
+	private String getSettlementNiiType(String settlementType) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		String niiTypeName = null;
+		
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("select name from nii_type where id = ?;");
+			stmt.setString(1, settlementType);
+			rs = stmt.executeQuery();
+			
+			if(rs.next()) {
+				niiTypeName = rs.getString("name");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return niiTypeName;
+	}
+	
 	public JSONObject getStoreDetail() {
 		Connection connection = null;
 		PreparedStatement stmt = null;

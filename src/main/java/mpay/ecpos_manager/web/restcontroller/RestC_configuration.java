@@ -957,9 +957,11 @@ public class RestC_configuration {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
-				if (stmt2 != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
@@ -1167,17 +1169,22 @@ public class RestC_configuration {
 					rs2 = stmt2.executeQuery();
 					
 					if(rs2.next()) {
-						stmt3 = connection.prepareStatement("select name from port_name_lookup where id = ?");
-						stmt3.setInt(1,rs.getInt("port_name"));
-						rs3 = stmt3.executeQuery();
-						
-						if(rs3.next()) {
-							jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
+						if(rs2.getString("name").equals("No Cash Drawer")) {
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+							
 						} else {
-							jsonResult.put(Constant.RESPONSE_CODE, "01");
-							jsonResult.put(Constant.RESPONSE_MESSAGE, "Port Name Not Found");
+							stmt3 = connection.prepareStatement("select name from port_name_lookup where id = ?");
+							stmt3.setInt(1,rs.getInt("port_name"));
+							rs3 = stmt3.executeQuery();
+							
+							if(rs3.next()) {
+								jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
+							} else {
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Port Name Not Found");
+							}
 						}
-						
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Device Manufacturer Name Not Found");	
@@ -1280,7 +1287,60 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/print_transaction_receipt" }, method = RequestMethod.POST, produces = "application/json")
+	public String printTransactionReceipt(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
-	
+		try {
+			if (user != null) { 
+				JSONObject jsonData = new JSONObject(data);
+				
+				if(jsonData.has("transactionId")) {
+					connection = dataSource.getConnection();
+					stmt = connection.prepareStatement("select check_number from transaction where id = ?;");
+					stmt.setString(1, jsonData.getString("transactionId"));
+					rs = stmt.executeQuery();
+					
+					if(rs.next()) {
+						JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), rs.getString("check_number"));
+						if(printableJson.getString("response_code").equals("00")) {
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+						} else {
+
+						}
+					} else {
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Not Found");
+					}
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Id Not Found");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		
+		return jsonResult.toString();
+	}
 	
 }

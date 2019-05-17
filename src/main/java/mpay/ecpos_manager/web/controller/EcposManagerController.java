@@ -1,5 +1,10 @@
 package mpay.ecpos_manager.web.controller;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
@@ -32,6 +37,10 @@ public class EcposManagerController {
 		ModelAndView model = new ModelAndView();
 		WebComponents webComponent = new WebComponents();
 		
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
 		// check for activation info
 		try {
 			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
@@ -44,6 +53,20 @@ public class EcposManagerController {
 				UserAuthenticationModel user = webComponent.getEcposSession(request);
 				
 				if (user != null) {
+					connection = dataSource.getConnection();
+					stmt = connection.prepareStatement("select * from cash_drawer;");
+					rs = stmt.executeQuery();
+					
+					if(rs.next()) {
+						if(rs.getInt("device_manufacturer") == 1) {
+							model.addObject("cashDrawer", false); // no printing
+						} else {
+							model.addObject("cashDrawer", true);
+						}
+					} else {
+						model.addObject("cashDrawer", false);
+					}
+
 					model.setViewName("ecpos/home");
 				} else {
 					model.setViewName("ecpos/login");
@@ -52,7 +75,17 @@ public class EcposManagerController {
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
 		}
+
 		Logger.writeActivity("----------- ECPOS LANDING END ---------", ECPOS_FOLDER);
 		return model;
 	}

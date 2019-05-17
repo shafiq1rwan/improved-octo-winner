@@ -112,7 +112,8 @@
 				$http.post("${pageContext.request.contextPath}/rc/configuration/save_cash_drawer", jsonData)
 				.then(function(response) {
 					alert("Cash Drawer Successfully Set.");
-					$scope.getCashDrawerList();
+					location.reload();
+					//$scope.getCashDrawerList();
 				},
 				function(response) {
 					alert("Session TIME OUT");
@@ -345,6 +346,7 @@
 			$http.post("${pageContext.request.contextPath}/rc/transaction/request_settlement", jsonData)
 			.then(function(response) {
 				alert(response.data.response_message);
+				$('#settlementModal').modal('hide');
 			},
 			function(response) {
 				alert("Session TIME OUT");
