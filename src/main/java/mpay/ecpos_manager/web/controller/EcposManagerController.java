@@ -69,7 +69,7 @@ public class EcposManagerController {
 
 					model.setViewName("ecpos/home");
 				} else {
-					model.setViewName("ecpos/login");
+					getLoginPage(model);
 				}
 			}
 		} catch (Exception e) {
@@ -116,7 +116,7 @@ public class EcposManagerController {
 					model.setViewName("ecpos/activation");
 				} else {
 					model.addObject("http_message", "User Account Does Not Exist.");
-					model.setViewName("ecpos/login");
+					getLoginPage(model);
 				}
 			} catch (Exception e) {
 				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -151,7 +151,7 @@ public class EcposManagerController {
 					model.setViewName("ecpos/activation");
 				} else {
 					model.addObject("http_message", "User Account Does Not Exist.");
-					model.setViewName("ecpos/login");
+					getLoginPage(model);
 				}
 			} catch (Exception e) {
 				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -179,7 +179,7 @@ public class EcposManagerController {
 				model.addObject("http_message", "Activation is required");
 				model.setViewName("ecpos/activation");
 			} else {
-				model.setViewName("ecpos/login");
+				getLoginPage(model);
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -252,10 +252,36 @@ public class EcposManagerController {
 		return model;
 	}
 	
-//	@GetMapping("/views/qr_scan")
-//	public ModelAndView ecpos_connection_qr() {
-//		ModelAndView model = new ModelAndView();
-//		model.setViewName("ecpos/views/connection_qr");
-//		return model;
-//	}
+	private ModelAndView getLoginPage(ModelAndView model) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		model.setViewName("ecpos/login");
+		
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("select login_type_id, login_switch_flag from store;");
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				model.addObject("loginType", rs.getInt("login_type_id"));
+				model.addObject("isLoginSwitch", rs.getBoolean("login_switch_flag"));
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		
+		return model;
+	}
 }

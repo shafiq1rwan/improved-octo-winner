@@ -143,19 +143,37 @@
 </body>
 
 <script>
-var isQRForm = true;
+var formTypeID = ${loginType};
+var isFormSwitchable = ${isLoginSwitch};
+
 var isQRLoginExecuted = true;
 var loginQRContent = "";
 
-$("form#normalForm").hide();
+if (formTypeID == 1) {
+	$("#switchBtn").html("Switch to QR Login");
+	$("form#normalForm").show();
+	$("form#qrForm").hide();
+} else if (formTypeID == 2) {
+	$("#switchBtn").html("Switch to Form Login");
+	$("form#normalForm").hide();
+	$("form#qrForm").show();
+}
+
+if (!isFormSwitchable) {
+	$("#switchBtn").hide();
+}
+
 $("#switchBtn").click(function() {
-	if (isQRForm) {
-		isQRForm = false;
+	formTypeID = (formTypeID + 1) % 3;
+	if (formTypeID == 0) {
+		formTypeID += 1;
+	}
+	
+	if (formTypeID == 1) {
 		$("#switchBtn").html("Switch to QR Login");
 		$("form#normalForm").show();
 		$("form#qrForm").hide();
-	} else {
-		isQRForm = true;
+	} else if (formTypeID == 2) {
 		$("#switchBtn").html("Switch to Form Login");
 		$("form#normalForm").hide();
 		$("form#qrForm").show();
