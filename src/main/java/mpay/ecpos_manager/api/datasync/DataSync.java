@@ -123,8 +123,8 @@ public class DataSync {
 			}
 			
 			String sqlStatement = "INSERT INTO store (id, backend_id, store_name, store_logo_path, store_address, store_longitude, store_latitude, "
-					+ "store_country, store_currency, store_start_operating_time, store_end_operating_time, last_update_date, is_publish, created_date, store_contact_person, store_contact_hp_number, store_contact_email, store_type_id, kiosk_payment_delay_id, byod_payment_delay_id) "
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+					+ "store_country, store_currency, store_start_operating_time, store_end_operating_time, last_update_date, is_publish, created_date, store_contact_person, store_contact_hp_number, store_contact_email, store_type_id, kiosk_payment_delay_id, byod_payment_delay_id, ecpos_takeaway_detail_flag, login_type_id, login_switch_flag) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 			ps1 = connection.prepareStatement(sqlStatement);
 			int count = 1;
 			ps1.setLong(count++, storeInfo.getLong("storeId"));
@@ -147,6 +147,10 @@ public class DataSync {
 			ps1.setLong(count++, storeInfo.getLong("storeTypeId"));
 			ps1.setLong(count++, storeInfo.getLong("kioskPaymentDelayId"));
 			ps1.setLong(count++, storeInfo.getLong("byodPaymentDelayId"));
+			ps1.setBoolean(count++, storeInfo.getBoolean("ecposTakeawayDetailFlag"));
+			ps1.setLong(count++, storeInfo.getLong("loginTypeId"));
+			ps1.setBoolean(count++, storeInfo.getBoolean("loginSwitchFlag"));
+			
 			int rowAffected = ps1.executeUpdate();
 			if(rowAffected != 0) {
 				flag = true;
