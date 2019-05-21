@@ -114,6 +114,9 @@ CREATE TABLE store (
 		is_publish BIT DEFAULT 0,
         byod_payment_delay_id BIGINT DEFAULT 0,
 		kiosk_payment_delay_id BIGINT DEFAULT 0,
+        ecpos_takeaway_detail_flag BIT,
+		login_type_id BIGINT,
+		login_switch_flag BIT,
 		created_date DATETIME NOT NULL
 );
 
@@ -185,9 +188,16 @@ CREATE TABLE payment_delay_lookup
 	payment_delay_name NVARCHAR(50) NOT NULL UNIQUE
 );
 
+CREATE TABLE login_type_lookup
+(
+	id INT UNIQUE NOT NULL,
+	login_type_name NVARCHAR(50) NOT NULL UNIQUE
+);
+
 INSERT INTO store_type_lookup VALUES (1, 'Retail'),(2, 'F&B');
 INSERT INTO payment_delay_lookup VALUES (1, 'Pay Now/Later'), (2, 'Pay Now'), (3, 'Pay Later');
 INSERT INTO charge_type_lookup VALUES (1, 'Total Tax'),(2, 'Overall Tax');
+INSERT INTO login_type_lookup VALUES (1, 'Username & Password'), (2, 'Scan QR');
 
 CREATE TABLE menu_item_type_lookup (
 	menu_item_type_number INT NOT NULL UNIQUE,
