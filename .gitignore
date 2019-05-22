@@ -22,6 +22,7 @@
 /.nb-gradle/
 
 ### ECPOS Manager ###
+/ecpos-image/
 /ecpos-query/
 /ecpos-log/
 /receipt/
