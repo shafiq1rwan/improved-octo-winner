@@ -170,26 +170,7 @@ $("div#loginPanel").hide();
 $("button#retryBtn").hide();
 $("button#skipBtn").hide();
 
-if (formTypeID == 1) {
-	$("#switchBtn").html("Switch to QR Login");
-	$("form#normalForm").show();
-	$("form#qrForm").hide();
-} else if (formTypeID == 2) {
-	$("#switchBtn").html("Switch to Form Login");
-	$("form#normalForm").hide();
-	$("form#qrForm").show();
-}
-
-if (!isFormSwitchable) {
-	$("#switchBtn").hide();
-}
-
-$("#switchBtn").click(function() {
-	formTypeID = (formTypeID + 1) % 3;
-	if (formTypeID == 0) {
-		formTypeID += 1;
-	}
-	
+function updateLoginUI() {
 	if (formTypeID == 1) {
 		$("#switchBtn").html("Switch to QR Login");
 		$("form#normalForm").show();
@@ -199,6 +180,19 @@ $("#switchBtn").click(function() {
 		$("form#normalForm").hide();
 		$("form#qrForm").show();
 	}
+
+	if (!isFormSwitchable) {
+		$("#switchBtn").hide();
+	}
+}
+
+$("#switchBtn").click(function() {
+	formTypeID = (formTypeID + 1) % 3;
+	if (formTypeID == 0) {
+		formTypeID += 1;
+	}
+	
+	updateLoginUI();
 });
 
 $("#showQRLoginBtn").click(function() {
@@ -287,6 +281,10 @@ function syncStore() {
 	    success: function(response) {
 	    	if (response != null && response.resultCode != null) {
 				if (response.resultCode == "00") {
+					formTypeID = response.loginType;
+					isFormSwitchable = response.loginSwitch;
+					updateLoginUI();
+					
 					isSyncStore = true;
 					loadSuccess();
 				} else {
@@ -349,6 +347,7 @@ function beginLoading() {
 }
 
 $(document).ready(function() {
+	updateLoginUI();
 	beginLoading();
 });
 </script>

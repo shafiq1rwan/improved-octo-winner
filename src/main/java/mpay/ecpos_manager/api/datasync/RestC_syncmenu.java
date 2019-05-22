@@ -420,6 +420,9 @@ public class RestC_syncmenu {
 								
 								DataSync.updateSyncDate(connection);
 								connection.commit();
+								
+								result.put("loginType", storeInfo.getLong("loginTypeId"));
+								result.put("loginSwitch", storeInfo.getBoolean("loginSwitchFlag"));
 							}
 							else {
 								connection.rollback();
