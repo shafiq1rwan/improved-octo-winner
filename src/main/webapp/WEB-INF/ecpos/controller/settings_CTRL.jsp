@@ -16,6 +16,7 @@
 					$scope.getCashDrawerList();
 					$scope.getPrinterList();
 					$scope.getTerminalList();
+					$scope.getStoreInfo();
 				} else {
 					alert("Session TIME OUT");
 					window.location.href = "${pageContext.request.contextPath}/signout";
@@ -85,6 +86,18 @@
 				} else {
 					$("#terminalList").show();
 				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
+		$scope.getStoreInfo = function() {
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_store_data")
+			.then(function(response) {
+				$scope.store = response.data;
+				console.log($scope.store);
 			},
 			function(response) {
 				alert("Session TIME OUT");
@@ -432,10 +445,15 @@
 		
 		$scope.submitSyncTransaction = function() {
 			$('#loading_modal').modal('show');
+			var postdata = {
+				brandId : $scope.store.brandId,
+				storeId : $scope.store.storeId	
+			}
 			$http({
 				method : 'POST',
 				headers : {'Content-Type' : 'application/json'},
-				url : '${pageContext.request.contextPath}/syncTransaction'
+				url : '${pageContext.request.contextPath}/syncTransaction',
+				data: postdata
 			}).then(function(response) {
 				if (response != null && response.data != null && response.data.resultCode != null) {
 					if (response.data.resultCode == "00") {						

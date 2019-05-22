@@ -1011,6 +1011,47 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/get_store_data" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getStoreData(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				String brandId = webComponent.getGeneralConfig(dataSource, "BRAND_ID");
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("SELECT id from store;");
+				rs = stmt.executeQuery();
+				
+				if(rs.next()) {
+					jsonResult.put("storeId", rs.getString("id"));
+					jsonResult.put("brandId", brandId);
+				}
+			}
+			else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/save_cash_drawer" }, method = { RequestMethod.POST }, produces = "application/json")
 	public void saveCashDrawer(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);

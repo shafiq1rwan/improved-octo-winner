@@ -20,8 +20,10 @@ import javax.sql.DataSource;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
@@ -44,43 +46,53 @@ public class RestC_synctransaction {
 	private static String SYNC_FOLDER = Property.getSYNC_FOLDER_NAME();
 	
 	@RequestMapping(value = "/syncTransaction", method = { RequestMethod.POST })
-	public String syncTransaction(HttpServletRequest request, HttpServletResponse response) {
+	public String syncTransaction(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("----------- SYNC TRANSACTION START ---------", SYNC_FOLDER);
 		JSONObject result = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
-		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
-		ResultSet rs2 = null;
 
 		try {
-			connection = dataSource.getConnection();
-			
+			JSONObject jsonData = new JSONObject(data);
+			WebComponents webComponents = new WebComponents();
 			String resultCode = "E01";
 			String resultMessage = "Server error. Please try again later.";
+			String checkBrandId = webComponents.getGeneralConfig(dataSource, "BRAND_ID");
+			String checkStoreId = "";
 			
-			Date date = new Date();
-			Timestamp currentDate = new Timestamp(date.getTime());
-			
-			Timestamp lastSyncDate = new Timestamp(0);
-			
-			stmt = connection.prepareStatement("select * from check_transaction_settlement_cloud_sync where response_code = '00' order by sync_date desc limit 1;");
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("SELECT id FROM store");
 			rs = stmt.executeQuery();
-		
-			if (rs.next()) {
-				lastSyncDate = rs.getTimestamp("sync_date");	
+			if(rs.next()) {
+				checkStoreId = rs.getString("id");
 			}
+			stmt.close();
+			rs.close();
 			
-			stmt2 = connection.prepareStatement("SELECT id FROM store;");
-			rs2 = stmt2.executeQuery();
+			if(!(jsonData.has("brandId") && jsonData.has("storeId") && checkBrandId.equals(jsonData.getString("brandId")) && checkStoreId.equals(jsonData.getString("storeId")))) {
+				resultCode = "E02";
+				resultMessage = "Server error. Invalid store info.";
+			}
+			else {
+				Date date = new Date();
+				Timestamp currentDate = new Timestamp(date.getTime());
+				
+				Timestamp lastSyncDate = new Timestamp(0);
+				
+				stmt = connection.prepareStatement("select * from check_transaction_settlement_cloud_sync where response_code = '00' order by sync_date desc limit 1;");
+				rs = stmt.executeQuery();
 			
-			if (rs2.next()) {
+				if (rs.next()) {
+					lastSyncDate = rs.getTimestamp("sync_date");	
+				}
+				
 				WebComponents webComponent = new WebComponents();
 				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
 				Logger.writeActivity("activationInfo: " + activationInfo, SYNC_FOLDER);
 				
 				Map<String, Object> params = new LinkedHashMap<>();
-				params.put("storeId", rs2.getInt("id"));
+				params.put("storeId", jsonData.getString("storeId"));
 				params.put("activationId", activationInfo.getString("activationId"));
 				params.put("timeStamp", date.toString());
 				params.put("brandId", activationInfo.getString("brandId"));
@@ -143,16 +155,13 @@ public class RestC_synctransaction {
 					resultMessage = responseData.has("resultMessage") && !responseData.getString("resultMessage").isEmpty() ? responseData.getString("resultMessage") : "Unknown error. Please try again later.";
 					Logger.writeActivity(resultCode + ": " + resultMessage, SYNC_FOLDER);
 				}
-			} else {
-				Logger.writeActivity("Store ID Not Found", SYNC_FOLDER);
-				// perform reactivation or sync store info
 			}
-			
 			DataSync.insertTransactionSyncRecord(connection, resultCode, resultMessage);
 			
 			result.put("resultCode", resultCode);
 			result.put("resultMessage", resultMessage);
 		} catch (Exception e) {
+			e.printStackTrace();
 			try {
 				if (connection != null && !connection.getAutoCommit()) {
 					connection.rollback();
@@ -168,9 +177,7 @@ public class RestC_synctransaction {
 					connection.close();
 				}
 				if (stmt != null) stmt.close();
-				if (stmt2 != null) stmt2.close();
 				if (rs != null) {rs.close();rs = null;}
-				if (rs2 != null) {rs2.close();rs2 = null;}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", SYNC_FOLDER);
 				e.printStackTrace();
