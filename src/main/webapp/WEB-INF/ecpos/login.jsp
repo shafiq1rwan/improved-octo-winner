@@ -309,13 +309,21 @@ function updateProgressbar(message, percentage) {
 	$("p#progressPercentage").html(percentage + "%");
 }
 
+function updateProgressbarMessage(message) {
+	$("span#progressText").html(message);
+}
+
 function loadFailed(message) {
-	updateProgressbar(message, 0);
+	$("div#progressBar").removeClass("progress-bar-info active");
+	$("div#progressBar").addClass("progress-bar-danger");
+	updateProgressbarMessage(message);
 	$("button#retryBtn").show();
 	$("button#skipBtn").show();
 }
 
 function loadSuccess() {
+	$("div#progressBar").removeClass("progress-bar-info progress-bar-danger");
+	$("div#progressBar").addClass("progress-bar-success active");
 	updateProgressbar("Loading Completed.", 100);
 	setTimeout(function(){
 		$("div#loginPanel").fadeIn();
@@ -324,6 +332,10 @@ function loadSuccess() {
 }
 
 function skipLoading() {
+	$("div#progressBar").removeClass("progress-bar-info progress-bar-danger");
+	$("div#progressBar").addClass("progress-bar-success active");
+	$("button#retryBtn").hide();
+	$("button#skipBtn").hide();
 	updateProgressbar("Loading Skipped.", 100);
 	setTimeout(function(){
 		$("div#loginPanel").fadeIn();
@@ -332,6 +344,8 @@ function skipLoading() {
 }
 
 function beginLoading() {
+	$("div#progressBar").addClass("progress-bar-info active");
+	$("div#progressBar").removeClass("progress-bar-danger");
 	$("button#retryBtn").hide();
 	$("button#skipBtn").hide();
 	updateProgressbar("Loading...", 0);

@@ -439,6 +439,16 @@ CREATE TABLE cash_drawer (
 
 INSERT INTO cash_drawer (device_manufacturer, port_name, cash_amount, cash_alert) VALUES (1, 1, 0, 0);
 
+CREATE TABLE cash_drawer_log (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`cash_amount` DECIMAL(20,2) NOT NULL DEFAULT '0.00',
+	`new_amount` DECIMAL(20,2) NOT NULL DEFAULT '0.00',
+	`reference` varchar(255) NOT NULL,
+	`performed_by` bigint(20) NOT NULL,
+	`created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`)
+)
+
 CREATE TABLE receipt_printer_manufacturer_lookup (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 	`name` varchar(255) NOT NULL,

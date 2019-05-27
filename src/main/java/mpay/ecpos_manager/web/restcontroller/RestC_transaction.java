@@ -340,6 +340,7 @@ public class RestC_transaction {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
+		ResultSet rs3 = null;
 
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -505,8 +506,40 @@ public class RestC_transaction {
 								JSONObject updateTransactionResult = new JSONObject();
 								
 								boolean paymentFlag = false;
+								boolean isCashAlertTriggered = false;
 								
 								if (paymentMethod == 1) {
+									stmt = connection.prepareStatement("select cash_amount, cash_alert from cash_drawer;");
+									rs3 = stmt.executeQuery();
+									
+									if (rs3.next()) {
+										long cashAlert = rs3.getLong("cash_alert");
+										double currentCash = rs3.getDouble("cash_amount");
+										double ammendCash = 0.00;
+										double newCash = 0.00;
+										if (receivedAmount.compareTo(paymentAmount) <= 0) {
+											ammendCash = receivedAmount.doubleValue();
+										} else {
+											ammendCash = paymentAmount.doubleValue();
+										}
+										newCash = currentCash + ammendCash;
+										
+										if (cashAlert > 0 && newCash > cashAlert) {
+											isCashAlertTriggered = true;
+										}
+										
+										stmt = connection.prepareStatement("update cash_drawer set cash_amount = ?;");
+										stmt.setDouble(1, newCash);
+										stmt.executeUpdate();
+										
+										stmt = connection.prepareStatement("insert into cash_drawer_log(cash_amount,new_amount,reference,performed_by) VALUES (?,?,?,?);");
+										stmt.setDouble(1, ammendCash);
+										stmt.setDouble(2, newCash);
+										stmt.setString(3, "Cash From Sale");
+										stmt.setLong(4, staffId);
+										stmt.executeUpdate();
+									}
+									
 									paymentFlag = true;
 									updateTransactionResult.put(Constant.RESPONSE_CODE, "00");
 									updateTransactionResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
@@ -584,6 +617,7 @@ public class RestC_transaction {
 												jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction has been successfully performed.");
 												jsonResult.put("check_status", updateCheckResult.getString("checkStatus"));
 												jsonResult.put("change_amount", changeAmount);
+												jsonResult.put("is_cash_alert", isCashAlertTriggered);
 											} else {
 												Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
 												jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -632,6 +666,7 @@ public class RestC_transaction {
 				if (stmt != null) stmt.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);

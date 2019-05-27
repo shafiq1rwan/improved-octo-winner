@@ -1,5 +1,5 @@
 <script>
-	app.controller('payment_CTRL',function($scope, $http, $timeout, $location, $route,$routeParams) {
+	app.controller('payment_CTRL',function($scope, $http, $timeout, $location, $route, $routeParams, $sce) {
 		$scope.paymentType = "";
 		$scope.paymentMethod = "";
 		$scope.terminalSerialNo = "";
@@ -11,6 +11,8 @@
 		$scope.selectedTerminal;
 		$scope.alertMessage = "";
 		$scope.paymentButtonFn;
+		
+		$scope.isCashAlert = false;
 	
 		var counter = 0;
 		
@@ -268,7 +270,11 @@
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
-							$scope.alertMessage = response.data.response_message + "\n" + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2);
+							$scope.alertMessage = $sce.trustAsHtml(response.data.response_message + " " + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2));
+							$scope.isCashAlert = response.data.is_cash_alert;
+							if ($scope.isCashAlert) {
+								$scope.alertMessage = $sce.trustAsHtml($scope.alertMessage + "<br>" + "Cash amount exceed. Please perform cash collection.");
+							}
 							$scope.paymentButtonFn = function() {
 								$('#receivedAmountModal').modal('hide');
 								$('.modal-backdrop').remove();

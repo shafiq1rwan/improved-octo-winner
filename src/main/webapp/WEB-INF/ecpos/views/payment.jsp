@@ -379,8 +379,7 @@ ul.select2-results__options li {
 				          <span aria-hidden="true">&times;</span>
 				        </button>
 				      </div>
-				      <div class="modal-body text-center">
-				        {{alertMessage}}
+				      <div class="modal-body text-center" ng-bind-html="alertMessage">
 				      </div>
 				      <div class="modal-footer">
 				        <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="paymentButtonFn()">Close</button>

@@ -935,7 +935,7 @@ public class RestC_configuration {
 				rs3 = stmt3.executeQuery();
 				
 				if (rs3.next()) {
-					jsonResult.put("cash_amount", rs3.getLong("cash_amount"));
+					jsonResult.put("cash_amount", rs3.getDouble("cash_amount"));
 					jsonResult.put("cash_alert", rs3.getLong("cash_alert"));
 				} else {
 					jsonResult.put("cash_amount", 0);
@@ -1115,6 +1115,7 @@ public class RestC_configuration {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
 		ResultSet rs = null;
 		
 		WebComponents webComponent = new WebComponents();
@@ -1122,37 +1123,59 @@ public class RestC_configuration {
 
 		try {
 			if (user != null) {
-				connection = dataSource.getConnection();
-					
-				stmt = connection.prepareStatement("select cash_amount from cash_drawer;");
-				rs = stmt.executeQuery();
-				
-				if (rs.next()) {
-					double currentCash = rs.getDouble("cash_amount");
-					double newCash = 0.00;
-					
-					if (type.equals("cashIn")) {
-						newCash = currentCash + amount;
-					} else {
-						newCash = currentCash - amount;
-					}
-					
-					if (newCash < 0) {
-						resultCode = "E03";
-						resultMessage = "Not enough cash to cash out.";
-					} else {
-						stmt2 = connection.prepareStatement("update cash_drawer set cash_amount = ?;");
-						stmt2.setDouble(1, newCash);
-						stmt2.executeUpdate();
-						
-						result.put("amount", newCash);
-						
-						resultCode = "00";
-						resultMessage = "Success";
-					}
+				JSONObject staffDetail = getStaffDetail(user.getUsername());
+				long staffId = -1;
+				if (staffDetail.length() <= 0) {
+					Logger.writeActivity("Staff Detail Not Found", ECPOS_FOLDER);
+					resultCode = "E04";
+					resultMessage = "Staff Detail Not Found.";
 				} else {
-					resultCode = "E02";
-					resultMessage = "System Data Corrupted.";
+					staffId = staffDetail.getLong("id");
+					
+					connection = dataSource.getConnection();
+					
+					stmt = connection.prepareStatement("select cash_amount from cash_drawer;");
+					rs = stmt.executeQuery();
+					
+					if (rs.next()) {
+						String cashType = "";
+						double currentCash = rs.getDouble("cash_amount");
+						double ammendCash = 0.00;
+						double newCash = 0.00;
+						
+						if (type.equals("cashIn")) {
+							cashType = "Manual Cash In";
+							ammendCash = amount;
+						} else {
+							cashType = "Manual Cash Out";
+							ammendCash = amount * -1.00;
+						}
+						newCash = currentCash + ammendCash;
+						
+						if (newCash < 0) {
+							resultCode = "E03";
+							resultMessage = "Not enough cash to cash out.";
+						} else {
+							stmt2 = connection.prepareStatement("update cash_drawer set cash_amount = ?;");
+							stmt2.setDouble(1, newCash);
+							stmt2.executeUpdate();
+							
+							stmt3 = connection.prepareStatement("insert into cash_drawer_log(cash_amount,new_amount,reference,performed_by) VALUES (?,?,?,?);");
+							stmt3.setDouble(1, ammendCash);
+							stmt3.setDouble(2, newCash);
+							stmt3.setString(3, cashType);
+							stmt3.setLong(4, staffId);
+							stmt3.executeUpdate();
+							
+							result.put("amount", newCash);
+							
+							resultCode = "00";
+							resultMessage = "Success";
+						}
+					} else {
+						resultCode = "E02";
+						resultMessage = "System Data Corrupted.";
+					}
 				}
 			}
 			else {
@@ -1165,6 +1188,7 @@ public class RestC_configuration {
 			try {
 				if (stmt != null) stmt.close();
 				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
@@ -1384,4 +1408,37 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	public JSONObject getStaffDetail(String username) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		JSONObject staffDetail = new JSONObject();
+		
+		try {
+			connection = dataSource.getConnection();
+			
+			stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
+			stmt.setString(1, username);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				staffDetail.put("id",rs.getString("id"));
+				staffDetail.put("name",rs.getString("staff_name"));
+				staffDetail.put("role",rs.getString("staff_role"));
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return staffDetail;
+	}
 }
