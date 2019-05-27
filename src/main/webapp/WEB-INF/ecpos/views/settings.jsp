@@ -11,7 +11,7 @@
 <style>
 .sectioncalibrator {
 	height: calc(100vh - 50px);
-	overflow-y: scroll;
+	/* overflow-y: scroll; */
 }
 
 @media only screen and (max-width:600px) {
@@ -25,6 +25,32 @@ hr {
 	margin-top: 0px;
 	margin-bottom: 5px;
 }
+
+.border-shadow {
+	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+.info-box{
+	min-height: 60px;
+}
+
+.info-box-icon{
+	height: 60px;
+	line-height: 60px;
+	font-size: 40px;
+}
+
+.info-box-content{
+	height: 60px;
+}
+
+.custom-button{
+	width: 130px;
+}
+
+.custom-card:hover {
+	background-color: #d1e0e0;
+}
 </style>
 </head>
 
@@ -35,8 +61,185 @@ hr {
 				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 15px;">
-								<div class="row" style="text-align: center">
+							<div class="well" style="height: 89vh; overflow-y: hidden; background-color: white; margin-bottom: 0px; padding: 15px;">
+								<div class="row" style="text-align: center;">
+								    <div class="col-sm-12">
+										<font size="4">Settings</font>
+									</div>
+								</div>
+								<hr>
+								<div class="row" style="margin-bottom:5px;">
+								    <div class="col-sm-12">
+										<font size="3"><b>Synchronization Configuration</b></font>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6"> 
+									    <div class="custom-card info-box border-shadow" ng-click="submitSyncMenu()">
+										  <!-- Apply any bg-* class to to the icon to color it -->
+										  <span class="info-box-icon bg-blue"><i class="fa fa-object-group"></i></span>
+										  <div class="info-box-content">						
+										    <span class="info-box-text">Item Info</span>
+										    <span class="info-box-number">Synchronize</span>
+										  </div>
+										</div>
+									</div>
+									<div class="col-sm-6"> 
+									    <div class="custom-card info-box border-shadow" ng-click="submitSyncTransaction()">
+										  <!-- Apply any bg-* class to to the icon to color it -->
+										  <span class="info-box-icon bg-maroon"><i class="fa fa-exchange"></i></span>
+										  <div class="info-box-content">
+										    <span class="info-box-text">Transaction Info</span>
+										    <span class="info-box-number">Synchronize</span>
+										  </div>
+										</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6"> 
+									    <div class="custom-card info-box border-shadow" ng-click="submitSyncStore()">
+										  <!-- Apply any bg-* class to to the icon to color it -->
+										  <span class="info-box-icon bg-olive"><i class="fa fa-users"></i></span>
+										  <div class="info-box-content">
+										    <span class="info-box-text">Store & Staff Info</span>
+										    <span class="info-box-number">Synchronize</span>
+										  </div>
+										</div>
+									</div>
+									<div class="col-sm-6"> 
+									    <div class="custom-card info-box border-shadow" ng-click="showReactivationModal()">
+										  <!-- Apply any bg-* class to to the icon to color it -->
+										  <span class="info-box-icon bg-red"><i class="fa fa-plug"></i></span>
+										  <div class="info-box-content">
+										    <span class="info-box-text">Reactivation</span>
+										    <span class="info-box-number">Reactivate</span>
+										  </div>
+										</div>
+									</div>
+							  	</div>
+							  	<hr>
+							  	<div class="row">
+									<div class="col-sm-4">
+										<div class="row" style="margin-bottom:5px;">
+											<div class="col-sm-12"> 
+												<font size="3"><b>Cash Drawer</b></font>
+												<button type="button" class="btn btn-success btn-sm pull-right custom-button" ng-click="saveCashDrawer()">
+												Update Cash Drawer
+												</button>
+											</div>
+										</div>
+										<div class="info-box border-shadow" style="padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
+									    	<div class="row">
+										    	<div class="col-sm-12">
+													<font size="2">Device Manufacturer</font>
+													<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+														<select id="cashDrawerDeviceManufacturer" class="form-control" ng-model="selectedDeviceManufacturer" 
+															ng-options="device_manufacturer.id as device_manufacturer.name for device_manufacturer in cashDrawerData.device_manufacturers">
+																<option value="" disabled>-- SELECT --</option>
+														</select>
+													</div>
+												</div>
+											</div>
+											<div class="row">	
+												<div class="col-sm-12">
+													<font size="2">Port Name</font>
+													<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+														<select id="cashDrawerDevicePortName" class="form-control" ng-model="selectedPortName" 
+															ng-options="port_name.id as port_name.name for port_name in cashDrawerData.port_names">
+																<option value="" disabled>-- SELECT --</option>
+														</select>
+													</div>
+												</div>
+											</div>
+											<div class="row">	
+												<div class="col-sm-12">
+													<font size="2">Max Cash Alert</font>
+													<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+														<input type="number" step="1" class="form-control" ng-model="cashDrawerData.cash_alert">
+													</div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-sm-12">													
+												    <button class="btn btn-primary btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashModal('cashOut')">Cash Out</button>
+												    <button class="btn btn-primary btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashModal('cashIn')">Cash In</button>
+												    <button class="btn btn-info btn-sm pull-right" style="margin: 4px 0 0 4px;" >View Log</button>				
+													<span class="pull-right" style="margin-top: 8px; margin-right: 15px; font-size:18px;"><b>Cash Amount : {{cashDrawerData.cash_amount | number : 2}}</b></span>											 
+												</div>
+											</div>
+									    </div>
+									</div>
+									<div class="col-sm-8">
+										<div class="row" style="margin-bottom:5px;">
+											<div class="col-sm-12">
+												<font size="3"><b>Terminal</b></font>
+												<button type="button" class="btn btn-success btn-sm pull-right custom-button" ng-click="showTerminalModal('create')">
+												Add Terminal
+												</button>
+											</div>
+										</div>
+										<div  id="terminalList" class="info-box border-shadow" style="height:157px; overflow-y:auto; overflow-x:hidden; padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
+											<div class="row">
+												<div class="col-sm-12">
+													<table style="width:100%; padding:1px;">
+														<thead>
+															<tr>
+																<th>No.  </th>
+																<th>Name  </th>
+																<th>Serial No.  </th>
+																<th width="20%">Wifi IP  </th>
+																<th>Wifi Port  </th>
+																<th>Action  </th>
+															</tr>
+														</thead>
+														<tbody>
+															<tr ng-repeat="terminal in terminalList.terminals">
+																<td>{{$index+1}}</td>
+																<td>{{terminal.name}}</td>
+																<td>{{terminal.serialNo}}</td>
+																<td>{{terminal.wifiIP}}</td>
+																<td>{{terminal.wifiPort}}</td>
+																<td style="padding:1px;white-space:nowrap;">
+																	<button class="btn btn-sm btn-info" ng-click="showSettlementModal(terminal.serialNo)">Settlement</button>
+																	<button class="btn btn-sm btn-default" ng-click="pingTerminal(terminal.id)"><i class="fa fa-crosshairs"></i></button>
+																	<button class="btn btn-sm btn-primary" ng-click="showTerminalModal('update', terminal.id)"><i class="fa fa-edit"></i></button>
+																	<button class="btn btn-sm btn-danger" ng-click="removeTerminal(terminal.id)"><i class="fa fa-trash-o"></i></button>
+																</td>
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+										<hr>
+										<div class="row">
+											<div class="col-sm-6">
+												<div class="row" style="margin-bottom:5px;">
+													<div class="col-sm-12"> 
+														<font size="3"><b>Receipt Printer</b></font>
+														<button type="button" class="btn btn-success btn-sm pull-right custom-button" ng-click="saveReceiptPrinter()">
+														Update Printer
+														</button>
+													</div>
+												</div>
+												<div class="info-box border-shadow" style="padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
+											    	<div class="row">
+														<div class="col-sm-12">
+															<font size="2">Receipt Printer Manufacturer Model</font>
+															<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+																<select id="receiptPrinterManufacturer" class="form-control" ng-model="selectedReceiptPrinterManufacturer"
+																	ng-options="manufacturer.id as manufacturer.name for manufacturer in receiptPrinterData.device_manufacturers">
+																	<option value="" disabled>-- SELECT --</option>
+																</select>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>								
+								</div>						  	
+								<!-- <div class="row" style="text-align: center">
 									<div class="col-sm-12">
 										<font size="4">Settings</font>
 									</div>
@@ -178,7 +381,7 @@ hr {
 										</div>
 										<hr>
 									</div>
-								</div>
+								</div> -->
 							</div>
 						</div>	
 					</div>
