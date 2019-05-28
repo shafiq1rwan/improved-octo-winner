@@ -157,6 +157,12 @@
 </body>
 
 <script>
+<%if (!http_message.equals("")) { %>
+var isLoad = false;
+<%} else {%>
+var isLoad = true;
+<%} %>
+
 var isSyncMenu = false;
 var isSyncStore = false;
 
@@ -166,6 +172,7 @@ var isFormSwitchable = ${isLoginSwitch};
 var isQRLoginExecuted = true;
 var loginQRContent = "";
 
+$("div#loadingPanel").hide();
 $("div#loginPanel").hide();
 $("button#retryBtn").hide();
 $("button#skipBtn").hide();
@@ -362,7 +369,14 @@ function beginLoading() {
 
 $(document).ready(function() {
 	updateLoginUI();
-	beginLoading();
+	console.log(isLoad);
+	if (isLoad) {
+		$("div#loadingPanel").show();
+		beginLoading();
+	} else {
+		$("div#loginPanel").show();
+		$("div#loadingPanel").hide();
+	}
 });
 </script>
 </html>
