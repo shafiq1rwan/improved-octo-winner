@@ -62,7 +62,7 @@
 											<br>
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
 												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-													<img ng-src="${pageContext.request.contextPath}{{category.imagePath}}" alt={{category.name}} style="max-width: 135px; max-height: 135px;" />
+													<img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="max-width: 135px; max-height: 135px;" />
 												</div>
 												<div class="itemname">
 													<b>{{category.name}}</b>
@@ -93,7 +93,7 @@
 											<br>
 											<div style="text-align: center" ng-click="action(item)">
 												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-													<img ng-src="${pageContext.request.contextPath}{{item.imagePath}}" alt={{item.name}} style="max-width: 135px; max-height: 135px;" />
+													<img ng-src="${pageContext.request.contextPath}/{{item.imagePath}}" alt={{item.name}} style="max-width: 135px; max-height: 135px;" />
 												</div>
 												<div class="itemname">
 													<b>{{item.name}}</b>
@@ -118,10 +118,10 @@
 									<div class="col-sm-4" style="padding: 0px;"></div>
 									<div class="col-sm-4" style="padding: 0px;">
 										<div ng-if="screenWidth > 1050" style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-											<img ng-src="${pageContext.request.contextPath}{{tiers.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 135px; max-height: 135px;" />
 										</div>
 										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-											<img ng-src="${pageContext.request.contextPath}{{tiers.imagePath}}" style="max-width: 120px; max-height: 120px;" />
+											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 									</div>
 									<div class="col-sm-4" style="padding: 0px;">
@@ -216,10 +216,10 @@
 									<div class="col-sm-4" style="padding: 0px;"></div>
 									<div class="col-sm-4" style="padding: 0px;">
 										<div ng-if="screenWidth > 1050" style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-											<img ng-src="${pageContext.request.contextPath}{{alaCarte.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 135px; max-height: 135px;" />
 										</div>
 										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-											<img ng-src="${pageContext.request.contextPath}{{alaCarte.imagePath}}" style="max-width: 120px; max-height: 120px;" />
+											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 									</div>
 									<div class="col-sm-4" style="padding: 0px;">
@@ -320,7 +320,7 @@
 														<br>
 														<div style="text-align: center" ng-click="getModifiers(tierItemDetail)">
 															<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-																<img ng-src="${pageContext.request.contextPath}{{tierItemDetail.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+																<img ng-src="${pageContext.request.contextPath}/{{tierItemDetail.imagePath}}" style="max-width: 135px; max-height: 135px;" />
 															</div>
 															<div class="itemname">
 																<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>

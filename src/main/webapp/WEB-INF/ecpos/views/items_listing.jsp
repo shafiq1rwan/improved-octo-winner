@@ -131,7 +131,7 @@
 												<div class="row">
 													<div style="text-align: center">
 														<div style="margin: auto; margin-bottom: 10px; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-															<img ng-src="${pageContext.request.contextPath}{{itemDetails.imagePath}}" alt=itemImage style="max-width: 135px; max-height: 135px;" />
+															<img ng-src="${pageContext.request.contextPath}/{{itemDetails.imagePath}}" alt=itemImage style="max-width: 135px; max-height: 135px;" />
 														</div>
 													</div>
 												</div>
