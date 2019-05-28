@@ -101,8 +101,8 @@ CREATE TABLE store (
 		store_name NVARCHAR(150) NOT NULL UNIQUE,
 		store_logo_path text,
 		store_address NVARCHAR(150),
-		store_longitude DECIMAL(11,8),
-		store_latitude DECIMAL(10,8),
+		store_longitude DECIMAL(15,8),
+		store_latitude DECIMAL(15,8),
 		store_country NVARCHAR(100),
 		store_currency NVARCHAR(50),
 		store_start_operating_time time NOT NULL,
@@ -447,7 +447,7 @@ CREATE TABLE cash_drawer_log (
 	`performed_by` bigint(20) NOT NULL,
 	`created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`)
-)
+);
 
 CREATE TABLE receipt_printer_manufacturer_lookup (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,

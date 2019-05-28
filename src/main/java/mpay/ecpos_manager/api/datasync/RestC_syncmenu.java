@@ -408,7 +408,7 @@ public class RestC_syncmenu {
 									DataSync.insertStaffRole(connection, staffRole);
 								}
 								
-								if(staffRole.length()!=0) {
+								if(tableSetting.length()!=0) {
 									// insert table setting
 									DataSync.insertTableSetting(connection, tableSetting);
 								}
