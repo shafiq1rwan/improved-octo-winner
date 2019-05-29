@@ -163,7 +163,7 @@ hr {
 												<div class="col-sm-12">													
 												    <button class="btn btn-primary btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashModal('cashOut')">Cash Out</button>
 												    <button class="btn btn-primary btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashModal('cashIn')">Cash In</button>
-												    <button class="btn btn-info btn-sm pull-right" style="margin: 4px 0 0 4px;" >View Log</button>				
+												    <button class="btn btn-info btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashLogModal()">View Log</button>				
 													<span class="pull-right" style="margin-top: 8px; margin-right: 15px; font-size:18px;"><b>Cash Amount : {{cashDrawerData.cash_amount | number : 2}}</b></span>											 
 												</div>
 											</div>
@@ -451,6 +451,37 @@ hr {
 									</div>
 								</div>
 							</div>
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="cashLogModal" role="dialog">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal"
+								aria-label="Close">&times;
+							</button>
+							<h4 class="modal-title" style="text-align: center;">Cash Log Listing</h4>
+						</div>
+						<div class="modal-body">
+							<table id="datatable_cashflowlog"
+								class="table table-bordered table-striped" style="margin: 0 auto;">
+								<thead>
+									<tr>
+										<th>ID</th>
+										<th>Amount</th>
+										<th>New Amount</th>
+										<th>Reference</th>
+										<th>By</th>
+										<th>Date Time</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+								<tfoot></tfoot>
+							</table>
 						</div>
 						<!-- <div class="modal-footer"></div> -->
 					</div>

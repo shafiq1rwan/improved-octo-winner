@@ -77,6 +77,56 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/get_cash_flow_list" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getTransactionList(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				stmt = connection.prepareStatement("SELECT a.id, a.cash_amount, a.new_amount, a.reference, b.staff_name, a.created_date from cash_drawer_log a, staff b"
+						+ " WHERE a.performed_by = b.id");
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					JSONObject transaction = new JSONObject();
+					transaction.put("id", rs.getString("id"));
+					transaction.put("cashAmount", rs.getString("cash_amount"));
+					transaction.put("newAmount", rs.getString("new_amount"));
+					transaction.put("reference", rs.getString("reference"));
+					transaction.put("staffName", rs.getString("staff_name"));
+					transaction.put("datetime", rs.getString("created_date"));
+					
+					jary.put(transaction);
+				}
+				jsonResult.put("data", jary);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/get_table_list" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String getTablelist(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();

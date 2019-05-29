@@ -1,6 +1,7 @@
 <script>
-	app.controller('settings_CTRL', function($scope, $http, $window, $routeParams, $location) {
+	app.controller('settings_CTRL', function($scope, $http, $window, $routeParams, $location, $compile) {
 		$scope.terminal = {};
+		$scope.cashFlowLog = {};
 		
 		$scope.action = "";
 		$scope.settlementType = "";
@@ -243,6 +244,11 @@
 				}
 			}
 			$scope.displayDialog(dialogOption);
+		}
+		
+		$scope.showCashLogModal = function(action) {
+			$scope.getCashFlowLogList();
+			$("#cashLogModal").modal("show");
 		}
 		
 		$scope.showTerminalModal = function(action, id) {
@@ -562,6 +568,38 @@
 			function(response) {
 				alert("Session TIME OUT");
 				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
+		$scope.getCashFlowLogList = function() {
+			var table = $('#datatable_cashflowlog').DataTable({
+				"ajax" : {
+					"url" : "${pageContext.request.contextPath}/rc/configuration/get_cash_flow_list",
+					"dataSrc": function ( json ) {
+		                return json.data;
+		            },
+					"error" : function() {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				},
+				"searching": false,
+				"pageLength": 10,
+				"bLengthChange": false,
+				"order" : [ [ 0, "desc" ] ],
+				destroy : true,
+				"columns" : [{"data" : "id"},
+					{"data" : "cashAmount"}, 
+					{"data" : "newAmount"},
+					{"data" : "reference"},
+					{"data" : "staffName"},
+					{"data" : "datetime"}
+					],
+				rowCallback: function(row, data, index){
+				},
+				"createdRow": function ( row, data, index ) {
+					$compile(row)($scope);
+				}
 			});
 		}
 	});
