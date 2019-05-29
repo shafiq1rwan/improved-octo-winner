@@ -17,6 +17,7 @@
 		$('#checkActionButtons').show();
 		$('#cancelItemButton').prop('disabled', true);
 		$('#paymentButton').prop('disabled', true);
+		$('#splitCheckButton').prop('disabled', true);
 		$('#allGrandParentItemCheckbox').show();
 		$('input[name=grandParentItemCheckbox]').show();
 		$('#terminalList').hide();
@@ -57,9 +58,11 @@
 					if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
 						$('#cancelItemButton').prop('disabled', true);
 						$('#paymentButton').prop('disabled', true);
+						$('#splitCheckButton').prop('disabled', true);
 					} else {
 						$('#cancelItemButton').prop('disabled', false);
 						$('#paymentButton').prop('disabled', false);
+						$('#splitCheckButton').prop('disabled', false);
 					}
 					
 					setTimeout(function() {
@@ -309,6 +312,50 @@
 					alert("Session TIME OUT");
 					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
+			}
+		}
+		
+		$scope.splitCheck = function() {
+			var confirmation = confirm("Confirm to split check?");
+			if (confirmation == true) {
+				$scope.checkedValue = [];
+				
+				$("input[name=grandParentItemCheckbox]:checked").each(function(){
+					$scope.checkedValue.push($(this).val());
+				});
+
+				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
+					alert("Kindly tick at least an item to proceed");
+				} else if ($scope.checkDetail.grandParentItemArray.length <= 1) {
+					alert("There is only 1 item ordered.");
+				} else if ($scope.checkDetail.grandParentItemArray.length == $scope.checkedValue.length) {	
+					alert("All ordered item has been selected.")
+				} else {
+					var jsonData = JSON.stringify({
+						"orderType" : $scope.orderType,
+						"tableNo" : $scope.tableNo,
+						"checkNo" : $scope.checkNo,
+						"checkDetailIdArray" : $scope.checkedValue
+					});
+					
+					$http.post("${pageContext.request.contextPath}/rc/check/split_check", jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							var data = "/check/" + "table" + "/" + response.data.new_check_no + "/" + $scope.tableNo;
+							$location.path(data);
+						} else {
+							if (response.data.response_message != null) {
+								alert(response.data.response_message);
+							} else {
+								alert("Error Occured While Split Check");
+							}
+						}
+					},
+					function(response) {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					});
+				}
 			}
 		}
 		

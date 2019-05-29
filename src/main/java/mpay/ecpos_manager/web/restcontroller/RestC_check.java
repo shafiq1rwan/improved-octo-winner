@@ -2009,7 +2009,7 @@ public class RestC_check {
 													boolean noSub2 = true;
 													
 													while (rs5.next()) {
-														noSub = false;
+														noSub2 = false;
 														orderQuantity = rs5.getInt("quantity");
 														totalAmount = rs5.getBigDecimal("total_amount");
 														
@@ -2248,6 +2248,390 @@ public class RestC_check {
 			}
 		}
 		Logger.writeActivity("----------- CANCEL CHECK END ---------", ECPOS_FOLDER);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/split_check" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String splitCheck(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("----------- SPLIT CHECK START ---------", ECPOS_FOLDER);
+		Logger.writeActivity("request: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		PreparedStatement stmt7 = null;
+		PreparedStatement stmt8 = null;
+		PreparedStatement stmt9 = null;
+		PreparedStatement stmt10 = null;
+		PreparedStatement stmt11 = null;
+		PreparedStatement stmt12 = null;
+		PreparedStatement stmt13 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
+		ResultSet rs6 = null;
+		ResultSet rs7 = null;
+		ResultSet rs8 = null;
+		ResultSet rs9 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+				
+				JSONObject jsonData = new JSONObject(data);
+				
+				if ((jsonData.has("orderType") && !jsonData.isNull("orderType")) 
+						&& (jsonData.has("tableNo") && !jsonData.isNull("tableNo") && !jsonData.getString("tableNo").isEmpty())
+						&& (jsonData.has("checkNo") && !jsonData.isNull("checkNo") && !jsonData.getString("checkNo").isEmpty())
+						&& (jsonData.has("checkDetailIdArray") && !jsonData.isNull("checkDetailIdArray") && jsonData.getJSONArray("checkDetailIdArray").length() > 0)) {
+					if (jsonData.getString("orderType").equals("table")) {
+						stmt = connection.prepareStatement("select * from `check` where check_number = ? and order_type = 1 and table_number = ?;");
+						stmt.setString(1, jsonData.getString("checkNo"));
+						stmt.setString(2, jsonData.getString("tableNo"));
+						rs = stmt.executeQuery();
+						
+						if (rs.next()) {
+								stmt2 = connection.prepareStatement("select * from staff where staff_username = ?;");
+								stmt2.setString(1, user.getUsername());
+								rs2 = stmt2.executeQuery();
+					
+								if (rs2.next()) {
+									long staffId = rs2.getLong("id");
+									
+									stmt3 = connection.prepareStatement("select * from master where type = 'check';");
+									rs3 = stmt3.executeQuery();
+					
+									if (rs3.next()) {
+										int currentCheckNo = rs3.getInt("count");
+										int newCheckNo = currentCheckNo + 1;
+										
+										stmt4 = connection.prepareStatement("update master set count = ? where type = 'check';");
+										stmt4.setString(1, Integer.toString(newCheckNo));
+										int updateMaster = stmt4.executeUpdate();
+					
+										if (updateMaster > 0) {
+											stmt5 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+													"values (?,?,1,?,0,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
+											stmt5.setString(1, Integer.toString(newCheckNo));
+											stmt5.setLong(2, staffId);
+											stmt5.setString(3, jsonData.getString("tableNo"));
+											int insertCheck = stmt5.executeUpdate();
+					
+											if (insertCheck > 0) {
+												rs4 = stmt5.getGeneratedKeys();
+												
+												if (rs4.next()) {
+													long checkId = rs4.getLong(1);
+													
+													JSONArray checkDetailIdArray = jsonData.getJSONArray("checkDetailIdArray");
+													
+													boolean proceed = false;
+													loop: for (int i = 0; i < checkDetailIdArray.length(); i++) {
+														long checkDetailId = checkDetailIdArray.getLong(i);
+														
+														stmt6 = connection.prepareStatement("select * from check_detail where id = ? and check_number = ?;");
+														stmt6.setLong(1, checkDetailId);
+														stmt6.setString(2, jsonData.getString("checkNo"));
+														rs5 = stmt6.executeQuery();
+														
+														if (rs5.next()) {
+															stmt7 = connection.prepareStatement("select * from menu_item where id = ? and backend_id = ?");
+															stmt7.setLong(1, rs5.getLong("menu_item_id"));
+															stmt7.setString(2, rs5.getString("menu_item_code"));
+															rs6 = stmt7.executeQuery();
+															
+															if (rs6.next()) {
+																boolean isItemTaxable = rs6.getBoolean("is_taxable");
+																
+																JSONObject charges = new JSONObject();
+																JSONArray totalTaxes = new JSONArray();
+																JSONArray overallTaxes = new JSONArray();
+									
+																if (isItemTaxable) {
+																	stmt8 = connection.prepareStatement("select tc.* from tax_charge tc " + 
+																			"inner join charge_type_lookup ctlu on ctlu.charge_type_number = tc.charge_type " + 
+																			"where tc.is_active = 1;");
+																	rs7 = stmt8.executeQuery();
+									
+																	while (rs7.next()) {
+																		JSONObject taxInfo = new JSONObject();
+																		
+																		if (rs7.getInt("charge_type") == 1) {
+																			taxInfo.put("id", rs7.getString("id"));
+																			taxInfo.put("rate", rs7.getString("rate"));
+																			
+																			totalTaxes.put(taxInfo);
+																		} else if (rs7.getInt("charge_type") == 2) {
+																			taxInfo.put("id", rs7.getString("id"));
+																			taxInfo.put("rate", rs7.getString("rate"));
+																			
+																			overallTaxes.put(taxInfo);
+																		}
+																	}
+																	charges.put("totalTaxes", totalTaxes);
+																	charges.put("overallTaxes", overallTaxes);
+																}
+																Logger.writeActivity("isItemTaxable: " + isItemTaxable, ECPOS_FOLDER);
+																Logger.writeActivity("charges: " + charges, ECPOS_FOLDER);
+																
+																boolean updateCancelItemCheck = updateCancelledItemCheck(connection, rs.getLong("id"), jsonData.getString("checkNo"), rs5.getInt("quantity"), rs5.getBigDecimal("total_amount"), isItemTaxable, charges);
+
+																if (updateCancelItemCheck) {
+																	stmt9 = connection.prepareStatement("update check_detail set check_id = ?, check_number = ? where id = ? and check_number = ?;");
+																	stmt9.setLong(1, checkId);
+																	stmt9.setString(2, Integer.toString(newCheckNo));
+																	stmt9.setLong(3, checkDetailId);
+																	stmt9.setString(4, jsonData.getString("checkNo"));
+																	int updateCheckDetail = stmt9.executeUpdate();
+																	
+																	if (updateCheckDetail > 0) {
+																		boolean updateCheck = updateCheck(connection, checkId, Integer.toString(newCheckNo), rs5.getInt("quantity"), rs5.getBigDecimal("total_amount"), isItemTaxable, charges);
+																		
+																		if (updateCheck) {
+																			stmt10 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+																			stmt10.setLong(1, checkDetailId);
+																			rs8 = stmt10.executeQuery();
+																			
+																			boolean noSub = true;
+																			
+																			while (rs8.next()) {
+																				noSub = false;
+																				
+																				updateCancelItemCheck = updateCancelledItemCheck(connection, rs.getLong("id"), jsonData.getString("checkNo"), rs8.getInt("quantity"), rs8.getBigDecimal("total_amount"), isItemTaxable, charges);
+																				
+																				if (updateCancelItemCheck) {
+																					stmt11 = connection.prepareStatement("update check_detail set check_id = ?, check_number = ? where id = ? and check_number = ?;");
+																					stmt11.setLong(1, checkId);
+																					stmt11.setString(2, Integer.toString(newCheckNo));
+																					stmt11.setLong(3, rs8.getLong("id"));
+																					stmt11.setString(4, jsonData.getString("checkNo"));
+																					int updateParentCheckDetail = stmt11.executeUpdate();
+																					
+																					if (updateParentCheckDetail > 0) {
+																						updateCheck = updateCheck(connection, checkId, Integer.toString(newCheckNo), rs8.getInt("quantity"), rs8.getBigDecimal("total_amount"), isItemTaxable, charges);
+																						
+																						if (updateCheck) {
+																							stmt12 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+																							stmt12.setLong(1, rs8.getLong("id"));
+																							rs9 = stmt12.executeQuery();
+																						
+																							boolean noSub2 = true;
+																							
+																							while (rs9.next()) {
+																								noSub2 = false;
+																								
+																								updateCancelItemCheck = updateCancelledItemCheck(connection, rs.getLong("id"), jsonData.getString("checkNo"), rs9.getInt("quantity"), rs9.getBigDecimal("total_amount"), isItemTaxable, charges);
+																								
+																								if (updateCancelItemCheck) {
+																									stmt13 = connection.prepareStatement("update check_detail set check_id = ?, check_number = ? where id = ? and check_number = ?;");
+																									stmt13.setLong(1, checkId);
+																									stmt13.setString(2, Integer.toString(newCheckNo));
+																									stmt13.setLong(3, rs9.getLong("id"));
+																									stmt13.setString(4, jsonData.getString("checkNo"));
+																									int updateChildCheckDetail = stmt13.executeUpdate();
+																									
+																									if (updateChildCheckDetail > 0) {
+																										updateCheck = updateCheck(connection, checkId, Integer.toString(newCheckNo), rs9.getInt("quantity"), rs9.getBigDecimal("total_amount"), isItemTaxable, charges);
+																										
+																										if (updateCheck) {
+																											proceed = true;
+																										} else {
+																											proceed = false;
+																											connection.rollback();
+																											Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+																											jsonResult.put(Constant.RESPONSE_CODE, "01");
+																											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+																											break loop;
+																										}
+																									} else {
+																										proceed = false;
+																										connection.rollback();
+																										Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+																										jsonResult.put(Constant.RESPONSE_CODE, "01");
+																										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+																										break loop;
+																									}
+																								} else {
+																									
+																								}
+																							}
+																							
+																							if (noSub2) {
+																								proceed = true;
+																							}
+																						} else {
+																							proceed = false;
+																							connection.rollback();
+																							Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+																							jsonResult.put(Constant.RESPONSE_CODE, "01");
+																							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+																							break loop;
+																						}
+																					} else {
+																						proceed = false;
+																						connection.rollback();
+																						Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);
+																						jsonResult.put(Constant.RESPONSE_CODE, "01");
+																						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Update");
+																						break loop;
+																					}
+																				} else {
+																					proceed = false;
+																					connection.rollback();
+																					Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+																					jsonResult.put(Constant.RESPONSE_CODE, "01");
+																					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+																					break loop;
+																				}
+																			}
+																			
+																			if (noSub) {
+																				proceed = true;
+																			}
+																		} else {
+																			proceed = false;
+																			connection.rollback();
+																			Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+																			jsonResult.put(Constant.RESPONSE_CODE, "01");
+																			jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+																			break loop;
+																		}
+																	} else {
+																		proceed = false;
+																		connection.rollback();
+																		Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);
+																		jsonResult.put(Constant.RESPONSE_CODE, "01");
+																		jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Update");
+																		break loop;
+																	}
+																} else {
+																	proceed = false;
+																	connection.rollback();
+																	Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+																	jsonResult.put(Constant.RESPONSE_CODE, "01");
+																	jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+																	break loop;
+																}
+															} else {
+																proceed = false;
+																connection.rollback();
+																Logger.writeActivity("Menu Item Not Found", ECPOS_FOLDER);
+																jsonResult.put(Constant.RESPONSE_CODE, "01");
+																jsonResult.put(Constant.RESPONSE_MESSAGE, "Menu Item Not Found");
+																break loop;
+															}
+														} else {
+															proceed = false;
+															connection.rollback();
+															Logger.writeActivity("Check Detail Not Found", ECPOS_FOLDER);
+															jsonResult.put(Constant.RESPONSE_CODE, "01");
+															jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Not Found");
+															break loop;
+														}
+													}
+													
+													if (proceed) {
+														Logger.writeActivity("Check Successfully Split", ECPOS_FOLDER);
+														jsonResult.put(Constant.RESPONSE_CODE, "00");
+														jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Successfully Split");
+														jsonResult.put("new_check_no", Integer.toString(newCheckNo));
+													}
+												} else {
+													connection.rollback();
+													Logger.writeActivity("Check Id Failed To Return", ECPOS_FOLDER);
+													jsonResult.put(Constant.RESPONSE_CODE, "01");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Id Failed To Return");
+												}
+											} else {
+												connection.rollback();
+												Logger.writeActivity("Check Failed To Insert", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Insert");
+											}
+										} else {
+											connection.rollback();
+											Logger.writeActivity("Check Count Failed To Update", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Failed To Update");
+										}
+									} else {
+										connection.rollback();
+										Logger.writeActivity("Check Count Not Found", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Not Found");
+									}
+								} else {
+									connection.rollback();
+									Logger.writeActivity("Staff Not Found", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
+								}
+						} else {
+							connection.rollback();
+							Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
+						}
+					} else {
+						connection.rollback();
+						Logger.writeActivity("Invalid Order Type", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Order Type");
+					}
+				} else {
+					connection.rollback();
+					Logger.writeActivity("Request Not Complete", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (stmt7 != null) stmt7.close();
+				if (stmt8 != null) stmt8.close();
+				if (stmt9 != null) stmt9.close();
+				if (stmt10 != null) stmt10.close();
+				if (stmt11 != null) stmt11.close();
+				if (stmt12 != null) stmt12.close();
+				if (stmt13 != null) stmt13.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (rs5 != null) {rs5.close();rs5 = null;}
+				if (rs6 != null) {rs6.close();rs6 = null;}
+				if (rs7 != null) {rs7.close();rs7 = null;}
+				if (rs8 != null) {rs8.close();rs8 = null;}
+				if (rs9 != null) {rs9.close();rs9 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- SPLIT CHECK END ---------", ECPOS_FOLDER);
 		return jsonResult.toString();
 	}
 	

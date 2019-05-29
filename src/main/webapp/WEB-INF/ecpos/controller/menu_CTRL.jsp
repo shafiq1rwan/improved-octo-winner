@@ -358,6 +358,7 @@
 			$http.post("${pageContext.request.contextPath}/rc/check/order", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
+					allGrandParentItemCheckbox.checked = false;
 					$scope.getCheckDetails();
 					
 					$('#itemQuantity').val(1);

@@ -186,6 +186,9 @@ hr {
 											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 												<button id="cancelCheckButton" class="btn btn-block btn-info" ng-click="cancelCheck()">CANCEL CHECK</button>
 											</div>
+											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6" ng-if="orderType == 'table'">
+												<button id="splitCheckButton" class="btn btn-block btn-info" ng-click="splitCheck()">SPLIT CHECK</button>
+											</div>
 										</div>
 									</div>
 								</div>

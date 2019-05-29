@@ -475,7 +475,7 @@ insert into `device_type` values
 (1, 'ECPOS'), (2, 'BYOD'), (3, 'KIOSK');
 
 insert into `order_type` values
-(1, 'table'), (2, 'take away');
+(1, 'table'), (2, 'take away'), (3, 'deposit');
 
 insert into `transaction_settlement_status` values
 (1, 'New'), (2, 'Pending'), (3, 'Approved'), (4, 'Declined'), (5, 'Voided'), (6, 'Refunded'), (7, 'Reversed');
@@ -487,7 +487,7 @@ insert into `payment_method` values
 (1, 'Cash'), (2, 'Card'), (3, 'QR');
 
 insert into `payment_type` values
-(1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Split Payment'), (4, 'Deposit Payment');
+(1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Deposit Payment');
 
 insert into `nii_type` values
 (1, 'NR'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');

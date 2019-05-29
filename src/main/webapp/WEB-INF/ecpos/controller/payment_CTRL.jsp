@@ -11,14 +11,13 @@
 		$scope.selectedTerminal;
 		$scope.alertMessage = "";
 		$scope.paymentButtonFn;
-		
+	
 		$scope.isCashAlert = false;
 	
 		var counter = 0;
 		
 		$('#fullPayment').prop('disabled', false);
 		$('#partialPayment').prop('disabled', false);
-		$('#splitPayment').prop('disabled', false);
 		$('#depositPayment').prop('disabled', false);
 		
 		$scope.paymentInitiation = function() {
@@ -33,17 +32,14 @@
 				if (response.data.data == "0") {
 					$('#fullPayment').prop('disabled', false);
 					$('#partialPayment').prop('disabled', false);
-					$('#splitPayment').prop('disabled', false);
 					$('#depositPayment').prop('disabled', false);
 				} else if (response.data.data.includes("3")) {
 					$('#fullPayment').prop('disabled', true);
 					$('#partialPayment').prop('disabled', true);
-					$('#splitPayment').prop('disabled', false);
 					$('#depositPayment').prop('disabled', true);
 				} else {
 					$('#fullPayment').prop('disabled', false);
 					$('#partialPayment').prop('disabled', false);
-					$('#splitPayment').prop('disabled', true);
 					$('#depositPayment').prop('disabled', false);
 				}
 			},
@@ -60,28 +56,6 @@
 
 			if ($scope.paymentType == "full") {
 				$('#tenderAmount').html(parseFloat($scope.fullPaymentAmount).toFixed(2));
-	
-				$("#one").prop('disabled', true);
-				$("#two").prop('disabled', true);
-				$("#three").prop('disabled', true);
-				$("#four").prop('disabled', true);
-				$("#five").prop('disabled', true);
-				$("#six").prop('disabled', true);
-				$("#seven").prop('disabled', true);
-				$("#eight").prop('disabled', true);
-				$("#nine").prop('disabled', true);
-				$("#zero").prop('disabled', true);
-				$("#zerozero").prop('disabled', true);
-				$("#remove").prop('disabled', true);
-			} else if ($scope.paymentType == "split") {
-				$("input[name=grandParentItemCheckbox]:checked").each(function(){
-					$(this).prop('checked', false);
-				});
-				
-				$("#allGrandParentItemCheckbox").show();
-				$("input[name=grandParentItemCheckbox]").show();
-	
-				$('#tenderAmount').html(parseFloat(0).toFixed(2));
 	
 				$("#one").prop('disabled', true);
 				$("#two").prop('disabled', true);
@@ -112,11 +86,6 @@
 				$("#remove").prop('disabled', false);
 			}
 		}
-	
-		$('#backToPaymentType').click(function() {
-			$("#allGrandParentItemCheckbox").hide();
-			$("input[name=grandParentItemCheckbox]").hide();
-		})
 		
 		$('#backToPaymentMethod').click(function() {
 			if ($scope.paymentType != "full") {
@@ -222,15 +191,7 @@
 		}
 		
 		$scope.submitPayment = function() {
-			if ($scope.paymentType == "split") {
-				$("input[name=grandParentItemCheckbox]:checked").each(function() {
-					$scope.checkedValue.push($(this).val());
-				});
-
-				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
-					return alert("Kindly tick at least an item to proceed");
-				}
-			} else if (($scope.paymentMethod == "Card" || $scope.paymentMethod == "QR") && $('#terminal').val() == "") {
+			if (($scope.paymentMethod == "Card" || $scope.paymentMethod == "QR") && $('#terminal').val() == "") {
 				return alert("Kindly select terminal");
 			} else if ($('#tenderAmount').text() == "0.00") {
 				return alert("Kindly enter payment amount");
@@ -257,7 +218,6 @@
 					return alert("Received amount should be greater than or equal to Tender Amount");
 				} else {
 					var jsonData = JSON.stringify({
-						"checkDetailIdArray" : $scope.checkedValue,
 						"paymentType" : $scope.paymentType,
 						"paymentMethod" : $scope.paymentMethod,
 						"paymentAmount" : $('#tenderAmount').text(),
@@ -321,7 +281,6 @@
 			} else if($scope.paymentMethod == "Card") {	
 				var jsonData = JSON.stringify({
 					"terminalSerialNo" : $('#terminal').val(),
-					"checkDetailIdArray" : $scope.checkedValue,
 					"paymentType" : $scope.paymentType,
 					"paymentMethod" : $scope.paymentMethod,
 					"paymentAmount" : $('#tenderAmount').text(),
@@ -438,7 +397,6 @@
 
 					var jsonData = JSON.stringify({
 						"terminalSerialNo" : $('#terminal').val(),
-						"checkDetailIdArray" : $scope.checkedValue,
 						"paymentType" : $scope.paymentType,
 						"paymentMethod" : $scope.paymentMethod,
 						"paymentAmount" : $('#tenderAmount').text(),

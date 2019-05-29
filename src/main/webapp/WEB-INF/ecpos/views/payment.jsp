@@ -96,13 +96,6 @@ ul.select2-results__options li {
 									</div>
 								</div>
 								<div class="row">
-									<div ng-if="orderType != 'deposit'">
-										<div class="col-sm-6" style="margin-top: 15px; margin-bottom: 15px;">
-											<button id="splitPayment" class="btn btn-block" style="margin: auto; background: white; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('split')">
-												<font size="4"><i>Split Payment</i></font>
-											</button>
-										</div>
-									</div>
 									<div ng-if="orderType == 'deposit'">
 										<div class="col-sm-6" style="margin-top: 15px; margin-bottom: 15px;">
 											<button id="depositPayment" class="btn btn-block" style="margin: auto; background: white; width: 165px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('deposit')">
@@ -118,7 +111,7 @@ ul.select2-results__options li {
 							<div id="paymentMethod">
 								<div class="row" style="font-size: large">
 									<div class="col-sm-2">
-										<a id="backToPaymentType" data-target="#paymentCarousel" data-slide="prev">
+										<a data-target="#paymentCarousel" data-slide="prev">
 											<i class="fa fa-arrow-left" style="color: black;"></i>
 										</a>
 									</div>

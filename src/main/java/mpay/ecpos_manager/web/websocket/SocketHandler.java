@@ -62,10 +62,8 @@ public class SocketHandler extends TextWebSocketHandler {
 				paymentType = 1;
 			} else if (jsonObj.getString("paymentType").equals("partial")) {
 				paymentType = 2;
-			} else if (jsonObj.getString("paymentType").equals("split")) {
-				paymentType = 3;
 			} else if (jsonObj.getString("paymentType").equals("deposit")) {
-				paymentType = 4;
+				paymentType = 3;
 			} else {
 				Logger.writeActivity("Invalid Payment Type", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -100,21 +98,6 @@ public class SocketHandler extends TextWebSocketHandler {
 				
 				session.sendMessage(new TextMessage(jsonResult.toString()));
 				session.close();
-			}
-			
-			JSONArray checkDetailIdArray = new JSONArray();
-			if (paymentType == 3) {
-			
-				if (!(jsonObj.has("checkDetailIdArray") && jsonObj.getJSONArray("checkDetailIdArray").length() > 0)) {
-					Logger.writeActivity("Item Not Found For Split Payment", IPOS_FOLDER);
-					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Found For Split Payment");
-					
-					session.sendMessage(new TextMessage(jsonResult.toString()));
-					session.close();
-				} else {
-					checkDetailIdArray = jsonObj.getJSONArray("checkDetailIdArray");
-				}
 			}
 			
 			BigDecimal paymentAmount = BigDecimal.ZERO;
@@ -240,8 +223,6 @@ public class SocketHandler extends TextWebSocketHandler {
 										
 										if (paymentType == 1) {
 											updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
-										} else if (paymentType == 3) {
-											updateCheckResult = updateCheck3(checkDetailIdArray, transactionId, checkNo, paymentAmount, grandTotalAmount, depositAmount, tenderAmount);
 										} else {
 											updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
 										}
@@ -579,89 +560,6 @@ public class SocketHandler extends TextWebSocketHandler {
 		} finally {
 			try {
 				if (stmt != null) stmt.close();
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return result;
-	}
-	
-	private JSONObject updateCheck3(JSONArray checkDetailIdArray, long transactionId, String checkNo, BigDecimal paymentAmount, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		ResultSet rs2 = null;
-		JSONObject result = new JSONObject();
-		
-		try {
-			connection = dataSource.getConnection();
-			
-			String checkDetailIds = "";
-			for (int i = 0; i < checkDetailIdArray.length(); i++) {
-				checkDetailIds += checkDetailIdArray.getString(i);
-				
-				if (i != checkDetailIdArray.length()-1) {
-					checkDetailIds += " ,";
-				}
-			}
-			
-			stmt = connection.prepareStatement("update check_detail set check_detail_status = 3, transaction_id = ?, updated_date = now() where id in ("+ checkDetailIds +") and check_number = ?;");
-			stmt.setLong(1, transactionId);
-			stmt.setString(2, checkNo);
-			int updateCheckDetail = stmt.executeUpdate();
-			
-			if (updateCheckDetail > 0) {
-				stmt.close();
-				stmt = connection.prepareStatement("select check_id from check_detail where id in ("+ checkDetailIds +") and check_number = ? group by check_id;");
-				stmt.setString(1, checkNo);
-				rs = stmt.executeQuery();
-				
-				if (rs.next()) {
-					stmt = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and check_detail_status in (1, 2);");
-					stmt.setLong(1, rs.getLong("check_id"));
-					stmt.setString(2, checkNo);
-					rs2 = stmt.executeQuery();
-					
-					boolean empty = true;
-					
-					if (rs2.next()) {
-						empty = false; 
-					}
-					
-					String checkStatusCondition = "";
-					String checkStatus = "open";
-					if (empty) {
-						checkStatusCondition = "check_status = 3, ";
-						checkStatus = "closed";
-					}
-					
-					tenderAmount = tenderAmount.add(paymentAmount);
-					
-					stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, " + checkStatusCondition + "updated_date = now() where id = ? and check_number = ? and check_status in (1, 2);");
-					stmt.setBigDecimal(1, tenderAmount);
-					stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
-					stmt.setLong(3, rs.getLong("check_id"));
-					stmt.setString(4, checkNo);
-					int updateCheck = stmt.executeUpdate();
-					
-					if (updateCheck> 0) {
-						result.put("status", "success");
-						result.put("checkStatus", checkStatus);
-					} else {
-						result.put("status", "fail");
-					}
-				}
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", IPOS_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", IPOS_FOLDER);
