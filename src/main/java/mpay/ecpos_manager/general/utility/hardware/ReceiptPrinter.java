@@ -41,6 +41,7 @@ import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTFonts;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHpsMeasure;
@@ -52,6 +53,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSpacing;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTString;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTStyle;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGrid;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGridCol;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTc;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcBorders;
@@ -539,6 +541,25 @@ public class ReceiptPrinter {
 
 						jsonResult.put("qrData", qrData);
 					}
+					
+					switch(rs6.getInt("transaction_type")) {
+						case 1:
+							jsonResult.put("transactionType", "Sale");	
+							break;
+						case 2:
+							jsonResult.put("transactionType", "Void");	
+							break;
+						case 3:
+							jsonResult.put("transactionType", "Refund");	
+							break;
+						case 4:
+							jsonResult.put("transactionType", "Reversal");	
+							break;
+						default:
+							jsonResult.put("transactionType", "-");	
+							break;
+					}
+
 				}
 
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -784,11 +805,23 @@ public class ReceiptPrinter {
 
 							// Receipt Info Table
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							List<String> receiptInfoLabels = Arrays.asList("Check No", "Table No", "Order At", "Printed At",
-									"Staff");
-							List<String> receiptInfoContents = Arrays.asList(receiptContentJson.getString("checkNo"),
+							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Table No", "Order At", "Printed At",
+									"Staff"));
+
+							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("checkNo"),
 									receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
-									sdf.format(new Date()), staffName);
+									sdf.format(new Date()), staffName));
+
+							receiptInfoLabels.add("Trans Type");
+							
+							if(!receiptContentJson.isNull("transactionType")) {
+								if(receiptContentJson.getString("transactionType").equals("Void")) {
+									//change order at to void at
+									receiptInfoLabels.set(2, "Void At");
+									
+								}
+								receiptInfoContents.add(receiptContentJson.getString("transactionType"));
+							}
 
 							XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
 							CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set

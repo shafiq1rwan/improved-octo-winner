@@ -379,7 +379,7 @@
 						var jsonResult = JSON.parse(event.data);
 						$scope.jsonResult = jsonResult;
 						console.log($scope.jsonResult);
-						$scope.alertMessage = jsonResult.response_message;
+						$scope.alertMessage = $sce.trustAsHtml(jsonResult.response_message);
 						$('#paymentAlertModal').modal('show');
 						printReceipt($scope.checkNo)
 					}
@@ -456,7 +456,7 @@
 						if (response.data.response_code === "00") {
 							$('#loading_modal').modal('hide');
 					
-							$scope.alertMessage = response.data.response_message;
+							$scope.alertMessage = $sce.trustAsHtml(response.data.response_message);
 
 							$('#paymentAlertModal').modal('show'); 
 							
