@@ -242,7 +242,9 @@ public class RestC_check {
 					if (rs.getInt("check_status") == 1 || rs.getInt("check_status") == 2) {
 						long id = rs.getLong("id");
 						
+						jsonResult.put("orderType", rs.getString("order_type"));
 						jsonResult.put("checkNo", rs.getString("check_number"));
+						jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
 						jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 						jsonResult.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 						jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
@@ -449,6 +451,7 @@ public class RestC_check {
 					
 					jsonResult.put("orderType", rs.getString("order_type"));
 					jsonResult.put("checkNo", rs.getString("check_number"));
+					jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
 					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 					jsonResult.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 					jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
@@ -717,7 +720,7 @@ public class RestC_check {
 	}
 	
 	@RequestMapping(value = { "/create/take_away" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String createCheck(HttpServletRequest request, HttpServletResponse response) {
+	public String createCheck(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("----------- CREATE TAKE AWAY CHECK START ---------", ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -725,40 +728,20 @@ public class RestC_check {
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
 		PreparedStatement stmt4 = null;
-		PreparedStatement stmtA = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		ResultSet rsA = null;
 		
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {
 			if (user != null) {
-				connection = dataSource.getConnection();
-				connection.setAutoCommit(false);
+				JSONObject jsonObj = new JSONObject(data);
 				
-				boolean proceedCreate = false;
-				
-				stmtA = connection.prepareStatement("select * from `check` where order_type = 2 order by id desc limit 1;");
-				rsA = stmtA.executeQuery();
-				
-				if (rsA.next()) {
-					if (rsA.getInt("check_status") == 1 && rsA.getString("updated_date") == null) {
-						proceedCreate = false;
-						connection.commit();
-						Logger.writeActivity("Check Number: " + rsA.getString("check_number"), ECPOS_FOLDER);
-						jsonResult.put(Constant.CHECK_NO, rsA.getString("check_number"));
-						jsonResult.put(Constant.RESPONSE_CODE, "00");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
-					} else {
-						proceedCreate = true;
-					}
-				} else {
-					proceedCreate = true;
-				}
-				
-				if (proceedCreate) {
+				if (user.isTakeAwayFlag() == false || user.isTakeAwayFlag() == true && jsonObj.has("customerName")) {
+					connection = dataSource.getConnection();
+					connection.setAutoCommit(false);
+					
 					String username = user.getUsername();
 					
 					stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
@@ -780,8 +763,14 @@ public class RestC_check {
 							int rs3 = stmt3.executeUpdate();
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-										"values (?,?,2,0,0,0,0,0,0,0,0,1,now());");
+								if (user.isTakeAwayFlag() == true) {
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date,customer_name) " + 
+											"values (?,?,2,0,0,0,0,0,0,0,0,1,now(),?);");
+									stmt4.setString(3, jsonObj.getString("customerName"));
+								} else {
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+											"values (?,?,2,0,0,0,0,0,0,0,0,1,now());");
+								}
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setLong(2, staffId);
 								int rs4 = stmt4.executeUpdate();
@@ -816,6 +805,10 @@ public class RestC_check {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
 					}
+				} else {
+					Logger.writeActivity("Request Not Complete", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
 				}
 				connection.setAutoCommit(true);
 			} else {

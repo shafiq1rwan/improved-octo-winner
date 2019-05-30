@@ -54,6 +54,7 @@ public class WebComponents {
 
 					if (rs2.next()) {
 						domainContainer.setStoreType(rs2.getInt("store_type_id"));
+						domainContainer.setTakeAwayFlag(rs2.getBoolean("ecpos_takeaway_detail_flag"));
 					}
 				}
 			}

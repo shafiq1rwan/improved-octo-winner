@@ -323,6 +323,7 @@ public class DataSync {
 				check.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
 				check.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
 				check.put("order_type", rs.getString("order_type") == null ? JSONObject.NULL : rs.getString("order_type"));
+				check.put("customer_name", rs.getString("customer_name") == null ? JSONObject.NULL : rs.getString("customer_name"));
 				check.put("table_number", rs.getString("table_number") == null ? JSONObject.NULL : rs.getString("table_number"));
 				check.put("total_item_quantity", rs.getString("total_item_quantity") == null ? JSONObject.NULL : rs.getString("total_item_quantity"));
 				check.put("total_amount", rs.getString("total_amount") == null ? JSONObject.NULL : rs.getString("total_amount"));

@@ -74,6 +74,9 @@ hr {
 									<div>
 										<font><b>Status : {{checkDetail.status}}</b></font>
 									</div>
+									<div ng-if="checkDetail.orderType == '2'">
+										<font><b>Customer Name: : {{checkDetail.customerName}}</b></font>
+									</div>
 								</div>
 								<div class="col-sm-4">
 									<div ng-if="checkDetail.status == 'New' || checkDetail.status == 'Pending'")>

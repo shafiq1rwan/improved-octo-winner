@@ -237,6 +237,7 @@ create table `check` (
 	`check_number` bigint (20) NOT NULL,
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
+	`customer_name` text NULL,
     `table_number` int(20) NULL,
 	`total_item_quantity` int(20) NOT NULL,
 	`total_amount` decimal(25, 4) NOT NULL,

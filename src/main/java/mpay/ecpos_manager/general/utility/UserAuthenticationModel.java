@@ -8,6 +8,7 @@ public class UserAuthenticationModel {
 	public String name = "";
 	public int roleType = 0;
 	public int storeType = 0;
+	public boolean takeAwayFlag;
 
 	public int getUserLoginId() {
 		return userLoginId;
@@ -47,5 +48,13 @@ public class UserAuthenticationModel {
 
 	public void setStoreType(int storeType) {
 		this.storeType = storeType;
+	}
+
+	public boolean isTakeAwayFlag() {
+		return takeAwayFlag;
+	}
+
+	public void setTakeAwayFlag(boolean takeAwayFlag) {
+		this.takeAwayFlag = takeAwayFlag;
 	}
 }
