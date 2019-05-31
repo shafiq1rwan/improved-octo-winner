@@ -45,7 +45,6 @@
 									<table id="datatable_salesSummary" class="table table-bordered table-striped">
 										<thead>
 											<tr>
-												<th>Device Type</th>
 												<th>Payment Method</th>
 												<th>Total Sales</th>
 												<th>Total Amount</th>

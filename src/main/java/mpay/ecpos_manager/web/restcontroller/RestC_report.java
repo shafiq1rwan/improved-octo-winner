@@ -52,25 +52,17 @@ public class RestC_report {
 				Date endDate = dateFormat.parse(jsonObj.getString("endDate").replaceAll("T", " ").replaceAll("Z", ""));
 	
 				connection = dataSource.getConnection();
-				stmt = connection.prepareStatement("select dt.name as dt,pm,trans.count,trans.amount from device_type dt " + 
-						"left join ( " + 
-						"select trans.device_type,pm.name as pm,trans.count,trans.amount from payment_method pm " + 
-						"left join ( " + 
-						"select cd.device_type,t.payment_method,count(t.id) as count,sum(t.transaction_amount) as amount " + 
-						"from transaction t " + 
-						"inner join `check` c on c.id = t.check_id and c.check_number = t.check_number " + 
-						"inner join check_detail cd on cd.check_id = c.id and cd.check_number = c.check_number " + 
-						"where t.transaction_type = 1 and t.transaction_status = 3 and t.created_date >= ? and t.created_date <= ? " + 
-						"group by cd.device_type,t.payment_method) trans on trans.payment_method = pm.id) trans on trans.device_type = dt.id " + 
-						"order by dt.id;");
+				stmt = connection.prepareStatement("select pm.name,t.count,t.amount from payment_method pm " + 
+						"left join (select payment_method,count(*) as count,sum(transaction_amount) as amount from transaction " + 
+						"where transaction_type = 1 and transaction_status = 3 and created_date >= ? and created_date <= ? " + 
+						"group by payment_method) t on t.payment_method = pm.id;");
 				stmt.setTimestamp(1, new java.sql.Timestamp(startDate.getTime()));
 				stmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
 				rs = stmt.executeQuery();
 	
 				while (rs.next()) {
 					JSONObject jObject = new JSONObject();
-					jObject.put("deviceType", rs.getString("dt"));
-					jObject.put("paymentMethod", rs.getString("pm") == null ? "-" : rs.getString("pm"));
+					jObject.put("paymentMethod", rs.getString("name") == null ? "-" : rs.getString("name"));
 					jObject.put("totalCount", rs.getInt("count") == 0 ? "-" : rs.getInt("count"));
 					jObject.put("totalAmount", rs.getBigDecimal("amount") == null ? "-" : String.format("%.2f", rs.getBigDecimal("amount")));
 					

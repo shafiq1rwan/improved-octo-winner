@@ -56,10 +56,9 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 				"info" : false,
 				"paging": false,
 				"destroy" : true,
-				"columns" : [{"data" : "deviceType", "width": "25%"}, 
-					{"data" : "paymentMethod", "width": "25%"}, 
-					{"data" : "totalCount", "width": "25%"},
-					{"data" : "totalAmount", "width": "25%"}]
+				"columns" : [{"data" : "paymentMethod", "width": "33%"}, 
+					{"data" : "totalCount", "width": "33%"},
+					{"data" : "totalAmount", "width": "33%"}]
 			});
 		}
 	}
