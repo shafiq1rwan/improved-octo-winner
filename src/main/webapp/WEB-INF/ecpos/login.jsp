@@ -154,6 +154,23 @@
 		</div>
 	</div>
 	<!-- Scan QR Modal [END] -->
+
+	<!-- Loading Modal [START] -->
+	<div class="modal fade" data-backdrop="static" id="loading_modal"
+		role="dialog">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="text-center">
+						<img style="width: 75%"
+							src="${pageContext.request.contextPath}/img/gif/loading.gif"><br>
+						<span>Logging In...</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Loading Modal [END] -->
 </body>
 
 <script>
@@ -203,10 +220,10 @@ $("#switchBtn").click(function() {
 });
 
 $("#showQRLoginBtn").click(function() {
+	$("#scan_qr_modal").modal("show");
 	$("#scan_qr_modal").modal({
 	    backdrop: 'static'
 	});
-	$("#scan_qr_modal").modal("show");
 	loginQRContent = "";
 	isQRLoginExecuted = false;
 	
@@ -216,6 +233,8 @@ $("#showQRLoginBtn").click(function() {
 			if (e.which == 16) {
 				return;
 			} else if (e.which == 13){
+				$("#loading_modal").modal("show");
+				
 				isQRLoginExecuted = true;
 				
 				$("input#qrContent").val(loginQRContent);
