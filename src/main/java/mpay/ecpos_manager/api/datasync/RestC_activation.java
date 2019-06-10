@@ -168,6 +168,8 @@ public class RestC_activation {
 					
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
+					WebComponents webComponent = new WebComponents();
+					DataSync.resetDBActivationData(dataSource, webComponent);
 					DataSync.resetDBStoreData(connection);
 					DataSync.resetDBMenuData(connection);
 					
@@ -210,8 +212,7 @@ public class RestC_activation {
 						}
 					}
 					connection.setAutoCommit(true);	
-					
-					WebComponents webComponent = new WebComponents();
+				
 					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", brandId);
 					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", activationId);
 					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", activationKey);
@@ -233,6 +234,8 @@ public class RestC_activation {
 					// successful
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
+					WebComponents webComponent = new WebComponents();
+					DataSync.resetDBActivationData(dataSource, webComponent);
 					DataSync.resetDBStoreData(connection);
 					DataSync.resetDBMenuData(connection);
 					
@@ -267,7 +270,6 @@ public class RestC_activation {
 					}
 					connection.setAutoCommit(true);
 					
-					WebComponents webComponent = new WebComponents();
 					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", brandId);
 					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", activationId);
 					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", activationKey);

@@ -189,6 +189,84 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/get_trans_interval_list" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getTransIntervalList(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				stmt = connection.prepareStatement("SELECT id, interval_sync_name FROM interval_sync_lookup ORDER BY id;");
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					JSONObject transaction = new JSONObject();
+					transaction.put("id", rs.getString("id"));
+					transaction.put("intervalSyncName", rs.getString("interval_sync_name"));
+					
+					jary.put(transaction);
+				}
+				jsonResult.put("transConfigIntervalList", jary);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_trans_config" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getTransConfig(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				String staffSyncFlagStr = webComponent.getGeneralConfig(dataSource, "STAFF TRX SYNC");
+				String transSyncFlagStr = webComponent.getGeneralConfig(dataSource, "TRX SYNC");
+				String selectedIntervalStr = webComponent.getGeneralConfig(dataSource, "INTERVAL TRX SYNC");
+				
+				if(!(staffSyncFlagStr.equals("") && transSyncFlagStr.equals("") && selectedIntervalStr.equals(""))) {
+					boolean staffSyncFlag = Boolean.parseBoolean(staffSyncFlagStr);
+					boolean transSyncFlag = Boolean.parseBoolean(transSyncFlagStr);
+					jsonResult.put("staffSyncFlag", staffSyncFlag);
+					jsonResult.put("transSyncFlag", transSyncFlag);
+					jsonResult.put("selectedInterval", selectedIntervalStr);
+				}
+				else {
+					throw new Exception("Error getting transaction configurations");
+				}	
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/get_terminal_list/{terminalId}" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
 	public String getTerminallist(@PathVariable("terminalId") String terminalId, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
@@ -368,6 +446,68 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	@RequestMapping(value = { "/save_trans_config" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String saveTransConfig(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		JSONObject result = new JSONObject();
+		String resultCode = "E01";
+		String resultMessage = "Server error. Please try again later.";
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				//connection = dataSource.getConnection();
+				JSONObject transConfig = new JSONObject(data);
+				System.out.println(transConfig);
+				if(transConfig.has("staffSyncFlag") && transConfig.has("transSyncFlag") && transConfig.has("selectedInterval")) {
+					boolean staffSyncFlag = transConfig.getBoolean("staffSyncFlag");
+					boolean transSyncFlag = transConfig.getBoolean("transSyncFlag");
+					int selectedInterval = transConfig.getInt("selectedInterval");
+					
+					webComponent.updateGeneralConfig(dataSource, "STAFF TRX SYNC", String.valueOf(staffSyncFlag));
+					webComponent.updateGeneralConfig(dataSource, "TRX SYNC", String.valueOf(transSyncFlag));
+					webComponent.updateGeneralConfig(dataSource, "INTERVAL TRX SYNC", String.valueOf(selectedInterval));	
+					resultCode = "00";
+					resultMessage = "Success";
+				}
+				else {
+					resultCode = "E02";
+					resultMessage = "System Data Corrupted.";
+				}
+			}
+			else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+			
+			try {
+				Logger.writeActivity("resultCode: " + resultCode, ECPOS_FOLDER);
+				Logger.writeActivity("resultMessage: " + resultMessage, ECPOS_FOLDER);
+				result.put("resultCode", resultCode);
+				result.put("resultMessage", resultMessage);
+			} catch (Exception e) {
+			}
+		}
+		return result.toString();
 	}
 	
 /*	@RequestMapping(value = { "/get_printer_detail" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")

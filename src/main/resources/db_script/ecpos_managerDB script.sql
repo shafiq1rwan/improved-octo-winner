@@ -194,10 +194,17 @@ CREATE TABLE login_type_lookup
 	login_type_name NVARCHAR(50) NOT NULL UNIQUE
 );
 
+CREATE TABLE interval_sync_lookup
+(
+	id INT UNIQUE NOT NULL,
+	interval_sync_name NVARCHAR(50) NOT NULL UNIQUE
+);
+
 INSERT INTO store_type_lookup VALUES (1, 'Retail'),(2, 'F&B');
 INSERT INTO payment_delay_lookup VALUES (1, 'Pay Now/Later'), (2, 'Pay Now'), (3, 'Pay Later');
 INSERT INTO charge_type_lookup VALUES (1, 'Total Tax'),(2, 'Overall Tax');
 INSERT INTO login_type_lookup VALUES (1, 'Username & Password'), (2, 'Scan QR');
+INSERT INTO interval_sync_lookup VALUES (1, 'No interval synchronization'), (2, 'Every 5 minutes'), (3, 'Every 30 minutes'), (4, 'Every hour'), (5, 'Every 3 hours'), (6, 'Every 6 hours'), (7, 'Daily');
 
 CREATE TABLE menu_item_type_lookup (
 	menu_item_type_number INT NOT NULL UNIQUE,
@@ -465,6 +472,9 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Activ
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Brand ID', 'BRAND_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Version Number', 'VERSION_NUMBER', '');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Staff Login)', 'STAFF TRX SYNC', '0');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Every Transaction Performed)', 'TRX SYNC', '0');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Interval Lookup)', 'INTERVAL TRX SYNC', '1');
 
 insert into `master` values
 ('check', 0, now());

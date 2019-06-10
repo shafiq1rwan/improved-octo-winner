@@ -116,25 +116,15 @@ public class RestC_syncmenu {
 				if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E02")) {
 					resultCode = "E02";
 					resultMessage = "Device has been deactivated.";
-					
-					// clear ecpos activation info
-					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", "");
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", "");
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", "");
-					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", "");
-					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", "");			
+
+					DataSync.resetDBActivationData(dataSource, webComponent);	
 					DataSync.resetDBMenuData(connection);
 					webComponent.clearEcposSession(request);
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E03")) {
 					resultCode = "E03";
 					resultMessage = "Invalid access token. Please contact support.";
-					
-					// clear ecpos activation info
-					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", "");
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", "");
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", "");
-					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", "");
-					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", "");
+			
+					DataSync.resetDBActivationData(dataSource, webComponent);	
 					DataSync.resetDBMenuData(connection);
 					webComponent.clearEcposSession(request);
 				} else if (responseData.has("resultCode") && (responseData.getString("resultCode").equals("E06"))) {

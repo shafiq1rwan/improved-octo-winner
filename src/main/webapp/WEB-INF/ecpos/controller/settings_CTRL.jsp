@@ -2,6 +2,7 @@
 	app.controller('settings_CTRL', function($scope, $http, $window, $routeParams, $location, $compile) {
 		$scope.terminal = {};
 		$scope.cashFlowLog = {};
+		$scope.transConfig = {};
 		
 		$scope.action = "";
 		$scope.settlementType = "";
@@ -18,6 +19,8 @@
 					$scope.getPrinterList();
 					$scope.getTerminalList();
 					$scope.getStoreInfo();
+					$scope.getTransConfigList();
+					$scope.getTransConfigIntervalList();
 				} else {
 					alert("Session TIME OUT");
 					window.location.href = "${pageContext.request.contextPath}/signout";
@@ -87,6 +90,32 @@
 				} else {
 					$("#terminalList").show();
 				}
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
+		$scope.getTransConfigList = function(){
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_trans_config")
+			.then(function(response) {
+				var result = response.data;
+				$scope.transConfig.staffSyncFlag = result.staffSyncFlag;
+				$scope.transConfig.transSyncFlag = result.transSyncFlag;
+				$scope.transConfig.selectedInterval = result.selectedInterval;
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
+		$scope.getTransConfigIntervalList = function(){
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_trans_interval_list")
+			.then(function(response) {
+				$scope.transConfig.intervalList = response.data.transConfigIntervalList;
+				console.log($scope.transConfig.intervalList);
 			},
 			function(response) {
 				alert("Session TIME OUT");
@@ -285,6 +314,10 @@
 			$("#reactivationModal").modal("show");
 		}
 		
+		$scope.showTransConfigModal = function() {
+			$("#transConfigModal").modal("show");
+		}
+		
 		$scope.submitReactivation = function() {
 			$('#loading_modal').modal('show');
 			$http({
@@ -311,6 +344,38 @@
 				}
 			}, function(error) {
 				$scope.syncFailed("Unable to connect to server!", 1);
+			});
+		}
+		
+		$scope.submitTransConfig = function() {
+			$('#loading_modal').modal('show');
+			var postdata = {
+				staffSyncFlag : $scope.transConfig.staffSyncFlag,
+				transSyncFlag : $scope.transConfig.transSyncFlag,
+				selectedInterval : $scope.transConfig.selectedInterval
+			}
+			console.log(postdata);
+			$http({
+				method : 'POST',
+				headers : {
+					'Content-Type' : 'application/json'
+				},
+				data : postdata,
+				url : '${pageContext.request.contextPath}/rc/configuration/save_trans_config'
+			}).then(function(response) {
+				if (response != null && response.data != null
+						&& response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage);
+						$("#transConfigModal").modal("hide");
+					} else {
+						$scope.syncFailed(response.data.resultMessage);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!");
+				}
+			}, function(error) {
+				$scope.syncFailed("Unable to connect to server!");
 			});
 		}
 		

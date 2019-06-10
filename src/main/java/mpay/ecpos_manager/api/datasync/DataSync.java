@@ -11,15 +11,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import javax.sql.DataSource;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 public class DataSync {
 	
 	private static String SYNC_FOLDER = Property.getSYNC_FOLDER_NAME();
+	
+	public static void resetDBActivationData(DataSource dataSource, WebComponents webComponent) throws Exception {
+		// clear ecpos activation info
+		webComponent.updateGeneralConfig(dataSource, "BRAND_ID", "");
+		webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", "");
+		webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", "");
+		webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", "");
+		webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", "");
+		webComponent.updateGeneralConfig(dataSource, "STAFF TRX SYNC", "0");
+		webComponent.updateGeneralConfig(dataSource, "TRX SYNC", "0");
+		webComponent.updateGeneralConfig(dataSource, "INTERVAL TRX SYNC", "1");
+	}
 	
 	public static void resetDBMenuData(Connection connection) throws Exception {
 		String sqlStatement = "DELETE FROM category;";

@@ -74,7 +74,7 @@ hr {
 									</div>
 								</div>
 								<div class="row">
-									<div class="col-sm-6"> 
+									<div class="col-sm-4"> 
 									    <div class="custom-card info-box border-shadow" ng-click="submitSyncMenu()">
 										  <!-- Apply any bg-* class to to the icon to color it -->
 										  <span class="info-box-icon bg-blue"><i class="fa fa-object-group"></i></span>
@@ -84,7 +84,7 @@ hr {
 										  </div>
 										</div>
 									</div>
-									<div class="col-sm-6"> 
+									<div class="col-sm-4"> 
 									    <div class="custom-card info-box border-shadow" ng-click="submitSyncTransaction()">
 										  <!-- Apply any bg-* class to to the icon to color it -->
 										  <span class="info-box-icon bg-maroon"><i class="fa fa-exchange"></i></span>
@@ -94,9 +94,7 @@ hr {
 										  </div>
 										</div>
 									</div>
-								</div>
-								<div class="row">
-									<div class="col-sm-6"> 
+									<div class="col-sm-4"> 
 									    <div class="custom-card info-box border-shadow" ng-click="submitSyncStore()">
 										  <!-- Apply any bg-* class to to the icon to color it -->
 										  <span class="info-box-icon bg-olive"><i class="fa fa-users"></i></span>
@@ -106,7 +104,19 @@ hr {
 										  </div>
 										</div>
 									</div>
-									<div class="col-sm-6"> 
+								</div>
+								<div class="row">
+									<div class="col-sm-4"> 
+									    <div class="custom-card info-box border-shadow" ng-click="showTransConfigModal()">
+										  <!-- Apply any bg-* class to to the icon to color it -->
+										  <span class="info-box-icon bg-orange"><i class="fa fa-cogs"></i></span>
+										  <div class="info-box-content">
+										    <span class="info-box-text">Transaction Configuration</span>
+										    <span class="info-box-number">Settings</span>
+										  </div>
+										</div>
+									</div>
+									<div class="col-sm-4"> 
 									    <div class="custom-card info-box border-shadow" ng-click="showReactivationModal()">
 										  <!-- Apply any bg-* class to to the icon to color it -->
 										  <span class="info-box-icon bg-red"><i class="fa fa-plug"></i></span>
@@ -584,6 +594,68 @@ hr {
 								</div>
 							</form>
 						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="transConfigModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title text-center">Transaction Configuration </h4>
+						</div>
+						<form>
+							<div class="modal-body">						
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Synchronize during staff login</label>
+										<div>
+											<label>
+												<input type="radio" ng-model="transConfig.staffSyncFlag" class="form-check-input" ng-value=false checked> False
+											</label>
+											<label>
+												<input type="radio" ng-model="transConfig.staffSyncFlag" class="form-check-input" ng-value=true checked> True
+											</label>
+										</div> 
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Synchronize during transaction performed</label>
+										<div>
+											<label>
+												<input type="radio" ng-model="transConfig.transSyncFlag" class="form-check-input" ng-value=false checked> False
+											</label>
+											<label>
+												<input type="radio" ng-model="transConfig.transSyncFlag" class="form-check-input" ng-value=true checked> True
+											</label>
+										</div> 
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Interval synchronization</label>
+										<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+											<select class="form-control" ng-model="transConfig.selectedInterval" 
+												ng-options="interval.id as interval.intervalSyncName for interval in transConfig.intervalList">
+													<option value="" disabled>-- SELECT --</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<button class="btn btn-danger" data-dismiss="modal">Cancel</button>
+											<input type="submit" ng-click="submitTransConfig()" class="btn btn-info" value="Update" />  
+										</div>
+									</div>
+								</div>					
+							</div>
+						</form>
 						<!-- <div class="modal-footer"></div> -->
 					</div>
 				</div>
