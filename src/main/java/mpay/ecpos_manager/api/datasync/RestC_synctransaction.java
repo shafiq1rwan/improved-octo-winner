@@ -55,7 +55,8 @@ public class RestC_synctransaction {
 		try {
 			JSONObject jsonData = new JSONObject(data);
 			WebComponents webComponent = new WebComponents();
-			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			connection = dataSource.getConnection();
+			JSONObject activationInfo = webComponent.getActivationInfo(connection);
 			Logger.writeActivity("activationInfo: " + activationInfo, SYNC_FOLDER);
 			
 			String resultCode = "E01";
@@ -63,7 +64,6 @@ public class RestC_synctransaction {
 			String checkBrandId = activationInfo.getString("brandId");
 			String checkStoreId = "";
 			
-			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement("SELECT id FROM store");
 			rs = stmt.executeQuery();
 			if(rs.next()) {

@@ -237,15 +237,16 @@ public class RestC_configuration {
 	@RequestMapping(value = { "/get_trans_config" }, method = { RequestMethod.GET }, produces = "application/json")
 	public String getTransConfig(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
-
+		Connection connection = null;
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {
 			if (user != null) {
-				String staffSyncFlagStr = webComponent.getGeneralConfig(dataSource, "STAFF TRX SYNC");
-				String transSyncFlagStr = webComponent.getGeneralConfig(dataSource, "TRX SYNC");
-				String selectedIntervalStr = webComponent.getGeneralConfig(dataSource, "INTERVAL TRX SYNC");
+				connection = dataSource.getConnection();
+				String staffSyncFlagStr = webComponent.getGeneralConfig(connection, "STAFF TRX SYNC");
+				String transSyncFlagStr = webComponent.getGeneralConfig(connection, "TRX SYNC");
+				String selectedIntervalStr = webComponent.getGeneralConfig(connection, "INTERVAL TRX SYNC");
 				
 				if(!(staffSyncFlagStr.equals("") && transSyncFlagStr.equals("") && selectedIntervalStr.equals(""))) {
 					boolean staffSyncFlag = Boolean.parseBoolean(staffSyncFlagStr);
@@ -263,6 +264,13 @@ public class RestC_configuration {
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
 		}
 		return jsonResult.toString();
 	}
@@ -464,7 +472,7 @@ public class RestC_configuration {
 
 		try {
 			if (user != null) {
-				//connection = dataSource.getConnection();
+				connection = dataSource.getConnection();
 				JSONObject transConfig = new JSONObject(data);
 				System.out.println(transConfig);
 				if(transConfig.has("staffSyncFlag") && transConfig.has("transSyncFlag") && transConfig.has("selectedInterval")) {
@@ -472,9 +480,9 @@ public class RestC_configuration {
 					boolean transSyncFlag = transConfig.getBoolean("transSyncFlag");
 					int selectedInterval = transConfig.getInt("selectedInterval");
 					
-					webComponent.updateGeneralConfig(dataSource, "STAFF TRX SYNC", String.valueOf(staffSyncFlag));
-					webComponent.updateGeneralConfig(dataSource, "TRX SYNC", String.valueOf(transSyncFlag));
-					webComponent.updateGeneralConfig(dataSource, "INTERVAL TRX SYNC", String.valueOf(selectedInterval));	
+					webComponent.updateGeneralConfig(connection, "STAFF TRX SYNC", String.valueOf(staffSyncFlag));
+					webComponent.updateGeneralConfig(connection, "TRX SYNC", String.valueOf(transSyncFlag));
+					webComponent.updateGeneralConfig(connection, "INTERVAL TRX SYNC", String.valueOf(selectedInterval));	
 					resultCode = "00";
 					resultMessage = "Success";
 				}
@@ -1213,8 +1221,8 @@ public class RestC_configuration {
 		
 		try {
 			if (user != null) {
-				String brandId = webComponent.getGeneralConfig(dataSource, "BRAND_ID");
 				connection = dataSource.getConnection();
+				String brandId = webComponent.getGeneralConfig(connection, "BRAND_ID");
 				stmt = connection.prepareStatement("SELECT id from store;");
 				rs = stmt.executeQuery();
 				

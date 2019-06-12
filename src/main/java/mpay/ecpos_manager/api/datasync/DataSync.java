@@ -25,16 +25,16 @@ public class DataSync {
 	
 	private static String SYNC_FOLDER = Property.getSYNC_FOLDER_NAME();
 	
-	public static void resetDBActivationData(DataSource dataSource, WebComponents webComponent) throws Exception {
+	public static void resetDBActivationData(Connection connection, WebComponents webComponent) throws Exception {
 		// clear ecpos activation info
-		webComponent.updateGeneralConfig(dataSource, "BRAND_ID", "");
-		webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", "");
-		webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", "");
-		webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", "");
-		webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", "");
-		webComponent.updateGeneralConfig(dataSource, "STAFF TRX SYNC", "0");
-		webComponent.updateGeneralConfig(dataSource, "TRX SYNC", "0");
-		webComponent.updateGeneralConfig(dataSource, "INTERVAL TRX SYNC", "1");
+		webComponent.updateGeneralConfig(connection, "BRAND_ID", "");
+		webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", "");
+		webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", "");
+		webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", "");
+		webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", "");
+		webComponent.updateGeneralConfig(connection, "STAFF TRX SYNC", "0");
+		webComponent.updateGeneralConfig(connection, "TRX SYNC", "0");
+		webComponent.updateGeneralConfig(connection, "INTERVAL TRX SYNC", "1");
 	}
 	
 	public static void resetDBMenuData(Connection connection) throws Exception {

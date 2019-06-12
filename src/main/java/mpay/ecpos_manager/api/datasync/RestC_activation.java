@@ -169,7 +169,7 @@ public class RestC_activation {
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
 					WebComponents webComponent = new WebComponents();
-					DataSync.resetDBActivationData(dataSource, webComponent);
+					DataSync.resetDBActivationData(connection, webComponent);
 					DataSync.resetDBStoreData(connection);
 					DataSync.resetDBMenuData(connection);
 					
@@ -211,14 +211,14 @@ public class RestC_activation {
 							connection.rollback();
 						}
 					}
+					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);
+					webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", activationId);
+					webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", activationKey);
+					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
+					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));
+					
 					connection.setAutoCommit(true);	
 				
-					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", brandId);
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", activationId);
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", activationKey);
-					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
-					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));
-					
 					resultCode = "00";
 					resultMessage = "Success";
 					
@@ -235,7 +235,7 @@ public class RestC_activation {
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
 					WebComponents webComponent = new WebComponents();
-					DataSync.resetDBActivationData(dataSource, webComponent);
+					DataSync.resetDBActivationData(connection, webComponent);
 					DataSync.resetDBStoreData(connection);
 					DataSync.resetDBMenuData(connection);
 					
@@ -268,14 +268,15 @@ public class RestC_activation {
 							connection.rollback();
 						}
 					}
+					
+					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);
+					webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", activationId);
+					webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", activationKey);
+					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
+					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));			
+					
 					connection.setAutoCommit(true);
 					
-					webComponent.updateGeneralConfig(dataSource, "BRAND_ID", brandId);
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_ID", activationId);
-					webComponent.updateGeneralConfig(dataSource, "ACTIVATION_KEY", activationKey);
-					webComponent.updateGeneralConfig(dataSource, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
-					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));			
-
 					resultCode = "00";
 					resultMessage = "Success";
 					// clear session

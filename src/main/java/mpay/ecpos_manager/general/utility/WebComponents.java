@@ -148,15 +148,12 @@ public class WebComponents {
 		return domainContainer;
 	}
 	
-	public String getGeneralConfig(DataSource dataSource, String parameter){
+	public String getGeneralConfig(Connection connection, String parameter) throws Exception {
 		String value = null;
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		
-		try {
-			connection = dataSource.getConnection();
-			
+		try {	
 			stmt = connection.prepareStatement("SELECT * FROM general_configuration WHERE parameter = ?");
 			stmt.setString(1, parameter);
 			rs = stmt.executeQuery();
@@ -165,61 +162,42 @@ public class WebComponents {
 				value = rs.getString("value");		
 			}
 		}catch(Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			Logger.writeError(e, "SQLException: ", ECPOS_FOLDER);
 			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close();rs = null;}
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
+			throw e;
+		} 
 		return value;
 	}
 	
-	public boolean updateGeneralConfig(DataSource dataSource, String parameter, String value) {
+	public boolean updateGeneralConfig(Connection connection, String parameter, String value) throws Exception {
 		boolean flag = false;
-		Connection connection = null;
 		PreparedStatement stmt = null;
-		
 		try {
-			connection = dataSource.getConnection();
-			
 			stmt = connection.prepareStatement("UPDATE general_configuration SET value = ? WHERE parameter = ?");
 			stmt.setString(1, value);
 			stmt.setString(2, parameter);
 			int rowAffected = stmt.executeUpdate();
-
+	
 			if(rowAffected!=0) {
 				flag = true;	
 			}
-		}catch(Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
+		} catch (Exception ex) {
+			Logger.writeError(ex, "SQLException :", ECPOS_FOLDER);
+			ex.printStackTrace();
+			throw ex;
+		} 
 		return flag;
 	}
 	
-	public JSONObject getActivationInfo(DataSource dataSource){
+	public JSONObject getActivationInfo(Connection connection){
 		JSONObject result = new JSONObject();
 		
 		try {
-			result.put("activationId", getGeneralConfig(dataSource, "ACTIVATION_ID"));
-			result.put("activationKey", getGeneralConfig(dataSource, "ACTIVATION_KEY"));
-			result.put("macAddress", getGeneralConfig(dataSource, "MAC_ADDRESS"));
-			result.put("brandId", getGeneralConfig(dataSource, "BRAND_ID"));
-			result.put("versionNumber", getGeneralConfig(dataSource, "VERSION_NUMBER"));
+			result.put("activationId", getGeneralConfig(connection, "ACTIVATION_ID"));
+			result.put("activationKey", getGeneralConfig(connection, "ACTIVATION_KEY"));
+			result.put("macAddress", getGeneralConfig(connection, "MAC_ADDRESS"));
+			result.put("brandId", getGeneralConfig(connection, "BRAND_ID"));
+			result.put("versionNumber", getGeneralConfig(connection, "VERSION_NUMBER"));
 		}catch(Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();

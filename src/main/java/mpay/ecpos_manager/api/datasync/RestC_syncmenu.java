@@ -79,7 +79,7 @@ public class RestC_syncmenu {
 			
 			if (rs1.next()) {
 				Date date = new Date();
-				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				JSONObject activationInfo = webComponent.getActivationInfo(connection);
 				Map<String, Object> params = new LinkedHashMap<>();
 				params.put("storeId", rs1.getInt("id"));
 				params.put("versionCount", activationInfo.getString("versionNumber"));
@@ -117,14 +117,14 @@ public class RestC_syncmenu {
 					resultCode = "E02";
 					resultMessage = "Device has been deactivated.";
 
-					DataSync.resetDBActivationData(dataSource, webComponent);	
+					DataSync.resetDBActivationData(connection, webComponent);	
 					DataSync.resetDBMenuData(connection);
 					webComponent.clearEcposSession(request);
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("E03")) {
 					resultCode = "E03";
 					resultMessage = "Invalid access token. Please contact support.";
 			
-					DataSync.resetDBActivationData(dataSource, webComponent);	
+					DataSync.resetDBActivationData(connection, webComponent);	
 					DataSync.resetDBMenuData(connection);
 					webComponent.clearEcposSession(request);
 				} else if (responseData.has("resultCode") && (responseData.getString("resultCode").equals("E06"))) {
@@ -206,7 +206,7 @@ public class RestC_syncmenu {
 
 					imageFile.delete();
 					
-					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(currentVersion));
+					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(currentVersion));
 					DataSync.updateSyncDate(connection);
 					resultCode = "00";
 					resultMessage = "Updated to latest version.";
@@ -278,7 +278,7 @@ public class RestC_syncmenu {
 					}
 					connection.commit();
 					connection.setAutoCommit(true);
-					webComponent.updateGeneralConfig(dataSource, "VERSION_NUMBER", String.valueOf(currentVersion));
+					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(currentVersion));
 					DataSync.updateSyncDate(connection);		
 					resultCode = "00";
 					resultMessage = "Updated to latest version.";
@@ -339,7 +339,7 @@ public class RestC_syncmenu {
 			
 			if (rs1.next()) {
 				Date date = new Date();
-				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				JSONObject activationInfo = webComponent.getActivationInfo(connection);
 				Map<String, Object> params = new LinkedHashMap<>();
 				params.put("storeId", rs1.getInt("id"));
 				params.put("activationId", activationInfo.getString("activationId"));

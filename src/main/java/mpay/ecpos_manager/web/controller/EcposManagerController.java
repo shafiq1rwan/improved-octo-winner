@@ -43,7 +43,8 @@ public class EcposManagerController {
 		
 		// check for activation info
 		try {
-			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			connection = dataSource.getConnection();
+			JSONObject activationInfo = webComponent.getActivationInfo(connection);
 			Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 			
 			if(activationInfo.getString("activationId").equals("")) {
@@ -53,7 +54,6 @@ public class EcposManagerController {
 				UserAuthenticationModel user = webComponent.getEcposSession(request);
 				
 				if (user != null) {
-					connection = dataSource.getConnection();
 					stmt = connection.prepareStatement("select * from cash_drawer;");
 					rs = stmt.executeQuery();
 					
@@ -94,6 +94,7 @@ public class EcposManagerController {
 	@PostMapping("/authentication")
 	public ModelAndView ecposLogin(@RequestParam(value = "username", required = false) String username, @RequestParam(value = "password", required = false) String password, HttpServletRequest request) {
 		Logger.writeActivity("----------- ECPOS AUTHENTICATION START ---------", ECPOS_FOLDER);
+		Connection connection = null;
 		ModelAndView model = new ModelAndView();
 		HttpSession session = request.getSession();
 		WebComponents webComponent = new WebComponents();
@@ -103,8 +104,9 @@ public class EcposManagerController {
 			model.setViewName("ecpos/home");
 		} else {
 			try {
-				user = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
-				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				connection = dataSource.getConnection();
+				user = (UserAuthenticationModel) webComponent.performEcposAuthentication(username, password, dataSource, webComponent.getGeneralConfig(connection, "BYOD QR ENCRYPT KEY"));
+				JSONObject activationInfo = webComponent.getActivationInfo(connection);
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 				
 				if (user != null) {
@@ -121,6 +123,13 @@ public class EcposManagerController {
 			} catch (Exception e) {
 				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 				e.printStackTrace();
+			} finally {
+				try {
+					if (connection != null) {connection.close();}
+				} catch (SQLException e) {
+					Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+					e.printStackTrace();
+				}
 			}
 		}
 		Logger.writeActivity("----------- ECPOS AUTHENTICATION END ---------", ECPOS_FOLDER);
@@ -129,6 +138,7 @@ public class EcposManagerController {
 	@PostMapping("/authenticationQR")
 	public ModelAndView ecposLoginQR(@RequestParam(value = "qrContent", required = false) String qrContent, HttpServletRequest request) {
 		Logger.writeActivity("----------- ECPOS QR AUTHENTICATION START ---------", ECPOS_FOLDER);
+		Connection connection = null;
 		ModelAndView model = new ModelAndView();
 		HttpSession session = request.getSession();
 		WebComponents webComponent = new WebComponents();
@@ -138,8 +148,9 @@ public class EcposManagerController {
 			model.setViewName("ecpos/home");
 		} else {
 			try {
-				user = (UserAuthenticationModel) webComponent.performEcposQRAuthentication(qrContent, dataSource, webComponent.getGeneralConfig(dataSource, "BYOD QR ENCRYPT KEY"));
-				JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+				connection = dataSource.getConnection();
+				user = (UserAuthenticationModel) webComponent.performEcposQRAuthentication(qrContent, dataSource, webComponent.getGeneralConfig(connection, "BYOD QR ENCRYPT KEY"));
+				JSONObject activationInfo = webComponent.getActivationInfo(connection);
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 				
 				if (user != null) {
@@ -156,6 +167,13 @@ public class EcposManagerController {
 			} catch (Exception e) {
 				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 				e.printStackTrace();
+			} finally {
+				try {
+					if (connection != null) {connection.close();}
+				} catch (SQLException e) {
+					Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+					e.printStackTrace();
+				}
 			}
 		}
 		Logger.writeActivity("----------- ECPOS QR AUTHENTICATION END ---------", ECPOS_FOLDER);
@@ -166,13 +184,15 @@ public class EcposManagerController {
 	@RequestMapping(value = { "/signout" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public ModelAndView ecposSessionInvalidate(HttpServletRequest request) {
 		Logger.writeActivity("----------- ECPOS LOGOUT START ---------", ECPOS_FOLDER);
+		Connection connection = null;
 		ModelAndView model = new ModelAndView();
 		WebComponents webComponent = new WebComponents();
 		webComponent.clearEcposSession(request);
 		
 		// check for activation info
 		try {
-			JSONObject activationInfo = webComponent.getActivationInfo(dataSource);
+			connection = dataSource.getConnection();
+			JSONObject activationInfo = webComponent.getActivationInfo(connection);
 			Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 			
 			if(activationInfo.getString("activationId").equals("")) {
@@ -184,6 +204,13 @@ public class EcposManagerController {
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
 		}
 		Logger.writeActivity("----------- ECPOS LOGOUT END ---------", ECPOS_FOLDER);
 		return model;
