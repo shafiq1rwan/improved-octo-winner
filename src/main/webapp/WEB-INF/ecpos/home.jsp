@@ -14,7 +14,7 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
 <!-- Page title set in pageTitle directive -->
-<title page-title class="font-roboto-regular">ECPOS Manager</title>
+<title page-title class="font-roboto-regular">VERNPOS Manager</title>
 
 <!-- ****BASE FOLDER DEFINE**** -->
 <base href="/">

@@ -10,7 +10,7 @@
 		<a href="${pageContext.request.contextPath}/" class="logo">
 			<span class="text-center">
 				<img style="height: 22px; width: 20px;" src="${pageContext.request.contextPath}/meta/img/ecpos_logo.png" />
-				<b style='color: white; font-size: 1.3em;'>ECPOS</b>
+				<b style='color: white; font-size: 1.3em;'>VERNPOS</b>
 			</span>
 		</a>
 
