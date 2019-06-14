@@ -251,7 +251,6 @@ create table `check` (
 	`total_amount_with_tax` decimal(25, 4) NOT NULL,
 	`total_amount_with_tax_rounding_adjustment` decimal(25, 4) NOT NULL,
 	`grand_total_amount` decimal(25, 4) NOT NULL,
-	`deposit_amount` decimal(25, 4) NOT NULL,
 	`tender_amount` decimal(25, 4) NOT NULL,
 	`overdue_amount` decimal(25, 4) NOT NULL,
     `check_status` bigint(20) NOT NULL,
@@ -498,7 +497,7 @@ insert into `payment_method` values
 (1, 'Cash'), (2, 'Card'), (3, 'QR');
 
 insert into `payment_type` values
-(1, 'Full Payment'), (2, 'Partial Payment'), (3, 'Deposit Payment');
+(1, 'Full Payment'), (2, 'Partial Payment');
 
 insert into `nii_type` values
 (1, 'NR'), (2, 'AMEX'), (3, 'MCCS'), (4, 'UNIONPAY');

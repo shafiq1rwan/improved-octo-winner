@@ -27,7 +27,7 @@
 							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<font size="4">Reports</font>
+										<font size="4">REPORTS</font>
 									</div>
 								</div>
 								<br>

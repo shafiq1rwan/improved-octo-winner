@@ -11,7 +11,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="${pageContext.request.contextPath}/meta/img/ecpos_logo.png" type="image/x-icon">
-<title>ManagePay | ECPOS</title>
+<title>ManagePay | VERNPOS</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/demo.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/agent_login.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/mygroup.css">

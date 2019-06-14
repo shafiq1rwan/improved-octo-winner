@@ -151,7 +151,7 @@ public class RestC_check {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				
 				stmt = connection.prepareStatement("select c.id,c.check_number,s.staff_name,ot.name as order_type,ts.table_name,c.table_number,c.total_item_quantity, " + 
-						"c.grand_total_amount,c.deposit_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
+						"c.grand_total_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
 						"from `check` c " + 
 						"inner join staff s on s.id = c.staff_id " + 
 						"inner join order_type ot on ot.id = c.order_type " + 
@@ -170,7 +170,6 @@ public class RestC_check {
 					check.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 					check.put("totalItemQuantity", rs.getInt("total_item_quantity"));
 					check.put("grandTotalAmount", String.format("%.2f", rs.getBigDecimal("grand_total_amount")));
-					check.put("depositAmount", String.format("%.2f", rs.getBigDecimal("deposit_amount")));
 					check.put("tenderAmount", String.format("%.2f", rs.getBigDecimal("tender_amount")));
 					check.put("overdueAmount", String.format("%.2f", rs.getBigDecimal("overdue_amount")));
 					check.put("checkStatus", rs.getString("check_status"));
@@ -253,7 +252,6 @@ public class RestC_check {
 						jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));
 						jsonResult.put("grandTotalAmount", new BigDecimal(rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
 						jsonResult.put("status", rs.getString("name"));
-						jsonResult.put("depositAmount", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
 						jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 						jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
 						
@@ -460,7 +458,6 @@ public class RestC_check {
 					jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));
 					jsonResult.put("grandTotalAmount", new BigDecimal(rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
 					jsonResult.put("status", rs.getString("name"));
-					jsonResult.put("depositAmount", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
 					jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 					jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
 					
@@ -652,8 +649,8 @@ public class RestC_check {
 							int rs3 = stmt3.executeUpdate();
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-										"values (?,?,1,?,0,0,0,0,0,0,0,0,1,now());");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+										"values (?,?,1,?,0,0,0,0,0,0,0,1,now());");
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setLong(2, staffId);
 								stmt4.setString(3, tableNo);
@@ -764,12 +761,12 @@ public class RestC_check {
 		
 							if (rs3 > 0) {
 								if (user.isTakeAwayFlag() == true) {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date,customer_name) " + 
-											"values (?,?,2,0,0,0,0,0,0,0,0,1,now(),?);");
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name) " + 
+											"values (?,?,2,0,0,0,0,0,0,0,1,now(),?);");
 									stmt4.setString(3, jsonObj.getString("customerName"));
 								} else {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-											"values (?,?,2,0,0,0,0,0,0,0,0,1,now());");
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+											"values (?,?,2,0,0,0,0,0,0,0,1,now());");
 								}
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setLong(2, staffId);
@@ -836,7 +833,7 @@ public class RestC_check {
 	}
 	
 	@RequestMapping(value = { "/create/deposit" }, method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public String createDepositCheck(HttpServletRequest request, HttpServletResponse response) {
+	public String createDepositCheck(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("----------- CREATE DEPOSIT CHECK START ---------", ECPOS_FOLDER);
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
@@ -852,65 +849,74 @@ public class RestC_check {
 		
 		try {
 			if (user != null) {
-				String username = user.getUsername();
+				JSONObject jsonObj = new JSONObject(data);
 				
-				connection = dataSource.getConnection();
-				connection.setAutoCommit(false);
-	
-				stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
-				stmt.setString(1, username);
-				rs = stmt.executeQuery();
-	
-				if (rs.next()) {
-					long staffId = rs.getLong("id");
-					
-					stmt2 = connection.prepareStatement("select * from master where type = 'check';");
-					rs2 = stmt2.executeQuery();
-	
-					if (rs2.next()) {
-						int currentCheckNo = rs2.getInt("count");
-						int newCheckNo = currentCheckNo + 1;
+				if (jsonObj.has("customerName")) {
+					connection = dataSource.getConnection();
+					connection.setAutoCommit(false);
+		
+					String username = user.getUsername();
 						
-						stmt3 = connection.prepareStatement("update master set count = ? where type = 'check';");
-						stmt3.setString(1, Integer.toString(newCheckNo));
-						int rs3 = stmt3.executeUpdate();
-	
-						if (rs3 > 0) {
-							stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-									"values (?,?,3,0,0,0,0,0,0,0,0,1,now());");
-							stmt4.setString(1, Integer.toString(newCheckNo));
-							stmt4.setLong(2, staffId);
-							int rs4 = stmt4.executeUpdate();
-	
-							if (rs4 > 0) {
-								connection.commit();
-								Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
-								jsonResult.put(Constant.CHECK_NO, newCheckNo);
-								jsonResult.put(Constant.RESPONSE_CODE, "00");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+					stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
+					stmt.setString(1, username);
+					rs = stmt.executeQuery();
+		
+					if (rs.next()) {
+						long staffId = rs.getLong("id");
+						
+						stmt2 = connection.prepareStatement("select * from master where type = 'check';");
+						rs2 = stmt2.executeQuery();
+		
+						if (rs2.next()) {
+							int currentCheckNo = rs2.getInt("count");
+							int newCheckNo = currentCheckNo + 1;
+							
+							stmt3 = connection.prepareStatement("update master set count = ? where type = 'check';");
+							stmt3.setString(1, Integer.toString(newCheckNo));
+							int rs3 = stmt3.executeUpdate();
+		
+							if (rs3 > 0) {
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name) " + 
+										"values (?,?,3,0,0,0,0,0,0,0,1,now(),?);");
+								stmt4.setString(1, Integer.toString(newCheckNo));
+								stmt4.setLong(2, staffId);
+								stmt4.setString(3, jsonObj.getString("customerName"));
+								int rs4 = stmt4.executeUpdate();
+		
+								if (rs4 > 0) {
+									connection.commit();
+									Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+									jsonResult.put(Constant.CHECK_NO, newCheckNo);
+									jsonResult.put(Constant.RESPONSE_CODE, "00");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+								} else {
+									connection.rollback();
+									Logger.writeActivity("Check Master Failed To Insert", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Master Failed To Insert");
+								}
 							} else {
 								connection.rollback();
-								Logger.writeActivity("Check Master Failed To Insert", ECPOS_FOLDER);
+								Logger.writeActivity("Check Count Failed To Update", ECPOS_FOLDER);
 								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Master Failed To Insert");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Failed To Update");
 							}
 						} else {
 							connection.rollback();
-							Logger.writeActivity("Check Count Failed To Update", ECPOS_FOLDER);
+							Logger.writeActivity("Check Count Not Found", ECPOS_FOLDER);
 							jsonResult.put(Constant.RESPONSE_CODE, "01");
-							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Failed To Update");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Not Found");
 						}
 					} else {
 						connection.rollback();
-						Logger.writeActivity("Check Count Not Found", ECPOS_FOLDER);
+						Logger.writeActivity("Staff Not Found", ECPOS_FOLDER);
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Count Not Found");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
 					}
 				} else {
-					connection.rollback();
-					Logger.writeActivity("Staff Not Found", ECPOS_FOLDER);
+					Logger.writeActivity("Request Not Complete", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "Staff Not Found");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
 				}
 				connection.setAutoCommit(true);
 			} else {
@@ -2313,8 +2319,8 @@ public class RestC_check {
 										int updateMaster = stmt4.executeUpdate();
 					
 										if (updateMaster > 0) {
-											stmt5 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-													"values (?,?,1,?,0,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
+											stmt5 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+													"values (?,?,1,?,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
 											stmt5.setString(1, Integer.toString(newCheckNo));
 											stmt5.setLong(2, staffId);
 											stmt5.setString(3, jsonData.getString("tableNo"));
@@ -2625,6 +2631,124 @@ public class RestC_check {
 			}
 		}
 		Logger.writeActivity("----------- SPLIT CHECK END ---------", ECPOS_FOLDER);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/close_check" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String closeCheck(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("----------- CLOSE CHECK START ---------", ECPOS_FOLDER);
+		Logger.writeActivity("request: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		ResultSet rs = null;
+		ResultSet rs3 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+				
+				JSONObject jsonData = new JSONObject(data);
+				
+				if ((jsonData.has("orderType") && !jsonData.isNull("orderType"))
+						&& (jsonData.has("checkNo") && !jsonData.isNull("checkNo") && !jsonData.getString("checkNo").isEmpty())) {
+					String checkNo = jsonData.getString("checkNo");
+					
+					if (jsonData.getString("orderType").equals("deposit")) {
+						stmt = connection.prepareStatement("select * from `check` where check_number = ? and order_type = 3;");
+						stmt.setString(1, checkNo);
+						rs = stmt.executeQuery();
+						
+						if (rs.next()) {
+							long checkId = rs.getLong("id");
+							
+							stmt2 = connection.prepareStatement("update `check` set check_status = 3, updated_date = now() where id = ? and check_number = ? and check_status in (1, 2);");
+							stmt2.setLong(1, checkId);
+							stmt2.setString(2, checkNo);
+							int rs2 = stmt2.executeUpdate();
+							
+							if (rs2 > 0) {
+								stmt3 = connection.prepareStatement("select * from check_detail where check_id = ? and check_number = ? and check_detail_status in (1, 2);");
+								stmt3.setLong(1, checkId);
+								stmt3.setString(2, checkNo);
+								rs3 = stmt3.executeQuery();
+								
+								if (rs3.next()) {
+									stmt4 = connection.prepareStatement("update check_detail set check_detail_status = 3, updated_date = now() where check_id = ? and check_number = ? and check_detail_status in (1, 2);");
+									stmt4.setLong(1, checkId);
+									stmt4.setString(2, checkNo);
+									int rs4 = stmt4.executeUpdate();
+									
+									if (rs4 > 0) {
+										connection.commit();
+										Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+									} else {
+										connection.rollback();
+										Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Update");
+									}
+								} else {
+									connection.commit();
+									Logger.writeActivity("Check Successfully Updated", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "00");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+								}
+							} else {
+								connection.rollback();
+								Logger.writeActivity("Check Failed To Update", ECPOS_FOLDER);
+								jsonResult.put(Constant.RESPONSE_CODE, "01");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Failed To Update");
+							}
+						} else {
+							connection.rollback();
+							Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
+						}
+					} else {
+						connection.rollback();
+						Logger.writeActivity("Invalid Order Type", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Order Type");
+					}
+				} else {
+					connection.rollback();
+					Logger.writeActivity("Request Not Complete", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- CLOSE CHECK END ---------", ECPOS_FOLDER);
 		return jsonResult.toString();
 	}
 	

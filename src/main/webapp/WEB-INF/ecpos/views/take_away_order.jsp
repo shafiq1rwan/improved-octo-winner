@@ -51,8 +51,12 @@ hr {
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
 							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
-								<br>
-								<div class="row" style="text-align: center;">
+								<div class="row" style="text-align: center">
+									<div class="col-sm-12">
+										<font size="4">TAKE AWAY ORDER</font>
+									</div>
+								</div>
+								<div class="row">
 									<div class="col-sm-2 form-group"></div>
 									<div class="col-sm-8 form-group">
 										<%if (user.isTakeAwayFlag() == true) {%>
@@ -61,12 +65,14 @@ hr {
 										<br>
 										<div id="keyboard"></div>
 										<br>
-										<div>
+										<div style="text-align: center;">
 											<button class="btn btn-info" ng-click="create_new_check()">Create New Check</button>
 										</div>
 										<%} else {%>
 										<br>
-										<button class="btn btn-info btn-lg" ng-click="create_new_check()">Create New Check</button>
+										<div style="text-align: center;">
+											<button class="btn btn-info btn-lg" ng-click="create_new_check()">Create New Check</button>
+										</div>
 										<%}%>
 									</div>
 									<div class="col-sm-2 form-group"></div>

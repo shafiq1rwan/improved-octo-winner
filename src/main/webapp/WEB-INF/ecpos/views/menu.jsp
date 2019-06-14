@@ -53,7 +53,7 @@
 							<div id="category">
 								<div class="row" style="font-size: large">
 									<div class="col-sm-12" style="text-align: center">
-										<label>Menu</label>
+										<label>MENU</label>
 									</div>
 								</div>
 								<div class="row">

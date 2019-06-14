@@ -31,7 +31,7 @@ hr {
 							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<font size="4">Checks Listing</font>
+										<font size="4">CHECKS LISTING</font>
 									</div>
 								</div>
 								<table id="datatable_checks" class="table table-bordered table-striped" style="width:100%;">
@@ -74,7 +74,7 @@ hr {
 									<div>
 										<font><b>Status : {{checkDetail.status}}</b></font>
 									</div>
-									<div ng-if="checkDetail.orderType == '2'">
+									<div ng-if="checkDetail.orderType != '1'">
 										<font><b>Customer Name: : {{checkDetail.customerName}}</b></font>
 									</div>
 								</div>
@@ -87,36 +87,58 @@ hr {
 							<div>
 								<div class="row" style="padding-top: 8px; padding-right: 15px;">
 									<div class='col-sm-1 text-center'><b>Code</b></div>
-									<div class='col-sm-5 text-left'><b>Item</b></div>
-									<div class='col-sm-2 text-right'><b>Quantity</b></div>
-									<div class='col-sm-2 text-right'><b>Status</b></div>
+									<div class='col-sm-8 text-left'><b>Item</b></div>
+									<div class='col-sm-1 text-center'><b>Quantity</b></div>
 									<div class='col-sm-2 text-right'><b>Price</b></div>
 								</div>
 								<hr>
 								<div style="padding-right: 15px; max-height: 33vh; overflow-y: auto; height: 33vh;">
 									<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
-										<div style="padding-bottom: 8px;">
+										
+										<div style="padding-bottom: 8px;" ng-if="grandParentItem.itemStatus != 'Paid'">
 											<div class="row">
 												<div class='col-sm-1 text-center'>{{grandParentItem.itemCode}}</div>
-												<div class='col-sm-5 text-left'>{{grandParentItem.itemName}}@{{grandParentItem.itemPrice| number:2}}</div>
-												<div class='col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
-												<div class='col-sm-2 text-right'>{{grandParentItem.itemStatus}}</div>
+												<div class='col-sm-8 text-left'>{{grandParentItem.itemName}}@{{grandParentItem.itemPrice| number:2}}</div>
+												<div class='col-sm-1 text-center'>{{grandParentItem.itemQuantity}}</div>
 												<div class='col-sm-2 text-right'>{{grandParentItem.totalAmount| number:2}}</div>
 											</div>
 											<div ng-repeat="parentItem in grandParentItem.parentItemArray">
 												<div class="row">
 													<div class='col-sm-1 text-center'></div>
-													<div class='col-sm-5 text-left'>:{{parentItem.itemName}}@{{parentItem.itemPrice| number:2}}</div>
-													<div class='col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
-													<div class='col-sm-2 text-right'></div>
+													<div class='col-sm-8 text-left'>:{{parentItem.itemName}}@{{parentItem.itemPrice| number:2}}</div>
+													<div class='col-sm-1 text-center'>{{parentItem.itemQuantity}}</div>
 													<div class='col-sm-2 text-right'>{{parentItem.totalAmount| number:2}}</div>										
 												</div>
 												<div ng-repeat="childItem in parentItem.childItemArray">
 													<div class="row">
 														<div class='col-sm-1 text-center'></div>
-														<div class='col-sm-5 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice| number:2}}</div>
-														<div class='col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
-														<div class='col-sm-2 text-right'></div>
+														<div class='col-sm-8 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice| number:2}}</div>
+														<div class='col-sm-1 text-center'>{{childItem.itemQuantity}}</div>
+														<div class='col-sm-2 text-right'>{{childItem.totalAmount| number:2}}</div>										
+													</div>
+												</div>
+											</div>
+										</div>
+										
+										<div style="padding-bottom: 8px; color: red;" ng-if="grandParentItem.itemStatus == 'Paid'">
+											<div class="row">
+												<div class='col-sm-1 text-center'>{{grandParentItem.itemCode}}</div>
+												<div class='col-sm-8 text-left'>{{grandParentItem.itemName}}@{{grandParentItem.itemPrice| number:2}}</div>
+												<div class='col-sm-1 text-center'>{{grandParentItem.itemQuantity}}</div>
+												<div class='col-sm-2 text-right'>{{grandParentItem.totalAmount| number:2}}</div>
+											</div>
+											<div ng-repeat="parentItem in grandParentItem.parentItemArray">
+												<div class="row">
+													<div class='col-sm-1 text-center'></div>
+													<div class='col-sm-8 text-left'>:{{parentItem.itemName}}@{{parentItem.itemPrice| number:2}}</div>
+													<div class='col-sm-1 text-center'>{{parentItem.itemQuantity}}</div>
+													<div class='col-sm-2 text-right'>{{parentItem.totalAmount| number:2}}</div>										
+												</div>
+												<div ng-repeat="childItem in parentItem.childItemArray">
+													<div class="row">
+														<div class='col-sm-1 text-center'></div>
+														<div class='col-sm-8 text-left'>&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice| number:2}}</div>
+														<div class='col-sm-1 text-center'>{{childItem.itemQuantity}}</div>
 														<div class='col-sm-2 text-right'>{{childItem.totalAmount| number:2}}</div>										
 													</div>
 												</div>
@@ -124,7 +146,12 @@ hr {
 										</div>
 									</div>
 								</div>
-								<hr>
+								<hr style="margin-bottom: 0;">
+								<div class="row" style="color: red;">
+									<div class='col-sm-12'>
+										<label style="font-size: x-small; font-weight: normal;">*Item(s) in red indicates already paid</label>
+									</div>
+								</div>
 								<div class="row" style="padding-right: 15px;">
 									<div class='col-sm-10 text-left'><b>Subtotal</b></div>
 									<div class='col-sm-2 text-right'><b>{{checkDetail.totalAmount| number:2}}</b></div>
@@ -143,10 +170,6 @@ hr {
 									<div class='col-sm-2 text-right' style="border-top: solid; border-top-width: thin; border-bottom: 3px double;"><b>{{checkDetail.grandTotalAmount| number:2}}</b></div>
 								</div>
 								<hr>
-								<div class="row" style="padding-right: 15px;">
-									<div class='col-sm-10 text-left'><b>Deposit Amount</b></div>
-									<div class='col-sm-2 text-right'><b>{{checkDetail.depositAmount| number:2}}</b></div>
-								</div>
 								<div class="row" style="padding-right: 15px;">
 									<div class='col-sm-10 text-left'><b>Tender Amount</b></div>
 									<div class='col-sm-2 text-right'><b>{{checkDetail.tenderAmount| number:2}}</b></div>

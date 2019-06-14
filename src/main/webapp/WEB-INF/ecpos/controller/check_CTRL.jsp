@@ -18,6 +18,7 @@
 		$('#cancelItemButton').prop('disabled', true);
 		$('#paymentButton').prop('disabled', true);
 		$('#splitCheckButton').prop('disabled', true);
+		$('#closeCheckButton').prop('disabled', true);
 		$('#allGrandParentItemCheckbox').show();
 		$('input[name=grandParentItemCheckbox]').show();
 		$('#terminalList').hide();
@@ -26,6 +27,12 @@
 			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
 			.then(function(response) {
 				if (response.data.responseCode == "00") {
+					if ($scope.orderType == "table") {
+						$('#generateQRButton').show();
+					} else  {
+						$('#generateQRButton').hide();
+					}
+					
 					$scope.getCheckDetails();
 				} else {
 					alert("Session TIME OUT");
@@ -39,7 +46,7 @@
 		}
 		
 		$scope.getCheckDetails = function() {
-			$http.get("${pageContext.request.contextPath}/rc/check/get_check_detail/" + $scope.orderType + "/" + $scope.checkNo + "/" + $scope.tableNo)
+			$http.get("${pageContext.request.contextPath}/rc/check/get_all_check_detail/" + $scope.orderType + "/" + $scope.checkNo + "/" + $scope.tableNo)
 			.then(function(response) {
 				if (response.data.hasOwnProperty('response_code') && response.data.response_code == "01") {
 					if ($scope.orderType == "table") {
@@ -59,10 +66,12 @@
 						$('#cancelItemButton').prop('disabled', true);
 						$('#paymentButton').prop('disabled', true);
 						$('#splitCheckButton').prop('disabled', true);
+						$('#closeCheckButton').prop('disabled', true);
 					} else {
 						$('#cancelItemButton').prop('disabled', false);
 						$('#paymentButton').prop('disabled', false);
 						$('#splitCheckButton').prop('disabled', false);
+						$('#closeCheckButton').prop('disabled', false);
 					}
 					
 					setTimeout(function() {
@@ -81,7 +90,8 @@
 		$scope.generateQR = function () {
 			var jsonData = JSON.stringify({
 				"tableNo" : $scope.tableNo,
-				"checkNo" : $scope.checkNo
+				"checkNo" : $scope.checkNo,
+				"tableName" : $scope.checkDetail.tableName
 			});
 			
 			$http.post("${pageContext.request.contextPath}/rc/configuration/generate_qr/", jsonData)
@@ -359,6 +369,38 @@
 			}
 		}
 		
+		$scope.closeCheck = function() {
+			var confirmation = confirm("Confirm to close check?");
+			if (confirmation == true) {
+				if (parseFloat($scope.checkDetail.overdueAmount) > 0) {
+					alert("Kindly clear the overdue amount.");
+				} else {
+					var jsonData = JSON.stringify({
+						"orderType" : $scope.orderType,
+						"checkNo" : $scope.checkNo
+					});
+					
+					$http.post("${pageContext.request.contextPath}/rc/check/close_check", jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							var data = "/deposit_order";
+							$location.path(data);
+						} else {
+							if (response.data.response_message != null) {
+								alert(response.data.response_message);
+							} else {
+								alert("Error Occured While Close Check");
+							}
+						}
+					},
+					function(response) {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					});
+				}
+			}
+		}
+		
 		$scope.redirectPayment = function() {
 			$scope.mode = 2;
 			$('#menuWell').hide();
@@ -384,6 +426,12 @@
 			$('#checkActionButtons').show();
 			$('#allGrandParentItemCheckbox').show();
 			$('input[name=grandParentItemCheckbox]').show();
+			
+			allGrandParentItemCheckbox.checked = false;
+			
+		 	$('[name=grandParentItemCheckbox]').each(function() {
+	            this.checked = false;                       
+	     	});
 		}
 	});
 </script>

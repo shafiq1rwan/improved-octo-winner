@@ -16,39 +16,6 @@
 	
 		var counter = 0;
 		
-		$('#fullPayment').prop('disabled', false);
-		$('#partialPayment').prop('disabled', false);
-		$('#depositPayment').prop('disabled', false);
-		
-		$scope.paymentInitiation = function() {
-			var jsonData = JSON.stringify({
-				"tableNo" : $scope.tableNo,
-				"checkNo" : $scope.checkNo
-			});
-			console.log(jsonData)
-
-			$http.post("${pageContext.request.contextPath}/rc/transaction/get_previous_payment", jsonData)
-			.then(function(response) {
-				if (response.data.data == "0") {
-					$('#fullPayment').prop('disabled', false);
-					$('#partialPayment').prop('disabled', false);
-					$('#depositPayment').prop('disabled', false);
-				} else if (response.data.data.includes("3")) {
-					$('#fullPayment').prop('disabled', true);
-					$('#partialPayment').prop('disabled', true);
-					$('#depositPayment').prop('disabled', true);
-				} else {
-					$('#fullPayment').prop('disabled', false);
-					$('#partialPayment').prop('disabled', false);
-					$('#depositPayment').prop('disabled', false);
-				}
-			},
-			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
-			});
-		}
-		
 		$scope.proceedPaymentMethod = function(type) {
 			$scope.paymentType = type;
 	
@@ -96,7 +63,7 @@
 		$scope.proceedPayment = function(method) {
 			$scope.paymentMethod = method;
 	
-			$('#paymentMethodName').html($scope.paymentMethod + " Payment");
+			$('#paymentMethodName').html($scope.paymentMethod.toUpperCase() + " PAYMENT");
 			$('#paymentCarousel').carousel(2);
 	
 			if ($scope.paymentMethod == "Card" || $scope.paymentMethod == "QR") {

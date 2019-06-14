@@ -380,8 +380,6 @@ public class ReceiptPrinter {
 				jsonResult.put("grandTotalAmount", new BigDecimal(
 						rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
 				jsonResult.put("status", rs.getString("name"));
-				jsonResult.put("depositAmount",
-						rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
 				jsonResult.put("tenderAmount",
 						rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 				jsonResult.put("overdueAmount",

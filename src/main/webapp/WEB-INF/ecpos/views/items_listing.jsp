@@ -53,7 +53,7 @@
 							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<font size="4">Items Listing</font>
+										<font size="4">ITEMS LISTING</font>
 									</div>
 								</div>
 								<div style="padding-top: 5px; padding-bottom: 5px;">

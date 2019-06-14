@@ -910,9 +910,10 @@ public class RestC_configuration {
 			
 			JSONObject jsonRequest = new JSONObject(data); 
 			
-			if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo")) {
+			if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo") && jsonRequest.has("tableName")) {
 				String tableNo = jsonRequest.getString("tableNo");
 				String checkNo = jsonRequest.getString("checkNo");
+				String tableName = jsonRequest.getString("tableName");
 				String brandId = null;
 				String storeId = null;
 				
@@ -939,7 +940,7 @@ public class RestC_configuration {
 							String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
 							
 							String delimiter = "|;";
-							String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp;
+							String tokenValue = brandId + delimiter + storeId + delimiter + tableNo + delimiter + checkNo + delimiter + timeStamp + delimiter + tableName;
 							
 							String token = AesEncryption.encrypt(encryptKey, tokenValue);
 							

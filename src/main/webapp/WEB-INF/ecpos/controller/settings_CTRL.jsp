@@ -500,7 +500,7 @@
 			}).then(function(response) {
 				if (response != null && response.data != null && response.data.resultCode != null) {
 					if (response.data.resultCode == "00") {						
-						$scope.syncSuccess(response.data.resultMessage);
+						$scope.syncSuccess(response.data.resultMessage, 1);
 					} else {
 						$scope.syncFailed(response.data.resultMessage);
 					}

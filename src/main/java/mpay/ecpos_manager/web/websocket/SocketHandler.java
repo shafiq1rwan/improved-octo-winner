@@ -62,8 +62,6 @@ public class SocketHandler extends TextWebSocketHandler {
 				paymentType = 1;
 			} else if (jsonObj.getString("paymentType").equals("partial")) {
 				paymentType = 2;
-			} else if (jsonObj.getString("paymentType").equals("deposit")) {
-				paymentType = 3;
 			} else {
 				Logger.writeActivity("Invalid Payment Type", IPOS_FOLDER);
 				jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -151,10 +149,10 @@ public class SocketHandler extends TextWebSocketHandler {
 			
 			if (rs.next()) {
 				if (rs.getBigDecimal("overdue_amount").compareTo(paymentAmount) >= 0) {
+					int orderType = rs.getInt("order_type");
 					long checkId = rs.getLong("id");
 					String checkNo = rs.getString("check_number");
 					BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
-					BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
 					BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 					
 					stmt.close();
@@ -222,9 +220,9 @@ public class SocketHandler extends TextWebSocketHandler {
 										JSONObject updateCheckResult = new JSONObject();
 										
 										if (paymentType == 1) {
-											updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+											updateCheckResult = updateCheck1(orderType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount);
 										} else {
-											updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+											updateCheckResult = updateCheck2(orderType, paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount);
 										}
 										
 										if (updateCheckResult.getString("status").equals("success")) {
@@ -457,7 +455,7 @@ public class SocketHandler extends TextWebSocketHandler {
 		return null;
 	}
 	
-	private JSONObject updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private JSONObject updateCheck1(int orderType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		JSONObject result = new JSONObject();
@@ -472,9 +470,14 @@ public class SocketHandler extends TextWebSocketHandler {
 				tableNoCondition = "table_number = " + tableNo;
 			}
 			
-			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and " + tableNoCondition + " and check_status in (1, 2);");
+			String checkStatusCondition = "check_status = check_status";
+			if (orderType != 3) {
+				checkStatusCondition = "check_status = 3";
+			}
+			
+			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, " + checkStatusCondition + ", updated_date = now() where check_number = ? and " + tableNoCondition + " and check_status in (1, 2);");
 			stmt.setBigDecimal(1, tenderAmount);
-			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
+			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount));
 			stmt.setString(3, checkNo);
 			int updateCheck = stmt.executeUpdate();
 			
@@ -509,7 +512,7 @@ public class SocketHandler extends TextWebSocketHandler {
 		return result;
 	}
 	
-	private JSONObject updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	private JSONObject updateCheck2(int orderType, int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		JSONObject result = new JSONObject();
@@ -523,11 +526,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			if (paymentType == 2) {
 				amountType = "tender_amount";
 				paidAmount = tenderAmount.add(paymentAmount);
-				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(depositAmount);
-			} else if (paymentType == 4) {
-				amountType = "deposit_amount";
-				paidAmount = depositAmount.add(paymentAmount);
-				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(tenderAmount);
+				overdueAmount = grandTotalAmount.subtract(paidAmount);
 			}
 			
 			String tableNoCondition = "table_number is null";
@@ -537,7 +536,7 @@ public class SocketHandler extends TextWebSocketHandler {
 			
 			String checkStatusCondition = "";
 			String checkStatus = "open";
-			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0) {
+			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0 && orderType != 3) {
 				checkStatusCondition = "check_status = 3, ";
 				checkStatus = "closed";
 			}

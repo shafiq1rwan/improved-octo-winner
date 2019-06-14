@@ -50,7 +50,7 @@
 							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<font size="4">Transactions Listing</font>
+										<font size="4">TRANSACTIONS LISTING</font>
 									</div>
 								</div>
 								<table id="datatable_transactions" class="table table-bordered table-striped">

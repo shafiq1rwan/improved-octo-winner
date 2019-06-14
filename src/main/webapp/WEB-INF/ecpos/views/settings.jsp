@@ -64,10 +64,9 @@ hr {
 							<div class="well" style="height: 89vh; overflow-y: hidden; background-color: white; margin-bottom: 0px; padding: 15px;">
 								<div class="row" style="text-align: center;">
 								    <div class="col-sm-12">
-										<font size="4">Settings</font>
+										<font size="4">SETTINGS</font>
 									</div>
 								</div>
-								<hr>
 								<div class="row" style="margin-bottom:5px;">
 								    <div class="col-sm-12">
 										<font size="3"><b>Synchronization Configuration</b></font>
@@ -263,7 +262,7 @@ hr {
 										<button class="btn btn-block btn-info" ng-click="submitSyncMenu()">Synchronize</button>
 									</div>
 									<div class="col-sm-4" style="margin: 0px; margin-top: 6px;">
-										<font size="3"><b>ECPOS - Check, Transaction & Settlement Info</b></font>
+										<font size="3"><b>VERNPOS - Check, Transaction & Settlement Info</b></font>
 									</div>
 									<div class="col-sm-2">
 										<button class="btn btn-block btn-info" ng-click="submitSyncTransaction()">Synchronize</button>
@@ -277,7 +276,7 @@ hr {
 										<button class="btn btn-block btn-info" ng-click="submitSyncStore()">Synchronize</button>
 									</div>
 									<div class="col-sm-4" style="margin: 0px; margin-top: 6px;">
-										<font size="3"><b>ECPOS - Reactivation</b></font>
+										<font size="3"><b>VERNPOS - Reactivation</b></font>
 									</div>
 									<div class="col-sm-2">
 										<button class="btn btn-block btn-danger" ng-click="showReactivationModal()">Reactivate</button>

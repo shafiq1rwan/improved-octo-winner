@@ -122,7 +122,6 @@ public class DeviceCall {
 				jsonResult.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs.getString("total_amount_with_tax_rounding_adjustment")));
 				jsonResult.put("grandTotalAmount", new BigDecimal(rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
 				jsonResult.put("status", rs.getString("name"));
-				jsonResult.put("depositAmount", rs.getString("deposit_amount") == null ? "0.00" : rs.getString("deposit_amount"));
 				jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 				jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
 				
@@ -1097,8 +1096,8 @@ public class DeviceCall {
 				int rs2 = stmt2.executeUpdate();
 
 				if (rs2 > 0) {
-					stmt3 = connection.prepareStatement("insert into `check` (check_number,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,deposit_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-							"values (?,?,0,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
+					stmt3 = connection.prepareStatement("insert into `check` (check_number,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
+							"values (?,?,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
 					stmt3.setString(1, Integer.toString(newCheckNo));
 					stmt3.setInt(2, orderType);
 					int rs3 = stmt3.executeUpdate();

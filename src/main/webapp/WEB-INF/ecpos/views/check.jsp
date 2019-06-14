@@ -61,7 +61,7 @@ hr {
 											<div>
 												<font><b>Status : {{checkDetail.status}}</b></font>
 											</div>
-											<div ng-if="checkDetail.orderType == '2'">
+											<div ng-if="checkDetail.orderType != '1'">
 												<font><b>Customer Name: : {{checkDetail.customerName}}</b></font>
 											</div>
 										</div>
@@ -94,11 +94,52 @@ hr {
 										<hr>
 										<div style="padding-right: 15px; max-height: 33vh; overflow-y: auto; height: 33vh;">
 											<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
-												<div style="padding-bottom: 8px;">
+												
+												<div style="padding-bottom: 8px;" ng-if="grandParentItem.itemStatus != 'Paid'">
 													<div class="row">
 														<div class='col-sm-1 text-center'><input type="checkbox" ng-click="grandParentItemCheckbox()" name="grandParentItemCheckbox" value={{grandParentItem.checkDetailId}} style="margin: 2px 0 0;"></div>
 														<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
-														<div class='col-sm-5 text-left' style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice| number:2}}</div>
+														<div class='col-sm-5 text-left' style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice | number:2}}</div>
+														<%if (user.getStoreType() == 1) {%>
+														<div class='col-sm-2 text-left' style="padding-left: 0px; padding-right: 0px;" ng-if="grandParentItem.isAlaCarte && !grandParentItem.hasModified">
+															<div class="input-group">
+												                <input type="number" id="{{grandParentItem.checkDetailId}}" name="itemQuantity" style="width: 100%; padding-left: 6px;" value={{grandParentItem.itemQuantity}} min="1" max="99" size="1" />
+											                	<span class="input-group-btn">
+											                    	<button class="btn btn-flat btn-info" style="height: 23px; width: 23px; padding: 0px;" ng-click="submitUpdateItemQuantity(grandParentItem.checkDetailId)">&#10004;</button>
+											                    </span>
+												            </div>
+														</div>
+														<div class='col-sm-2 text-center' ng-if="!(grandParentItem.isAlaCarte && !grandParentItem.hasModified)">{{grandParentItem.itemQuantity}}</div>
+														<%} else {%>
+														<div class='col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
+														<%}%>
+														<div class='col-sm-2 text-right'>{{grandParentItem.totalAmount| number:2}}</div>
+													</div>
+													<div ng-repeat="parentItem in grandParentItem.parentItemArray">
+														<div class="row">
+															<div class='col-sm-1 text-center'></div>
+															<div class='col-sm-2 text-left'>{{parentItem.itemCode}}</div>
+															<div class='col-sm-5 text-left' style="padding: 0px;">:{{parentItem.itemName}}@{{parentItem.itemPrice| number:2}}</div>
+															<div class='col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
+															<div class='col-sm-2 text-right'>{{parentItem.totalAmount| number:2}}</div>										
+														</div>
+														<div ng-repeat="childItem in parentItem.childItemArray">
+															<div class="row">
+																<div class='col-sm-1 text-center'></div>
+																<div class='col-sm-2 text-left'>{{childItem.itemCode}}</div>
+																<div class='col-sm-5 text-left' style="padding: 0px;">&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice| number:2}}</div>
+																<div class='col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
+																<div class='col-sm-2 text-right'>{{childItem.totalAmount| number:2}}</div>										
+															</div>
+														</div>
+													</div>
+												</div>
+												
+												<div style="padding-bottom: 8px; color: red;" ng-if="grandParentItem.itemStatus == 'Paid'">
+													<div class="row">
+														<div class='col-sm-1 text-center'></div>
+														<div class='col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
+														<div class='col-sm-5 text-left' style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice | number:2}}</div>
 														<%if (user.getStoreType() == 1) {%>
 														<div class='col-sm-2 text-left' style="padding-left: 0px; padding-right: 0px;" ng-if="grandParentItem.isAlaCarte && !grandParentItem.hasModified">
 															<div class="input-group">
@@ -135,7 +176,12 @@ hr {
 												</div>
 											</div>
 										</div>
-										<hr>
+										<hr style="margin-bottom: 0;">
+										<div class="row" style="color: red;">
+											<div class='col-sm-12'>
+												<label style="font-size: xx-small; font-weight: normal;">*Item(s) in red indicates already paid</label>
+											</div>
+										</div>
 										<div class="row" style="padding-right: 15px;">
 											<div class='col-sm-1 text-center'></div>
 											<div class='col-sm-9 text-left'><b>Subtotal</b></div>
@@ -161,11 +207,6 @@ hr {
 										<hr>
 										<div class="row" style="padding-right: 15px;">
 											<div class='col-sm-1 text-center'></div>
-											<div class='col-sm-9 text-left'><b>Deposit Amount</b></div>
-											<div class='col-sm-2 text-right'><b>{{checkDetail.depositAmount| number:2}}</b></div>
-										</div>
-										<div class="row" style="padding-right: 15px;">
-											<div class='col-sm-1 text-center'></div>
 											<div class='col-sm-9 text-left'><b>Tender Amount</b></div>
 											<div class='col-sm-2 text-right'><b>{{checkDetail.tenderAmount| number:2}}</b></div>
 										</div>
@@ -189,8 +230,15 @@ hr {
 											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 												<button id="cancelCheckButton" class="btn btn-block btn-info" ng-click="cancelCheck()">CANCEL CHECK</button>
 											</div>
-											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6" ng-if="orderType == 'table'">
-												<button id="splitCheckButton" class="btn btn-block btn-info" ng-click="splitCheck()">SPLIT CHECK</button>
+											<div ng-if="orderType == 'table'">
+												<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+													<button id="splitCheckButton" class="btn btn-block btn-info" ng-click="splitCheck()">SPLIT CHECK</button>
+												</div>
+											</div>
+											<div ng-if="orderType == 'deposit'">
+												<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+													<button id="closeCheckButton" class="btn btn-block btn-info" ng-click="closeCheck()">CLOSE CHECK</button>
+												</div>
 											</div>
 										</div>
 									</div>

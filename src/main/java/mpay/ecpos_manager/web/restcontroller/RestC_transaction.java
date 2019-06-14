@@ -248,7 +248,6 @@ public class RestC_transaction {
 						receiptData.put("totalAmountWithTaxRoundingAdjustment", new BigDecimal(rs3.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00" : rs3.getString("total_amount_with_tax_rounding_adjustment")));
 						receiptData.put("grandTotalAmount", new BigDecimal(rs3.getString("grand_total_amount") == null ? "0.00" : rs3.getString("grand_total_amount")));
 						receiptData.put("status", rs3.getString("name"));
-						receiptData.put("depositAmount", rs3.getString("deposit_amount") == null ? "0.00" : rs3.getString("deposit_amount"));
 						receiptData.put("tenderAmount", rs3.getString("tender_amount") == null ? "0.00" : rs3.getString("tender_amount"));
 						receiptData.put("overdueAmount", rs3.getString("overdue_amount") == null ? "0.00" : rs3.getString("overdue_amount"));
 						receiptData.put("staff", staffName);
@@ -515,60 +514,6 @@ public class RestC_transaction {
 		return jsonResult.toString();
 	}
 
-	@RequestMapping(value = { "/get_previous_payment" }, method = { RequestMethod.POST }, produces = "application/json")
-	public String getPreviousPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
-		JSONObject jsonResult = new JSONObject();
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		WebComponents webComponent = new WebComponents();
-		UserAuthenticationModel user = webComponent.getEcposSession(request);
-
-		try {
-			if (user != null) {
-				connection = dataSource.getConnection();
-
-				JSONObject jsonObj = new JSONObject(data);
-
-				String tableNoCondition = "c.table_number is null and";
-				if (jsonObj.getInt("tableNo") > 0) {
-					tableNoCondition = "c.table_number = " + jsonObj.getInt("tableNo") + " and";
-				}
-
-				stmt = connection.prepareStatement("select c.id,c.check_number,t.payment_type,pt.name from `check` c "
-						+ "inner join transaction t on c.id = t.check_id and c.check_number = t.check_number "
-						+ "inner join payment_type pt on t.payment_type = pt.id " + "where " + tableNoCondition
-						+ " c.check_number = ? and t.transaction_status = 3 "
-						+ "group by c.id,c.check_number,t.payment_type,pt.name;");
-				stmt.setString(1, jsonObj.getString("checkNo"));
-				rs = stmt.executeQuery();
-
-				String previousPayment = "0";
-
-				while (rs.next()) {
-					previousPayment = previousPayment + rs.getString("payment_type");
-				}
-				jsonResult.put("data", previousPayment);
-			} else {
-				response.setStatus(408);
-			}
-		} catch (Exception e) {
-			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-				if (rs != null) {rs.close(); rs = null;}
-				if (connection != null) {connection.close();}
-			} catch (SQLException e) {
-				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
-				e.printStackTrace();
-			}
-		}
-		return jsonResult.toString();
-	}
-
 	@RequestMapping(value = { "/submit_payment" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String submitPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
@@ -593,8 +538,6 @@ public class RestC_transaction {
 					paymentType = 1;
 				} else if (jsonObj.getString("paymentType").equals("partial")) {
 					paymentType = 2;
-				} else if (jsonObj.getString("paymentType").equals("deposit")) {
-					paymentType = 3;
 				} else {
 					Logger.writeActivity("Invalid Payment Type", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -693,10 +636,10 @@ public class RestC_transaction {
 
 				if (rs.next()) {
 					if (rs.getBigDecimal("overdue_amount").compareTo(paymentAmount) >= 0) {
+						int orderType = rs.getInt("order_type");
 						long checkId = rs.getLong("id");
 						String checkNo = rs.getString("check_number");
 						BigDecimal grandTotalAmount = rs.getBigDecimal("grand_total_amount");
-						BigDecimal depositAmount = rs.getBigDecimal("deposit_amount");
 						BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 
 						stmt.close();
@@ -829,9 +772,9 @@ public class RestC_transaction {
 											JSONObject updateCheckResult = new JSONObject();
 
 											if (paymentType == 1) {
-												updateCheckResult = updateCheck1(paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+												updateCheckResult = updateCheck1(orderType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount);
 											} else {
-												updateCheckResult = updateCheck2(paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, depositAmount, tenderAmount);
+												updateCheckResult = updateCheck2(orderType, paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount);
 											}
 
 											if (updateCheckResult.getString("status").equals("success")) {
@@ -1369,7 +1312,7 @@ public class RestC_transaction {
 		return null;
 	}
 
-	public JSONObject updateCheck1(BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	public JSONObject updateCheck1(int orderType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		JSONObject result = new JSONObject();
@@ -1383,11 +1326,16 @@ public class RestC_transaction {
 			if (tableNo > 0) {
 				tableNoCondition = "table_number = " + tableNo;
 			}
+			
+			String checkStatusCondition = "check_status = check_status";
+			if (orderType != 3) {
+				checkStatusCondition = "check_status = 3";
+			}
 
-			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, check_status = 3, updated_date = now() where check_number = ? and "
+			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, " + checkStatusCondition + ", updated_date = now() where check_number = ? and "
 							+ tableNoCondition + " and check_status in (1, 2);");
 			stmt.setBigDecimal(1, tenderAmount);
-			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount).subtract(depositAmount));
+			stmt.setBigDecimal(2, grandTotalAmount.subtract(tenderAmount));
 			stmt.setString(3, checkNo);
 			int updateCheck = stmt.executeUpdate();
 
@@ -1423,7 +1371,7 @@ public class RestC_transaction {
 		return result;
 	}
 
-	public JSONObject updateCheck2(int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal depositAmount, BigDecimal tenderAmount) {
+	public JSONObject updateCheck2(int orderType, int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		JSONObject result = new JSONObject();
@@ -1437,11 +1385,7 @@ public class RestC_transaction {
 			if (paymentType == 2) {
 				amountType = "tender_amount";
 				paidAmount = tenderAmount.add(paymentAmount);
-				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(depositAmount);
-			} else if (paymentType == 4) {
-				amountType = "deposit_amount";
-				paidAmount = depositAmount.add(paymentAmount);
-				overdueAmount = grandTotalAmount.subtract(paidAmount).subtract(tenderAmount);
+				overdueAmount = grandTotalAmount.subtract(paidAmount);
 			}
 
 			String tableNoCondition = "table_number is null";
@@ -1451,7 +1395,7 @@ public class RestC_transaction {
 
 			String checkStatusCondition = "";
 			String checkStatus = "open";
-			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0) {
+			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0 && orderType != 3) {
 				checkStatusCondition = "check_status = 3, ";
 				checkStatus = "closed";
 			}

@@ -26,24 +26,45 @@
 				window.location.href = "${pageContext.request.contextPath}/signout";
 			});
 		}
+		
+		$('#depositOrderCarousel').on('slid.bs.carousel', function onSlide(ev) {
+			var id = ev.relatedTarget.id;
+			if (id == "checkList") {
+				$('#customerName').val(null);
+			} else if (id == "newCheck") {
+				$('#customerName').focus();
+			}
+		})
+		
+		$('#keyboard').click(function() {
+	    	$('#customerName').focus();
+	    });
 
 		$scope.create_new_check = function() {
-			$http.post("${pageContext.request.contextPath}/rc/check/create/deposit")
-			.then(function(response) {
-				if (response.data.response_code === "00") {
-					$scope.redirect_to_check_detail(response.data.check_no);
-				} else {
-					if (response.data.response_message != null) {
-						alert(response.data.response_message);
+			if ($('#customerName').val() == null || $('#customerName').val() == "") {
+				alert("Kindly key in customer name.");
+			} else {
+				var jsonData = JSON.stringify({
+					"customerName" : $('#customerName').val() 
+				});
+				
+				$http.post("${pageContext.request.contextPath}/rc/check/create/deposit", jsonData)
+				.then(function(response) {
+					if (response.data.response_code === "00") {
+						$scope.redirect_to_check_detail(response.data.check_no);
 					} else {
-						alert("Error Occured While Create Check");
+						if (response.data.response_message != null) {
+							alert(response.data.response_message);
+						} else {
+							alert("Error Occured While Create Check");
+						}
 					}
-				}
-			},
-			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
-			});
+				},
+				function(response) {
+					alert("Session TIME OUT");
+					window.location.href = "${pageContext.request.contextPath}/signout";
+				});
+			}
 		}
 				
 		//Redirect to check detail page
