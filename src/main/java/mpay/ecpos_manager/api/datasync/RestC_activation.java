@@ -115,7 +115,7 @@ public class RestC_activation {
 		
 				// publish menu before
 				if (responseData.has("queryMySqlFilePath") && responseData.has("imageFilePath")
-						&& responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole") && responseData.has("tableSetting")) {
+						&& responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole") && responseData.has("tableSetting") && responseData.has("ecposSetting")) {
 					String queryFilePathStr = responseData.getString("queryMySqlFilePath");
 					String imageFilePathStr = responseData.getString("imageFilePath");
 					
@@ -188,6 +188,7 @@ public class RestC_activation {
 							JSONArray staffRole = responseData.getJSONArray("staffRole");
 							JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 							JSONArray staffInfo = responseData.getJSONArray("staffInfo");
+							JSONObject ecposSetting = responseData.getJSONObject("ecposSetting");
 							
 							if(staffRole.length()!=0) {
 								// insert staff role
@@ -203,6 +204,9 @@ public class RestC_activation {
 								// insert staff info
 								DataSync.insertStaffInfo(connection, staffInfo);
 							}
+							
+							webComponent.updateGeneralConfig(connection, "DEVICE_NAME", ecposSetting.getString("deviceName"));
+							webComponent.updateGeneralConfig(connection, "DEVICE_ID", String.valueOf(ecposSetting.getLong("deviceId")));					
 							
 							DataSync.updateSyncDate(connection);
 							connection.commit();
@@ -230,7 +234,7 @@ public class RestC_activation {
 				}
 				
 			} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("01")) {
-				if (responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole") && responseData.has("tableSetting")){
+				if (responseData.has("versionCount") && responseData.has("storeInfo") && responseData.has("staffInfo") && responseData.has("staffRole") && responseData.has("tableSetting") && responseData.has("ecposSetting")){
 					// successful
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
@@ -245,6 +249,7 @@ public class RestC_activation {
 							JSONArray staffRole = responseData.getJSONArray("staffRole");
 							JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 							JSONArray staffInfo = responseData.getJSONArray("staffInfo");
+							JSONObject ecposSetting = responseData.getJSONObject("ecposSetting");
 							
 							if(staffRole.length()!=0) {
 								// insert staff role
@@ -260,6 +265,9 @@ public class RestC_activation {
 								// insert staff info
 								DataSync.insertStaffInfo(connection, staffInfo);
 							}
+							
+							webComponent.updateGeneralConfig(connection, "DEVICE_NAME", ecposSetting.getString("deviceName"));
+							webComponent.updateGeneralConfig(connection, "DEVICE_ID", String.valueOf(ecposSetting.getLong("deviceId")));
 							
 							DataSync.updateSyncDate(connection);
 							connection.commit();

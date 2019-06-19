@@ -474,6 +474,8 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Versi
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Staff Login)', 'STAFF TRX SYNC', '0');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Every Transaction Performed)', 'TRX SYNC', '0');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Interval Lookup)', 'INTERVAL TRX SYNC', '1');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Device Name', 'DEVICE_NAME', '');
+INSERT INTO general_configuration (description, parameter, value) VALUES ('Device ID', 'DEVICE_ID', '');
 
 insert into `master` values
 ('check', 0, now());

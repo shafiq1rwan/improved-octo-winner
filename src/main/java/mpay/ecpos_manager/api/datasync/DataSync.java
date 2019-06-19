@@ -35,6 +35,8 @@ public class DataSync {
 		webComponent.updateGeneralConfig(connection, "STAFF TRX SYNC", "0");
 		webComponent.updateGeneralConfig(connection, "TRX SYNC", "0");
 		webComponent.updateGeneralConfig(connection, "INTERVAL TRX SYNC", "1");
+		webComponent.updateGeneralConfig(connection, "DEVICE_NAME" , "");
+		webComponent.updateGeneralConfig(connection, "DEVICE_ID" , "");
 	}
 	
 	public static void resetDBMenuData(Connection connection) throws Exception {
@@ -346,6 +348,7 @@ public class DataSync {
 				check.put("total_amount_with_tax", rs.getString("total_amount_with_tax") == null ? JSONObject.NULL : rs.getString("total_amount_with_tax"));
 				check.put("total_amount_with_tax_rounding_adjustment", rs.getString("total_amount_with_tax_rounding_adjustment") == null ? JSONObject.NULL : rs.getString("total_amount_with_tax_rounding_adjustment"));
 				check.put("grand_total_amount", rs.getString("grand_total_amount") == null ? JSONObject.NULL : rs.getString("grand_total_amount"));
+				check.put("deposit_amount", rs.getString("deposit_amount") == null ? JSONObject.NULL : rs.getString("deposit_amount"));
 				check.put("tender_amount", rs.getString("tender_amount") == null ? JSONObject.NULL : rs.getString("tender_amount"));
 				check.put("overdue_amount", rs.getString("overdue_amount") == null ? JSONObject.NULL : rs.getString("overdue_amount"));
 				check.put("check_status", rs.getString("check_status") == null ? JSONObject.NULL : rs.getString("check_status"));

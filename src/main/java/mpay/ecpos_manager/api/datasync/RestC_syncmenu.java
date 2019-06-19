@@ -382,7 +382,7 @@ public class RestC_syncmenu {
 					resultCode = "E02";
 					resultMessage = "Current store is not published at cloud. Please contact support.";
 				} else if (responseData.has("resultCode") && responseData.getString("resultCode").equals("00")) {
-					if(responseData.has("storeInfo") && responseData.has("staffRole") && responseData.has("staffInfo") && responseData.has("tableSetting")) {
+					if(responseData.has("storeInfo") && responseData.has("staffRole") && responseData.has("staffInfo") && responseData.has("tableSetting") && responseData.has("ecposSetting")) {
 						connection.setAutoCommit(false);
 						DataSync.resetDBStoreData(connection);
 						// store info
@@ -392,6 +392,7 @@ public class RestC_syncmenu {
 								JSONArray staffRole = responseData.getJSONArray("staffRole");
 								JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 								JSONArray staffInfo = responseData.getJSONArray("staffInfo");
+								JSONObject ecposSetting = responseData.getJSONObject("ecposSetting");
 								
 								if(staffRole.length()!=0) {
 									// insert staff role
@@ -407,6 +408,9 @@ public class RestC_syncmenu {
 									// insert staff info
 									DataSync.insertStaffInfo(connection, staffInfo);
 								}
+								
+								webComponent.updateGeneralConfig(connection, "DEVICE_NAME", ecposSetting.getString("deviceName"));
+								webComponent.updateGeneralConfig(connection, "DEVICE_ID", String.valueOf(ecposSetting.getLong("deviceId")));												
 								
 								DataSync.updateSyncDate(connection);
 								connection.commit();
