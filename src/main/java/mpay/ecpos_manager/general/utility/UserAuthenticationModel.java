@@ -3,12 +3,13 @@ package mpay.ecpos_manager.general.utility;
 //For ECPOS user login
 public class UserAuthenticationModel {
 
-	public int userLoginId = 0;
-	public String username = "";
-	public String name = "";
-	public int roleType = 0;
-	public int storeType = 0;
+	public int userLoginId;
+	public String username;
+	public String name;
+	public int roleType;
+	public int storeType;
 	public boolean takeAwayFlag;
+	public long deviceId;
 
 	public int getUserLoginId() {
 		return userLoginId;
@@ -56,5 +57,13 @@ public class UserAuthenticationModel {
 
 	public void setTakeAwayFlag(boolean takeAwayFlag) {
 		this.takeAwayFlag = takeAwayFlag;
+	}
+
+	public long getDeviceId() {
+		return deviceId;
+	}
+
+	public void setDeviceId(long deviceId) {
+		this.deviceId = deviceId;
 	}
 }

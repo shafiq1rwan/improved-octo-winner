@@ -241,6 +241,7 @@ create table `order_type` (
 
 create table `check` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`device_id` bigint (20) NULL,
 	`check_number` bigint (20) NOT NULL,
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
@@ -300,6 +301,7 @@ create table `nii_type` (
 
 create table `settlement` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`device_id` bigint (20) NOT NULL,
     `staff_id` bigint (20) NOT NULL,
 	`nii_type` bigint (20) NOT NULL,
 	`settlement_status` bigint(20) NOT NULL,
@@ -322,6 +324,7 @@ create table `settlement` (
 
 create table `transaction` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`device_id` bigint (20) NOT NULL,
     `staff_id` bigint (20) NOT NULL,
     `check_id` bigint(20) NOT NULL,
 	`check_number` bigint(20) NOT NULL,

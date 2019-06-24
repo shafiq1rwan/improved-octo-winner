@@ -649,11 +649,12 @@ public class RestC_check {
 							int rs3 = stmt3.executeUpdate();
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-										"values (?,?,1,?,0,0,0,0,0,0,0,1,now());");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
+										"values (?,?,1,?,0,0,0,0,0,0,0,1,now(),?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setLong(2, staffId);
 								stmt4.setString(3, tableNo);
+								stmt4.setLong(4, user.getDeviceId());
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {
@@ -761,15 +762,16 @@ public class RestC_check {
 		
 							if (rs3 > 0) {
 								if (user.isTakeAwayFlag() == true) {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name) " + 
-											"values (?,?,2,0,0,0,0,0,0,0,1,now(),?);");
-									stmt4.setString(3, jsonObj.getString("customerName"));
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,customer_name) " + 
+											"values (?,?,2,0,0,0,0,0,0,0,1,now(),?,?);");
+									stmt4.setString(4, jsonObj.getString("customerName"));
 								} else {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-											"values (?,?,2,0,0,0,0,0,0,0,1,now());");
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
+											"values (?,?,2,0,0,0,0,0,0,0,1,now(),?);");
 								}
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setLong(2, staffId);
+								stmt4.setLong(3, user.getDeviceId());
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {
@@ -876,11 +878,12 @@ public class RestC_check {
 							int rs3 = stmt3.executeUpdate();
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name) " + 
-										"values (?,?,3,0,0,0,0,0,0,0,1,now(),?);");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name,device_id) " + 
+										"values (?,?,3,0,0,0,0,0,0,0,1,now(),?,?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setLong(2, staffId);
 								stmt4.setString(3, jsonObj.getString("customerName"));
+								stmt4.setLong(4, user.getDeviceId());
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {
@@ -2319,11 +2322,12 @@ public class RestC_check {
 										int updateMaster = stmt4.executeUpdate();
 					
 										if (updateMaster > 0) {
-											stmt5 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date) " + 
-													"values (?,?,1,?,0,0,0,0,0,0,0,1,now());", Statement.RETURN_GENERATED_KEYS);
+											stmt5 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
+													"values (?,?,1,?,0,0,0,0,0,0,0,1,now(),?);", Statement.RETURN_GENERATED_KEYS);
 											stmt5.setString(1, Integer.toString(newCheckNo));
 											stmt5.setLong(2, staffId);
 											stmt5.setString(3, jsonData.getString("tableNo"));
+											stmt5.setLong(4, user.getDeviceId());
 											int insertCheck = stmt5.executeUpdate();
 					
 											if (insertCheck > 0) {

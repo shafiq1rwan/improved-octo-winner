@@ -326,21 +326,21 @@
 		}
 		
 		$scope.splitCheck = function() {
-			var confirmation = confirm("Confirm to split check?");
-			if (confirmation == true) {
-				$scope.checkedValue = [];
-				
-				$("input[name=grandParentItemCheckbox]:checked").each(function(){
-					$scope.checkedValue.push($(this).val());
-				});
-
-				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
-					alert("Kindly tick at least an item to proceed");
-				} else if ($scope.checkDetail.grandParentItemArray.length <= 1) {
-					alert("There is only 1 item ordered.");
-				} else if ($scope.checkDetail.grandParentItemArray.length == $scope.checkedValue.length) {	
-					alert("All ordered item has been selected.")
-				} else {
+			$scope.checkedValue = [];
+			
+			$("input[name=grandParentItemCheckbox]:checked").each(function(){
+				$scope.checkedValue.push($(this).val());
+			});
+			
+			if ($scope.checkDetail.grandParentItemArray.length <= 1) {
+				alert("There is only 1 item ordered.");
+			} else if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
+				alert("Kindly tick at least an item to proceed");
+			} else if ($scope.checkDetail.grandParentItemArray.length == $scope.checkedValue.length) {	
+				alert("All ordered item has been selected.")
+			} else {
+				var confirmation = confirm("Confirm to split check?");
+				if (confirmation == true) {
 					var jsonData = JSON.stringify({
 						"orderType" : $scope.orderType,
 						"tableNo" : $scope.tableNo,

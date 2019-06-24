@@ -156,7 +156,7 @@ public class SocketHandler extends TextWebSocketHandler {
 					BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 					
 					stmt.close();
-					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date) " + 
+					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date,device_id) " + 
 							"values (?,?,?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
 					stmt.setLong(1, staffId);
 					stmt.setLong(2, checkId);
@@ -170,6 +170,7 @@ public class SocketHandler extends TextWebSocketHandler {
 					stmt.setBigDecimal(10, receivedAmount);
 					stmt.setBigDecimal(11, changeAmount);
 					stmt.setInt(12, transactionStatus);
+					stmt.setLong(13, user.getDeviceId());
 					int insertTransaction = stmt.executeUpdate();
 					
 					if (insertTransaction > 0) {

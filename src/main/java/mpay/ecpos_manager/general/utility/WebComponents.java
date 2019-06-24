@@ -56,6 +56,8 @@ public class WebComponents {
 						domainContainer.setStoreType(rs2.getInt("store_type_id"));
 						domainContainer.setTakeAwayFlag(rs2.getBoolean("ecpos_takeaway_detail_flag"));
 					}
+					
+					domainContainer.setDeviceId(Long.parseLong(getGeneralConfig(connection, "DEVICE_ID")));
 				}
 			}
 		} catch (Exception e) {

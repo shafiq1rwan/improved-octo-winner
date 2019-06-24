@@ -643,8 +643,8 @@ public class RestC_transaction {
 						BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 
 						stmt.close();
-						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date) "
-										+ "values (?,?,?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
+						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date,device_id) "
+										+ "values (?,?,?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
 						stmt.setLong(1, staffId);
 						stmt.setLong(2, checkId);
 						stmt.setString(3, checkNo);
@@ -657,6 +657,7 @@ public class RestC_transaction {
 						stmt.setBigDecimal(10, receivedAmount);
 						stmt.setBigDecimal(11, changeAmount);
 						stmt.setInt(12, transactionStatus);
+						stmt.setLong(13, user.getDeviceId());
 						int insertTransaction = stmt.executeUpdate();
 
 						if (insertTransaction > 0) {
@@ -1033,11 +1034,12 @@ public class RestC_transaction {
 					String niiType = getSettlementNiiType(settlementType);
 
 					stmt = connection.prepareStatement(
-							"insert into settlement (staff_id,nii_type,settlement_status,created_date) "
-									+ "values (?,?,1,now());",
+							"insert into settlement (staff_id,nii_type,settlement_status,created_date,device_id) "
+									+ "values (?,?,1,now(),?);",
 							Statement.RETURN_GENERATED_KEYS);
 					stmt.setLong(1, staffId);
 					stmt.setString(2, settlementType);
+					stmt.setLong(3, user.getDeviceId());
 					int insertSettlement = stmt.executeUpdate();
 
 					if (insertSettlement > 0) {

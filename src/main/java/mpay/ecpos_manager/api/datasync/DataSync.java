@@ -338,6 +338,7 @@ public class DataSync {
 			while (rs.next()) {
 				JSONObject check = new JSONObject();
 				check.put("check_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				check.put("device_id", rs.getString("device_id") == null ? JSONObject.NULL : rs.getString("device_id"));
 				check.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
 				check.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
 				check.put("order_type", rs.getString("order_type") == null ? JSONObject.NULL : rs.getString("order_type"));
@@ -348,7 +349,6 @@ public class DataSync {
 				check.put("total_amount_with_tax", rs.getString("total_amount_with_tax") == null ? JSONObject.NULL : rs.getString("total_amount_with_tax"));
 				check.put("total_amount_with_tax_rounding_adjustment", rs.getString("total_amount_with_tax_rounding_adjustment") == null ? JSONObject.NULL : rs.getString("total_amount_with_tax_rounding_adjustment"));
 				check.put("grand_total_amount", rs.getString("grand_total_amount") == null ? JSONObject.NULL : rs.getString("grand_total_amount"));
-				check.put("deposit_amount", rs.getString("deposit_amount") == null ? JSONObject.NULL : rs.getString("deposit_amount"));
 				check.put("tender_amount", rs.getString("tender_amount") == null ? JSONObject.NULL : rs.getString("tender_amount"));
 				check.put("overdue_amount", rs.getString("overdue_amount") == null ? JSONObject.NULL : rs.getString("overdue_amount"));
 				check.put("check_status", rs.getString("check_status") == null ? JSONObject.NULL : rs.getString("check_status"));
@@ -460,6 +460,7 @@ public class DataSync {
 			while (rs.next()) {
 				JSONObject transaction = new JSONObject();
 				transaction.put("transaction_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				transaction.put("device_id", rs.getString("device_id") == null ? JSONObject.NULL : rs.getString("device_id"));
 				transaction.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
 				transaction.put("check_id", rs.getString("check_id") == null ? JSONObject.NULL : rs.getString("check_id"));
 				transaction.put("check_number", rs.getString("check_number") == null ? JSONObject.NULL : rs.getString("check_number"));
@@ -543,6 +544,7 @@ public class DataSync {
 			while (rs.next()) {
 				JSONObject settlement = new JSONObject();
 				settlement.put("settlement_id", rs.getString("id") == null ? JSONObject.NULL : rs.getString("id"));
+				settlement.put("device_id", rs.getString("device_id") == null ? JSONObject.NULL : rs.getString("device_id"));
 				settlement.put("staff_id", rs.getString("staff_id") == null ? JSONObject.NULL : rs.getString("staff_id"));
 				settlement.put("nii_type", rs.getString("nii_type") == null ? JSONObject.NULL : rs.getString("nii_type"));
 				settlement.put("settlement_status", rs.getString("settlement_status") == null ? JSONObject.NULL : rs.getString("settlement_status"));
