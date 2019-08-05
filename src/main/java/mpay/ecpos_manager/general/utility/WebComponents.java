@@ -176,7 +176,7 @@ public class WebComponents {
 		PreparedStatement stmt = null;
 		try {
 			stmt = connection.prepareStatement("UPDATE general_configuration SET value = ? WHERE parameter = ?");
-			stmt.setString(1, value);
+			stmt.setString(1, value==null?"":value);
 			stmt.setString(2, parameter);
 			int rowAffected = stmt.executeUpdate();
 	

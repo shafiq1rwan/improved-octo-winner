@@ -88,6 +88,7 @@ public class RestC_activation {
 			byte[] sendData = URLTool.BuildStringParam(params).getBytes("UTF-8");
 
 			URL url = new URL(cloudUrl + "api/device/activation");
+			Logger.writeActivity("url : " + url.toString(), ECPOS_FOLDER);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
