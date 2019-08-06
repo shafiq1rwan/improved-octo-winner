@@ -8,6 +8,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class WebMVCConfig extends WebMvcConfigurerAdapter{
 	
+	@Value("${access-drive}")
+	private String accessDrive;
+	
 	@Value("${menu_image_path}")
 	private String menuImagePath;
 	
@@ -15,6 +18,6 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter{
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		 registry
 		 	.addResourceHandler(menuImagePath + "**")
-		 	.addResourceLocations("file:///C:" + menuImagePath);
+		 	.addResourceLocations("file:///"+ accessDrive + ":" + menuImagePath);
 	}
 }

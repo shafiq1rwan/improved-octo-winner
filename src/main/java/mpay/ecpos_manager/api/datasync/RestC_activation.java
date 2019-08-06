@@ -80,7 +80,7 @@ public class RestC_activation {
 			params.put("brandId", brandId);
 			params.put("activationId", activationId);
 			params.put("activationKey", activationKey);
-			params.put("macAddress", NetworkAddressTool.GetAddress("mac"));
+			params.put("macAddress", NetworkAddressTool.GetAddress("mac")==null?"UAT DEMO":NetworkAddressTool.GetAddress("mac"));
 			params.put("type", 1);
 
 			Logger.writeActivity("Request: " + params.toString(), ECPOS_FOLDER);
@@ -219,7 +219,7 @@ public class RestC_activation {
 					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);
 					webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", activationId);
 					webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", activationKey);
-					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
+					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac")==null?"UAT DEMO":NetworkAddressTool.GetAddress("mac"));
 					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));
 					
 					connection.setAutoCommit(true);	
@@ -281,7 +281,7 @@ public class RestC_activation {
 					webComponent.updateGeneralConfig(connection, "BRAND_ID", brandId);
 					webComponent.updateGeneralConfig(connection, "ACTIVATION_ID", activationId);
 					webComponent.updateGeneralConfig(connection, "ACTIVATION_KEY", activationKey);
-					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac"));
+					webComponent.updateGeneralConfig(connection, "MAC_ADDRESS", NetworkAddressTool.GetAddress("mac")==null?"UAT DEMO":NetworkAddressTool.GetAddress("mac"));
 					webComponent.updateGeneralConfig(connection, "VERSION_NUMBER", String.valueOf(responseData.getLong("versionCount")));			
 					
 					connection.setAutoCommit(true);
