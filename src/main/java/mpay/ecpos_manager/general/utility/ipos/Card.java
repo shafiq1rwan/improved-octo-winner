@@ -56,6 +56,8 @@ public class Card {
 			}
 			
 			JSONObject response = submitIPOS("{"+pingRequest+"}");
+			Logger.writeActivity("Rsult", IPOS_FOLDER);
+			Logger.writeActivity(response.toString(), IPOS_FOLDER);
 			
 			if (response.getString("responseCode").equals("00")) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");

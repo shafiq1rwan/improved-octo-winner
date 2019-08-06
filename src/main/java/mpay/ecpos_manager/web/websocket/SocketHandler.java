@@ -157,7 +157,7 @@ public class SocketHandler extends TextWebSocketHandler {
 					
 					stmt.close();
 					stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date,device_id) " + 
-							"values (?,?,?,?,?,?,?,?,?,?,?,?,now());", Statement.RETURN_GENERATED_KEYS);
+							"values (?,?,?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
 					stmt.setLong(1, staffId);
 					stmt.setLong(2, checkId);
 					stmt.setString(3, checkNo);

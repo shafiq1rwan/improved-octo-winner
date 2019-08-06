@@ -251,7 +251,7 @@ ul.select2-results__options li {
 												<h3>Please scan QR to Pay</h3>
 											<!-- 	<input class="form-control" id="qr_content" type="text" ng-model="qrContent" required>
 												<br> -->
-												<button class="btn btn-primary" type="submit" ng-disabled="qrContent==''">Submit</button>
+												<!-- <button class="btn btn-primary" type="submit" ng-disabled="qrContent==''">Submit</button> -->
 											</div>
 										</div>
 									</div>
