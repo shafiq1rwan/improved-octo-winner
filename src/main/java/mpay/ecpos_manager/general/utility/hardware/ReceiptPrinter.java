@@ -718,6 +718,9 @@ public class ReceiptPrinter {
 								templateName = "ReceiptStyleTemplate_EPSON";
 							else if (printerResult.getString("receipt_printer").equals("Posiflex"))
 								templateName = "ReceiptStyleTemplate_Posiflex";
+							else if (printerResult.getString("receipt_printer").equals("IBM")) {
+								templateName = "ReceiptStyleTemplate_EPSON";
+							}
 						}
 
 						System.out.println("Template Name: " + templateName);
