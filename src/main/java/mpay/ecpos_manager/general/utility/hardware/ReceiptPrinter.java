@@ -148,19 +148,32 @@ public class ReceiptPrinter {
 					new File(receiptPath).mkdirs();
 
 					PrintService myPrintService = null;
-					String templateName = "";
+					String templateName = "ReceiptStyleTemplate_EPSON";
 
 					if (printerResult.has("receipt_printer")) {
-
-						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
 						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
 								ECPOS_FOLDER);
-						Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+						
+						if(printerResult.getString("receipt_printer").equals("No Printing")) {
+							Logger.writeActivity("No Printing", ECPOS_FOLDER);
+						} else {
+							myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+							if(myPrintService!= null) {
+								Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+							} else {
+								Logger.writeActivity("No such Printer Exist in your PC", ECPOS_FOLDER);
+							}
+						}
 
 						if (printerResult.getString("receipt_printer").equals("EPSON"))
 							templateName = "ReceiptStyleTemplate_EPSON";
 						else if (printerResult.getString("receipt_printer").equals("Posiflex"))
 							templateName = "ReceiptStyleTemplate_Posiflex";
+						else if(printerResult.getString("receipt_printer").equals("IBM"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else {
+							templateName = "ReceiptStyleTemplate_EPSON";
+						}
 					}
 
 					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
@@ -172,6 +185,9 @@ public class ReceiptPrinter {
 						XWPFParagraph emptyParagraph = null;
 
 						if (doc.getStyles() != null) {
+							System.out.println("Loaded Template Style: " + doc.getStyles().toString());
+							Logger.writeActivity("Loaded Template Style: " + doc.getStyles().toString(), ECPOS_FOLDER);
+							
 							XWPFStyles styles = doc.getStyles();
 							CTFonts fonts = CTFonts.Factory.newInstance();
 							fonts.setAscii(RECEIPT_FONT_FAMILY);
@@ -284,7 +300,7 @@ public class ReceiptPrinter {
 						out.close();
 
 						// print pdf
-						if (myPrintService != null && !printerResult.getString("receipt_printer").equals("No Printing") && !isDisplayPdf) {
+						if (myPrintService != null && !isDisplayPdf) {
 							PDDocument printablePdf = PDDocument
 									.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
 
@@ -712,33 +728,45 @@ public class ReceiptPrinter {
 						new File(receiptPath).mkdirs();
 
 						PrintService myPrintService = null;
-						String templateName = "";
-
+						String templateName = "ReceiptStyleTemplate_EPSON";
+				
 						if (printerResult.has("receipt_printer")) {
-
-							myPrintService = findPrintService(printerResult.getString("receipt_printer"));
-							System.out.println("Selected Printer: " + myPrintService.getName());
 							Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
 									ECPOS_FOLDER);
-							Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+							
+							if(printerResult.getString("receipt_printer").equals("No Printing")) {
+								Logger.writeActivity("No Printing", ECPOS_FOLDER);
+							} else {
+								myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+								if(myPrintService!= null) {
+									Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+								} else {
+									Logger.writeActivity("No such Printer Exist in your PC", ECPOS_FOLDER);
+								}
+							}
 
 							if (printerResult.getString("receipt_printer").equals("EPSON"))
 								templateName = "ReceiptStyleTemplate_EPSON";
 							else if (printerResult.getString("receipt_printer").equals("Posiflex"))
 								templateName = "ReceiptStyleTemplate_Posiflex";
-							else if (printerResult.getString("receipt_printer").equals("IBM")) {
+							else if(printerResult.getString("receipt_printer").equals("IBM"))
+								templateName = "ReceiptStyleTemplate_EPSON";
+							else {
 								templateName = "ReceiptStyleTemplate_EPSON";
 							}
 						}
 
 						System.out.println("Template Name: " + templateName);
 						Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
-						;
 						try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
 								.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
 								.toString().substring("file:/".length()), "UTF-8")))) {
+							
+		
 							if (doc.getStyles() != null) {
-
+								
+								System.out.println("Loaded Template Style: " + doc.getStyles().toString());
+								Logger.writeActivity("Loaded Template Style: " + doc.getStyles().toString(), ECPOS_FOLDER);
 								XWPFStyles styles = doc.getStyles();
 								CTFonts fonts = CTFonts.Factory.newInstance();
 								fonts.setAscii(RECEIPT_FONT_FAMILY);
@@ -1397,7 +1425,7 @@ public class ReceiptPrinter {
 						out.close();
 
 						// print pdf if isDisplay pdf is false
-						if (myPrintService != null && !printerResult.getString("receipt_printer").equals("No Printing") && !isDisplayPdf) {
+						if (myPrintService != null && !isDisplayPdf) {
 							PDDocument printablePdf = PDDocument
 									.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
 							// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");

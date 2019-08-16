@@ -1082,11 +1082,13 @@ public class RestC_configuration {
 			if (user != null) {
 			connection = dataSource.getConnection();
 			JSONObject jsonRequest = new JSONObject(data); 
+			Logger.writeActivity("Display QR Pdf [START]", ECPOS_FOLDER);
 
 				if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo") && jsonRequest.has("qrImage")) {
 					JSONObject printableJson = receiptPrinter.printQR(jsonRequest, user.getName(), true);		
 					if(printableJson.getString("response_code").equals("00")) {
-						outputPdf = Files.readAllBytes(Paths.get(receiptPath, "qrReciept.pdf"));	
+						outputPdf = Files.readAllBytes(Paths.get(receiptPath, "qrReciept.pdf"));
+						Logger.writeActivity("Pdf Content Length: " + outputPdf.length, ECPOS_FOLDER);
 					}
 				}
 			} else {
@@ -1107,6 +1109,7 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
 		}
+		Logger.writeActivity("Display QR Pdf [END]", ECPOS_FOLDER);
 		return outputPdf;
 	}
 
@@ -1585,7 +1588,6 @@ public class RestC_configuration {
 					if(printableJson.getString("response_code").equals("00")) {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						jsonResult.put("pdfContent", printableJson.getString("pdfContent"));
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Printing Failed. Please check your printer configuration.");
@@ -1664,7 +1666,6 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
-	
 	@RequestMapping(value = { "/display_receipt" }, method = RequestMethod.POST, produces = "application/json")
 	public byte[] displayReceiptPdf(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Connection connection = null;
@@ -1676,7 +1677,8 @@ public class RestC_configuration {
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
 		try {
-			if (user != null) { 
+			if (user != null) {
+				Logger.writeActivity("Display Receipt Pdf [START]", ECPOS_FOLDER);
 				JSONObject jsonData = new JSONObject(data);
 				
 					connection = dataSource.getConnection();
@@ -1688,7 +1690,8 @@ public class RestC_configuration {
 						//generate the pdf
 						JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), user.getStoreType(), rs.getString("check_number"), true);
 						if(printableJson.getString("response_code").equals("00")) {			
-							outputPdf = Files.readAllBytes(Paths.get(receiptPath, "receipt.pdf"));							
+							outputPdf = Files.readAllBytes(Paths.get(receiptPath, "receipt.pdf"));
+							Logger.writeActivity("Receipt Pdf Content Length: " + outputPdf.length, ECPOS_FOLDER);
 						} 
 					}
 			} else {
@@ -1707,7 +1710,7 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
 		}
-		
+		Logger.writeActivity("Display Receipt Pdf [END]", ECPOS_FOLDER);
 		return outputPdf;
 	}
 	
