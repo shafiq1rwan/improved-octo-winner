@@ -1,5 +1,7 @@
 package mpay.ecpos_manager.web.restcontroller;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,6 +18,9 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,6 +62,9 @@ public class RestC_configuration {
 	
 	@Value("${CLOUD_BASE_URL}")
 	private String cloudUrl;
+	
+	@Value("${receipt-path}")
+	private String receiptPath;
 	
 	@RequestMapping(value = {"/session_checking"}, method = { RequestMethod.GET, RequestMethod.POST })
 	public String ecposSessionChecking(HttpServletRequest request) {
@@ -1021,7 +1029,7 @@ public class RestC_configuration {
 			JSONObject jsonRequest = new JSONObject(data); 
 			
 			if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo") && jsonRequest.has("qrImage")) {
-				JSONObject printableJson = receiptPrinter.printQR(jsonRequest, user.getName());
+				JSONObject printableJson = receiptPrinter.printQR(jsonRequest, user.getName(), false);
 			
 				if(printableJson.getString("response_code").equals("00")) {
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -1054,6 +1062,52 @@ public class RestC_configuration {
 			}
 		}
 		return jsonResult.toString();
+	}
+	
+	//Display table QR pdf
+	@RequestMapping(value = { "/display_qr_pdf" }, method = { RequestMethod.POST }, produces = "application/json")
+	public byte[] displayQRPdf(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		byte[] outputPdf = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+			connection = dataSource.getConnection();
+			JSONObject jsonRequest = new JSONObject(data); 
+
+				if (jsonRequest.has("tableNo") && jsonRequest.has("checkNo") && jsonRequest.has("qrImage")) {
+					JSONObject printableJson = receiptPrinter.printQR(jsonRequest, user.getName(), true);		
+					if(printableJson.getString("response_code").equals("00")) {
+						outputPdf = Files.readAllBytes(Paths.get(receiptPath, "qrReciept.pdf"));	
+					}
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return outputPdf;
 	}
 
 	public JSONObject getSelectedPrinter() {
@@ -1526,13 +1580,15 @@ public class RestC_configuration {
 				JSONObject jsonData = new JSONObject(data);
 				
 				if(jsonData.has("checkNo")) {
-					JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), jsonData.getString("checkNo"));
+					JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), user.getStoreType(), jsonData.getString("checkNo"), false);
 					
 					if(printableJson.getString("response_code").equals("00")) {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+						jsonResult.put("pdfContent", printableJson.getString("pdfContent"));
 					} else {
-
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Printing Failed. Please check your printer configuration.");
 					}
 				} else {
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -1572,12 +1628,13 @@ public class RestC_configuration {
 					rs = stmt.executeQuery();
 					
 					if(rs.next()) {
-						JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), rs.getString("check_number"));
+						JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), user.getStoreType(), rs.getString("check_number"), false);
 						if(printableJson.getString("response_code").equals("00")) {
 							jsonResult.put(Constant.RESPONSE_CODE, "00");
 							jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 						} else {
-
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Printing Failed. Please check your printer configuration.");
 						}
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -1605,6 +1662,53 @@ public class RestC_configuration {
 		}
 		
 		return jsonResult.toString();
+	}
+	
+	
+	@RequestMapping(value = { "/display_receipt" }, method = RequestMethod.POST, produces = "application/json")
+	public byte[] displayReceiptPdf(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		byte[] outputPdf = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) { 
+				JSONObject jsonData = new JSONObject(data);
+				
+					connection = dataSource.getConnection();
+					stmt = connection.prepareStatement("select check_number from transaction where id = ?;");
+					stmt.setString(1, jsonData.getString("transactionId"));
+					rs = stmt.executeQuery();
+					
+					if(rs.next()) {
+						//generate the pdf
+						JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), user.getStoreType(), rs.getString("check_number"), true);
+						if(printableJson.getString("response_code").equals("00")) {			
+							outputPdf = Files.readAllBytes(Paths.get(receiptPath, "receipt.pdf"));							
+						} 
+					}
+			} else {
+				response.setStatus(408);
+			}
+		} catch(Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		
+		return outputPdf;
 	}
 	
 	public JSONObject getStaffDetail(String username) {

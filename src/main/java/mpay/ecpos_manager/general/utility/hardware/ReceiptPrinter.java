@@ -2,6 +2,7 @@ package mpay.ecpos_manager.general.utility.hardware;
 
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +11,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLDecoder;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -131,7 +133,7 @@ public class ReceiptPrinter {
 		return jsonResult;
 	}
 
-	public JSONObject printQR(JSONObject receiptContent, String staffName) {
+	public JSONObject printQR(JSONObject receiptContent, String staffName, boolean isDisplayPdf) {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
@@ -142,7 +144,7 @@ public class ReceiptPrinter {
 			} else {
 				JSONObject printerResult = getSelectedReceiptPrinter();
 				
-				if(!printerResult.getString("receipt_printer").equals("No Printing")) {
+				//if(!printerResult.getString("receipt_printer").equals("No Printing")) {
 					new File(receiptPath).mkdirs();
 
 					PrintService myPrintService = null;
@@ -282,7 +284,7 @@ public class ReceiptPrinter {
 						out.close();
 
 						// print pdf
-						if (myPrintService != null) {
+						if (myPrintService != null && !printerResult.getString("receipt_printer").equals("No Printing") && !isDisplayPdf) {
 							PDDocument printablePdf = PDDocument
 									.load(new File(Paths.get(receiptPath, "qrReciept.pdf").toString()));
 
@@ -298,10 +300,11 @@ public class ReceiptPrinter {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 					}
-				} else {
-					jsonResult.put(Constant.RESPONSE_CODE, "00");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-				}
+//				} 
+//				else {
+//					jsonResult.put(Constant.RESPONSE_CODE, "00");
+//					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+//				}
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -310,14 +313,14 @@ public class ReceiptPrinter {
 		return jsonResult;
 	}
 
-	public JSONObject printReceipt(String staffName, String checkNo) {
+	public JSONObject printReceipt(String staffName, int storeType, String checkNo, boolean isDisplayPdf) {
 		JSONObject jsonResult = new JSONObject();
 
 		try {
 			JSONObject receiptHeader = getReceiptHeader();
 			JSONObject receiptContent = getReceiptContent(checkNo);
 			// JSONObject receiptFooter
-			JSONObject printReceiptResponse = printReceiptData(staffName, receiptHeader, receiptContent, null);
+			JSONObject printReceiptResponse = printReceiptData(staffName, storeType, receiptHeader, receiptContent, null, isDisplayPdf);
 
 			if (printReceiptResponse.length() > 0) {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -329,7 +332,8 @@ public class ReceiptPrinter {
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
 			e.printStackTrace();
-		}
+		}		
+		Logger.writeActivity("Print Receipt Result: " + jsonResult.toString(), ECPOS_FOLDER);
 		return jsonResult;
 	}
 
@@ -358,7 +362,9 @@ public class ReceiptPrinter {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 			stmt = connection.prepareStatement(
-					"select * from `check` c " + "inner join check_status cs on cs.id = c.check_status "
+					"select *,ot.name as 'order_type_name' from `check` c " 
+							+ "inner join check_status cs on cs.id = c.check_status "
+							+ "inner join order_type ot on ot.id = c.order_type "
 							+ "where check_number = ? and check_status in (2,3);");
 			stmt.setString(1, checkNo);
 			rs = stmt.executeQuery();
@@ -368,6 +374,8 @@ public class ReceiptPrinter {
 
 				jsonResult.put("checkNo", rs.getString("check_number"));
 				jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
+				jsonResult.put("orderType", rs.getString("order_type_name"));
+				jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
 				jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
 				jsonResult.put("totalAmount",
 						new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
@@ -404,7 +412,7 @@ public class ReceiptPrinter {
 				jsonResult.put("taxCharges", taxCharges);
 				
 				stmt3 = connection.prepareStatement(
-						"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (2, 3) order by id asc;");
+						"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2, 3) order by id asc;");
 				stmt3.setLong(1, id);
 				stmt3.setString(2, checkNo);
 				rs3 = stmt3.executeQuery();
@@ -679,8 +687,8 @@ public class ReceiptPrinter {
 		return jsonResult;
 	}
 
-	private JSONObject printReceiptData(String staffName, JSONObject receiptHeaderJson, JSONObject receiptContentJson,
-			JSONObject receiptFooterJson) {
+	private JSONObject printReceiptData(String staffName, int storeType, JSONObject receiptHeaderJson, JSONObject receiptContentJson,
+			JSONObject receiptFooterJson, boolean isDisplayPdf) {
 		XWPFParagraph emptyParagraph = null;
 		JSONObject jsonResult = new JSONObject();
 
@@ -697,10 +705,10 @@ public class ReceiptPrinter {
 				} else {
 					JSONObject printerResult = getSelectedReceiptPrinter();
 					
-					if(printerResult.getString("receipt_printer").equals("No Printing")) {
-						jsonResult.put(Constant.RESPONSE_CODE, "00");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-					} else {
+//					if(printerResult.getString("receipt_printer").equals("No Printing")) {
+//						jsonResult.put(Constant.RESPONSE_CODE, "00");
+//						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+//					} else {
 						new File(receiptPath).mkdirs();
 
 						PrintService myPrintService = null;
@@ -806,19 +814,52 @@ public class ReceiptPrinter {
 
 							// Receipt Info Table
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Table No", "Order At", "Printed At",
-									"Staff"));
-
+							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Order Type","Table No", "Order At", "Printed At",
+									"Cust Name", "Staff"));
+								
+							if(receiptContentJson.getString("customerName").equals("-")) {
+								receiptInfoLabels.remove(5);
+							}
+							
+							if(storeType == 1) {
+								receiptInfoLabels.remove(2); //remove table number if it is retail business
+							}
+								
 							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("checkNo"),
 									receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
 									sdf.format(new Date()), staffName));
+													
+							if(!receiptContentJson.getString("customerName").equals("-")) {
+								receiptInfoContents.add(receiptInfoContents.size()-1, receiptContentJson.getString("customerName"));
+							}
+
+							if(storeType == 1) { //if it is retail
+								//only deposit and sales appereaed in reatail
+								if(!receiptContentJson.getString("orderType").equals("deposit")) {
+									receiptInfoContents.add(1,"Purchase");
+								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
+									receiptInfoContents.add(1,"Deposit");
+								}
+								receiptInfoContents.remove(2); //remove table since it is retail
+							} else if(storeType == 2) { //if it is f&b
+								String orderTypeName = null; 
+								
+								if(receiptContentJson.getString("orderType").equals("table")) {
+									orderTypeName = "Dine In";
+								} else if(receiptContentJson.getString("orderType").equals("take away")) {
+									orderTypeName = "Take Away";
+								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
+									orderTypeName = "Deposit";
+								}
+								receiptInfoContents.add(1,orderTypeName);
+							}
 
 							receiptInfoLabels.add("Trans Type");
 							
 							if(!receiptContentJson.isNull("transactionType")) {
 								if(receiptContentJson.getString("transactionType").equals("Void")) {
 									//change order at to void at
-									receiptInfoLabels.set(2, "Void At");
+									receiptInfoLabels.set(3, "Void At");
 									
 								}
 								receiptInfoContents.add(receiptContentJson.getString("transactionType"));
@@ -1016,12 +1057,12 @@ public class ReceiptPrinter {
 							borderBottom3.addNewTop().setVal(STBorder.SINGLE);
 
 							// 121x20, 28x20, 50x20
-							long columnWidths[] = { 560, 2420, 1000 };
+							long columnWidths[] = { 560, 2420, 1200 };
 
 							CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
 							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
-							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2420"));
-							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1000"));
+							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2220"));
+							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1200"));
 
 							for (int x = 0; x < table.getNumberOfRows(); x++) {
 								XWPFTableRow row = table.getRow(x);
@@ -1046,7 +1087,7 @@ public class ReceiptPrinter {
 							List<String> receiptResultLabels = new ArrayList<>();
 							receiptResultLabels.add("Subtotal");
 							for (int x = 0; x < taxCharges.length(); x++) {
-								receiptResultLabels.add(taxCharges.getJSONObject(x).getString("name") + "("
+								receiptResultLabels.add(taxCharges.getJSONObject(x).getString("name") + " ("
 										+ taxCharges.getJSONObject(x).getString("rate") + "%)");
 							}
 							receiptResultLabels.add("Rounding Adjustment");
@@ -1156,11 +1197,11 @@ public class ReceiptPrinter {
 										ParagraphAlignment.RIGHT);
 							}
 							
-							long receiptResultTableWidths[] = { 2980, 1000 };
+							long receiptResultTableWidths[] = { 2980, 1200 };
 
 							CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
-							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2980"));
-							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
+							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2780"));
+							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1200"));
 
 							for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
 								XWPFTableRow row = receiptResultTable.getRow(x);
@@ -1304,7 +1345,7 @@ public class ReceiptPrinter {
 
 								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
-								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2330"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2530"));
 
 								emptyParagraph = doc.createParagraph();
 								emptyParagraph.setSpacingAfter(0);
@@ -1355,8 +1396,8 @@ public class ReceiptPrinter {
 						document.close();
 						out.close();
 
-						// print pdf
-						if (myPrintService != null) {
+						// print pdf if isDisplay pdf is false
+						if (myPrintService != null && !printerResult.getString("receipt_printer").equals("No Printing") && !isDisplayPdf) {
 							PDDocument printablePdf = PDDocument
 									.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
 							// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
@@ -1367,21 +1408,28 @@ public class ReceiptPrinter {
 							job.setPageable(new PDFPageable(printablePdf));
 							job.setPrintService(myPrintService);
 							job.print();
-
+							
+							ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+							printablePdf.save(byteArrayOutputStream);
 							printablePdf.close();
-						}
-
+							InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+							System.out.println(inputStream.toString());
+							
+							printablePdf.close();
+						} 
+							
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-
+				
 					}
 					
-				}
+				//}
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception :", HARDWARE_FOLDER);
 			e.printStackTrace();
 		}
+		System.out.println(jsonResult.toString());
 		return jsonResult;
 	}
 

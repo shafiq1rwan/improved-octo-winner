@@ -95,9 +95,9 @@
 											<button class="btn btn-block btn-info" ng-click="printTransactionReceipt(transaction.id)">Print Receipt</button>
 										</div>
 									</div>
-									<div class="col-sm-4">
-										<div ng-if="">
-											<button class="btn btn-block btn-info" ng-click="">Continue Action</button>
+									<div class="col-sm-1">
+										<div>
+											<button class="btn btn-block btn-default" ng-click="displayPdf(transaction.id)"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></button>
 										</div>
 									</div>
 								</div>

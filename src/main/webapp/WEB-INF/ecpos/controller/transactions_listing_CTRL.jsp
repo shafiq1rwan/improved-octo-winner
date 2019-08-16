@@ -155,6 +155,24 @@
 			});
 		}
 		
+		$scope.displayPdf = function(transactionId){
+			var jsonData = JSON.stringify({
+				"transactionId" : transactionId
+			});
+			
+ 			$http.post("${pageContext.request.contextPath}/rc/configuration/display_receipt", jsonData, {responseType: 'arraybuffer'})
+			.then(function(response) {
+					$('#transactionDetailsModal').modal('hide');
+				    var file = new Blob([response.data], {type: 'application/pdf'});
+				    var fileURL = URL.createObjectURL(file);
+				    window.open(fileURL);
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
 		$scope.closeTransactionDetailsModal = function(){
  			console.log("haha");
 			document.getElementById("receipt_content_section").scrollTop=0;

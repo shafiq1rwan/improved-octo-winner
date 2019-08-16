@@ -109,6 +109,27 @@
 			});
 		}
 		
+		$scope.displayQRPdf = function(){
+ 			var jsonData = JSON.stringify({
+				"tableNo" : $scope.tableNo,
+				"checkNo" : $scope.checkNo,
+				"qrImage" : $('#QRImage').attr('src')
+			}); 
+
+ 			console.log(jsonData)
+ 			
+			$http.post("${pageContext.request.contextPath}/rc/configuration/display_qr_pdf", jsonData,{responseType: 'arraybuffer'})
+			.then(function(response) {			
+			    var file = new Blob([response.data], {type: 'application/pdf'});
+			    var fileURL = URL.createObjectURL(file);
+			    window.open(fileURL);
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+		
 		$scope.printQR = function(){
  			var jsonData = JSON.stringify({
 				"tableNo" : $scope.tableNo,

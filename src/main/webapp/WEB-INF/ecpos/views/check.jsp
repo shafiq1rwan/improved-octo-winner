@@ -275,8 +275,9 @@ hr {
 							</div>
  							<div class="row">
 								<div class="col-sm-12" >
-									<div class="pull-right">
-										<input type="button" class="btn bg-maroon" ng-click="printQR()" value="Print" />
+									<div class="pull-right" style="display: inline-block;">
+											<button class="btn bg-maroon" ng-click="printQR()">Print</button>
+											<button class="btn btn-block btn-default" ng-click="displayQRPdf()"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></button>
 									</div>
 								</div>
 							</div>
