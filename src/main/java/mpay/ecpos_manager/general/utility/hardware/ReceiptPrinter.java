@@ -1372,8 +1372,8 @@ public class ReceiptPrinter {
 								}
 
 								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
-								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1650"));
-								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2530"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
 
 								emptyParagraph = doc.createParagraph();
 								emptyParagraph.setSpacingAfter(0);

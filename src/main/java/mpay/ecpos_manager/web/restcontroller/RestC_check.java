@@ -482,7 +482,7 @@ public class RestC_check {
 	
 					stmt3 = connection.prepareStatement("select * from check_detail cd " +
 							"inner join check_status cs on cs.id = cd.check_detail_status " +
-							"where check_id = ? and check_number = ? and parent_check_detail_id is null order by cd.id asc;");
+							"where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status !=4 order by cd.id asc;");
 					stmt3.setLong(1, id);
 					stmt3.setString(2, checkNo);
 					rs3 = stmt3.executeQuery();
@@ -1178,7 +1178,9 @@ public class RestC_check {
 		
 																if (item.has("tiers") && !item.isNull("tiers") && item.getJSONArray("tiers").length() > 0) {
 																	main: for (int i = 0; i < item.getJSONArray("tiers").length(); i++) {
+																		System.out.println(item.getJSONArray("tiers"));
 																		JSONObject tier = item.getJSONArray("tiers").getJSONObject(i);
+																		System.out.println("Hello Tier Item: "+ tier);
 		
 																		if (tier.has("id") && !tier.isNull("id") && !tier.getString("id").isEmpty()) {
 																			stmt6 = connection.prepareStatement("select cid.* from combo_detail cd "
@@ -1187,30 +1189,100 @@ public class RestC_check {
 																			stmt6.setLong(1, tier.getLong("id"));
 																			stmt6.setString(2, rs2.getString("id"));
 																			rs6 = stmt6.executeQuery();
-		
-																			if (rs6.next()) {
+																			
+																			System.out.println("====rs6 params=====");
+
+																			//System.out.println(rs6.getString("id"));
+																			System.out.println(tier.getLong("id"));
+																			System.out.println(rs2.getString("id"));
+																			
+																			System.out.println("====rs6 params=====");
+																			
+																			//Create JSON Array (becoz rs6 will return multiple result)
+																			JSONArray tierItemList = new JSONArray();
+																			while(rs6.next()) {
+																				JSONObject tierItemObj = new JSONObject();
+																				tierItemObj.put("id", rs6.getString("id"));
+																				tierItemObj.put("menu_item_id", rs6.getString("menu_item_id"));
+																				tierItemObj.put("combo_detail_id", rs6.getString("combo_detail_id"));
+																				tierItemObj.put("menu_item_group_id", rs6.getString("menu_item_group_id"));
+																				tierItemList.put(tierItemObj);
+																			}
+																			
+																			//if (rs6.next()) {
+																			if (tierItemList.length() > 0) {
+																				
 																				if (tier.has("items") && !tier.isNull("items") && tier.getJSONArray("items").length() > 0) {
+																					
 																					for (int j = 0; j < tier.getJSONArray("items").length(); j++) {
 																						JSONObject tierItem = tier.getJSONArray("items").getJSONObject(j);
 		
 																						if ((tierItem.has("id") && !tierItem.isNull("id") && !tierItem.getString("id").isEmpty()) 
 																								&& (tierItem.has("backendId") && !tierItem.isNull("backendId") && !tierItem.getString("backendId").isEmpty())) {
-																							if (rs6.getString("menu_item_id") != null && !rs6.getString("menu_item_id").isEmpty()) {
+																							//Ori
+																							/*if (rs6.getString("menu_item_id") != null && !rs6.getString("menu_item_id").isEmpty()) {
 																								stmt7 = connection.prepareStatement("select mi.* from combo_item_detail cid "
 																														+ "inner join menu_item mi on mi.id = cid.menu_item_id "
-																														+ "where cid.id = ? and mi.id = ? and mi.backend_id = ?;");
+																														+ "where "
+																														//+ "cid.id = ? and "
+																														+ "mi.id = ? and mi.backend_id = ?;");
+																								System.out.println("Combo Item with no menu group");
 																							} else if (rs6.getString("menu_item_group_id") != null && !rs6.getString("menu_item_group_id").isEmpty()) {
 																								stmt7 = connection.prepareStatement("select mi.* from combo_item_detail cid "
 																														+ "inner join menu_item_group mig on mig.id = cid.menu_item_group_id "
 																														+ "inner join menu_item_group_sequence migs on migs.menu_item_group_id = mig.id "
 																														+ "inner join menu_item mi on mi.id = migs.menu_item_id "
-																														+ "where cid.id = ? and mi.id = ? and mi.backend_id = ?");
+																														+ "where "
+																														//+ "cid.id = ? and "
+																														+ "mi.id = ? and mi.backend_id = ?");
+																								System.out.println("Combo item got Menu Group");
+																							}*/
+																							
+																							//Extra Step
+																							String comboItemDetail = "";
+																							
+																							for(int z=0 ; z < tierItemList.length(); z++) {
+																								JSONObject tierItemObj = tierItemList.getJSONObject(z);
+																								if(tierItemObj.getString("menu_item_id")!= null && !tierItemObj.getString("menu_item_id").isEmpty()) {
+																									if(tierItemObj.getString("menu_item_id").equals(tierItem.getString("id"))) {																									
+																										comboItemDetail = tierItemObj.getString("id");
+																										stmt7 = connection.prepareStatement("select mi.* from combo_item_detail cid "
+																												+ "inner join menu_item mi on mi.id = cid.menu_item_id "
+																												+ "where "
+																												+ "cid.id = ? and "
+																												+ "mi.id = ? and mi.backend_id = ?;");
+																									}
+																								} else if(tierItemObj.getString("menu_item_group_id")!= null && !tierItemObj.getString("menu_item_group_id").isEmpty()) {
+																									if(tierItemObj.getString("menu_item_id").equals(tierItem.getString("id"))) {
+																										comboItemDetail = tierItemObj.getString("id");
+																										stmt7 = connection.prepareStatement("select mi.* from combo_item_detail cid "
+																												+ "inner join menu_item_group mig on mig.id = cid.menu_item_group_id "
+																												+ "inner join menu_item_group_sequence migs on migs.menu_item_group_id = mig.id "
+																												+ "inner join menu_item mi on mi.id = migs.menu_item_id "
+																												+ "where "
+																												+ "cid.id = ? and "
+																												+ "mi.id = ? and mi.backend_id = ?");
+																									}
+																									
+																								}
+
 																							}
-																							stmt7.setString(1, rs6.getString("id"));
+								
+																							//stmt7.setString(1, rs6.getString("id"));
+																							stmt7.setString(1, comboItemDetail);
 																							stmt7.setString(2, tierItem.getString("id"));
 																							stmt7.setString(3, tierItem.getString("backendId"));
+																							
+																							System.out.println("===========");
+
+																							System.out.println(comboItemDetail);
+																							System.out.println(tierItem.getString("id"));
+																							System.out.println(tierItem.getString("backendId"));
+																							
+																							System.out.println("===========");
+																							
 																							rs7 = stmt7.executeQuery();
-		
+																							
 																							if (rs7.next()) {
 																								if (rs7.getBoolean("is_active") == true) {
 																									long childCheckDetailId = insertChildCheckDetail(connection, order.getInt("deviceType"), checkId, checkNo, parentCheckDetailId, tierItem, orderQuantity, isItemTaxable, charges);
@@ -1245,11 +1317,13 @@ public class RestC_check {
 																																	if (modifierCheckDetailId > 0) {
 																																		isCheckSuccess = true;
 																																		Logger.writeActivity("Item Successfully Ordered", ECPOS_FOLDER);
+																																		System.out.println("Item Successfully Ordered");
 																																		jsonResult.put(Constant.RESPONSE_CODE, "00");
 																																		jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Successfully Ordered");
 																																	} else {
 																																		connection.rollback();
 																																		Logger.writeActivity("Modifier Item Failed To Insert", ECPOS_FOLDER);
+																																		System.out.println("Modifier Item Failed To Insert");
 																																		jsonResult.put(Constant.RESPONSE_CODE, "01");
 																																		jsonResult.put(Constant.RESPONSE_MESSAGE, "Modifier Item Failed To Insert");
 																																		break main;
@@ -1257,6 +1331,7 @@ public class RestC_check {
 																																} else {
 																																	connection.rollback();
 																																	Logger.writeActivity("Modifier Item Type Not Match", ECPOS_FOLDER);
+																																	System.out.println("Modifier Item Type Not Match");
 																																	jsonResult.put(Constant.RESPONSE_CODE, "01");
 																																	jsonResult.put(Constant.RESPONSE_MESSAGE, "Modifier Item Type Not Match");
 																																	break main;
@@ -1264,6 +1339,7 @@ public class RestC_check {
 																															} else {
 																																connection.rollback();
 																																Logger.writeActivity("Modifier Item Not Active", ECPOS_FOLDER);
+																																System.out.println("Modifier Item Not Active XX");
 																																jsonResult.put(Constant.RESPONSE_CODE, "01");
 																																jsonResult.put(Constant.RESPONSE_MESSAGE, "Modifier Item Not Active");
 																																break main;
@@ -1271,6 +1347,7 @@ public class RestC_check {
 																														} else {
 																															connection.rollback();
 																															Logger.writeActivity("Modifier Item Not Found", ECPOS_FOLDER);
+																															System.out.println("Modifier Item Not Found InnerInner");
 																															jsonResult.put(Constant.RESPONSE_CODE, "01");
 																															jsonResult.put(Constant.RESPONSE_MESSAGE, "Modifier Item Not Found");
 																															break main;
@@ -1278,6 +1355,7 @@ public class RestC_check {
 																													} else {
 																														connection.rollback();
 																														Logger.writeActivity("Modifier Item Not Found", ECPOS_FOLDER);
+																														System.out.println("Modifier Item Not Found Inner");
 																														jsonResult.put(Constant.RESPONSE_CODE, "01");
 																														jsonResult.put(Constant.RESPONSE_MESSAGE, "Modifier Item Not Found");
 																														break main;
@@ -1286,6 +1364,7 @@ public class RestC_check {
 																											} else {
 																												connection.rollback();
 																												Logger.writeActivity("Modifier Item Not Found", ECPOS_FOLDER);
+																												System.out.println("Modifier Item Not Found Outer");
 																												jsonResult.put(Constant.RESPONSE_CODE, "01");
 																												jsonResult.put(Constant.RESPONSE_MESSAGE, "Modifier Item Not Found");
 																												break main;
@@ -1294,12 +1373,14 @@ public class RestC_check {
 																											if (tierItem.has("modifiers") && !tierItem.isNull("modifiers") && tierItem.getJSONArray("modifiers").length() > 0) {
 																												connection.rollback();
 																												Logger.writeActivity("Tier Item Modifier Not Found", ECPOS_FOLDER);
+																												System.out.println("Tier Item Modifier Not Found");
 																												jsonResult.put(Constant.RESPONSE_CODE, "01");
 																												jsonResult.put(Constant.RESPONSE_MESSAGE, "Tier Item Modifier Not Found");
 																												break main;
 																											} else {
 																												isCheckSuccess = true;
 																												Logger.writeActivity("Item Successfully Ordered", ECPOS_FOLDER);
+																												System.out.println("Item Successfully Ordered");
 																												jsonResult.put(Constant.RESPONSE_CODE, "00");
 																												jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Successfully Ordered");
 																											}
@@ -1307,6 +1388,7 @@ public class RestC_check {
 																									} else {
 																										connection.rollback();
 																										Logger.writeActivity("Tier Item Failed To Insert", ECPOS_FOLDER);
+																										System.out.println("Tier Item Failed To Insert");
 																										jsonResult.put(Constant.RESPONSE_CODE, "01");
 																										jsonResult.put(Constant.RESPONSE_MESSAGE, "Tier Item Failed To Insert");
 																										break main;
@@ -1314,6 +1396,7 @@ public class RestC_check {
 																								} else {
 																									connection.rollback();
 																									Logger.writeActivity("Tier Item Not Active", ECPOS_FOLDER);
+																									System.out.println("Tier Item Not Active");
 																									jsonResult.put(Constant.RESPONSE_CODE, "01");
 																									jsonResult.put(Constant.RESPONSE_MESSAGE, "Tier Item Not Active");
 																									break main;
@@ -1321,6 +1404,7 @@ public class RestC_check {
 																							} else {
 																								connection.rollback();
 																								Logger.writeActivity("Tier Item Not Found", ECPOS_FOLDER);
+																								System.out.println("Item Tier Not Found Inner");
 																								jsonResult.put(Constant.RESPONSE_CODE, "01");
 																								jsonResult.put(Constant.RESPONSE_MESSAGE, "Tier Item Not Found");
 																								break main;
@@ -1328,6 +1412,7 @@ public class RestC_check {
 																						} else {
 																							connection.rollback();
 																							Logger.writeActivity("Item Tier Not Found", ECPOS_FOLDER);
+																							System.out.println("Item Tier Not Found Outter");
 																							jsonResult.put(Constant.RESPONSE_CODE, "01");
 																							jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Tier Not Found");
 																							break main;
@@ -1336,6 +1421,8 @@ public class RestC_check {
 																						// deduct tier quantity
 																						for (int k = 0; k < comboTiers.length(); k++) {
 																							JSONObject comboTierInfo = comboTiers.getJSONObject(k);
+																							
+																							System.out.println("Tier My friend:" + tier.getLong("id"));
 		
 																							if (comboTierInfo.getLong("combo_detail_id") == (tier.getLong("id"))) {
 																								int deductedQuantity = comboTierInfo.getInt("combo_detail_quantity") - 1;
@@ -1368,6 +1455,8 @@ public class RestC_check {
 																
 																	// check if tier quantity equal to 0, if yes then success else fail
 																	if (isCheckSuccess) {
+																		System.out.println(totalTier);
+																		System.out.println(comboTiers.toString());
 																		for (int j = 0; j < comboTiers.length(); j++) {
 																			JSONObject comboTierInfo = comboTiers.getJSONObject(j);
 		
