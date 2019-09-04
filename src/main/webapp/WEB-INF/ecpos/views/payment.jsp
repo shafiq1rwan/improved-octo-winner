@@ -91,12 +91,23 @@ ul.select2-results__options li {
 									</div>
 								</div>
 								<br><br><br><br>
+								<div ng-if="checkDetail.orderType != '3'">
+								<div class="row">
+									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
+										<button class="btn btn-block bg-maroon" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('partial')" disabled>
+											<font size="4"><i>Advance Payment</i></font>
+										</button>
+									</div>
+								</div>
+								</div>
+								<div ng-if="checkDetail.orderType == '3'">
 								<div class="row">
 									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
 										<button class="btn btn-block bg-maroon" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('partial')">
-											<font size="4"><i>Partial Payment</i></font>
+											<font size="4"><i>Advance Payment</i></font>
 										</button>
 									</div>
+								</div>
 								</div>
 							</div>
 						</div>
@@ -166,46 +177,46 @@ ul.select2-results__options li {
 										<div style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
 											<hr style="border: none; height:2px; color: black; background-color: black;">
 											<div class="row">
-												<div class="col-sm-3" style="text-align: center; font-size: 25px; color: black;">
+												<div class="col-xs-3 col-sm-3" style="text-align: center; font-size: 25px; color: black;">
 													<label>RM</label>
 												</div>
-												<div class="col-sm-9" style="text-align: right; padding-right: 25px; font-size: 25px; color: black;">
+												<div class="col-xs-9 col-sm-9" style="text-align: right; padding-right: 25px; font-size: 25px; color: black;">
 													<label id="tenderAmount">0.00</label>
 												</div>
 											</div>
 											<hr style="border: none; height:2px; color: black; background-color: black;">
 											<div class="row">
-												<div class="col-sm-9">
+												<div class="col-xs-9 col-sm-9">
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="seven" type="button" value="7" class="calculator" ng-click="enterCalculator('tenderAmount',7)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="eight" type="button" value="8" class="calculator" ng-click="enterCalculator('tenderAmount',8)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="nine" type="button" value="9" class="calculator" ng-click="enterCalculator('tenderAmount',9)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="seven" type="button" value="7" class="calculator" ng-click="enterCalculator('tenderAmount',7)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="eight" type="button" value="8" class="calculator" ng-click="enterCalculator('tenderAmount',8)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="nine" type="button" value="9" class="calculator" ng-click="enterCalculator('tenderAmount',9)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="four" type="button" value="4" class="calculator" ng-click="enterCalculator('tenderAmount',4)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="five" type="button" value="5" class="calculator" ng-click="enterCalculator('tenderAmount',5)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="six" type="button" value="6" class="calculator" ng-click="enterCalculator('tenderAmount',6)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="four" type="button" value="4" class="calculator" ng-click="enterCalculator('tenderAmount',4)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="five" type="button" value="5" class="calculator" ng-click="enterCalculator('tenderAmount',5)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="six" type="button" value="6" class="calculator" ng-click="enterCalculator('tenderAmount',6)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="one" type="button" value="1" class="calculator" ng-click="enterCalculator('tenderAmount',1)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="two" type="button" value="2" class="calculator" ng-click="enterCalculator('tenderAmount',2)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="three" type="button" value="3" class="calculator" ng-click="enterCalculator('tenderAmount',3)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="one" type="button" value="1" class="calculator" ng-click="enterCalculator('tenderAmount',1)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="two" type="button" value="2" class="calculator" ng-click="enterCalculator('tenderAmount',2)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="three" type="button" value="3" class="calculator" ng-click="enterCalculator('tenderAmount',3)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('tenderAmount',10)" /></div>
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('tenderAmount',100)" /></div>
+														<div class="col-xs-6 col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zero" type="button" value="0" class="calculator" ng-click="enterCalculator('tenderAmount',10)" /></div>
+														<div class="col-xs-6 col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input id="zerozero" value="00" type="button" class="calculator" ng-click="enterCalculator('tenderAmount',100)" /></div>
 													</div>
 												</div>
-												<div class="col-sm-3">
+												<div class="col-xs-3 col-sm-3">
 													<div class="row" style="padding-right: 15px;">
-														<div class="col-sm-3" style="padding: 0px; padding-bottom: 5px;">
+														<div class="col-xs-3 col-sm-3" style="padding: 0px; padding-bottom: 5px;">
 															<button id="remove" value="removeButton" class="calculatoraction" ng-click="enterCalculator('tenderAmount',-10)">
 																<i class="fa fa-arrow-left" aria-hidden="true"></i>
 															</button>
 														</div>
 													</div>
 													<div class="row" style="padding-right: 15px;">
-														<div class="col-sm-3" style="padding: 0px; padding-bottom: 5px;">
+														<div class="col-xs-3 col-sm-3" style="padding: 0px; padding-bottom: 5px;">
 															<button value="confirmButton" class="calculatoraction" ng-click="submitPayment()">
 																<i class="fa fa-check-square" aria-hidden="true"></i>
 															</button>
@@ -304,46 +315,46 @@ ul.select2-results__options li {
 										<div style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
 											<hr style="border: none; height:2px; color: black; background-color: black;">
 											<div class="row">
-												<div class="col-sm-3" style="text-align: center; font-size: 25px; color: black;">
+												<div class="col-xs-3 col-sm-3" style="text-align: center; font-size: 25px; color: black;">
 													<label>RM</label>
 												</div>
-												<div class="col-sm-9" style="text-align: right; padding-right: 25px; font-size: 25px; color: black;">
+												<div class="col-xs-9 col-sm-9" style="text-align: right; padding-right: 25px; font-size: 25px; color: black;">
 													<label id="receivedAmount">0.00</label>
 												</div>
 											</div>
 											<hr style="border: none; height:2px; color: black; background-color: black;">
 											<div class="row">
-												<div class="col-sm-9">
+												<div class="col-xs-9 col-sm-9">
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="7" class="calculator" ng-click="enterCalculator2('receivedAmount',7)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="8" class="calculator" ng-click="enterCalculator2('receivedAmount',8)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="9" class="calculator" ng-click="enterCalculator2('receivedAmount',9)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="7" class="calculator" ng-click="enterCalculator2('receivedAmount',7)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="8" class="calculator" ng-click="enterCalculator2('receivedAmount',8)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="9" class="calculator" ng-click="enterCalculator2('receivedAmount',9)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="4" class="calculator" ng-click="enterCalculator2('receivedAmount',4)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="5" class="calculator" ng-click="enterCalculator2('receivedAmount',5)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="6" class="calculator" ng-click="enterCalculator2('receivedAmount',6)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="4" class="calculator" ng-click="enterCalculator2('receivedAmount',4)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="5" class="calculator" ng-click="enterCalculator2('receivedAmount',5)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="6" class="calculator" ng-click="enterCalculator2('receivedAmount',6)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="1" class="calculator" ng-click="enterCalculator2('receivedAmount',1)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="2" class="calculator" ng-click="enterCalculator2('receivedAmount',2)" /></div>
-														<div class="col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="3" class="calculator" ng-click="enterCalculator2('receivedAmount',3)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="1" class="calculator" ng-click="enterCalculator2('receivedAmount',1)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="2" class="calculator" ng-click="enterCalculator2('receivedAmount',2)" /></div>
+														<div class="col-xs-4 col-sm-4" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="3" class="calculator" ng-click="enterCalculator2('receivedAmount',3)" /></div>
 													</div>
 													<div class="row" style="padding-left: 15px;">
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="0" class="calculator" ng-click="enterCalculator2('receivedAmount',10)" /></div>
-														<div class="col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input value="00" type="button" class="calculator" ng-click="enterCalculator2('receivedAmount',100)" /></div>
+														<div class="col-xs-6 col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input type="button" value="0" class="calculator" ng-click="enterCalculator2('receivedAmount',10)" /></div>
+														<div class="col-xs-6 col-sm-6" style="padding: 0px; padding-right: 5px; padding-bottom: 5px;"><input value="00" type="button" class="calculator" ng-click="enterCalculator2('receivedAmount',100)" /></div>
 													</div>
 												</div>
-												<div class="col-sm-3">
+												<div class="col-xs-3 col-sm-3">
 													<div class="row" style="padding-right: 15px;">
-														<div class="col-sm-3" style="padding: 0px; padding-bottom: 5px;">
+														<div class="col-xs-3 col-sm-3" style="padding: 0px; padding-bottom: 5px;">
 															<button value="removeButton" class="calculatoraction" ng-click="enterCalculator2('receivedAmount',-10)">
 																<i class="fa fa-arrow-left" aria-hidden="true"></i>
 															</button>
 														</div>
 													</div>
 													<div class="row" style="padding-right: 15px;">
-														<div class="col-sm-3" style="padding: 0px; padding-bottom: 5px;">
+														<div class="col-xs-3 col-sm-3" style="padding: 0px; padding-bottom: 5px;">
 															<button value="confirmButton" class="calculatoraction" ng-click="executePayment()">
 																<i class="fa fa-check-square" aria-hidden="true"></i>
 															</button>

@@ -29,6 +29,10 @@
 		overflow-y: scroll;
 	}
 }
+
+.shadowBox {
+  box-shadow: 1px 1px 4px grey;
+}
 </style>
 </head>
 
@@ -37,14 +41,14 @@
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
 				<section class="content sectioncalibrator" style="padding-top: 8px;">
-				
+				<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 					<div id="depositOrderCarousel" class="carousel" data-interval="false">
 						<div class="carousel-inner">
 							<div class="item active" id="checkList">
 								<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-									<div class="col-sm-2" ng-repeat="existing_check in checks" style="padding-left: 2px; padding-right: 2px;">
+									<div class="col-xs-6 col-sm-2" ng-repeat="existing_check in checks" style="padding-left: 2px; padding-right: 2px;">
 										<div data-dismiss='modal' ng-click="redirect_to_check_detail(existing_check)">
-											<div class="panel panel-default text-center">
+											<div class="panel panel-default text-center shadowBox">
 												<div class="panel-heading" style="color: #333333e0; background-color: #00FA9A">
 													<h3 class="panel-title">CHECK NO</h3>
 												</div>
@@ -57,9 +61,9 @@
 										</div>
 									</div>
 			
-									<div class="col-sm-2" style="padding-left: 2px; padding-right: 2px;">
+									<div class="col-xs-6 col-sm-2" style="padding-left: 2px; padding-right: 2px;">
 										<div data-dismiss='modal'>
-											<div class="panel panel-default text-center">
+											<div class="panel panel-default text-center shadowBox">
 												<div class="panel-heading">
 													<h3 class="panel-title">NEW</h3>
 												</div>
@@ -90,10 +94,10 @@
 												<div class="col-sm-1"></div>
 											</div>
 											<div class="row">
-												<div class="col-sm-2 form-group"></div>
-												<div class="col-sm-8 form-group">
+												<div class="col-sm-1 form-group"></div>
+												<div class="col-sm-10 form-group">
 													<label style="font-size: medium;">Customer name:</label> 
-													<input type="text" class="form-control" id ="customerName" required/>
+													<input type="text" class="form-control" id ="customerName" required onfocus="blur();"/>
 													<br>
 													<div id="keyboard"></div>
 													<br>
@@ -101,7 +105,7 @@
 														<button class="btn btn-info" ng-click="create_new_check()">Create New Check</button>
 													</div>
 												</div>
-												<div class="col-sm-2 form-group"></div>
+												<div class="col-sm-1 form-group"></div>
 											</div>
 										</div>
 									</div>

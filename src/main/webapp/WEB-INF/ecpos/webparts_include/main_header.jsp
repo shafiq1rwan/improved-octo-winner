@@ -2,6 +2,13 @@
 <html>
 <head>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/mygroup.css">
+<style type="text/css">
+@media (max-width: 768px) {
+    .generate-page-header {
+        display: none;
+    }
+}
+</style>
 </head>
 
 <body class="font-roboto-regular">
@@ -15,7 +22,7 @@
 		</a>
 
 		<!-- Header Navbar: style can be found in header.less -->
-		<nav class="navbar navbar-static-top">
+		<nav class="navbar navbar-static-top generate-page-header">
 			<div class="navbar-custom-menu" class="text-center center-block"></div>
 		</nav>
 	</header>
