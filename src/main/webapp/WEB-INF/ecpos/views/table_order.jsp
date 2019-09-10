@@ -27,6 +27,10 @@
 .shadowBox {
   box-shadow: 1px 1px 4px grey;
 }
+
+.test:hover {
+  background-color: #f6f6f6;
+}
 </style>
 </head>
 
@@ -38,7 +42,7 @@
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div ng-repeat="table in manager_tablelist" class="col-xs-6 col-sm-2 sectioncalibrator2" style="padding-left: 2px; padding-right: 2px;">
 							<div ng-click="get_table_checklist(table.table_number)" ng-model="table.table_number">
-								<div class="panel text-center shadowBox" style="margin: 5px;">
+								<div class="panel text-center shadowBox test" style="margin: 5px;">
 									<div class="panel-heading" ng-style="{'background-color':display_table_check_no(table.total_check)}">
 										<h3 class="panel-title" ng-style="{'color':display_table_check_no_title_color(table.total_check)}">CHECKS ({{table.total_check}})</h3>
 									</div>
@@ -68,7 +72,7 @@
 							<div class="row">
 								<div class="col-xs-6 col-sm-3 col-lg-4" ng-repeat="existing_check in checks" style="padding-left: 10px; padding-right: 10px;">
 									<div data-dismiss='modal'>
-										<div class="panel panel-default text-center shadowBox">
+										<div class="panel panel-default text-center shadowBox test">
 											<div class="panel-heading" style="color: #333333e0; background-color: #00FA9A">
 												<h3 class="panel-title">CHECK NO</h3>
 											</div>
@@ -83,7 +87,7 @@
 	
 								<div class="col-xs-6 col-sm-3 col-lg-4" style="padding-left: 10px; padding-right: 10px;">
 									<div data-dismiss='modal'>
-										<div class="panel panel-default text-center shadowBox">
+										<div class="panel panel-default text-center shadowBox test">
 											<div class="panel-heading">
 												<h3 class="panel-title">NEW</h3>
 											</div>
