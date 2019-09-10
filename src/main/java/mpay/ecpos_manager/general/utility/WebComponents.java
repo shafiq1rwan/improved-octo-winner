@@ -206,4 +206,9 @@ public class WebComponents {
 		}
 		return result;
 	}
+	
+	public static int trimCheckRef(String checkRefNo) {
+		int val = checkRefNo == null || checkRefNo.equals("") ? 0 : Integer.parseInt(checkRefNo.substring(6));
+		return val;
+	}
 }

@@ -61,15 +61,15 @@
 						<div class="carousel-inner">
 							<div class="item active" id="checkList">
 								<div class="text-center" style="margin: 5px;">
-									<div class="col-xs-6 col-sm-2 sectioncalibrator2" ng-repeat="existing_check in checks" style="padding-left: 2px; padding-right: 2px;">
-										<div data-dismiss='modal' ng-click="redirect_to_check_detail(existing_check)">
+									<div class="col-xs-6 col-sm-2 sectioncalibrator2" ng-repeat="check in checks" style="padding-left: 2px; padding-right: 2px;">
+										<div data-dismiss='modal' ng-click="redirect_to_check_detail(check.check_number)">
 											<div class="panel panel-default text-center shadowBox test" >
 												<div class="panel-heading" style="color: #333333e0; background-color: #00FA9A">
 													<h3 class="panel-title">CHECK NO</h3>
 												</div>
 												<div class="panel-body">
 													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
-														{{existing_check}}
+														{{check.check_ref_no}}
 													</div>
 												</div>
 											</div>

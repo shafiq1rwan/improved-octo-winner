@@ -66,7 +66,7 @@ hr {
 							<div class="row">
 								<div class="col-sm-7">
 									<div>
-										<font><b>Check : {{checkDetail.checkNo}}</b> / <b>Table : {{checkDetail.tableName}}</b></font>
+										<font><b>Check : {{checkDetail.checkNoToday}}</b> / <b>Table : {{checkDetail.tableName}}</b></font>
 									</div>
 									<div>
 										<font><b>Created Date : {{checkDetail.createdDate}}</b></font>

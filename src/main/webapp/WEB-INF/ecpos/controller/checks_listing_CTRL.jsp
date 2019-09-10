@@ -59,7 +59,7 @@
 			$('#datatable_checks tbody').on('click', 'td', function(){
 				if ($(this).index() == 1) {
 					var data = table.row($(this).closest('tr')).data();
-					$scope.getCheckDetails(data.orderType + '/' + data.checkNumber + '/' + data.tableNumber);
+					$scope.getCheckDetails(data.orderType + '/' + data.id + '/' + data.tableNumber);
 				}
 			});
 		}

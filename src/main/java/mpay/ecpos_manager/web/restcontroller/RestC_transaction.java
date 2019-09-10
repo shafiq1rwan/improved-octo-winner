@@ -64,7 +64,7 @@ public class RestC_transaction {
 				connection = dataSource.getConnection();
 
 				stmt = connection.prepareStatement(
-						"select t.id,s.staff_name,t.check_number,tt.name as transaction_type,pm.name as payment_method, "
+						"select t.id,s.staff_name,t.check_number,c.check_ref_no,tt.name as transaction_type,pm.name as payment_method, "
 								+ "pt.name as payment_type,case when pm.id = 1 then '-' else case when t.terminal_serial_number is null then '' else t.terminal_serial_number end end as terminal, "
 								+ "t.transaction_amount,tss.name as transaction_status, "
 								+ "case when pm.id = 1 then t.created_date else case when t.transaction_date is not null and t.transaction_time is not null then "
@@ -84,6 +84,7 @@ public class RestC_transaction {
 					transaction.put("id", rs.getString("id"));
 					transaction.put("staffName", rs.getString("staff_name"));
 					transaction.put("checkNumber", rs.getString("check_number"));
+					transaction.put("checkNoByday", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
 					transaction.put("transactionType", rs.getString("transaction_type"));
 					transaction.put("paymentMethod", rs.getString("payment_method") + " (" + rs.getString("terminal") + ")");
 					transaction.put("paymentType", rs.getString("payment_type"));
@@ -241,6 +242,7 @@ public class RestC_transaction {
 						long id = rs3.getLong("id");
 
 						receiptData.put("checkNo", rs3.getString("check_number"));
+						receiptData.put("checkNoByDay", WebComponents.trimCheckRef(rs3.getString("check_ref_no")));
 						receiptData.put("tableNo", rs3.getString("table_number") == null ? "-" : rs3.getString("table_number"));
 						receiptData.put("createdDate", sdf.format(rs3.getTimestamp("created_date")));
 						receiptData.put("totalAmount", new BigDecimal(rs3.getString("total_amount") == null ? "0.00" : rs3.getString("total_amount")));

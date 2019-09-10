@@ -9,10 +9,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +64,14 @@ public class RestC_check {
 					rs = stmt.executeQuery();
 	
 					JSONArray checks = new JSONArray();
+					JSONObject obj = null;
 					while (rs.next()) {
-						checks.put(rs.getString("check_number"));
+						obj = new JSONObject();
+						int checkDay = WebComponents.trimCheckRef(rs.getString("check_ref_no"));
+						obj.put("check_number", rs.getString("check_number"));
+						obj.put("check_ref_no", checkDay);
+						checks.put(obj);
+//						checks.put(rs.getString("check_number"));
 					}
 					jsonResult.put("checks", checks);
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
@@ -106,11 +115,18 @@ public class RestC_check {
 	
 				stmt = connection.prepareStatement("SELECT * FROM `check` WHERE order_type = 3 AND check_status IN (1,2) order by check_number asc;");
 				rs = stmt.executeQuery();
-
+				
 				JSONArray checks = new JSONArray();
+				JSONObject obj = null;
 				while (rs.next()) {
-					checks.put(rs.getString("check_number"));
+					obj = new JSONObject();
+					int checkDay = WebComponents.trimCheckRef(rs.getString("check_ref_no"));
+					obj.put("check_number", rs.getString("check_number"));
+					obj.put("check_ref_no", checkDay);
+					checks.put(obj);
+//					checks.put(rs.getString("check_number"));
 				}
+				
 				jsonResult.put("checks", checks);
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
@@ -150,7 +166,7 @@ public class RestC_check {
 				
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				
-				stmt = connection.prepareStatement("select c.id,c.check_number,s.staff_name,ot.name as order_type,ts.table_name,c.table_number,c.total_item_quantity, " + 
+				stmt = connection.prepareStatement("select c.id,c.check_number,c.check_ref_no,s.staff_name,ot.name as order_type,ts.table_name,c.table_number,c.total_item_quantity, " + 
 						"c.grand_total_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
 						"from `check` c " + 
 						"inner join staff s on s.id = c.staff_id " + 
@@ -163,7 +179,8 @@ public class RestC_check {
 				while (rs.next()) {
 					JSONObject check = new JSONObject();
 					check.put("id", rs.getLong("id"));
-					check.put("checkNumber", rs.getString("check_number"));
+					check.put("checkNumber", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
+					check.put("checkReference", (rs.getString("check_ref_no")));
 					check.put("staffName", rs.getString("staff_name"));
 					check.put("orderType", rs.getString("order_type"));
 					check.put("tableNumber", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
@@ -449,6 +466,7 @@ public class RestC_check {
 					
 					jsonResult.put("orderType", rs.getString("order_type"));
 					jsonResult.put("checkNo", rs.getString("check_number"));
+					jsonResult.put("checkNoToday", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
 					jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
 					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 					jsonResult.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
@@ -612,11 +630,17 @@ public class RestC_check {
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
 		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		PreparedStatement stmt7 = null;
+		PreparedStatement stmt8 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		
+		ResultSet res = null;
+		ResultSet res2 = null;
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		boolean isProceed = true;
 		
 		try {
 			if (user != null) {
@@ -629,18 +653,52 @@ public class RestC_check {
 				
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
-		
+					
 					stmt = connection.prepareStatement("select * from staff where staff_username = ?;");
 					stmt.setString(1, username);
 					rs = stmt.executeQuery();
-		
+					
 					if (rs.next()) {
 						long staffId = rs.getLong("id");
 						
 						stmt2 = connection.prepareStatement("select * from master where type = 'check';");
 						rs2 = stmt2.executeQuery();
-		
-						if (rs2.next()) {
+						
+						// create checks referrence no.
+						// check today date and today transaction
+						stmt5 = connection.prepareStatement("select count(1) as count from `check` where date(created_date) = curdate();");
+						res = stmt5.executeQuery();
+						
+						int displayCheck = 1;
+						String checkRef = "";
+						
+						if (res.next()) {
+							Date date = new Date();
+						    SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+						    String strDate = sdf.format(date);
+						    
+							if (res.getInt("count") > 0) {
+								stmt6 = connection.prepareStatement("select count from master where type = 'check_today';");
+								res2 = stmt6.executeQuery();
+								if (res2.next()) {
+									displayCheck = displayCheck + res2.getInt("count");
+								}
+								stmt8 = connection.prepareStatement("update master set count = "+ displayCheck +" , updated_date = now() where type = 'check_today';");
+								stmt8.executeUpdate();
+							}else {
+								stmt7 = connection.prepareStatement("update master set count = 1 , updated_date = now() where type = 'check_today';");
+								stmt7.executeUpdate();
+							}
+							checkRef = strDate + StringUtils.leftPad(String.valueOf(displayCheck), 6, "0");
+						}else {
+							connection.rollback();
+							Logger.writeActivity("Count Today Records Error", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Count Today Records Error");
+							isProceed = false;
+						}
+						
+						if (rs2.next() && isProceed) {
 							int currentCheckNo = rs2.getInt("count");
 							int newCheckNo = currentCheckNo + 1;
 							
@@ -649,17 +707,19 @@ public class RestC_check {
 							int rs3 = stmt3.executeUpdate();
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
-										"values (?,?,1,?,0,0,0,0,0,0,0,1,now(),?);");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
+										"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
-								stmt4.setLong(2, staffId);
-								stmt4.setString(3, tableNo);
-								stmt4.setLong(4, user.getDeviceId());
+								stmt4.setString(2, checkRef);
+								stmt4.setLong(3, staffId);
+								stmt4.setString(4, tableNo);
+								stmt4.setLong(5, user.getDeviceId());
 								int rs4 = stmt4.executeUpdate();
-		
+								
 								if (rs4 > 0) {
 									connection.commit();
 									Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+									jsonResult.put(Constant.CHECK_REF_NO, checkRef);
 									jsonResult.put(Constant.CHECK_NO, newCheckNo);
 									jsonResult.put(Constant.RESPONSE_CODE, "00");
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
@@ -705,8 +765,14 @@ public class RestC_check {
 				if (stmt2 != null) stmt2.close();
 				if (stmt3 != null) stmt3.close();
 				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (stmt7 != null) stmt7.close();
+				if (stmt8 != null) stmt8.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (res != null) {res.close();res = null;}
+				if (res2 != null) {res2.close();res2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
@@ -726,9 +792,15 @@ public class RestC_check {
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
 		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		PreparedStatement stmt7 = null;
+		PreparedStatement stmt8 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		
+		ResultSet res = null;
+		ResultSet res2 = null;
+		boolean isProceed = true;
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
@@ -749,10 +821,44 @@ public class RestC_check {
 					if (rs.next()) {
 						long staffId = rs.getLong("id");
 						
+						// create checks referrence no.
+						// check today date and today transaction
+						stmt5 = connection.prepareStatement("select count(1) as count from `check` where date(created_date) = curdate();");
+						res = stmt5.executeQuery();
+						
+						int displayCheck = 1;
+						String checkRef = "";
+						
+						if (res.next()) {
+							Date date = new Date();
+						    SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+						    String strDate = sdf.format(date);
+						    
+							if (res.getInt("count") > 0) {
+								stmt6 = connection.prepareStatement("select count from master where type = 'check_today';");
+								res2 = stmt6.executeQuery();
+								if (res2.next()) {
+									displayCheck = displayCheck + res2.getInt("count");
+								}
+								stmt8 = connection.prepareStatement("update master set count = "+ displayCheck +" , updated_date = now() where type = 'check_today';");
+								stmt8.executeUpdate();
+							}else {
+								stmt7 = connection.prepareStatement("update master set count = 1 , updated_date = now() where type = 'check_today';");
+								stmt7.executeUpdate();
+							}
+							checkRef = strDate + StringUtils.leftPad(String.valueOf(displayCheck), 6, "0");
+						}else {
+							connection.rollback();
+							Logger.writeActivity("Count Today Records Error", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Count Today Records Error");
+							isProceed = false;
+						}
+						
 						stmt2 = connection.prepareStatement("select * from master where type = 'check';");
 						rs2 = stmt2.executeQuery();
 		
-						if (rs2.next()) {
+						if (rs2.next() && isProceed) {
 							int currentCheckNo = rs2.getInt("count");
 							int newCheckNo = currentCheckNo + 1;
 							
@@ -762,21 +868,23 @@ public class RestC_check {
 		
 							if (rs3 > 0) {
 								if (user.isTakeAwayFlag() == true) {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,customer_name) " + 
-											"values (?,?,2,0,0,0,0,0,0,0,1,now(),?,?);");
-									stmt4.setString(4, jsonObj.getString("customerName"));
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,customer_name) " + 
+											"values (?,?,?,2,0,0,0,0,0,0,0,1,now(),?,?);");
+									stmt4.setString(5, jsonObj.getString("customerName"));
 								} else {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
-											"values (?,?,2,0,0,0,0,0,0,0,1,now(),?);");
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
+											"values (?,?,?,2,0,0,0,0,0,0,0,1,now(),?);");
 								}
 								stmt4.setString(1, Integer.toString(newCheckNo));
-								stmt4.setLong(2, staffId);
-								stmt4.setLong(3, user.getDeviceId());
+								stmt4.setString(2, checkRef);
+								stmt4.setLong(3, staffId);
+								stmt4.setLong(4, user.getDeviceId());
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {
 									connection.commit();
 									Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+									jsonResult.put(Constant.CHECK_REF_NO, checkRef);
 									jsonResult.put(Constant.CHECK_NO, newCheckNo);
 									jsonResult.put(Constant.RESPONSE_CODE, "00");
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
@@ -822,8 +930,14 @@ public class RestC_check {
 				if (stmt2 != null) stmt2.close();
 				if (stmt3 != null) stmt3.close();
 				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (stmt7 != null) stmt7.close();
+				if (stmt8 != null) stmt8.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (res != null) {res.close();res = null;}
+				if (res2 != null) {res2.close();res2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
@@ -843,8 +957,15 @@ public class RestC_check {
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
 		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		PreparedStatement stmt7 = null;
+		PreparedStatement stmt8 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
+		ResultSet res = null;
+		ResultSet res2 = null;
+		boolean isProceed = true;
 		
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -866,10 +987,44 @@ public class RestC_check {
 					if (rs.next()) {
 						long staffId = rs.getLong("id");
 						
+						// create checks referrence no.
+						// check today date and today transaction
+						stmt5 = connection.prepareStatement("select count(1) as count from `check` where date(created_date) = curdate();");
+						res = stmt5.executeQuery();
+						
+						int displayCheck = 1;
+						String checkRef = "";
+						
+						if (res.next()) {
+							Date date = new Date();
+						    SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+						    String strDate = sdf.format(date);
+						    
+							if (res.getInt("count") > 0) {
+								stmt6 = connection.prepareStatement("select count from master where type = 'check_today';");
+								res2 = stmt6.executeQuery();
+								if (res2.next()) {
+									displayCheck = displayCheck + res2.getInt("count");
+								}
+								stmt8 = connection.prepareStatement("update master set count = "+ displayCheck +" , updated_date = now() where type = 'check_today';");
+								stmt8.executeUpdate();
+							}else {
+								stmt7 = connection.prepareStatement("update master set count = 1 , updated_date = now() where type = 'check_today';");
+								stmt7.executeUpdate();
+							}
+							checkRef = strDate + StringUtils.leftPad(String.valueOf(displayCheck), 6, "0");
+						}else {
+							connection.rollback();
+							Logger.writeActivity("Count Today Records Error", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Count Today Records Error");
+							isProceed = false;
+						}
+						
 						stmt2 = connection.prepareStatement("select * from master where type = 'check';");
 						rs2 = stmt2.executeQuery();
 		
-						if (rs2.next()) {
+						if (rs2.next() && isProceed) {
 							int currentCheckNo = rs2.getInt("count");
 							int newCheckNo = currentCheckNo + 1;
 							
@@ -878,17 +1033,19 @@ public class RestC_check {
 							int rs3 = stmt3.executeUpdate();
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name,device_id) " + 
-										"values (?,?,3,0,0,0,0,0,0,0,1,now(),?,?);");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name,device_id) " + 
+										"values (?,?,?,3,0,0,0,0,0,0,0,1,now(),?,?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
-								stmt4.setLong(2, staffId);
-								stmt4.setString(3, jsonObj.getString("customerName"));
-								stmt4.setLong(4, user.getDeviceId());
+								stmt4.setString(2, checkRef);
+								stmt4.setLong(3, staffId);
+								stmt4.setString(4, jsonObj.getString("customerName"));
+								stmt4.setLong(5, user.getDeviceId());
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {
 									connection.commit();
 									Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+									jsonResult.put(Constant.CHECK_REF_NO, checkRef);
 									jsonResult.put(Constant.CHECK_NO, newCheckNo);
 									jsonResult.put(Constant.RESPONSE_CODE, "00");
 									jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
@@ -2361,6 +2518,10 @@ public class RestC_check {
 		PreparedStatement stmt11 = null;
 		PreparedStatement stmt12 = null;
 		PreparedStatement stmt13 = null;
+		PreparedStatement stmt14 = null;
+		PreparedStatement stmt15 = null;
+		PreparedStatement stmt16 = null;
+		PreparedStatement stmt17 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
@@ -2370,7 +2531,9 @@ public class RestC_check {
 		ResultSet rs7 = null;
 		ResultSet rs8 = null;
 		ResultSet rs9 = null;
-
+		ResultSet res1 = null;
+		ResultSet res2 = null;
+		boolean isProceed = true;
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		
@@ -2398,11 +2561,45 @@ public class RestC_check {
 					
 								if (rs2.next()) {
 									long staffId = rs2.getLong("id");
+								
+									// create checks referrence no.
+									// check today date and today transaction
+									stmt14 = connection.prepareStatement("select count(1) as count from `check` where date(created_date) = curdate();");
+									res1 = stmt14.executeQuery();
+									
+									int displayCheck = 1;
+									String checkRef = "";
+									
+									if (res1.next()) {
+										Date date = new Date();
+									    SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+									    String strDate = sdf.format(date);
+									    
+										if (res1.getInt("count") > 0) {
+											stmt15 = connection.prepareStatement("select count from master where type = 'check_today';");
+											res2 = stmt15.executeQuery();
+											if (res2.next()) {
+												displayCheck = displayCheck + res2.getInt("count");
+											}
+											stmt16 = connection.prepareStatement("update master set count = "+ displayCheck +" , updated_date = now() where type = 'check_today';");
+											stmt16.executeUpdate();
+										}else {
+											stmt17 = connection.prepareStatement("update master set count = 1 , updated_date = now() where type = 'check_today';");
+											stmt17.executeUpdate();
+										}
+										checkRef = strDate + StringUtils.leftPad(String.valueOf(displayCheck), 6, "0");
+									}else {
+										connection.rollback();
+										Logger.writeActivity("Count Today Records Error", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Count Today Records Error");
+										isProceed = false;
+									}
 									
 									stmt3 = connection.prepareStatement("select * from master where type = 'check';");
 									rs3 = stmt3.executeQuery();
-					
-									if (rs3.next()) {
+									
+									if (rs3.next() && isProceed) {
 										int currentCheckNo = rs3.getInt("count");
 										int newCheckNo = currentCheckNo + 1;
 										
@@ -2411,12 +2608,13 @@ public class RestC_check {
 										int updateMaster = stmt4.executeUpdate();
 					
 										if (updateMaster > 0) {
-											stmt5 = connection.prepareStatement("insert into `check` (check_number,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
-													"values (?,?,1,?,0,0,0,0,0,0,0,1,now(),?);", Statement.RETURN_GENERATED_KEYS);
+											stmt5 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
+													"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?);", Statement.RETURN_GENERATED_KEYS);
 											stmt5.setString(1, Integer.toString(newCheckNo));
-											stmt5.setLong(2, staffId);
-											stmt5.setString(3, jsonData.getString("tableNo"));
-											stmt5.setLong(4, user.getDeviceId());
+											stmt5.setString(2, checkRef);
+											stmt5.setLong(3, staffId);
+											stmt5.setString(4, jsonData.getString("tableNo"));
+											stmt5.setLong(5, user.getDeviceId());
 											int insertCheck = stmt5.executeUpdate();
 					
 											if (insertCheck > 0) {
@@ -2637,6 +2835,7 @@ public class RestC_check {
 														jsonResult.put(Constant.RESPONSE_CODE, "00");
 														jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Successfully Split");
 														jsonResult.put("new_check_no", Integer.toString(newCheckNo));
+														jsonResult.put(Constant.CHECK_REF_NO, checkRef);
 													}
 												} else {
 													connection.rollback();
@@ -2708,6 +2907,10 @@ public class RestC_check {
 				if (stmt11 != null) stmt11.close();
 				if (stmt12 != null) stmt12.close();
 				if (stmt13 != null) stmt13.close();
+				if (stmt14 != null) stmt14.close();
+				if (stmt15 != null) stmt15.close();
+				if (stmt16 != null) stmt16.close();
+				if (stmt17 != null) stmt17.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (rs3 != null) {rs3.close();rs3 = null;}
@@ -2717,6 +2920,8 @@ public class RestC_check {
 				if (rs7 != null) {rs7.close();rs7 = null;}
 				if (rs8 != null) {rs8.close();rs8 = null;}
 				if (rs9 != null) {rs9.close();rs9 = null;}
+				if (res1 != null) {res1.close();res1 = null;}
+				if (res2 != null) {res2.close();res2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);

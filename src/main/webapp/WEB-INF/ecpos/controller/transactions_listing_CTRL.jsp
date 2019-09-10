@@ -37,7 +37,7 @@
 				"bLengthChange": false,
 				"order" : [ [ 0, "desc" ] ],
 				destroy : true,
-				"columns" : [{"data" : "checkNumber"},
+				"columns" : [{"data" : "checkNoByday"},
 					{"data" : "staffName"}, 
 					{"data" : "transactionType"},
 					{"data" : "paymentMethod"},

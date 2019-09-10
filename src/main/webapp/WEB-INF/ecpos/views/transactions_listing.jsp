@@ -85,19 +85,19 @@
 								<!-- upper button group control -->
 								<div class="row">
 									<!-- <div class="col-sm-4" ng-if="!transaction.isVoid && transaction.isApproved"> -->
-									<div class="col-sm-4">
+									<div class="col-sm-3">
 										<div>
-											<button class="btn btn-block btn-primary" ng-click="voidTransaction(transaction.id, transaction.isVoid)">Void</button>
+											<button class="btn btn-block btn-danger" ng-click="voidTransaction(transaction.id, transaction.isVoid)"><i class="fa fa-remove" aria-hidden="true"></i> Void</button>
 										</div>
 									</div>
-									<div class="col-sm-4">
+									<div class="col-sm-3">
 										<div>
-											<button class="btn btn-block btn-info" ng-click="printTransactionReceipt(transaction.id)">Print Receipt</button>
+											<button class="btn btn-block btn-primary" ng-click="printTransactionReceipt(transaction.id)"><i class="fa fa-print" aria-hidden="true"></i> Print Receipt</button>
 										</div>
 									</div>
-									<div class="col-sm-1">
+									<div class="col-sm-3">
 										<div>
-											<button class="btn btn-block btn-default" ng-click="displayPdf(transaction.id)"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></button>
+											<button class="btn btn-block btn-primary" ng-click="displayPdf(transaction.id)"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</button>
 										</div>
 									</div>
 								</div>
@@ -121,7 +121,7 @@
 									<tbody>
 										<tr>
 											<td>Check No</td>
-											<td>{{receiptData.checkNo}}</td>
+											<td>{{receiptData.checkNoByDay}}</td>
 										</tr>
 										<tr>
 											<td>Table No</td>

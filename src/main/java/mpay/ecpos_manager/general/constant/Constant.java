@@ -21,6 +21,7 @@ public class Constant {
 	public static String TABLE_NO = "table_no";
 	public static String CHECK_LIST = "check_list";
 	public static String CHECK_NO = "check_no";
+	public static String CHECK_REF_NO = "check_ref_no";
 	public static String ORDERED_LIST = "ordered_list";
 	public static String STAFF_NAME = "staff_name";
 	public static String ORDERED_ITEM = "ordered_item";

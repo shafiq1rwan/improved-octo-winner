@@ -74,6 +74,7 @@ import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.QRGenerate;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @Service
 public class ReceiptPrinter {
@@ -389,6 +390,7 @@ public class ReceiptPrinter {
 				long id = rs.getLong("id");
 
 				jsonResult.put("checkNo", rs.getString("check_number"));
+				jsonResult.put("checkNoByDay", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
 				jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 				jsonResult.put("orderType", rs.getString("order_type_name"));
 				jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
@@ -853,7 +855,7 @@ public class ReceiptPrinter {
 								receiptInfoLabels.remove(2); //remove table number if it is retail business
 							}
 								
-							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("checkNo"),
+							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("checkNoByDay"),
 									receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
 									sdf.format(new Date()), staffName));
 													
@@ -1432,7 +1434,7 @@ public class ReceiptPrinter {
 							// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
 
 							PrinterJob job = PrinterJob.getPrinterJob();
-							job.setJobName("Receipt - " + receiptContentJson.getString("checkNo"));
+							job.setJobName("Receipt - " + receiptContentJson.getString("checkNoByDay"));
 							job.setPageable(new PDFPageable(printablePdf));
 							job.setPrintService(myPrintService);
 							job.print();

@@ -953,7 +953,29 @@ public class RestC_configuration {
 							String token = AesEncryption.encrypt(encryptKey, tokenValue);
 							
 							if (!token.equals(null)) {
-								String QRUrl = cloudUrl + "order/" + token;
+								
+								String isMpayEnv = "";
+								String QRUrl = "";
+								
+								PreparedStatement stmtC = connection.prepareStatement("select * from general_configuration where parameter = 'IS EXTERNAL IP REQUIERED';");
+								ResultSet rsC = stmtC.executeQuery();
+								
+								if (rsC.next()) {
+									isMpayEnv = rsC.getString("value");
+								}
+								
+								if (isMpayEnv.equals("1")) {
+									PreparedStatement stmtC2 = connection.prepareStatement("select * from general_configuration where parameter = 'BYOD PUBLIC URL';");
+									ResultSet rsC2 = stmtC2.executeQuery();
+									if (rsC2.next()) {
+										QRUrl = rsC2.getString("value") + "order/" + token;
+									}else {
+										QRUrl = cloudUrl + "order/" + token;
+									}
+								}else {
+									QRUrl = cloudUrl + "order/" + token;
+								}
+								
 								byte[] QRImageByte = QRGenerate.generateQRImage(QRUrl, 200, 200);
 								byte[] encoded = new Base64().encode(QRImageByte);
 								String QRImage = "data:image/jpg;base64," + new String(encoded);

@@ -70,15 +70,15 @@
 						</div>
 						<div class="modal-footer" style="padding: 30px;">
 							<div class="row">
-								<div class="col-xs-6 col-sm-3 col-lg-4" ng-repeat="existing_check in checks" style="padding-left: 10px; padding-right: 10px;">
+								<div class="col-xs-6 col-sm-3 col-lg-4" ng-repeat="check in checks" style="padding-left: 10px; padding-right: 10px;">
 									<div data-dismiss='modal'>
 										<div class="panel panel-default text-center shadowBox test">
 											<div class="panel-heading" style="color: #333333e0; background-color: #00FA9A">
 												<h3 class="panel-title">CHECK NO</h3>
 											</div>
-											<div class="panel-body" ng-click="redirect_to_check_detail(existing_check)">
+											<div class="panel-body" ng-click="redirect_to_check_detail(check.check_number)">
 												<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: medium;">
-													{{existing_check}}
+													{{check.check_ref_no}}
 												</div>
 											</div>
 										</div>
