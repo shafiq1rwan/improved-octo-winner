@@ -49,7 +49,7 @@ hr {
 						<!-- START of check well -->
 						<div id="checkWell">
 							<div class="col-sm-6" style="padding-right: 2px; padding-left: 2px;">
-								<div class="well" style="background-color: white; margin-bottom: 0px; padding: 10px;">
+								<div class="well" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh">
 									<div class="row">
 										<div class="col-sm-7">
 											<div>

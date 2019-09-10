@@ -52,7 +52,7 @@
 <body>
 	<div ng-controller="menu_CTRL">
 		<div ng-init="menuInitiation();">
-			<div class="well" style="max-height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px; padding-bottom: 22px;">
+			<div class="well" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh">
 
 				<div id="menuCarousel" class="carousel" data-interval="false">
 					<div class="carousel-inner">
@@ -65,11 +65,11 @@
 								</div>
 								<div class="row">
 									<div ng-repeat="category in categories.data">
-										<div class="col-xs-6 col-sm-6 col-m-6 col-lg-4">
+										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-4">
 											<br>
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
-												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-													<img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="max-width: 135px; max-height: 135px;" />
+												<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+													<img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="max-width: 120px; max-height: 120px;" />
 												</div>
 												<div class="itemname">
 													<b>{{category.name}}</b>
@@ -96,11 +96,11 @@
 								</div>
 								<div class="row">
 									<div ng-repeat="item in menuItems.data">
-										<div class="col-xs-6 col-sm-6col-md-4 ">
+										<div class="col-xs-6 col-sm-4 col-md-4 ">
 											<br>
 											<div style="text-align: center" ng-click="action(item)">
-												<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-													<img ng-src="${pageContext.request.contextPath}/{{item.imagePath}}" alt={{item.name}} style="max-width: 135px; max-height: 135px;" />
+												<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+													<img ng-src="${pageContext.request.contextPath}/{{item.imagePath}}" alt={{item.name}} style="max-width: 120px; max-height: 120px;" />
 												</div>
 												<div class="itemname">
 													<b>{{item.name}}</b>
@@ -124,15 +124,15 @@
 								<div class="row" style="text-align: center">
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;"></div>
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;">
-										<div ng-if="screenWidth > 1050" style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+										<div ng-if="screenWidth > 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 									</div>
 									<div class="col-xs-2 col-sm-4" style="padding: 0px;">
-										<div ng-if="screenWidth > 1050" style="width: 120px; height: 135px; align-items: flex-end; display: flex;">
+										<div ng-if="screenWidth > 1050" style="width: 120px; height: 120px; align-items: flex-end; display: flex;">
 											<div class="input-group input-group-sm">
 												<span class="input-group-btn" ng-click="minusItemQuantity()">
 													<button type="button" class="btn btn-number">
@@ -222,15 +222,15 @@
 								<div class="row" style="text-align: center">
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;"></div>
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;">
-										<div ng-if="screenWidth > 1050" style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+										<div ng-if="screenWidth > 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
 											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 										</div>
 									</div>
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;">
-										<div ng-if="screenWidth > 1050" style="width: 135px; height: 135px; align-items: flex-end; display: flex;">
+										<div ng-if="screenWidth > 1050" style="width: 120px; height: 120px; align-items: flex-end; display: flex;">
 											<div class="input-group input-group-sm">
 												<span class="input-group-btn" ng-click="minusAlaCarteItemQuantity()">
 													<button type="button" class="btn btn-number">
@@ -326,8 +326,8 @@
 													<div class="col-xs-6 col-sm-4">
 														<br>
 														<div style="text-align: center" ng-click="getModifiers(tierItemDetail)">
-															<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-																<img ng-src="${pageContext.request.contextPath}/{{tierItemDetail.imagePath}}" style="max-width: 135px; max-height: 135px;" />
+															<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+																<img ng-src="${pageContext.request.contextPath}/{{tierItemDetail.imagePath}}" style="max-width: 120px; max-height: 120px;" />
 															</div>
 															<div class="itemname">
 																<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>

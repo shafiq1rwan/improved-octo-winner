@@ -132,7 +132,7 @@ hr {
 										<div class="row" style="margin-bottom:5px;">
 											<div class="col-sm-12"> 
 												<font size="3"><b>Cash Drawer</b></font>
-												<button type="button" class="btn btn-success btn-sm pull-right custom-button" ng-click="saveCashDrawer()">
+												<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="saveCashDrawer()">
 												Update Cash Drawer
 												</button>
 											</div>
@@ -182,7 +182,7 @@ hr {
 										<div class="row" style="margin-bottom:5px;">
 											<div class="col-sm-12">
 												<font size="3"><b>Terminal</b></font>
-												<button type="button" class="btn btn-success btn-sm pull-right custom-button" ng-click="showTerminalModal('create')">
+												<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="showTerminalModal('create')">
 												Add Terminal
 												</button>
 											</div>
@@ -226,7 +226,7 @@ hr {
 												<div class="row" style="margin-bottom:5px;">
 													<div class="col-sm-12"> 
 														<font size="3"><b>Receipt Printer</b></font>
-														<button type="button" class="btn btn-success btn-sm pull-right custom-button" ng-click="saveReceiptPrinter()">
+														<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="saveReceiptPrinter()">
 														Update Printer
 														</button>
 													</div>

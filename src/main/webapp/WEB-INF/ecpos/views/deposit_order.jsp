@@ -30,8 +30,23 @@
 	}
 }
 
+@media (min-width: @screen-xs-max) and (max-width: @screen-sm-max) {
+	.sectioncalibrator2 {
+		position: relative;
+  		min-height: 1px;
+  		padding-right: 15px;
+  		padding-left: 15px;
+  		float: left;
+  		width: 33.1%;
+	}
+}
+
 .shadowBox {
   box-shadow: 1px 1px 4px grey;
+}
+
+.test:hover {
+  background-color: #f6f6f6;
 }
 </style>
 </head>
@@ -41,19 +56,19 @@
 		<div ng-init="initiation();">
 			<div class="content-wrapper" style="font-size: 0.9em;">
 				<section class="content sectioncalibrator" style="padding-top: 8px;">
-				<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
+				<div class="row container-fluid" style="padding-right: 8px; padding-left: 8px;">
 					<div id="depositOrderCarousel" class="carousel" data-interval="false">
 						<div class="carousel-inner">
 							<div class="item active" id="checkList">
-								<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-									<div class="col-xs-6 col-sm-2" ng-repeat="existing_check in checks" style="padding-left: 2px; padding-right: 2px;">
+								<div class="text-center" style="margin: 5px;">
+									<div class="col-xs-6 col-sm-2 sectioncalibrator2" ng-repeat="existing_check in checks" style="padding-left: 2px; padding-right: 2px;">
 										<div data-dismiss='modal' ng-click="redirect_to_check_detail(existing_check)">
-											<div class="panel panel-default text-center shadowBox">
+											<div class="panel panel-default text-center shadowBox test" >
 												<div class="panel-heading" style="color: #333333e0; background-color: #00FA9A">
 													<h3 class="panel-title">CHECK NO</h3>
 												</div>
 												<div class="panel-body">
-													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: medium;">
+													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
 														{{existing_check}}
 													</div>
 												</div>
@@ -61,14 +76,14 @@
 										</div>
 									</div>
 			
-									<div class="col-xs-6 col-sm-2" style="padding-left: 2px; padding-right: 2px;">
+									<div class="col-xs-6 col-sm-2 sectioncalibrator2" style="padding-left: 2px; padding-right: 2px;">
 										<div data-dismiss='modal'>
-											<div class="panel panel-default text-center shadowBox">
+											<div class="panel panel-default text-center shadowBox test">
 												<div class="panel-heading">
 													<h3 class="panel-title">NEW</h3>
 												</div>
 												<div class="panel-body" data-target="#depositOrderCarousel" data-slide="next">
-													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: medium;">
+													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
 														<i class="fa fa-plus" aria-hidden="true"></i>
 													</div>
 												</div>
@@ -112,6 +127,7 @@
 								</div>
 							</div>
 						</div>
+					</div>
 					</div>
 				</section>
 			</div>
