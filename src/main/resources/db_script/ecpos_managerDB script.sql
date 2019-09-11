@@ -486,6 +486,9 @@ INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES (
 insert into `master` values
 ('check', 0, now());
 
+insert into `master` values
+('check_today', 0, now());
+
 insert into `check_status` values
 (1, 'New'), (2, 'Pending'), (3, 'Closed'), (4, 'Cancelled');
 
