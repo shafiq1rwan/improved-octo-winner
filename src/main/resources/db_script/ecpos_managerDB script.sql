@@ -243,6 +243,7 @@ create table `check` (
 	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 	`device_id` bigint (20) NULL,
 	`check_number` bigint (20) NOT NULL,
+    `check_ref_no` varchar(45) DEFAULT NULL,
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
 	`customer_name` text NULL,
@@ -479,6 +480,8 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Trans
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Transaction Sync (Interval Lookup)', 'INTERVAL TRX SYNC', '1');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Device Name', 'DEVICE_NAME', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Device ID', 'DEVICE_ID', '');
+INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'IS EXTERNAL IP REQUIERED', '0');
+INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'BYOD PUBLIC URL', 'localhost:8080/byod/');
 
 insert into `master` values
 ('check', 0, now());
