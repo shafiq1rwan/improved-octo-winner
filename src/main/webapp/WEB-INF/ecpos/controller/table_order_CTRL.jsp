@@ -68,7 +68,7 @@
 			if (check_no > 0) {
 				return '#696969';
 			} else {
-				return '#a6a6a6';
+				return '#ababab';
 			}
 		}
 		

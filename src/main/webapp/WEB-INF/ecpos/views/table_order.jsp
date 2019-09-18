@@ -30,6 +30,8 @@
 
 .test:hover {
   background-color: #f6f6f6;
+  /* outline: 2px solid #ababab; */
+  /* border: 2px solid #696969; */
 }
 </style>
 </head>

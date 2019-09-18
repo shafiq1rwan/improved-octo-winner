@@ -49,7 +49,7 @@ hr {
 						<!-- START of check well -->
 						<div id="checkWell">
 							<div class="col-sm-6" style="padding-right: 2px; padding-left: 2px;">
-								<div class="well" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh">
+								<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px;">
 									<div class="row">
 										<div class="col-sm-7">
 											<div>
@@ -74,8 +74,11 @@ hr {
 											<br>
 											<br>
 											<%}%>
-											<button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
+											<!-- <button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
 												<i class="fa fa-barcode"></i> Barcode Order
+											</button> -->
+											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="">
+												<i class="fa fa-utensil-fork"></i> To Kitchen
 											</button>
 											</div>
 											<div ng-if="mode == 2">
@@ -83,6 +86,13 @@ hr {
 											</div>
 										</div>
 									</div>
+									<div ng-if="mode == 1">
+									<div class="input-group" style="width: 100%;margin-top: 5px">
+										<input type="text" class="form-control" ng-model="barcode"
+											ng-click="barcodeOrder()"
+											ng-keydown="$event.keyCode === 13 && barcodeOrder()"
+											id="barcode_input" required placeholder="Barcode" />
+									</div></div>
 									<div>
 										<div class="row" style="padding-top: 8px; padding-right: 15px;">
 											<div class='col-xs-1 col-sm-1 text-center'><input type="checkbox" ng-click="allGrandParentItemCheckbox()" id="allGrandParentItemCheckbox" style="margin: 2px 0 0;"></div>
@@ -218,7 +228,53 @@ hr {
 									</div>
 									<hr style="margin-bottom: 10px;">
 									<div id="checkActionButtons">
-										<div class="row" style="margin-bottom: 5px;">
+										<table style="width: 100%;">
+											<tbody>
+												<tr style="width: 100%;">
+													<td style="padding: 2px;"><button
+															id="cancelItemButton" class="btn btn-block"
+															ng-click="cancelItem()"
+															style="word-spacing: normal; word-wrap: break-word;">
+															<i class="fa fa-trash"></i><br> <b
+																style="font-size: 11px">CANCEL ITEM </b>
+														</button></td>
+													<td style="padding: 2px;">
+														<button id="cancelCheckButton"
+															class="btn btn-block"
+															ng-click="cancelCheck()">
+															<i class="fa fa-remove"></i><br> <b
+																style="font-size: 11px">CANCEL CHECK</b>
+														</button>
+													</td>
+													<td style="padding: 2px;"><div
+															ng-if="orderType == 'table'">
+															<button id="splitCheckButton"
+																class="btn btn-block"
+																ng-click="splitCheck()" style="word-spacing: normal;">
+																<i class="fa fa-copy"></i><br> <b
+																	style="font-size: 11px">SPLIT CHECK </b>
+															</button>
+														</div></td>
+													<td style="padding: 2px;">
+														<div ng-if="orderType == 'deposit'">
+															<button id="closeCheckButton"
+																class="btn btn-block"
+																ng-click="closeCheck()" style="word-spacing: normal;">
+																<i class="fa fa-remove"></i><br> <b
+																	style="font-size: 11px">CLOSE CHECK</b>
+															</button>
+														</div>
+													</td>
+													<td style="padding: 2px; width: 100%"><button
+															id="paymentButton" class="btn btn-block bg-primary"
+															ng-click="redirectPayment()"
+															style="word-spacing: normal; padding: 12px"><b style="font-size: 20px">PAY</b>
+														</button></td>
+												</tr>
+											</tbody>
+										</table>
+										<!-- Comment on 17-09-2019 - For redesign and new arrangement -->
+										<!-- <div class="row" style="margin-bottom: 5px;">
 											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 												<button id="cancelItemButton" class="btn btn-block btn-info" ng-click="cancelItem()">CANCEL ITEM</button>
 											</div>
@@ -240,7 +296,7 @@ hr {
 													<button id="closeCheckButton" class="btn btn-block btn-info" ng-click="closeCheck()">CLOSE CHECK</button>
 												</div>
 											</div>
-										</div>
+										</div> -->
 									</div>
 								</div>
 							</div>
@@ -274,11 +330,11 @@ hr {
 								<img id="QRImage" style="height: 50%; width: 50%;" />
 							</div>
  							<div class="row">
-								<div class="col-xs-12 col-sm-12" >
-									<div class="pull-right" style="display: inline-block;">
-											<button class="btn bg-maroon" ng-click="printQR()">Print</button>
-											<button class="btn btn-block btn-default" ng-click="displayQRPdf()"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></button>
-									</div>
+								<div class="col-xs-6 col-sm-6" >
+										<button class="btn bg-maroon" ng-click="printQR()" style="float: right;"><i class="fa fa-print" aria-hidden="true"></i> Print</button>
+								</div>
+								<div class="col-xs-6 col-sm-6" >
+										<button class="btn bg-maroon" ng-click="displayQRPdf()"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</button>
 								</div>
 							</div>
 						</div>

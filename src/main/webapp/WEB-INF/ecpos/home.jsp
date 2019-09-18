@@ -14,7 +14,7 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
 <!-- Page title set in pageTitle directive -->
-<title page-title class="font-roboto-regular">VERNPOS Manager</title>
+<title page-title class="font-roboto-regular">VernPOS</title>
 
 <!-- ****BASE FOLDER DEFINE**** -->
 <base href="/">
@@ -137,7 +137,7 @@
 
 <!-- Body -->
 <!-- appCtrl controller with serveral data used in theme on diferent view -->
-<body ng-app="myApp" class="hold-transition skin-purple sidebar-mini font-roboto-regular">
+<body ng-app="myApp" class="hold-transition skin-blue sidebar-mini font-roboto-regular">
 	<div class="wrapper">
 		<!-- *****************************TO-DO : INCLUDE main_header***************************** -->
 		<jsp:include page="/WEB-INF/ecpos/webparts_include/main_header.jsp" />

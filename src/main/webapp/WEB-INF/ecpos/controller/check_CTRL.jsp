@@ -194,9 +194,10 @@
 					alert("Session TIME OUT");
 					window.location.href = "${pageContext.request.contextPath}/signout";
 				});
-			} else {
+			} 
+			/* else {
 				alert("Barcode value is empty");
-			}
+			} */
 		}
 		
 		$scope.allGrandParentItemCheckbox = function () {
