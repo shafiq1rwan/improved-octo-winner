@@ -2,7 +2,8 @@
 <html>
 <head>
 <style>
-.nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover {
+.nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover
+	{
 	border-top-color: #00dcfb;
 	background-color: #00dcfb;
 }
@@ -30,10 +31,10 @@
 	max-height: 35px;
 	overflow-wrap: break-word;
 	overflow: hidden;
-	text-overflow:ellipsis;
+	text-overflow: ellipsis;
 	-webkit-line-clamp: 2;
 	display: -webkit-box;
-    -webkit-box-orient: vertical;
+	-webkit-box-orient: vertical;
 }
 
 @media only screen and (max-width:320px) {
@@ -41,42 +42,73 @@
 		height: calc(100vh - 100px);
 		overflow-y: scroll;
 	}
-	.testscreen{
+	.testscreen {
 		display: inline-block
 	}
 }
 
-/* .itemname:hover {
-	overflow: visible;
-} */
+.input-container {
+  display: -ms-flexbox; /* IE10 */
+  display: flex;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.icon {
+  padding: 10px;
+  background: dodgerblue;
+  color: white;
+  min-width: 20px;
+  text-align: center;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  outline: none;
+}
+
+.input-field:focus {
+  border: 2px solid dodgerblue;
+}
+
+img {
+  width:200px;
+  height:200px;
+  border-radius:4px;
+  object-fit:cover;
+}
+
+img:hover {
+	opacity: 0.3;
+}
 </style>
 </head>
 
 <body>
 	<div ng-controller="menu_CTRL">
 		<div ng-init="menuInitiation();">
-		<!-- <div class="box box-primary">
-            <div class="box-body">
-              <div class="input-group" style="width: 100%">
-                    <input type="text" class="search-query form-control" placeholder="Search" autofocus="autofocus" ng-model="barcode" ng-click="barcodeOrder()" id = "barcode_input"/>
-                </div>
-            </div>
-          </div> -->
 			<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px;">
 
 				<div id="menuCarousel" class="carousel" data-interval="false">
+				<div class="input-container" style="width: 100%">
+				<i class="fa fa-search icon" style="size: 10px"></i> 
+						<input type="text" class="form-control" ng-model="barcode"
+							ng-click="barcodeOrder()"
+							ng-keydown="$event.keyCode === 13 && barcodeOrder()"
+							id="barcode_input" required placeholder="Search or scan for items" autofocus="autofocus" onblur="this.focus()"/>
+					</div>
 					<div class="carousel-inner">
 						<div class="item active">
 							<div id="category">
-								<div class="row" style="font-size: large">
-									<div class="col-sm-12" style="text-align: center">
+								<div class="row border-1" style="font-size: large;">
+									<div class="col-sm-12" style="text-align: center; border-bottom: 1px solid gray;">
 										<label>MENU</label>
-										<hr>
 									</div>
 								</div>
 								<div class="row">
 									<div ng-repeat="category in categories.data">
-										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-4 padding-0">
+										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-3 padding-0">
 											<br>
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
 												<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
@@ -95,20 +127,20 @@
 						<div class="item">
 							<div id="menuItem">
 								<div class="row" style="font-size: large">
-									<div class="col-xs-2 col-sm-2">
+									<div class="col-xs-2 col-sm-2" style="border-bottom: 1px solid gray;">
 										<a data-target="#menuCarousel" data-slide="prev">
 											<i class="fa fa-arrow-left" style="color: black;"></i>
 										</a>
+										<label>&nbsp;</label>
 									</div>
-									<div class="col-xs-8 col-sm-8" style="text-align: center">
+									<div class="col-xs-8 col-sm-8 " style="text-align: center; border-bottom: 1px solid gray;">
 										<label id="categoryName"></label>
-										<hr>
 									</div>
-									<div class="col-xs-2 col-sm-4"></div>
+									<div class="col-xs-2 col-sm-2" style="border-bottom: 1px solid gray;"><label>&nbsp;</label></div>
 								</div>
 								<div class="row">
 									<div ng-repeat="item in menuItems.data">
-										<div class="col-xs-4 col-sm-4 col-md-4 padding-0">
+										<div class="col-xs-4 col-sm-4 col-md-3 padding-0">
 											<br>
 											<div style="text-align: center" ng-click="action(item)">
 												<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
@@ -217,7 +249,7 @@
 									</div>
 								</div>
 								<div style="text-align: center;">
-									<button class="btn btn-primary" ng-click="submitOrder()" style="background-color: #00FA9A; border-color: #00FA9A;">Submit</button>
+									<button class="btn btn-primary" ng-click="submitOrder()">Submit</button>
 								</div>
 							</div>
 						</div>
@@ -309,7 +341,7 @@
 									<hr style="margin: 8px;">
 								</div>
 								<div style="text-align: center;">
-									<button class="btn btn-primary" ng-click="submitOrder()" style="background-color: #00FA9A; border-color: #00FA9A;">Submit</button>
+									<button class="btn btn-primary" ng-click="submitOrder()">Submit</button>
 								</div>
 							</div>
 						</div>
