@@ -32,6 +32,10 @@ hr {
 .test:hover {
   background-color: #f6f6f6;
 }
+
+.shadowBox {
+  box-shadow: 1px 1px 4px grey;
+}
 </style>
 </head>
 
@@ -72,7 +76,7 @@ hr {
 										<div class="col-sm-5">
 											<div ng-if="mode == 1">
 											<%if (user.getStoreType() == 2) {%>
-											<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="generateQR()">
+											<button id="generateQRButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" style="width: 100%;" ng-click="generateQR()">
 												<i class="fa fa-qrcode"></i> Generate QR
 											</button>
 											<br>
@@ -81,7 +85,7 @@ hr {
 											<!-- <button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
 												<i class="fa fa-barcode"></i> Barcode Order
 											</button> -->
-											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="">
+											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" style="width: 100%;" ng-click="">
 												<i class="fa fa-utensil-fork"></i> To Kitchen
 											</button>
 											</div>
@@ -235,7 +239,7 @@ hr {
 											<tbody>
 												<tr style="width: 100%;">
 													<td style="padding: 2px;"><button
-															id="cancelItemButton" class="btn btn-block test"
+															id="cancelItemButton" class="btn btn-block test bg-maroon shadowBox"
 															ng-click="cancelItem()"
 															style="word-spacing: normal; word-wrap: break-word;">
 															<i class="fa fa-trash"></i><br> <b
@@ -243,7 +247,7 @@ hr {
 														</button></td>
 													<td style="padding: 2px;">
 														<button id="cancelCheckButton"
-															class="btn btn-block test"
+															class="btn btn-block bg-maroon shadowBox"
 															ng-click="cancelCheck()">
 															<i class="fa fa-remove"></i><br> <b
 																style="font-size: 11px">CANCEL CHECK</b>
@@ -252,7 +256,7 @@ hr {
 													<td style="padding: 2px;"><div
 															ng-if="orderType == 'table'">
 															<button id="splitCheckButton"
-																class="btn btn-block test"
+																class="btn btn-primary shadowBox"
 																ng-click="splitCheck()" style="word-spacing: normal;">
 																<i class="fa fa-copy"></i><br> <b
 																	style="font-size: 11px">SPLIT CHECK </b>
@@ -261,7 +265,7 @@ hr {
 													<td style="padding: 2px;">
 														<div ng-if="orderType == 'deposit'">
 															<button id="closeCheckButton"
-																class="btn btn-block test"
+																class="btn btn-block test bg-maroon shadowBox"
 																ng-click="closeCheck()" style="word-spacing: normal;">
 																<i class="fa fa-remove"></i><br> <b
 																	style="font-size: 11px">CLOSE CHECK</b>
@@ -269,7 +273,7 @@ hr {
 														</div>
 													</td>
 													<td style="padding: 2px; width: 100%"><button
-															id="paymentButton" class="btn btn-block bg-orange"
+															id="paymentButton" class="btn btn-block bg-orange shadowBox"
 															ng-click="redirectPayment()"
 															style="word-spacing: normal; padding: 12px"><b style="font-size: 20px">PAY</b>
 														</button></td>
