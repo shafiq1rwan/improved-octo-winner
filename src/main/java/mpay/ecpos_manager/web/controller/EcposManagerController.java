@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
+import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
@@ -66,8 +68,11 @@ public class EcposManagerController {
 					} else {
 						model.addObject("cashDrawer", false);
 					}
-
-					model.setViewName("ecpos/home");
+					
+					if (user.getRoleType() == Constant.KITCHEN_ROLE)
+						model.setViewName("ecpos/views/kds");
+					else
+						model.setViewName("ecpos/home");
 				} else {
 					getLoginPage(model);
 				}
@@ -276,6 +281,13 @@ public class EcposManagerController {
 	public ModelAndView ecpos_settings() {
 		ModelAndView model = new ModelAndView();
 		model.setViewName("ecpos/views/settings");
+		return model;
+	}
+	
+	@RequestMapping(value = { "/views/kds_view" }, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_kds_view() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/kds");
 		return model;
 	}
 	

@@ -7,9 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +19,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -3451,5 +3454,680 @@ public class RestC_check {
 		double rounded = Math.round(d * 20.0) / 20.0;
 		
 		return BigDecimal.valueOf(rounded);
+	}
+	
+	@RequestMapping(value = { "/send_to_kds/{orderType}/{checkNo}/{tableNo}" }, method = { RequestMethod.GET, RequestMethod.POST })
+	public String sendOrderToKds(@PathVariable("orderType") String orderType, @PathVariable("checkNo") String checkNo, @PathVariable("tableNo") String tableNo, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jsonArray = new JSONArray();
+		JSONObject jsonRow = null;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+		Date date = new Date();
+		String orderDt = dateFormat.format(date); 
+		String checkNoToday = "";
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+				
+				stmt = connection.prepareStatement("select cd.id,cd.check_id,cd.check_number,c.check_ref_no,cd.parent_check_detail_id,cd.menu_item_id,cd.menu_item_code,cd.menu_item_name,cd.quantity from check_detail cd "
+						+ "inner join `check` c on c.id = cd.check_id and cd.check_number = ? "
+						+ "where cd.check_detail_status !=4 and cd.parent_check_detail_id is null and (cd.kds_status_id is null OR cd.kds_status_id = 1) order by cd.id asc; ");
+				stmt.setString(1, checkNo);
+				rs = stmt.executeQuery();
+				
+				if (rs.next()) {
+					checkNoToday = String.valueOf(WebComponents.trimCheckRef(rs.getString("check_ref_no")));
+					do {
+						String grandParentId = rs.getString("id");
+						stmt2 = connection.prepareStatement("update check_detail set kds_status_id = 2, kds_date_time = ? where id = ?;");
+						stmt2.setString(1, orderDt);
+						stmt2.setString(2, grandParentId);
+						int idx = stmt2.executeUpdate();
+						
+						if (idx == 0) {
+							connection.rollback();
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "FAILED");
+							break;
+						}else {
+							stmt3 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+							stmt3.setString(1, grandParentId);
+							rs2 = stmt3.executeQuery();
+							
+							while (rs2.next()) {
+								String parentId = rs2.getString("id");
+								stmt4 = connection.prepareStatement("update check_detail set kds_status_id = 2, kds_date_time = ? where id = ?;");
+								stmt4.setString(1, orderDt);
+								stmt4.setString(2, parentId);
+								stmt4.executeUpdate();
+								
+								stmt5 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+								stmt5.setString(1, parentId);
+								rs3 = stmt5.executeQuery();
+								
+								while (rs3.next()) {
+									String childId = rs3.getString("id");
+									stmt6 = connection.prepareStatement("update check_detail set kds_status_id = 2, kds_date_time = ? where id = ?;");
+									stmt6.setString(1, orderDt);
+									stmt6.setString(2, childId);
+									stmt6.executeUpdate();
+								}
+							}
+						}
+					} while (rs.next());
+					
+					connection.commit();
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "ORDER SUCCESSFULLY SEND TO KITCHEN");
+					jsonResult.put("table_no", tableNo);
+					jsonResult.put("check_no", checkNo);
+					jsonResult.put("check_no_today", checkNoToday);
+					jsonResult.put("order_type", orderType);
+					jsonResult.put("order_date_time", orderDt);
+					
+				}else {
+					jsonResult.put(Constant.RESPONSE_CODE, "02");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "ORDER ALREADY FIRED TO KITCHEN");
+				}
+				
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/check_kds_order_by_check" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String checkKdsOrderByCheckId(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt1 = null;
+		ResultSet rs1 = null;
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				JSONObject jsonData = new JSONObject(data);
+				connection = dataSource.getConnection();
+
+				stmt1 = connection.prepareStatement("select * from check_detail cd "
+						+ "inner join check_status cs on cs.id = cd.check_detail_status "
+						+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and check_detail_status != 4 and kds_date_time = ? order by cd.id asc;");
+				stmt1.setString(1, jsonData.getString("checkNo"));
+				stmt1.setString(2, jsonData.getString("checkNo"));
+				stmt1.setString(3, jsonData.getString("orderDateTime"));
+				rs1 = stmt1.executeQuery();
+				
+				if (rs1.next()) {
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				}else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "ORDER NOT FOUND");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt1 != null)
+					stmt1.close();
+				if (rs1 != null) {
+					rs1.close();
+					rs1 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/retrieve_order_kds" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String retrieveOrderKds(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONObject jsonData = null;
+		Connection connection = null;
+		PreparedStatement stmt1 = null;
+		ResultSet rs1 = null;
+		StringBuffer strHtml = new StringBuffer();
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+
+				stmt1 = connection.prepareStatement("select distinct c.order_type,c.table_number,c.check_number,c.check_ref_no,c.id,cd.kds_date_time from check_detail cd\r\n" + 
+						"inner join check_status cs on cs.id = cd.check_detail_status\r\n" + 
+						"left join `check` c on c.id = cd.check_id\r\n" + 
+						"where parent_check_detail_id is null \r\n" + 
+						"and kds_status_id in (2,3) and check_detail_status != 4 \r\n" + 
+						"order by cd.id asc;");	
+				rs1 = stmt1.executeQuery();
+				
+				String [] style = {"primary","info","warning"}; //{"default","primary","info","success"};
+		        int i = 1;
+
+				while (rs1.next()) {
+					jsonData = new JSONObject();
+					jsonData.put("orderType",rs1.getString("order_type"));
+					jsonData.put("tableNo",rs1.getString("table_number") == null || rs1.getString("table_number").isEmpty() ? "":rs1.getString("table_number"));
+					jsonData.put("checkNo",rs1.getString("check_number"));
+					jsonData.put("orderDateTime",rs1.getString("kds_date_time"));
+					jsonData.put("checkNoToday",String.valueOf(WebComponents.trimCheckRef(rs1.getString("check_ref_no"))));
+					
+					if (rs1.getString("order_type").equals("1"))
+						jsonData.put("boxColor",style[0]);
+					else if (rs1.getString("order_type").equals("2"))
+						jsonData.put("boxColor",style[1]);
+					else if (rs1.getString("order_type").equals("3"))
+						jsonData.put("boxColor",style[2]);
+					
+					jsonData.put("orderSequence", i);
+					strHtml.append(constructHtmlKdsOrderByCheck(jsonData));
+					
+					i++;
+				}
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				jsonResult.put("html_str", "<section class=\"content\"><div class=\"row\">"+strHtml+"</div></section>");
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			try {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+				e.printStackTrace();
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				if (stmt1 != null)
+					stmt1.close();
+				if (rs1 != null) {
+					rs1.close();
+					rs1 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+
+	private String constructHtmlKdsOrderByCheck(JSONObject jsonData) {
+		Connection connection = null;
+		PreparedStatement stmt1 = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		ResultSet rs1 = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		String htmlCode = "";
+		StringBuffer strHtml = new StringBuffer();
+
+		try {
+			String orderType = jsonData.getString("orderType");
+			String tableNo = jsonData.getString("tableNo");
+			String checkNo = jsonData.getString("checkNo");
+			String orderDateTime = jsonData.getString("orderDateTime");
+			String checkNoToday = jsonData.getString("checkNoToday");
+			String boxColor = jsonData.getString("boxColor");
+			String orderSequence = jsonData.getString("orderSequence");
+			
+			connection = dataSource.getConnection();
+
+			stmt1 = connection.prepareStatement("select * from check_detail cd "
+					+ "inner join check_status cs on cs.id = cd.check_detail_status "
+					+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and check_detail_status != 4 and kds_date_time = ? order by cd.id asc;");
+			stmt1.setString(1, checkNo);
+			stmt1.setString(2, checkNo);
+			stmt1.setString(3, orderDateTime);
+			
+			rs1 = stmt1.executeQuery();
+			
+			UUID idBoxContent = UUID.randomUUID();
+			UUID idCloseButton = UUID.randomUUID();
+			
+			// HEADER
+			strHtml.append("<div class=\"col-lg-3 col-xs-4\">\r\n"
+					+ "			<div class=\"box box-" + boxColor + " box-solid\" >\r\n"
+					+ "				<div class=\"box-header with-border\"> "
+					+ "					<h2 class=\"box-title\">[TABLE]</h2>\r\n"
+					+ "						<small>[CHECK]</small>\r\n"
+					+ "						<div class=\"box-tools pull-right\">\r\n"
+					+ "							<span class=\"badge bg-black\">" + orderSequence + "</span>"
+					+ "							<button type=\"button\" class=\"btn btn-box-tool\"\r\n"
+					+ "								data-toggle=\"collapse\" data-target=\"#"+idBoxContent.toString()+"\" >\r\n"
+					+ "								<i class=\"fa fa-minus\"></i>\r\n"
+					+ "							</button>\r\n"
+					+ "							<button id=\"" + idCloseButton + "\" type=\"button\" onClick=\"closeOrder('"+idCloseButton+"','" + checkNo + "','" + orderDateTime + "')\" class=\"btn btn-box-tool\"\r\n"
+					+ "								data-toggle=\"remove\">\r\n"
+					+ "								<i class=\"fa fa-times\"></i>\r\n"
+					+ "							</button>\r\n" 
+					+ "						</div>\r\n"
+					+ "				</div>");
+			// BODY
+			strHtml.append("<div id=\"" + idBoxContent.toString() + "\" class=\"panel-collapse collapse in box-body\">\r\n"
+					+ "			<div style=\"display: flex;justify-content: space-between;\"><label><i class=\"fa fa-calendar\"></i> [ORDERDATE] </label>\r\n"
+					/*+ "			<div id=\"time_"+orderSequence+"\" style=\"color:red;\">00:00:00</div>"*/
+					+ "			<label><i class=\"fa fa-clock-o\"></i> [ORDERTIME] </label></div>\r\n"
+					+ "				<ul class=\"todo-list\" style=\"max-height:300px; overflow-y: scroll;\">");
+			// MENU
+			while (rs1.next()) {
+				String grandParentId = rs1.getString("id");
+
+				// GRANDPARENT
+				strHtml.append("<li> \r\n"
+						+ "			<table style=\"width: 100%\">\r\n"
+						+ "				<tbody style=\"width: 100%\">\r\n"
+//						+ "					<td style=\"width: 10%\"><span class=\"handle\"> <i class=\"fa fa-ellipsis-v\"></i> <i class=\"fa fa-ellipsis-v\"></i> </span></span></td>\r\n"
+						+ "					<td style=\"width: 10%\"><label>");
+
+				if (rs1.getString("kds_status_id").equals("3")) {
+					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
+							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through;\" >"
+							+rs1.getString("menu_item_name") + " </span>");
+				}else {
+					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
+							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none;\" >"
+							+ rs1.getString("menu_item_name") + " </span>");
+				}
+
+				stmt2 = connection.prepareStatement(
+						"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? order by id asc;");
+				stmt2.setString(1, checkNo);
+				stmt2.setString(2, checkNo);
+				stmt2.setString(3, grandParentId);
+				rs2 = stmt2.executeQuery();
+
+				// PARENT
+				strHtml.append("<ul>");
+
+				while (rs2.next()) {
+					long parentId = rs2.getLong("id");
+
+					strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> ");
+					
+					if (rs1.getString("kds_status_id").equals("3"))
+						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+					else 
+						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+					
+
+					stmt3 = connection.prepareStatement(
+							"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? order by id asc;");
+					stmt3.setString(1, checkNo);
+					stmt3.setString(2, checkNo);
+					stmt3.setLong(3, parentId);
+					rs3 = stmt3.executeQuery();
+
+					// CHILD
+					strHtml.append("<ul>");
+					while (rs3.next()) {
+						String childId = rs3.getString("id");
+						strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span>");
+						
+						if (rs1.getString("kds_status_id").equals("3"))
+							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through;\">"+rs3.getString("menu_item_name") + "</span></li>");
+						else 
+							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none;\">"+rs3.getString("menu_item_name") + "</span></li>");
+					}
+					strHtml.append("</ul>");
+				}
+				strHtml.append("</td></tbody></table></li>");
+			}
+			strHtml.append("</ul></div>\r\n" 
+					+ "		</div>\r\n"
+					+ "		</div>\r\n");
+
+			htmlCode = strHtml.toString();
+
+			if (orderType.equalsIgnoreCase("table") || orderType.equalsIgnoreCase("1"))
+				htmlCode = htmlCode.replace("[TABLE]", "Table " + tableNo);
+			else if (orderType.equalsIgnoreCase("take away") || orderType.equalsIgnoreCase("2"))
+				htmlCode = htmlCode.replace("[TABLE]", "Take Away");
+			else if (orderType.equalsIgnoreCase("deposit") || orderType.equalsIgnoreCase("3"))
+				htmlCode = htmlCode.replace("[TABLE]", "Deposit");
+
+			htmlCode = htmlCode.replace("[CHECK]", "Check " + checkNoToday);
+			htmlCode = htmlCode.replace("[ORDERDATE]", WebComponents.changeDbDateTimeFormat(Constant.DATE_TIME_FORMAT_DB,Constant.DATE_TIME_FORMAT_1,orderDateTime).substring(0, 10));
+			htmlCode = htmlCode.replace("[ORDERTIME]", WebComponents.changeDbDateTimeFormat(Constant.DATE_TIME_FORMAT_DB,Constant.DATE_TIME_FORMAT_1,orderDateTime).substring(11));
+
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt1 != null)
+					stmt1.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (stmt3 != null)
+					stmt3.close();
+				if (rs1 != null) {
+					rs1.close();
+					rs1 = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (rs3 != null) {
+					rs3.close();
+					rs3 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return htmlCode;
+	}
+	
+	@RequestMapping(value = { "/close_kds_order" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String closeKdsOrder(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		ResultSet rs = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				JSONObject jsonObj = new JSONObject(data);
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+				
+				if (jsonObj.has(Constant.CHECK_NO) && jsonObj.has(Constant.KDS_DATE_TIME)) {
+					try {
+						String checkNo = jsonObj.getString(Constant.CHECK_NO);
+						String kdsDateTime = jsonObj.getString(Constant.KDS_DATE_TIME);
+
+						connection = dataSource.getConnection();
+						connection.setAutoCommit(false);
+
+						stmt = connection.prepareStatement(
+								"SELECT * FROM check_detail WHERE check_id = ? AND kds_date_time = ? and kds_status_id in (2,3) and parent_check_detail_id is null;");
+						stmt.setString(1, checkNo);
+						stmt.setString(2, kdsDateTime);
+						rs = stmt.executeQuery();
+
+						if (rs.next()) {
+							do {
+								String grandParentId = rs.getString("id");
+								stmt2 = connection
+										.prepareStatement("update check_detail set kds_status_id = 4 WHERE id = ?;");
+								stmt2.setString(1, grandParentId);
+								int rs2 = stmt2.executeUpdate();
+
+								if (rs2 > 0) {
+									stmt3 = connection.prepareStatement(
+											"select * from check_detail where parent_check_detail_id = ?;");
+									stmt3.setString(1, grandParentId);
+									rs3 = stmt3.executeQuery();
+
+									while (rs3.next()) {
+										String parentId = rs3.getString("id");
+										stmt4 = connection.prepareStatement(
+												"update check_detail set kds_status_id = 4 where id = ?;");
+										stmt4.setString(1, parentId);
+										stmt4.executeUpdate();
+
+										stmt5 = connection.prepareStatement(
+												"select * from check_detail where parent_check_detail_id = ?;");
+										stmt5.setString(1, parentId);
+										rs4 = stmt5.executeQuery();
+
+										while (rs4.next()) {
+											String childId = rs4.getString("id");
+											stmt6 = connection.prepareStatement(
+													"update check_detail set kds_status_id = 4 where id = ?;");
+											stmt6.setString(1, childId);
+											stmt6.executeUpdate();
+										}
+									}
+								}
+							} while (rs.next());
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Order Successfully Closed");
+							connection.commit();
+						} else {
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+						}
+					} catch (Exception e) {
+						connection.rollback();
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+						Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+						e.printStackTrace();
+					}
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/update_kds_sent_item" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String updateKdsSendItem(@RequestBody String data, HttpServletRequest request,
+			HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		ResultSet rs = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				JSONObject jsonObj = new JSONObject(data);
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Invalid Request");
+
+				if (jsonObj.has(Constant.CHECK_DETAIL_ID) && jsonObj.has("is_check")) {
+					String grandParentId = jsonObj.getString(Constant.CHECK_DETAIL_ID);
+					int isCheck = Integer.parseInt(jsonObj.getString("is_check"));
+
+					connection = dataSource.getConnection();
+					connection.setAutoCommit(false);
+
+					stmt = connection.prepareStatement(
+							"SELECT count(1) as count FROM check_detail WHERE id = ? AND kds_status_id not in (1,4);");
+					stmt.setString(1, grandParentId);
+					rs = stmt.executeQuery();
+
+					if (rs.next()) {
+						int count = Integer.parseInt(rs.getString("count"));
+						if (count > 0) {
+							try {
+								String kdsStatus = isCheck == 1 ? "3" : "2";
+								
+								// update grandparent
+								stmt2 = connection.prepareStatement("update check_detail set kds_status_id = ? WHERE id = ?;");
+								stmt2.setString(1, kdsStatus);
+								stmt2.setString(2, grandParentId);
+								int rs2 = stmt2.executeUpdate();
+
+								if (rs2 > 0) {
+									stmt3 = connection.prepareStatement(
+											"select * from check_detail where parent_check_detail_id = ?;");
+									stmt3.setString(1, grandParentId);
+									rs3 = stmt3.executeQuery();
+
+									while (rs3.next()) {
+										// update parent
+										String parentId = rs3.getString("id");
+										stmt4 = connection.prepareStatement(
+												"update check_detail set kds_status_id = ? where id = ?;");
+										stmt4.setString(1, kdsStatus);
+										stmt4.setString(2, parentId);
+										stmt4.executeUpdate();
+
+										stmt5 = connection.prepareStatement(
+												"select * from check_detail where parent_check_detail_id = ?;");
+										stmt5.setString(1, parentId);
+										rs4 = stmt5.executeQuery();
+
+										while (rs4.next()) {
+											// update child
+											String child = rs4.getString("id");
+											stmt6 = connection.prepareStatement(
+													"update check_detail set kds_status_id = ? where id = ?;");
+											stmt6.setString(1, kdsStatus);
+											stmt6.setString(2, child);
+											stmt6.executeUpdate();
+										}
+									}
+								}
+								jsonResult.put(Constant.RESPONSE_CODE, "00");
+								jsonResult.put(Constant.RESPONSE_MESSAGE, "Order Successfully Closed");
+								connection.commit();
+							} catch (Exception e) {
+								connection.rollback();
+							}
+						}
+					}
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (stmt3 != null)
+					stmt3.close();
+				if (stmt4 != null)
+					stmt4.close();
+				if (stmt5 != null)
+					stmt5.close();
+				if (stmt6 != null)
+					stmt6.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs3 != null) {
+					rs3.close();
+					rs3 = null;
+				}
+				if (rs4 != null) {
+					rs4.close();
+					rs4 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
 	}
 }

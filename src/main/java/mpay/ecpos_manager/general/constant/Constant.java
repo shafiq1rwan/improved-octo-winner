@@ -21,6 +21,7 @@ public class Constant {
 	public static String TABLE_NO = "table_no";
 	public static String CHECK_LIST = "check_list";
 	public static String CHECK_NO = "check_no";
+	public static String CHECK_DETAIL_ID = "check_detail_id";
 	public static String CHECK_REF_NO = "check_ref_no";
 	public static String ORDERED_LIST = "ordered_list";
 	public static String STAFF_NAME = "staff_name";
@@ -43,7 +44,8 @@ public class Constant {
 	public static String AMOUNT = "amount";
 	public static String RESPONSE_CODE = "response_code";
 	public static String RESPONSE_MESSAGE = "response_message";
-
+	public static String KDS_DATE_TIME = "kds_date_time";
+	
 	public static int REFERENCE_ID = 0;
 	public static int RESPONSECODE = 1;
 	public static int REPONSEMSG = 2;
@@ -62,6 +64,22 @@ public class Constant {
 	public static int REFERENCE_CODE = 15;
 	public static int TRANAID = 16;
 	public static int TRANTC = 18;
-
+	
+	// User Role
+	public static int ADMIN_ROLE = 1;
+	public static int STORE_MANAGER_ROLE = 2;
+	public static int KITCHEN_ROLE = 3;
+	public static int WAITER_ROLE = 4;
+	public static int CASHIER_ROLE = 5;
+	
+	// Order type
+	public static String TABLE = "table";
+	public static String TAKE_AWAY = "take_away";
+	public static String DEPOSIT = "deposit";
+	
+	public static String DATE_TIME_FORMAT_DB = "yyyy-MM-dd HH:mm:ss.S";
+	public static String DATE_TIME_FORMAT_1 = "dd-MM-yyyy hh:mm:ss a";
+	public static String DATE_TIME_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
+	
 	public static String EXCEPTION_MESSAGE = "{\"response_code\":\"01\",\"response_message\":\"SERVER EXCEPTION\"}";
 }

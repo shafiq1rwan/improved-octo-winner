@@ -61,7 +61,6 @@
 					}
 				} else {
 					$scope.checkDetail = response.data;
-					
 					if ($scope.checkDetail.grandParentItemArray === undefined || $scope.checkDetail.grandParentItemArray == 0) {
 						$('#cancelItemButton').prop('disabled', true);
 						$('#paymentButton').prop('disabled', true);
@@ -454,6 +453,68 @@
 		 	$('[name=grandParentItemCheckbox]').each(function() {
 	            this.checked = false;                       
 	     	});
+		}
+		
+		$scope.informKds = function (jsonData) {
+			var json = JSON.stringify(jsonData);
+			console.log("Send data: " + json)
+
+			var wsProtocol = window.location.protocol;
+			var wsHost = window.location.host;
+			var wsURLHeader = "";
+
+			if (wsProtocol.includes("https")) {
+				wsURLHeader = "wss://"
+			} else {
+				wsURLHeader = "ws://"
+			}
+			wsURLHeader += wsHost + "/kdsSocket";
+				
+			var kdsSocket = new WebSocket(wsURLHeader);
+			console.log("Send to : " + wsURLHeader)
+			kdsSocket.onopen = function(event) {
+				console.log("Connection established");
+				if (kdsSocket != null) {
+					kdsSocket.send(json);
+				}
+			}
+			
+			kdsSocket.onmessage = function(event) {
+				console.log("onMessage :" + event.data);
+			}
+
+			kdsSocket.onerror = function(event) {
+				console.error("WebSocket error observed:", event);
+				alert(event);
+			}
+					
+			kdsSocket.onclose = function(event) {
+				console.log($scope.jsonResult);
+				console.log("Connection closed");
+			}	
+		}
+		
+		$scope.sendOrdertoKds = function () {
+			var confirmation = confirm("Confirm send to kitchen?");
+			if (confirmation == true) {
+				if ($scope.checkDetail.grandParentItemArray.length == 0) {
+					alert("Please make an order!");
+				}else {
+					$http.post("${pageContext.request.contextPath}/rc/check/send_to_kds/"+ $scope.orderType + "/" + $scope.checkNo + "/" + $scope.tableNo)
+					.then(function(response) {
+						if (response.data.response_code == "00") {
+							alert(response.data.response_message);
+							$scope.informKds(response.data);
+						} else {
+							alert(response.data.response_message);
+						}
+					},
+					function(response) {
+						alert("Session TIME OUT");
+						window.location.href = "${pageContext.request.contextPath}/signout";
+					});
+				}
+			}
 		}
 	});
 </script>

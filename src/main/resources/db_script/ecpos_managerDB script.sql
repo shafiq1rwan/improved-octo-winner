@@ -470,6 +470,39 @@ CREATE TABLE receipt_printer (
 	`receipt_printer_manufacturer` bigint(20) NOT NULL
 );
 
+CREATE TABLE `ecpos_manager`.`menu_access_role` (
+  `id` INT NOT NULL,
+  `role_lookup_id` INT NULL,
+  `menu_id` INT NULL,
+  `is_enabled` INT NULL,
+  PRIMARY KEY (`id`));
+ALTER TABLE `ecpos_manager`.`menu_access_role` 
+CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;  
+
+CREATE TABLE `ecpos_manager`.`menu` (
+`id` INT NOT NULL,
+`menu_caption` VARCHAR(100) NULL,
+`is_active` INT NULL,
+PRIMARY KEY (`id`));
+ALTER TABLE `ecpos_manager`.`menu` 
+CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;
+
+ALTER TABLE `ecpos_manager`.`check_detail` 
+ADD COLUMN `kds_status_id` INT NULL AFTER `transaction_id`;
+ALTER TABLE `ecpos_manager`.`check_detail` 
+ADD COLUMN `kds_date_time` DATETIME NULL AFTER `updated_date`;
+
+CREATE TABLE `ecpos_manager`.`kds_status` (
+  `id` INT NOT NULL,
+  `name` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`));
+  
+CREATE TABLE `ecpos_manager`.`kds` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `time_warning` DECIMAL NULL,
+  `time_late` DECIMAL NULL,
+  PRIMARY KEY (`id`));
+
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
@@ -526,3 +559,64 @@ insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, '
 INSERT INTO status_lookup (id, name) VALUES (1, 'PENDING');
 INSERT INTO status_lookup (id, name) VALUES (2, 'ACTIVE');
 INSERT INTO status_lookup (id, name) VALUES (3, 'INACTIVE');
+
+INSERT INTO `ecpos_manager`.`kds_status` (`id`, `name`) VALUES ('1', 'Pending');
+INSERT INTO `ecpos_manager`.`kds_status` (`id`, `name`) VALUES ('2', 'Notify');
+INSERT INTO `ecpos_manager`.`kds_status` (`id`, `name`) VALUES ('3', 'Send');
+INSERT INTO `ecpos_manager`.`kds_status` (`id`, `name`) VALUES ('4', 'Close');
+ 
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Table Order', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Take Away Order', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Deposit Order', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Items Listing', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Checks Listing', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Transactions Listing', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Reports', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Settings', '1');
+INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Logout', '1');
+
+-- admin
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '1', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '2', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '3', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '4', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '5', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '6', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '7', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '8', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '9', '1');
+
+-- store manager
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '1', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '2', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '3', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '4', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '5', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '6', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '7', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '8', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('2', '9', '1');
+
+-- kitchen
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '1', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '2', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '3', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '4', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '5', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '6', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '7', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '8', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('3', '9', '1');
+
+-- waiter
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '1', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '2', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '3', '1');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '4', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '5', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '6', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '7', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '8', '0');
+INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '9', '1');
+
+INSERT INTO `ecpos_manager`.`kds` (`time_warning`, `time_late`) VALUES ('5', '10');

@@ -4,11 +4,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONTokener;
 import org.json.JSONObject;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -147,6 +153,7 @@ public class WebComponents {
 	public UserAuthenticationModel getEcposSession(HttpServletRequest request) {
 		HttpSession session = request.getSession();
 		UserAuthenticationModel domainContainer = (UserAuthenticationModel) session.getAttribute("session_user");
+		System.out.println("domainContainer = " + domainContainer);
 		return domainContainer;
 	}
 	
@@ -210,5 +217,45 @@ public class WebComponents {
 	public static int trimCheckRef(String checkRefNo) {
 		int val = checkRefNo == null || checkRefNo.equals("") ? 0 : Integer.parseInt(checkRefNo.substring(6));
 		return val;
+	}
+	
+	public static JSONObject objectToJSONObject(Object object){
+	    Object json = null;
+	    JSONObject jsonObject = null;
+	    try {
+	        json = new JSONTokener(object.toString()).nextValue();
+	    } catch (JSONException e) {
+	        e.printStackTrace();
+	    }
+	    if (json instanceof JSONObject) {
+	        jsonObject = (JSONObject) json;
+	    }
+	    return jsonObject;
+	}
+
+	public static JSONArray objectToJSONArray(Object object){
+	    Object json = null;
+	    JSONArray jsonArray = null;
+	    try {
+	        json = new JSONTokener(object.toString()).nextValue();
+	    } catch (JSONException e) {
+	        e.printStackTrace();
+	    }
+	    if (json instanceof JSONArray) {
+	        jsonArray = (JSONArray) json;
+	    }
+	    return jsonArray;
+	}
+	
+	public static String changeDbDateTimeFormat(String currentFormat, String changeToFormat, String dateTimeString) {
+		SimpleDateFormat sdf = new SimpleDateFormat(currentFormat);
+		SimpleDateFormat sdfNew = new SimpleDateFormat(changeToFormat);
+        try {
+            Date date = sdf.parse(dateTimeString);
+            return sdfNew.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return dateTimeString;
 	}
 }

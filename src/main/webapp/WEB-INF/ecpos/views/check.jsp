@@ -85,7 +85,7 @@ hr {
 											<!-- <button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
 												<i class="fa fa-barcode"></i> Barcode Order
 											</button> -->
-											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" style="width: 100%;" ng-click="">
+											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" style="width: 100%;" ng-click="sendOrdertoKds()">
 												<i class="fa fa-utensil-fork"></i> To Kitchen
 											</button>
 											</div>
