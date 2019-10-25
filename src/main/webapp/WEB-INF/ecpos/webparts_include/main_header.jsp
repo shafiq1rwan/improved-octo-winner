@@ -42,10 +42,16 @@ div.containerkds p {
 				<a class="sidebar-toggle" data-toggle="push-menu"
 					role="button"> <span class="sr-only">Toggle navigation</span>
 				</a>
-			<%}else {%>
+			<%}else if(user.getStoreType() == 2){%>
 			<div class="containerkds">
 				<p>
 					&nbsp;Kitchen Display System
+				</p>
+			</div>
+			<%} else if(user.getStoreType() == 1){%>
+			<div class="containerkds">
+				<p>
+					&nbsp;Order Display System
 				</p>
 			</div>
 			<%} %>

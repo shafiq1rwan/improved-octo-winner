@@ -85,9 +85,16 @@ hr {
 											<!-- <button id="barcodeOrderButton" class="btn btn-social btn-sm pull-right bg-maroon" style="width: 100%;" ng-click="openBarcodeModal()">
 												<i class="fa fa-barcode"></i> Barcode Order
 											</button> -->
-											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" style="width: 100%;" ng-click="sendOrdertoKds()">
+											<%if (user.getStoreType() == 2) {%>
+											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" ng-click="sendOrdertoKds()">
 												<i class="fa fa-utensil-fork"></i> To Kitchen
 											</button>
+											<%}%>
+											<%if (user.getStoreType() == 1) {%>
+											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" ng-click="sendOrdertoKds()">
+												<i class="fa fa-location-arrow"></i> Send Order
+											</button>
+											<%}%>
 											</div>
 											<div ng-if="mode == 2">
 												<button class="btn btn-block btn-info" ng-click="redirectMenu()">Back To Previous</button>
@@ -239,7 +246,7 @@ hr {
 											<tbody>
 												<tr style="width: 100%;">
 													<td style="padding: 2px;"><button
-															id="cancelItemButton" class="btn btn-block test bg-maroon shadowBox"
+															id="cancelItemButton" class="btn btn-block test bg-orange shadowBox"
 															ng-click="cancelItem()"
 															style="word-spacing: normal; word-wrap: break-word;">
 															<i class="fa fa-trash"></i><br> <b
@@ -247,7 +254,7 @@ hr {
 														</button></td>
 													<td style="padding: 2px;">
 														<button id="cancelCheckButton"
-															class="btn btn-block bg-maroon shadowBox"
+															class="btn btn-block bg-orange shadowBox"
 															ng-click="cancelCheck()">
 															<i class="fa fa-remove"></i><br> <b
 																style="font-size: 11px">CANCEL CHECK</b>
@@ -273,9 +280,9 @@ hr {
 														</div>
 													</td>
 													<td style="padding: 2px; width: 100%"><button
-															id="paymentButton" class="btn btn-block bg-orange shadowBox"
+															id="paymentButton" class="btn btn-block btn-primary shadowBox"
 															ng-click="redirectPayment()"
-															style="word-spacing: normal; padding: 12px"><b style="font-size: 20px">PAY</b>
+															style="word-spacing: normal; padding: 12px"><b style="font-size: 20px"><i class="fa fa-dollar"></i> PAY</b>
 														</button></td>
 												</tr>
 											</tbody>

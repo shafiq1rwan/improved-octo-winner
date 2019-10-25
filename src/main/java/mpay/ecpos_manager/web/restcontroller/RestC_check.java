@@ -3784,7 +3784,7 @@ public class RestC_check {
 
 				if (rs1.getString("kds_status_id").equals("3")) {
 					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
-							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through;\" >"
+							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: red;\" >"
 							+rs1.getString("menu_item_name") + " </span>");
 				}else {
 					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
@@ -3808,7 +3808,7 @@ public class RestC_check {
 					strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> ");
 					
 					if (rs1.getString("kds_status_id").equals("3"))
-						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: red;\"> "+rs2.getString("menu_item_name") + "</span></li>");
 					else 
 						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none;\"> "+rs2.getString("menu_item_name") + "</span></li>");
 					
@@ -3827,7 +3827,7 @@ public class RestC_check {
 						strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span>");
 						
 						if (rs1.getString("kds_status_id").equals("3"))
-							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through;\">"+rs3.getString("menu_item_name") + "</span></li>");
+							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: red;\">"+rs3.getString("menu_item_name") + "</span></li>");
 						else 
 							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none;\">"+rs3.getString("menu_item_name") + "</span></li>");
 					}
