@@ -3748,10 +3748,10 @@ public class RestC_check {
 			UUID idCloseButton = UUID.randomUUID();
 			
 			// HEADER
-			strHtml.append("<div class=\"col-lg-3 col-xs-4\">\r\n"
+			strHtml.append("<div class=\"col-lg-3 col-xs-4\" >\r\n"
 					+ "			<div class=\"box box-" + boxColor + " box-solid\" >\r\n"
 					+ "				<div class=\"box-header with-border\"> "
-					+ "					<h2 class=\"box-title\">[TABLE]</h2>\r\n"
+					+ "					<h2 class=\"box-title\" >[TABLE]</h2>\r\n"
 					+ "						<small>[CHECK]</small>\r\n"
 					+ "						<div class=\"box-tools pull-right\">\r\n"
 					+ "							<span class=\"badge bg-black\">" + orderSequence + "</span>"
@@ -3766,11 +3766,12 @@ public class RestC_check {
 					+ "						</div>\r\n"
 					+ "				</div>");
 			// BODY
-			strHtml.append("<div id=\"" + idBoxContent.toString() + "\" class=\"panel-collapse collapse in box-body\">\r\n"
+			strHtml.append("<div id=\"" + idBoxContent.toString() + "\" class=\"panel-collapse collapse in box-body\" >\r\n"
 					+ "			<div style=\"display: flex;justify-content: space-between;\"><label><i class=\"fa fa-calendar\"></i> [ORDERDATE] </label>\r\n"
 					/*+ "			<div id=\"time_"+orderSequence+"\" style=\"color:red;\">00:00:00</div>"*/
-					+ "			<label><i class=\"fa fa-clock-o\"></i> [ORDERTIME] </label></div>\r\n"
-					+ "				<ul class=\"todo-list\" style=\"max-height:300px; overflow-y: scroll;\">");
+					+ "				<label><i class=\"fa fa-clock-o\"></i> [ORDERTIME] </label>"
+					+ "			</div>\r\n"
+					+ "			<ul class=\"todo-list\" style=\"height:250px; overflow-y: scroll; background-color: #0000000d\">");
 			// MENU
 			while (rs1.next()) {
 				String grandParentId = rs1.getString("id");

@@ -193,7 +193,7 @@
 <body ng-app="kdsApp"
 	class="hold-transition skin-blue sidebar-mini font-roboto-regular">
 	<div ng-controller="kds_CTRL" class="wrapper"
-		style="background-color: #0000000d; height: 100%; width: 100%;">
+		style="background-color: #0000000d; height: 100%; width: 100%; overflow-y: hidden;">
 		<!-- *****************************TO-DO : INCLUDE main_header***************************** -->
 		<jsp:include page="/WEB-INF/ecpos/webparts_include/main_header.jsp" />
 		<!-- *****************************TO-DO : INCLUDE main_header***************************** -->			
