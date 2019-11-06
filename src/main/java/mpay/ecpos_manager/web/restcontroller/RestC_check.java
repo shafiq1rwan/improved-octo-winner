@@ -152,8 +152,8 @@ public class RestC_check {
 		return jsonResult.toString();
 	}
 	
-	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.GET }, produces = "application/json")
-	public String getCheckList(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping(value = { "/get_check_list" }, method = { RequestMethod.POST }, headers = "Accept=application/json")
+	public String getCheckList(@RequestBody String dataObj, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray jary = new JSONArray();
 		Connection connection = null;
@@ -165,18 +165,43 @@ public class RestC_check {
 		
 		try {
 			if (user != null) {
+				JSONObject jsonObj = new JSONObject(dataObj);
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				Date startDate = dateFormat.parse(jsonObj.getString("startDate").replaceAll("T", " ").replaceAll("Z", ""));
+				Date endDate = dateFormat.parse(jsonObj.getString("endDate").replaceAll("T", " ").replaceAll("Z", ""));
+				String orderType = jsonObj.getString("orderType");
+				String checkStatus = jsonObj.getString("checkStatus");
+				
+				System.out.println("orderType = " + orderType);
+				System.out.println("checkStatus = " + checkStatus);
+				
 				connection = dataSource.getConnection();
 				
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				StringBuffer sql = new StringBuffer();
 				
-				stmt = connection.prepareStatement("select c.id,c.check_number,c.check_ref_no,s.staff_name,ot.name as order_type,ts.table_name,c.table_number,c.total_item_quantity, " + 
+				sql.append("select c.id,c.check_number,c.check_ref_no,s.staff_name,ot.name as order_type,ts.table_name,c.table_number,c.total_item_quantity, " + 
 						"c.grand_total_amount,c.tender_amount,c.overdue_amount,cs.name as check_status,c.created_date " + 
 						"from `check` c " + 
 						"inner join staff s on s.id = c.staff_id " + 
 						"inner join order_type ot on ot.id = c.order_type " + 
 						"inner join check_status cs on cs.id = c.check_status " + 
-						"left join table_setting ts on ts.id = c.table_number " + 
-						"order by created_date desc;");
+						"left join table_setting ts on ts.id = c.table_number " +
+						"where c.created_date >= ? and c.created_date <= ? ");
+				
+				if (!orderType.isEmpty()) {
+					sql.append("and c.order_type = " + orderType + " ");
+				}
+				
+				if (!checkStatus.isEmpty()) {
+					sql.append("and c.check_status = " + checkStatus + " ");
+				}
+				
+				sql.append("order by created_date desc;");
+				
+				stmt = connection.prepareStatement(sql.toString());
+				stmt.setTimestamp(1, new java.sql.Timestamp(startDate.getTime()));
+				stmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
 				rs = stmt.executeQuery();
 	
 				while (rs.next()) {
@@ -4120,6 +4145,85 @@ public class RestC_check {
 				if (rs4 != null) {
 					rs4.close();
 					rs4 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_dropdown_filter" }, method = {
+			RequestMethod.GET }, produces = "application/json")
+	public String getDropDownCheckListingFilter(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray dropdownArray = new JSONArray();
+		JSONArray dropdownArray2 = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("select * from order_type;");
+				rs = stmt.executeQuery();
+
+				while (rs.next()) {
+					JSONObject obj = new JSONObject();
+					obj.put("id", rs.getInt("id"));
+					obj.put("name", rs.getString("name"));
+					dropdownArray.put(obj);
+				}
+				jsonResult.put("order_types_drop", dropdownArray);
+
+				stmt2 = connection.prepareStatement("select * from check_status;");
+				rs2 = stmt2.executeQuery();
+
+				while (rs2.next()) {
+					JSONObject obj2 = new JSONObject();
+					obj2.put("id", rs2.getInt("id"));
+					obj2.put("name", rs2.getString("name"));
+					dropdownArray2.put(obj2);
+				}
+				jsonResult.put("check_status_drop", dropdownArray2);
+				
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (stmt3 != null)
+					stmt3.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (rs3 != null) {
+					rs3.close();
+					rs3 = null;
 				}
 				if (connection != null) {
 					connection.close();

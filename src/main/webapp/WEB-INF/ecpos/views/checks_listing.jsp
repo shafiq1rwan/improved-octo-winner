@@ -34,6 +34,31 @@ hr {
 										<font size="4">CHECKS LISTING</font>
 									</div>
 								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Start Date</label> 
+										<input type="datetime-local" class="form-control" ng-model="dateStart" ng-model-options="{timezone: 'UTC'}" ng-change="getChecksList()" required />
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>End Date</label> 
+										<input type="datetime-local" class="form-control" ng-model="dateEnd" ng-model-options="{timezone: 'UTC'}" ng-change="getChecksList()" required />
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Order Type</label> 
+										<select id="orderTypeDropDown" class="form-control" ng-model="selectedOrderTypeDropDown" ng-change="getChecksList()"
+																ng-options="obj1.id as obj1.name for obj1 in dropdownData.order_types_drop">
+												<option value="" >all</option>
+										</select>
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Status</label>
+										<select id="checkStatusDropDown" class="form-control" ng-model="selectedCheckStatusDropDown" ng-change="getChecksList()"
+																ng-options="obj2.id as obj2.name for obj2 in dropdownData.check_status_drop">
+												<option value="" >all</option>
+										</select>
+									</div>
+								</div>
 								<table id="datatable_checks" class="table table-bordered table-striped" style="width:100%;">
 									<thead>
 										<tr>

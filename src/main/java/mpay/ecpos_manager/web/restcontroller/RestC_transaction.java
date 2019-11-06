@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,8 +49,8 @@ public class RestC_transaction {
 	@Autowired
 	QR iposQR;
 
-	@RequestMapping(value = { "/get_transaction_list" }, method = { RequestMethod.GET }, produces = "application/json")
-	public String getTransactionList(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping(value = { "/get_transaction_list" }, method = { RequestMethod.POST }, headers = "Accept=application/json", produces = "application/json")
+	public String getTransactionList(@RequestBody String dataObj, HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
 		JSONArray jary = new JSONArray();
 		Connection connection = null;
@@ -61,22 +62,44 @@ public class RestC_transaction {
 
 		try {
 			if (user != null) {
+				JSONObject jsonObj = new JSONObject(dataObj);
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				Date startDate = dateFormat.parse(jsonObj.getString("startDate").replaceAll("T", " ").replaceAll("Z", ""));
+				Date endDate = dateFormat.parse(jsonObj.getString("endDate").replaceAll("T", " ").replaceAll("Z", ""));
+				String paymentMethod = jsonObj.getString("paymentMethod");
+				String tsStatus = jsonObj.getString("tsStatus");
+				
+				System.out.println("jsonObj = " + jsonObj);
+				
 				connection = dataSource.getConnection();
-
-				stmt = connection.prepareStatement(
-						"select t.id,s.staff_name,t.check_number,c.check_ref_no,tt.name as transaction_type,pm.name as payment_method, "
-								+ "pt.name as payment_type,case when pm.id = 1 then '-' else case when t.terminal_serial_number is null then '' else t.terminal_serial_number end end as terminal, "
-								+ "t.transaction_amount,tss.name as transaction_status, "
-								+ "case when pm.id = 1 then t.created_date else case when t.transaction_date is not null and t.transaction_time is not null then "
-								+ "concat('20',SUBSTRING(t.transaction_date, 1, 2),'-',SUBSTRING(t.transaction_date, 3, 2),'-',SUBSTRING(t.transaction_date, 5, 2),' ',SUBSTRING(t.transaction_time, 1, 2),':',SUBSTRING(t.transaction_time, 3, 2),':',SUBSTRING(t.transaction_time, 5, 2)) else '' end end as transaction_date "
-								+ "from transaction t " + "inner join staff s on s.id = t.staff_id "
-								+ "inner join `check` c on c.id = t.check_id and c.check_number = t.check_number "
-								+ "inner join transaction_type tt on tt.id = t.transaction_type "
-								+ "inner join payment_method pm on pm.id = t.payment_method "
-								+ "inner join payment_type pt on pt.id = t.payment_type "
-								+ "left join terminal on terminal.serial_number = t.terminal_serial_number "
-								+ "inner join transaction_settlement_status tss on tss.id = t.transaction_status "
-								+ "order by t.transaction_date desc;");
+				StringBuffer sql = new StringBuffer("select t.id,s.staff_name,t.check_number,c.check_ref_no,tt.name as transaction_type,pm.name as payment_method, "
+						+ "pt.name as payment_type,case when pm.id = 1 then '-' else case when t.terminal_serial_number is null then '' else t.terminal_serial_number end end as terminal, "
+						+ "t.transaction_amount,tss.name as transaction_status, "
+						+ "case when pm.id = 1 then t.created_date else case when t.transaction_date is not null and t.transaction_time is not null then "
+						+ "concat('20',SUBSTRING(t.transaction_date, 1, 2),'-',SUBSTRING(t.transaction_date, 3, 2),'-',SUBSTRING(t.transaction_date, 5, 2),' ',SUBSTRING(t.transaction_time, 1, 2),':',SUBSTRING(t.transaction_time, 3, 2),':',SUBSTRING(t.transaction_time, 5, 2)) else '' end end as transaction_date "
+						+ "from transaction t " + "inner join staff s on s.id = t.staff_id "
+						+ "inner join `check` c on c.id = t.check_id and c.check_number = t.check_number "
+						+ "inner join transaction_type tt on tt.id = t.transaction_type "
+						+ "inner join payment_method pm on pm.id = t.payment_method "
+						+ "inner join payment_type pt on pt.id = t.payment_type "
+						+ "left join terminal on terminal.serial_number = t.terminal_serial_number "
+						+ "inner join transaction_settlement_status tss on tss.id = t.transaction_status "
+						+ "where (t.transaction_date >= ? and t.transaction_date <= ?) or (t.created_date >= ? and t.created_date <= ?) ");
+				
+				if (!paymentMethod.isEmpty())
+					sql.append("and t.payment_method = "+paymentMethod+" ");
+				
+				if (!tsStatus.isEmpty())
+					sql.append("and t.transaction_status = "+tsStatus+" ");
+				
+				sql.append("order by t.transaction_date desc;");
+				
+				stmt = connection.prepareStatement(sql.toString());
+				System.out.println("sql = " + sql);
+				stmt.setTimestamp(1, new java.sql.Timestamp(startDate.getTime()));
+				stmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
+				stmt.setTimestamp(3, new java.sql.Timestamp(startDate.getTime()));
+				stmt.setTimestamp(4, new java.sql.Timestamp(endDate.getTime()));
 				rs = stmt.executeQuery();
 
 				while (rs.next()) {
@@ -114,7 +137,86 @@ public class RestC_transaction {
 		}
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/get_dropdown_filter" }, method = {
+			RequestMethod.GET }, produces = "application/json")
+	public String getDropDownCheckListingFilter(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray dropdownArray = new JSONArray();
+		JSONArray dropdownArray2 = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("select * from payment_method;");
+				rs = stmt.executeQuery();
+
+				while (rs.next()) {
+					JSONObject obj = new JSONObject();
+					obj.put("id", rs.getInt("id"));
+					obj.put("name", rs.getString("name"));
+					dropdownArray.put(obj);
+				}
+				jsonResult.put("payment_method_drop", dropdownArray);
+
+				stmt2 = connection.prepareStatement("select * from transaction_settlement_status;");
+				rs2 = stmt2.executeQuery();
+
+				while (rs2.next()) {
+					JSONObject obj2 = new JSONObject();
+					obj2.put("id", rs2.getInt("id"));
+					obj2.put("name", rs2.getString("name"));
+					dropdownArray2.put(obj2);
+				}
+				jsonResult.put("ts_status_drop", dropdownArray2);
+				
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (stmt3 != null)
+					stmt3.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (rs3 != null) {
+					rs3.close();
+					rs3 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/get_transaction_details" }, method = { RequestMethod.GET }, produces = "application/json")
 	public String getTransactionDetails(HttpServletRequest request, HttpServletResponse response, @RequestParam(name = "id") String transactionId) {
 		JSONObject jsonResult = new JSONObject();

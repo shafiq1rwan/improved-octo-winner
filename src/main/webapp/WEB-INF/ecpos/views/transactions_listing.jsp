@@ -53,6 +53,31 @@
 										<font size="4">TRANSACTIONS LISTING</font>
 									</div>
 								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Start Date</label> 
+										<input type="datetime-local" class="form-control" ng-model="dateStart" ng-model-options="{timezone: 'UTC'}" ng-change="getTransactionsList()" required />
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>End Date</label> 
+										<input type="datetime-local" class="form-control" ng-model="dateEnd" ng-model-options="{timezone: 'UTC'}" ng-change="getTransactionsList()" required />
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Payment Method</label> 
+										<select id="paymentMethodDropDown" class="form-control" ng-model="selectedPaymentMethod" ng-change="getTransactionsList()"
+																ng-options="obj1.id as obj1.name for obj1 in dropdownData.payment_method_drop">
+												<option value="" >all</option>
+										</select>
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Status</label>
+										<select id="tsStatusDropDown" class="form-control" ng-model="selectedTsStatus" ng-change="getTransactionsList()"
+																ng-options="obj2.id as obj2.name for obj2 in dropdownData.ts_status_drop">
+												<option value="" >all</option>
+										</select>
+									</div>
+								</div>
 								<table id="datatable_transactions" class="table table-bordered table-striped">
 									<thead>
 										<tr>
