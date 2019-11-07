@@ -30,7 +30,7 @@
 		} else {
 			wsURLHeader = "ws://"
 		}
-		wsURLHeader += wsHost + "/kdsSocket";
+		wsURLHeader += wsHost + "/ECPOS_Manager/kdsSocket";
 			
 		var kdsSocket = new WebSocket(wsURLHeader);
 		

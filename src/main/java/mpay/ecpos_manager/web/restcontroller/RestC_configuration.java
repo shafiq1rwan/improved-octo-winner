@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -1663,9 +1664,11 @@ public class RestC_configuration {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
+		ResultSet rs4 = null;
 
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -1692,8 +1695,15 @@ public class RestC_configuration {
 							rs3 = stmt3.executeQuery();
 
 							if (rs3.next()) {
-								cashdrawerOpen();
-								jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
+								//for cash drawer connected to HRPT Printer 
+								stmt4 = connection.prepareStatement("select rp.receipt_printer_manufacturer from receipt_printer rp\r\n" + 
+										"inner join receipt_printer_manufacturer_lookup rpl on rpl.id = rp.receipt_printer_manufacturer\r\n" + 
+										"where rpl.name like '%TP%'");
+								rs4 = stmt4	.executeQuery();
+								if (rs4.next())
+									jsonResult = cashdrawerOpen();
+								else
+									jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
 							} else {
 								jsonResult.put(Constant.RESPONSE_CODE, "01");
 								jsonResult.put(Constant.RESPONSE_MESSAGE, "Port Name Not Found");
@@ -1745,27 +1755,57 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
-	public void cashdrawerOpen() {
-        
+	public JSONObject cashdrawerOpen() {
+		JSONObject jsonResult = new JSONObject();
         byte[] open = {27, 112, 48, 55, 121};
 //        byte[] cutter = {29, 86,49};
         String printer = "TP806L";
+        
         PrintServiceAttributeSet printserviceattributeset = new HashPrintServiceAttributeSet();
         printserviceattributeset.add(new PrinterName(printer,null));
         PrintService[] printservice = PrintServiceLookup.lookupPrintServices(null, printserviceattributeset);
+        
         if(printservice.length!=1){
-            System.out.println("Printer not found");
+            try {
+            	System.out.println("Printer not found");
+				jsonResult.put(Constant.RESPONSE_CODE, "02");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "PRINTER NOT FOUND");
+				Logger.writeActivity("FAILED DUE TO PRINTER NOT FOUND", Property.getHARDWARE_FOLDER_NAME());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
+        
         PrintService pservice = printservice[0];
+        
         DocPrintJob job = pservice.createPrintJob();
         DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
         Doc doc = new SimpleDoc(open,flavor,null);
+        
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
         try {
             job.print(doc, aset);
+            try {
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Logger.writeActivity("OPEN DRAWER SUCCESS", Property.getHARDWARE_FOLDER_NAME());
         } catch (PrintException ex) {
+        	try {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "FAILED");
+				Logger.writeActivity("OPEN DRAWER FAILED", Property.getHARDWARE_FOLDER_NAME());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             System.out.println(ex.getMessage());
         }
+        return jsonResult;
     }
 
 	private JSONObject selectedCashDrawer() {

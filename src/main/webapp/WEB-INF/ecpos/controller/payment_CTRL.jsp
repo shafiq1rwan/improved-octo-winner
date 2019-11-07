@@ -232,10 +232,11 @@
 							}
 							$('#paymentAlertModal').modal('show'); 
 							
+							openDrawer();
+							
 							//Print Receipt here
 							printReceipt($scope.checkNo);
-							
-							openDrawer();
+
 						} else {
 							alert(response.data.response_message);
 						}
@@ -451,7 +452,7 @@
 			var jsonData = JSON.stringify({
 				"checkNo" : checkNo
 			});
-
+			console.log("enter printReceipt");
 			$http.post("${pageContext.request.contextPath}/rc/configuration/print_receipt",jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
@@ -465,6 +466,7 @@
 		}
 		
 		function openDrawer() {
+			console.log("enter openDrawer");
 			$.ajax({
 				type : 'post',
 				url : '${pageContext.request.contextPath}/rc/configuration/open_cash_drawer',
