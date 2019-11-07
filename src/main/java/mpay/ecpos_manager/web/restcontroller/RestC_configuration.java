@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Enumeration;
 
 import javax.print.Doc;
 import javax.print.DocFlavor;
@@ -24,6 +25,7 @@ import javax.print.attribute.standard.PrinterName;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import javax.comm.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jettison.json.JSONArray;
@@ -1700,8 +1702,10 @@ public class RestC_configuration {
 										"inner join receipt_printer_manufacturer_lookup rpl on rpl.id = rp.receipt_printer_manufacturer\r\n" + 
 										"where rpl.name like '%TP%'");
 								rs4 = stmt4	.executeQuery();
-								if (rs4.next())
-									jsonResult = cashdrawerOpen();
+								if (rs4.next()) {
+//									jsonResult = cashdrawerOpen();
+									cashDrawerOpen2();
+								}
 								else
 									jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
 							} else {
@@ -1753,6 +1757,47 @@ public class RestC_configuration {
 		}
 
 		return jsonResult.toString();
+	}
+	
+	public void cashDrawerOpen2 () {
+		Logger.writeActivity("ENTER cashDrawerOpen2 ", Property.getHARDWARE_FOLDER_NAME());
+		
+		Enumeration port_list = CommPortIdentifier.getPortIdentifiers ();
+
+		while (port_list.hasMoreElements ()) { //This part in the diving, why not you?
+		// Get the list of ports
+		CommPortIdentifier port_id =
+		(CommPortIdentifier) port_list.nextElement ();
+
+		// Find each ports type and name
+		if (port_id.getPortType () == CommPortIdentifier.PORT_SERIAL)
+		{
+			Logger.writeActivity("Serial port: " + port_id.getName (), Property.getHARDWARE_FOLDER_NAME());
+		}
+		else if (port_id.getPortType () == CommPortIdentifier.PORT_PARALLEL)
+		{
+			Logger.writeActivity("Parallel port: " + port_id.getName (), Property.getHARDWARE_FOLDER_NAME());
+		} else
+			Logger.writeActivity("Other port: " + port_id.getName (), Property.getHARDWARE_FOLDER_NAME());
+
+		// Attempt to open it
+		try {
+		CommPort port = port_id.open ("PortListOpen",20);
+		Logger.writeActivity(" Opened successfully", Property.getHARDWARE_FOLDER_NAME());
+		port.close ();
+		}
+		catch (PortInUseException pe)
+		{
+			Logger.writeActivity(" Open failed", Property.getHARDWARE_FOLDER_NAME());
+		String owner_name = port_id.getCurrentOwner ();
+		if (owner_name == null)
+			Logger.writeActivity(" Port Owned by unidentified app", Property.getHARDWARE_FOLDER_NAME());
+		else
+		// The owner name not returned correctly unless it is
+		// a Java program.
+			Logger.writeActivity(" " + owner_name, Property.getHARDWARE_FOLDER_NAME());
+		}
+		}
 	}
 	
 	public JSONObject cashdrawerOpen() {
