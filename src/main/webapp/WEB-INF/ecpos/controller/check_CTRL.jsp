@@ -111,7 +111,8 @@
 		$scope.displayQRPdf = function(){
  			var jsonData = JSON.stringify({
 				"tableNo" : $scope.tableNo,
-				"checkNo" : $scope.checkNo,
+				//"checkNo" : $scope.checkNo,
+				"checkNo" : $scope.checkDetail.checkNoToday,
 				"qrImage" : $('#QRImage').attr('src')
 			}); 
 
@@ -132,7 +133,8 @@
 		$scope.printQR = function(){
  			var jsonData = JSON.stringify({
 				"tableNo" : $scope.tableNo,
-				"checkNo" : $scope.checkNo,
+				//"checkNo" : $scope.checkNo,
+				"checkNo" : $scope.checkDetail.checkNoToday,
 				"qrImage" : $('#QRImage').attr('src')
 			}); 
 
@@ -468,7 +470,7 @@
 			} else {
 				wsURLHeader = "ws://"
 			}
-			wsURLHeader += wsHost + "ECPOS_Manager/kdsSocket";
+			wsURLHeader += wsHost + "/ECPOS_Manager/kdsSocket";
 				
 			var kdsSocket = new WebSocket(wsURLHeader);
 			console.log("Send to : " + wsURLHeader)

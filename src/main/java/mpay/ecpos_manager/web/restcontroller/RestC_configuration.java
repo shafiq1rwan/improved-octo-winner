@@ -1703,8 +1703,7 @@ public class RestC_configuration {
 										"where rpl.name like '%TP%'");
 								rs4 = stmt4	.executeQuery();
 								if (rs4.next()) {
-//									jsonResult = cashdrawerOpen();
-									cashDrawerOpen2();
+									jsonResult = cashdrawerOpen();
 								}
 								else
 									jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
@@ -1759,7 +1758,7 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
-	public void cashDrawerOpen2 () {
+	/*public void cashDrawerOpen2 () {
 		Logger.writeActivity("ENTER cashDrawerOpen2 ", Property.getHARDWARE_FOLDER_NAME());
 		
 		Enumeration port_list = CommPortIdentifier.getPortIdentifiers ();
@@ -1798,7 +1797,7 @@ public class RestC_configuration {
 			Logger.writeActivity(" " + owner_name, Property.getHARDWARE_FOLDER_NAME());
 		}
 		}
-	}
+	}*/
 	
 	public JSONObject cashdrawerOpen() {
 		JSONObject jsonResult = new JSONObject();
@@ -1831,6 +1830,8 @@ public class RestC_configuration {
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
         try {
             job.print(doc, aset);
+            job.wait();
+            job.notifyAll();
             try {
 				jsonResult.put(Constant.RESPONSE_CODE, "00");
 				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
@@ -1849,7 +1850,10 @@ public class RestC_configuration {
 				e.printStackTrace();
 			}
             System.out.println(ex.getMessage());
-        }
+        } catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         return jsonResult;
     }
 

@@ -15,8 +15,8 @@
 }
 
 .nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover {
-	border-top-color: #00dcfb;
-	background-color: #00dcfb;
+	border-top-color: #7C01A6;
+	background-color: #9200C4;
 }
 
 .nav-pills {
@@ -39,6 +39,10 @@
 
 .green-button:hover {
 	background-color: #3CB371!important;
+}
+
+.blue-button:hover {
+	background-color: #3C5CB3!important;
 }
 </style>
 </head>
