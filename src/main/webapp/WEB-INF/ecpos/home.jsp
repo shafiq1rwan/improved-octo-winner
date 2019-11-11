@@ -66,7 +66,8 @@
 <!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
 <link rel="stylesheet" href="${pageContext.request.contextPath}/adminLTE-2.4.5/dist/css/skins/_all-skins.min.css">
 <!-- iCheck -->
-<link rel="stylesheet" href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/flat/blue.css">
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
 <!-- jvectormap -->
 <link rel="stylesheet" href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
 <!-- Date Picker -->

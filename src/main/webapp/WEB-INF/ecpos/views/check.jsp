@@ -7,6 +7,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
 <style>
 .sectioncalibrator {
 	height: calc(100vh - 50px);
@@ -86,7 +88,7 @@ hr {
 												<i class="fa fa-barcode"></i> Barcode Order
 											</button> -->
 											<%if (user.getStoreType() == 2) {%>
-											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" ng-click="sendOrdertoKds()">
+											<button id="sendOrderButton" class="btn btn-social btn-sm pull-right bg-maroon shadowBox" style="width: 100%;" ng-click="sendOrdertoKds()">
 												<i class="fa fa-utensil-fork"></i> To Kitchen
 											</button>
 											<%}%>
@@ -109,7 +111,7 @@ hr {
 									</div> -->
 									<div>
 										<div class="row" style="padding-top: 8px; padding-right: 15px;">
-											<div class='col-xs-1 col-sm-1 text-center'><input type="checkbox" ng-click="allGrandParentItemCheckbox()" id="allGrandParentItemCheckbox" style="margin: 2px 0 0;"></div>
+											<div class='col-xs-1 col-sm-1 text-center'><input type="checkbox" ng-click="allGrandParentItemCheckbox()" id="allGrandParentItemCheckbox" style="margin: 2px 0 0;" class="icheckbox_minimal-red"></div>
 											<div class='col-xs-2 col-sm-2 text-left'><b>Code</b></div>
 											<div class='col-xs-4 col-sm-5 text-left' style="padding: 0px;"><b>Item</b></div>
 											<div class='col-xs-2 col-sm-2 text-center'><b>Quantity</b></div>
@@ -121,7 +123,7 @@ hr {
 												
 												<div style="padding-bottom: 8px;" ng-if="grandParentItem.itemStatus != 'Paid'">
 													<div class="row">
-														<div class='col-xs-1 col-sm-1 text-center'><input type="checkbox" ng-click="grandParentItemCheckbox()" name="grandParentItemCheckbox" value={{grandParentItem.checkDetailId}} style="margin: 2px 0 0;"></div>
+														<div class='col-xs-1 col-sm-1 text-center'><input type="checkbox" ng-click="grandParentItemCheckbox()" name="grandParentItemCheckbox" value={{grandParentItem.checkDetailId}} style="margin: 2px 0 0;" class="icheckbox_minimal-red"></div>
 														<div class='col-xs-2 col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
 														<div class='col-xs-4 col-sm-5 text-left' style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice | number:2}}</div>
 														<%if (user.getStoreType() == 1) {%>
