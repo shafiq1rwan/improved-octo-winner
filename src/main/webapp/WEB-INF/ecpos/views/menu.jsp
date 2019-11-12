@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
+<style>
 <style>
 .nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover
 	{
@@ -378,7 +381,7 @@ img:hover {
 																<img ng-src="${pageContext.request.contextPath}/{{tierItemDetail.imagePath}}" style="max-width: 100%; max-height: 100%;" />
 															</div>
 															<div class="itemname">
-																<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" /> <b>{{tierItemDetail.name}}</b>
+																<input type="radio" name="{{tierItemDetails.tierName}}" value="{{tierItemDetail.id}}" class="iradio_minimal-green"/> <b>{{tierItemDetail.name}}</b>
 															</div>
 														</div>
 													</div>
@@ -409,7 +412,7 @@ img:hover {
 													<div ng-repeat="modifierDetail in modifier.data">
 														<div class="col-xs-6 col-sm-3">
 															<label>
-																<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.backendId}}!!{{modifierDetail.name}}" required /> <b>{{modifierDetail.name}}</b>
+																<input type="radio" name="{{modifier.name}}" value="{{modifierDetail.id}}!!{{modifierDetail.backendId}}!!{{modifierDetail.name}}" class="iradio_minimal-green" required /> <b>{{modifierDetail.name}}</b>
 															</label>
 														</div>
 													</div>

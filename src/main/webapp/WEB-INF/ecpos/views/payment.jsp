@@ -71,7 +71,7 @@ ul.select2-results__options li {
 <body>
 	<div ng-controller="payment_CTRL">
 		<div>
-			<div class="well" style="height: 90vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
+			<div class="box box-primary" style="height: 90vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
 					
 				<div id="paymentCarousel" class="carousel" data-interval="false">
 					<div class="carousel-inner">

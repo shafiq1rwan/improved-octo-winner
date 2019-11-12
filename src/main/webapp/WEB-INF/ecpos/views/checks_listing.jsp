@@ -28,7 +28,7 @@ hr {
 				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
+							<div class="box box-primary" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
 										<font size="4">CHECKS LISTING</font>

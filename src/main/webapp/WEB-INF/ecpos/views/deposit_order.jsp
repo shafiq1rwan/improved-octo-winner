@@ -96,7 +96,7 @@
 							<div class="item" id="newCheck">
 								<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 									<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-										<div class="well" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
+										<div class="box box-primary" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 											<div class="row" style="text-align: center">
 												<div class="col-sm-1" style="font-size: large">
 													<a data-target="#depositOrderCarousel" data-slide="prev">
