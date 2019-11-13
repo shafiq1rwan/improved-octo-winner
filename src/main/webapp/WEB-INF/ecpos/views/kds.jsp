@@ -107,6 +107,7 @@
 <%-- <link rel="stylesheet" href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/all.css"> --%>
 <link rel="stylesheet"
 	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/sweetAlert/sweetalert2.css">
 <!-- loadingbar -->
 <%-- <link rel="stylesheet" href="${pageContext.request.contextPath}/admin/css/loadingbar.css"> --%>
 
@@ -185,7 +186,7 @@
 <script src="${pageContext.request.contextPath}/qrcode/qrcode.min.js"></script>
 <script
 	src="${pageContext.request.contextPath}/ui-cropper/js/ui-cropper.js"></script>
-	
+<script src="${pageContext.request.contextPath}/sweetAlert/sweetalert2.js"></script>
 </head>
 
 <!-- Body -->
