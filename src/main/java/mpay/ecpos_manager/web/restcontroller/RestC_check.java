@@ -75,15 +75,6 @@ public class RestC_check {
 		try {
 			if (user != null) {
 				JSONObject jsonObj = new JSONObject(data);
-				
-				System.out.println("test enter");
-				
-				List<Transport> transports = new ArrayList<>(2);
-				transports.add(new WebSocketTransport(new StandardWebSocketClient()));
-				transports.add(new RestTemplateXhrTransport());
-
-				SockJsClient sockJsClient = new SockJsClient(transports);
-				sockJsClient.doHandshake(new KdsSocketHandler(), "ws://localhost:8081/kdsSocket");
 			    
 				if (jsonObj.has(Constant.TABLE_NO)) {
 					String table_no = jsonObj.getString(Constant.TABLE_NO);
@@ -129,7 +120,7 @@ public class RestC_check {
 		}
 		return jsonResult.toString();
 	}
-	
+
 	@RequestMapping(value = { "/get_deposit_checks" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String getDepositChecks(HttpServletRequest request, HttpServletResponse response) {
 		JSONObject jsonResult = new JSONObject();
