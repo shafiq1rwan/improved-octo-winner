@@ -65,8 +65,9 @@ div.containerkds p {
 			%>
 			<div class="navbar-custom-menu">
 				<ul class="nav navbar-nav">
+				<li style="float: left;"><span id='date-part' style="word-spacing: 1px; color: white;"></span></li>
 					<li class="dropdown user user-menu"><a class="dropdown-toggle"
-						data-toggle="dropdown"> <span class="hidden-xs"><%=user.getName()%></span> - <span id='date-part'></span>
+						data-toggle="dropdown"><i class="fas fa-user"></i>&nbsp;&nbsp;<span class="hidden-xs"><%=user.getName()%></span>
 					</a>
 						<ul class="dropdown-menu">
 							<!-- Menu Footer-->
@@ -96,9 +97,9 @@ div.containerkds p {
 				var interval = setInterval(function() {
 					var momentNow = moment();
 					$('#date-part').html(
-							momentNow.format('DD/MM/YYYY')
-									+ ' ('
-									+ momentNow.format('hh:mm:ss A') + ")");
+							momentNow.format('hh:mm:ss A')
+									+ ' '
+									+ momentNow.format('DD/MM/YYYY'));
 				}, 100);
 			});
 </script>

@@ -82,6 +82,7 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/datatables/extensions/Buttons/css/buttons.dataTables.min.css">
 <!-- ui-cropper -->
 <link rel="stylesheet" href="${pageContext.request.contextPath}/ui-cropper/css/ui-cropper.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/sweetAlert/sweetalert2.css">
 <!-- loadingbar -->
 <%-- <link rel="stylesheet" href="${pageContext.request.contextPath}/admin/css/loadingbar.css"> --%>
 
@@ -134,6 +135,7 @@
 <!-- *****OTHERS JS***** -->
 <script src="${pageContext.request.contextPath}/qrcode/qrcode.min.js"></script>
 <script src="${pageContext.request.contextPath}/ui-cropper/js/ui-cropper.js"></script>
+<script src="${pageContext.request.contextPath}/sweetAlert/sweetalert2.js"></script>
 </head>
 
 <!-- Body -->

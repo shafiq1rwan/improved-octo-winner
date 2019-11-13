@@ -36,8 +36,21 @@
 				$scope.categories = response.data;
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 		
@@ -51,8 +64,21 @@
 				$('#menuCarousel').carousel(1);
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 		
@@ -93,8 +119,21 @@
 				$scope.tierQuantityLoop($scope.tiers.data[0]);
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 		
@@ -150,8 +189,21 @@
 				$('#tierName').html($scope.temporaryTier.name);
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 		
@@ -172,8 +224,21 @@
 				}
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 		
@@ -229,7 +294,8 @@
 				
 				var modifierValue = $("input[name='"+$scope.modifiers.data[i].name+"']:checked").val();
 				if (modifierValue == null) {
-					return alert($scope.modifiers.data[i].name + " cannot be blank.");
+					/* return alert($scope.modifiers.data[i].name + " cannot be blank."); */
+					return Swal.fire("Warning",$scope.modifiers.data[i].name + " cannot be blank.","warning");
 				}
 				
 				var modifierValueSplit = $("input[name='"+$scope.modifiers.data[i].name+"']:checked").val().split("!!");
@@ -320,18 +386,21 @@
 			if ($scope.temporary.type == 0) {
 				if ($scope.temporary.hasModifier == true) {
 					if ($scope.temporaryModifiers.length == 0) {
-						return alert("Order is not complete. Kindly fill in.");
+						/* return alert("Order is not complete. Kindly fill in."); */
+						return Swal.fire("Warning","Order is not complete. Kindly fill in","warning");
 					}
 				}
 				$scope.temporary.modifiers = $scope.temporaryModifiers;
 				$scope.temporary.orderQuantity = $('#alaCarteItemQuantity').val();
 			} else if ($scope.temporary.type == 1) {
 				if ($scope.temporaryTiers.length == 0) {
-					return alert("Order is not complete. Kindly fill in.");
+					/* return alert("Order is not complete. Kindly fill in."); */
+					return Swal.fire("Warning","Order is not complete. Kindly fill in","warning");
 				} else {			
 					for (var i = 0; i < $scope.temporaryTiers.length; i++) {
 						if ($scope.temporaryTiers[i].quantity != $scope.temporaryTiers[i].items.length) {
-							return alert("Order is not complete. Kindly fill in.");
+							/* return alert("Order is not complete. Kindly fill in."); */
+							return Swal.fire("Warning","Order is not complete. Kindly fill in","warning");
 						}
 					}
 				}
@@ -377,15 +446,30 @@
 					$("#back").show();
 				} else {
 					if (response.data.response_message != null) {
-						alert(response.data.response_message);
+						/* alert(response.data.response_message); */
+						Swal.fire("Oops...",response.data.response_message,"error");
 					} else {
-						alert("Error Occured While Submit Order");
+						/* alert("Error Occured While Submit Order"); */
+						Swal.fire("Oops...","Error Occured While Submit Order","error");
 					}
 				}
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 		
@@ -413,15 +497,31 @@
 						$scope.barcode = null;
 					} else {
 						if (response.data.response_message != null) {
-							alert(response.data.response_message);
+							/* alert(response.data.response_message); */
+							Swal.fire("Oops...",response.data.response_message,"error");
 						} else {
-							alert("Error Occured While Submit Order");
+							/* alert("Error Occured While Submit Order"); */
+							Swal.fire("Oops...","Error Occured While Submit Order","error");
 						}
 					}
 				},
 				function(response) {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						title: 'Oops...',
+						text: "Session Timeout",
+						icon: 'error',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'OK'
+						},function(isConfirm){
+						if (isConfirm) {
+						window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					});
+
 				});
 			} 
 			/* else {

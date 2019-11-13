@@ -14,8 +14,8 @@
 				if (response.data.responseCode == "00") {
 					$scope.getTableList();
 				} else {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
 				}
 			},
 			function(response) {

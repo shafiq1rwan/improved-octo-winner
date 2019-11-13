@@ -20,19 +20,48 @@
 					
 					$scope.getTransactionsList();
 				} else {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						title: 'Oops...',
+						text: "Session Timeout",
+						icon: 'error',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'OK'
+						},function(isConfirm){
+						if (isConfirm) {
+						window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					});
+
 				}
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+
 			});
 		}
 		
 		$scope.getTransactionsList = function() {
 			if ($scope.dateStart > $scope.dateEnd) {
-				alert("Start Date should be before End Date");
+				/* alert("Start Date should be before End Date"); */
+				Swal.fire("Warning","Start Date should be before End Date","warning");
 			} else {
 				var dataObj = {
 						"startDate" : $scope.dateStart.toISOString(),
@@ -54,8 +83,22 @@
 			                return json.data;
 			            },
 						"error" : function() {
-							alert("Session TIME OUT");
-							window.location.href = "${pageContext.request.contextPath}/signout";
+							/* alert("Session TIME OUT"); */
+							/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+							Swal.fire({
+								title: 'Oops...',
+								text: "Session Timeout",
+								icon: 'error',
+								showCancelButton: false,
+								confirmButtonColor: '#3085d6',
+								cancelButtonColor: '#d33',
+								confirmButtonText: 'OK'
+								},function(isConfirm){
+								if (isConfirm) {
+								window.location.href = "${pageContext.request.contextPath}/signout";
+								}
+							});
+
 						}
 					},
 					"searching": false,
@@ -145,19 +188,34 @@
 	 			$http.post("${pageContext.request.contextPath}/rc/transaction/void_transaction", jsonData)
 				.then(function(response) {
 					if(response.data.response_code == '00'){
-						alert(response.data.response_message);
+						/* alert(response.data.response_message); */
+						Swal.fire('Success',response.data.response_message,'success');
 						$('#loading_modal').modal('hide');
 						$scope.printTransactionReceipt(transactionId); //print receipt
 						$scope.getTransactionsList();
 					} else {
-						alert(response.data.response_message);
+						/* alert(response.data.response_message); */
+						Swal.fire('Error',response.data.response_message,'error');
 						$('#loading_modal').modal('hide');
 					}
 					$scope.voidMessage = "";
 				},
 				function(response) {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						},function(isConfirm){
+						    if (isConfirm) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
 				});
 			}
 		}
@@ -172,13 +230,28 @@
 				if(response.data.response_code == '00'){
 					$('#transactionDetailsModal').modal('hide');
 				} else {
-					alert(response.data.response_message);
+					/* alert(response.data.response_message); */
+					Swal.fire("Oops...",response.data.response_message,"error");
 					$('#transactionDetailsModal').modal('hide');
 				}
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+
 			});
 		}
 		
@@ -195,8 +268,22 @@
 				    window.open(fileURL);
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+
 			});
 		}
 		
@@ -210,8 +297,22 @@
 			.then(function (response) {
 				$scope.dropdownData = response.data;
 			}, function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+
 			});
 		}
 	});

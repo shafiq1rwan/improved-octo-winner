@@ -212,7 +212,7 @@ hr {
 																	<button class="btn btn-sm btn-info" ng-click="showSettlementModal(terminal.serialNo)">Settlement</button>
 																	<button class="btn btn-sm btn-default" ng-click="pingTerminal(terminal.id)"><i class="fa fa-crosshairs"></i></button>
 																	<button class="btn btn-sm btn-primary" ng-click="showTerminalModal('update', terminal.id)"><i class="fa fa-edit"></i></button>
-																	<button class="btn btn-sm btn-danger" ng-click="removeTerminal(terminal.id)"><i class="fa fa-trash-o"></i></button>
+																	<button class="btn btn-sm btn-danger" ng-click="removeTerminal(terminal.id)"><i class="fa fa-trash"></i></button>
 																</td>
 															</tr>
 														</tbody>

@@ -151,17 +151,47 @@
 			url : '${pageContext.request.contextPath}/rc/configuration/open_cash_drawer',
 			success : function(data) {
 				if (data.response_code == '01') {
-					alert(data.response_message);
+					/* alert(data.response_message); */
+					Swal.fire('Oops...',data.response_message,'error');
+					
 				} else if(data.response_code == '02') {
-					alert(data.response_message);
+					/* alert(data.response_message); */
+					Swal.fire('Oops...',data.response_message,'error');
 				}
 			},
 			error : function(jqXHR) {
 				if (jqXHR.status == 408) {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						}).then((result) => {
+						  if (result.value) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
 				} else {
-					alert('Drawer cannot open. Please kindly check the cash drawer printer.');
+					/* alert('Drawer cannot open. Please kindly check the cash drawer printer.'); */
+					Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						}).then((result) => {
+						  if (result.value) {
+							  /* window.location.href = "${pageContext.request.contextPath}/signout"; */
+							  Swal.fire('Drawer cannot open. Please kindly check the cash drawer printer.');
+						  }
+						});
 				}
 			}
 		});
