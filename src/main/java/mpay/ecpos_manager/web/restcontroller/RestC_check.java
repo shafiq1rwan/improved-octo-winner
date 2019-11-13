@@ -10,7 +10,9 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,17 +24,32 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.handler.AbstractWebSocketHandler;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.RestTemplateXhrTransport;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
 import mpay.ecpos_manager.general.utility.WebComponents;
+import mpay.ecpos_manager.web.websocket.KdsHandshakeInterceptor;
+import mpay.ecpos_manager.web.websocket.KdsSocketHandler;
 
 @RestController
 @RequestMapping("/rc/check")
@@ -42,6 +59,8 @@ public class RestC_check {
 	
 	@Autowired
 	DataSource dataSource;
+	@Autowired
+	KdsSocketHandler kdsSocketHandler;
 	
 	@RequestMapping(value = { "/get_checks" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String getChecklist(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
@@ -56,7 +75,16 @@ public class RestC_check {
 		try {
 			if (user != null) {
 				JSONObject jsonObj = new JSONObject(data);
-	
+				
+				System.out.println("test enter");
+				
+				List<Transport> transports = new ArrayList<>(2);
+				transports.add(new WebSocketTransport(new StandardWebSocketClient()));
+				transports.add(new RestTemplateXhrTransport());
+
+				SockJsClient sockJsClient = new SockJsClient(transports);
+				sockJsClient.doHandshake(new KdsSocketHandler(), "ws://localhost:8081/kdsSocket");
+			    
 				if (jsonObj.has(Constant.TABLE_NO)) {
 					String table_no = jsonObj.getString(Constant.TABLE_NO);
 					
@@ -3775,19 +3803,19 @@ public class RestC_check {
 			// HEADER
 			strHtml.append("<div class=\"col-lg-3 col-xs-4\" >\r\n"
 					+ "			<div class=\"box box-" + boxColor + " box-solid\" >\r\n"
-					+ "				<div class=\"box-header with-border\"> "
-					+ "					<h2 class=\"box-title\" >[TABLE]</h2>\r\n"
-					+ "						<small>[CHECK]</small>\r\n"
+					+ "				<div class=\"box-header with-border\" style=\"height: 50px;\" > "
+					+ "					<h2 class=\"box-title\" style=\"font-size: 20px;\">[TABLE]</h2>\r\n"
+					+ "						<small style=\"font-size: 15px;\">[CHECK]</small>\r\n"
 					+ "						<div class=\"box-tools pull-right\">\r\n"
-					+ "							<span class=\"badge bg-black\">" + orderSequence + "</span>"
+					+ "							<span class=\"badge bg-black\" style=\"font-size: 15px;\">" + orderSequence + "</span>"
 					+ "							<button type=\"button\" class=\"btn btn-box-tool\"\r\n"
 					+ "								data-toggle=\"collapse\" data-target=\"#"+idBoxContent.toString()+"\" >\r\n"
-					+ "								<i class=\"fa fa-minus\"></i>\r\n"
+					+ "								<i class=\"glyphicon glyphicon-minus\" style=\"font-size: 20px;\"></i>\r\n"
 					+ "							</button>\r\n"
 					+ "							<button id=\"" + idCloseButton + "\" type=\"button\" onClick=\"closeOrder('"+idCloseButton+"','" + checkNo + "','" + orderDateTime + "')\" class=\"btn btn-box-tool\"\r\n"
 					+ "								data-toggle=\"remove\">\r\n"
-					+ "								<i class=\"fa fa-times\"></i>\r\n"
-					+ "							</button>\r\n" 
+					+ "								<i class=\"glyphicon glyphicon-remove\" style=\"font-size: 20px;\"></i>\r\n"
+					+ "							</button>\r\n"
 					+ "						</div>\r\n"
 					+ "				</div>");
 			// BODY
@@ -3810,11 +3838,11 @@ public class RestC_check {
 
 				if (rs1.getString("kds_status_id").equals("3")) {
 					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
-							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: red;\" >"
+							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\" >"
 							+rs1.getString("menu_item_name") + " </span>");
 				}else {
 					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
-							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none;\" >"
+							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none; font-size: 16px;\" >"
 							+ rs1.getString("menu_item_name") + " </span>");
 				}
 
@@ -3834,9 +3862,9 @@ public class RestC_check {
 					strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> ");
 					
 					if (rs1.getString("kds_status_id").equals("3"))
-						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: red;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
 					else 
-						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
 					
 
 					stmt3 = connection.prepareStatement(
@@ -3853,15 +3881,21 @@ public class RestC_check {
 						strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span>");
 						
 						if (rs1.getString("kds_status_id").equals("3"))
-							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: red;\">"+rs3.getString("menu_item_name") + "</span></li>");
+							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
 						else 
-							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none;\">"+rs3.getString("menu_item_name") + "</span></li>");
+							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
 					}
 					strHtml.append("</ul>");
 				}
 				strHtml.append("</td></tbody></table></li>");
 			}
-			strHtml.append("</ul></div>\r\n" 
+			strHtml.append("</ul><center>"
+					+ "<button id=\"" + idCloseButton + "\" type=\"button\" style=\"font-size: 15px; width: 100%; background: #ffb3b3; color: #800000;\" onClick=\"closeOrder('"+idCloseButton+"','" + checkNo + "','" + orderDateTime + "')\" class=\"btn btn-box-tool\"\r\n"
+					+ "data-toggle=\"remove\">\r\n"
+					//+ "<i class=\"glyphicon glyphicon-remove\" style=\"font-size: 50px; font-color: red; border-radius: 50%; text-align: center; background: grey; opacity:2.0;\"></i>\r\n"
+					//+"<div class=\"glyphicon-ring\"> <span class=\"glyphicon glyphicon-remove glyphicon-bordered\" style=\"font-size: 25px;\" >CLOSE</span></div>"
+					+ "<i class=\"glyphicon glyphicon-remove\"></i> CLOSE</button></center>\r\n"
+					+ "</div>\r\n" 
 					+ "		</div>\r\n"
 					+ "		</div>\r\n");
 
