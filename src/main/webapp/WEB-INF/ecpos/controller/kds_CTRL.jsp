@@ -10,12 +10,26 @@
 			if (response.data.response_code == "00") {
 				$scope.contentKds = $sce.trustAsHtml(response.data.html_str);  
 			} else {
-				alert(response.data.response_message);
+				/* alert(response.data.response_message); */
+				Swal.fire("Oops...",response.data.response_message,"error");
 			}
 		},
 		function(response) {
-			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/signout";
+			/* alert("Session TIME OUT"); */
+			/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+			Swal.fire({
+				title: 'Oops...',
+				text: "Session Timeout",
+				icon: 'error',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'OK'
+				},function(isConfirm){
+				if (isConfirm) {
+				window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			});
 		});
 	}
 	
@@ -30,7 +44,7 @@
 		} else {
 			wsURLHeader = "ws://"
 		}
-		wsURLHeader += wsHost + "/ECPOS_Manager/kdsSocket";
+		wsURLHeader += wsHost + "/kdsSocket";
 			
 		var kdsSocket = new WebSocket(wsURLHeader);
 		
@@ -54,18 +68,33 @@
 				if (response.data.response_code == "00") {
 					$scope.initOrder();
 				} else {
-					alert(response.data.response_message);
+					/* alert(response.data.response_message); */
+					Swal.fire("Oops...",response.data.response_message,"error");
 				}
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
 			});
 		}
 
 		kdsSocket.onerror = function(event) {
 			console.error("WebSocket error observed:", event);
-			alert(event);
+			/* alert(event); */
+			Swal.fire("Oops...",event,"error");
 		}
 				
 		kdsSocket.onclose = function(event) {
@@ -83,29 +112,98 @@
 			$('#kds_setting').modal("show");
 		},
 		function(response) {
-			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/signout";
+			/* alert("Session TIME OUT"); */
+			/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+			Swal.fire({
+				title: 'Oops...',
+				text: "Session Timeout",
+				icon: 'error',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'OK'
+				},function(isConfirm){
+				if (isConfirm) {
+				window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			});
 		});
 	}
 	
 	$scope.closeOrder = function (checkId,orderDateTime){
-		var confirmation = confirm("Confirm to close all order?");
-		if (confirmation == true) {
-			var jsonData = JSON.stringify({
-				"check_no" : checkId,
-				"kds_date_time" : orderDateTime
-			});
+		
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes'
+			}).then((result) => {
+			if (result.value) {
+			//Add condition here
+				var jsonData = JSON.stringify({
+					"check_no" : checkId,
+					"kds_date_time" : orderDateTime
+				});
+				
+				$http.post("${pageContext.request.contextPath}/rc/check/close_kds_order", jsonData)
+				.then(function(response) {
+					/* alert(response.data.response_message); */
+					Swal.fire("Success",response.data.response_message,"success");
+					$scope.initOrder();
+				},
+				function(response) {
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						title: 'Oops...',
+						text: "Session Timeout",
+						icon: 'error',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'OK'
+						},function(isConfirm){
+						if (isConfirm) {
+						window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					});
+				});
+		}});
+
+		// var confirmation = confirm("Confirm to close all order?");
+		// if (confirmation == true) {
+		// 	var jsonData = JSON.stringify({
+		// 		"check_no" : checkId,
+		// 		"kds_date_time" : orderDateTime
+		// 	});
 			
-			$http.post("${pageContext.request.contextPath}/rc/check/close_kds_order", jsonData)
-			.then(function(response) {
-				alert(response.data.response_message);
-				$scope.initOrder();
-			},
-			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
-			});
-		}
+		// 	$http.post("${pageContext.request.contextPath}/rc/check/close_kds_order", jsonData)
+		// 	.then(function(response) {
+		// 		/* alert(response.data.response_message); */
+		// 		Swal.fire("Success",response.data.response_message,"success");
+		// 		$scope.initOrder();
+		// 	},
+		// 	function(response) {
+		// 		/* alert("Session TIME OUT"); */
+		// 		/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+		// 		Swal.fire({
+		// 			title: 'Oops...',
+		// 			text: "Session Timeout",
+		// 			icon: 'error',
+		// 			showCancelButton: false,
+		// 			confirmButtonColor: '#3085d6',
+		// 			cancelButtonColor: '#d33',
+		// 			confirmButtonText: 'OK'
+		// 			},function(isConfirm){
+		// 			if (isConfirm) {
+		// 			window.location.href = "${pageContext.request.contextPath}/signout";
+		// 			}
+		// 		});
+		// 	});
+		// }
 	}
 	
     $scope.saveKdsSetting = function() {
@@ -117,15 +215,29 @@
 		
 		$http.post("${pageContext.request.contextPath}/rc/configuration/save_kds_setting", jsonData)
 		.then(function(response) {
-			alert(response.data.response_message);
+			/* alert(response.data.response_message); */
+			Swal.fire("Success",response.data.response_message,"success");
 			if (response.data.response_code === "00") {
 				$("#kds_setting").modal("hide");
 				$scope.initOrder();
 			}
 		},
 		function(response) {
-			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/signout";
+			/* alert("Session TIME OUT"); */
+			/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+			Swal.fire({
+				title: 'Oops...',
+				text: "Session Timeout",
+				icon: 'error',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'OK'
+				},function(isConfirm){
+				if (isConfirm) {
+				window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			});
 		});
 	}
     
@@ -138,13 +250,27 @@
 		$http.post("${pageContext.request.contextPath}/rc/check/update_kds_sent_item", jsonData)
 		.then(function(response) {
 			if (response.data.response_code != "00") {
-				alert(response.data.response_message);
+				/* alert(response.data.response_message); */
+				Swal.fire("Oops...",response.data.response_message,"error");
 			}
 			$scope.initOrder();
 		},
 		function(response) {
-			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/signout";
+			/* alert("Session TIME OUT"); */
+			/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+			Swal.fire({
+				title: 'Oops...',
+				text: "Session Timeout",
+				icon: 'error',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'OK'
+				},function(isConfirm){
+				if (isConfirm) {
+				window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			});
 		});
 	}
     
