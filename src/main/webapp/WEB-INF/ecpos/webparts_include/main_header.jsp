@@ -98,7 +98,7 @@ div.containerkds p {
 					var momentNow = moment();
 					$('#date-part').html(
 							momentNow.format('hh:mm:ss A')
-									+ ' '
+									+ '</br>'
 									+ momentNow.format('DD/MM/YYYY'));
 				}, 100);
 			});
