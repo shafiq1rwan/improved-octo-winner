@@ -38,6 +38,7 @@ public class KdsSocketHandler extends TextWebSocketHandler {
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 		String data = message.getPayload();
+		TextMessage msg = new TextMessage(data.replaceAll("\\\\", ""));
 		Logger.writeActivity("KDS data: " + data, ECPOS_FOLDER);
 		System.out.println("KDS data: " + data);
 		

@@ -15,6 +15,8 @@ import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
+
 @Component
 public class KdsHandshakeInterceptor implements HandshakeInterceptor {
 	@Autowired
@@ -23,10 +25,12 @@ public class KdsHandshakeInterceptor implements HandshakeInterceptor {
 	@Override
 	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
 			Map<String, Object> attributes) throws Exception {
-		System.out.println("Hello :" + dataSource);
 		HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
 		HttpSession session = servletRequest.getSession();
 		if (session != null) {
+			if (session.getAttribute("session_user") == null && servletRequest.getParameter("device").equalsIgnoreCase("BYOD")) {
+				session.setAttribute("session_user", new UserAuthenticationModel());
+			}
 			attributes.put("session_user", session.getAttribute("session_user"));
 			attributes.put("dataSource", dataSource);
 		}

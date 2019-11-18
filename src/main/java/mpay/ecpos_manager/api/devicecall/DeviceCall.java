@@ -7,18 +7,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.sql.DataSource;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
+import mpay.ecpos_manager.general.utility.WebComponents;
 
 @Service
 public class DeviceCall {
-
+	
 	private static String DEVICECALL_FOLDER = Property.getDEVICECALL_FOLDER_NAME();
 	
 	public BigDecimal roundToNearest(BigDecimal value) {
@@ -1330,5 +1339,113 @@ public class DeviceCall {
 			}
 		}
 		return result;
+	}
+
+	public JSONObject sendOrderToKitchen(Connection connection, JSONObject jsonData) {
+		JSONObject jsonResult = new JSONObject();
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+		Date date = new Date();
+		String orderDt = dateFormat.format(date); 
+		String checkNoToday = "";
+		
+		try {
+			connection.setAutoCommit(false);
+			
+			stmt = connection.prepareStatement("select cd.id,cd.check_id,cd.check_number,c.check_ref_no,cd.parent_check_detail_id,cd.menu_item_id,cd.menu_item_code,cd.menu_item_name,cd.quantity from check_detail cd "
+					+ "inner join `check` c on c.id = cd.check_id and cd.check_number = ? "
+					+ "where cd.check_detail_status !=4 and cd.parent_check_detail_id is null and (cd.kds_status_id is null OR cd.kds_status_id = 1) order by cd.id asc; ");
+			stmt.setString(1, jsonData.getString("checkNumber"));
+			rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				checkNoToday = String.valueOf(WebComponents.trimCheckRef(rs.getString("check_ref_no")));
+				do {
+					String grandParentId = rs.getString("id");
+					stmt2 = connection.prepareStatement("update check_detail set kds_status_id = 2, kds_date_time = ? where id = ?;");
+					stmt2.setString(1, orderDt);
+					stmt2.setString(2, grandParentId);
+					int idx = stmt2.executeUpdate();
+					
+					if (idx == 0) {
+						connection.rollback();
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "FAILED");
+						break;
+					}else {
+						stmt3 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+						stmt3.setString(1, grandParentId);
+						rs2 = stmt3.executeQuery();
+						
+						while (rs2.next()) {
+							String parentId = rs2.getString("id");
+							stmt4 = connection.prepareStatement("update check_detail set kds_status_id = 2, kds_date_time = ? where id = ?;");
+							stmt4.setString(1, orderDt);
+							stmt4.setString(2, parentId);
+							stmt4.executeUpdate();
+							
+							stmt5 = connection.prepareStatement("select * from check_detail where parent_check_detail_id = ?;");
+							stmt5.setString(1, parentId);
+							rs3 = stmt5.executeQuery();
+							
+							while (rs3.next()) {
+								String childId = rs3.getString("id");
+								stmt6 = connection.prepareStatement("update check_detail set kds_status_id = 2, kds_date_time = ? where id = ?;");
+								stmt6.setString(1, orderDt);
+								stmt6.setString(2, childId);
+								stmt6.executeUpdate();
+							}
+						}
+					}
+				} while (rs.next());
+				
+				connection.commit();
+				connection.setAutoCommit(true);
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "ORDER SUCCESSFULLY SEND TO KITCHEN");
+				jsonResult.put("table_no", jsonData.getString("tableNumber"));
+				jsonResult.put("check_no", jsonData.getString("checkNumber"));
+				jsonResult.put("check_no_today", checkNoToday);
+				jsonResult.put("order_type", String.valueOf(jsonData.getInt("orderType")));
+				jsonResult.put("order_date_time", orderDt);
+				jsonResult.put("init_action", "add_order");
+				
+			}else {
+				jsonResult.put(Constant.RESPONSE_CODE, "02");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "ORDER ALREADY FIRED TO KITCHEN");
+			}
+		} catch (Exception e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+//				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
 	}
 }

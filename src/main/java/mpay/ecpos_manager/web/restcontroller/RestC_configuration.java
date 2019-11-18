@@ -33,6 +33,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +72,9 @@ public class RestC_configuration {
 
 	@Autowired
 	Card iposCard;
-
+	
+	@Autowired
+	private Environment env;
 	/*
 	 * @Value("${printer_exe}") private String printerExe;
 	 */
@@ -2204,4 +2207,5 @@ public class RestC_configuration {
 		}
 		return jsonResult.toString();
 	}
+	
 }

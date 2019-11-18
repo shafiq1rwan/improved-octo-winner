@@ -59,8 +59,6 @@ public class RestC_check {
 	
 	@Autowired
 	DataSource dataSource;
-	@Autowired
-	KdsSocketHandler kdsSocketHandler;
 	
 	@RequestMapping(value = { "/get_checks" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String getChecklist(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
@@ -2397,6 +2395,12 @@ public class RestC_check {
 						Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+						jsonResult.put("table_no", jsonData.get("table_no"));
+						jsonResult.put("check_no", jsonData.get("check_no"));
+						jsonResult.put("check_no_today", jsonData.get("check_no_today"));
+						jsonResult.put("order_type", jsonData.get("order_type"));
+						jsonResult.put("order_date_time", jsonData.get("order_date_time"));
+						jsonResult.put("init_action", jsonData.get("init_action"));
 					}
 				} else {
 					connection.rollback();
@@ -2522,6 +2526,12 @@ public class RestC_check {
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
 				}
 				connection.setAutoCommit(true);
+				jsonResult.put("table_no", jsonData.get("table_no"));
+				jsonResult.put("check_no", jsonData.get("check_no"));
+				jsonResult.put("check_no_today", jsonData.get("check_no_today"));
+				jsonResult.put("order_type", jsonData.get("order_type"));
+				jsonResult.put("order_date_time", jsonData.get("order_date_time"));
+				jsonResult.put("init_action", jsonData.get("init_action"));
 			} else {
 				response.setStatus(408);
 			}
@@ -2933,6 +2943,12 @@ public class RestC_check {
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
 				}
 				connection.setAutoCommit(true);
+				jsonResult.put("table_no", jsonData.get("table_no"));
+				jsonResult.put("check_no", jsonData.get("check_no"));
+				jsonResult.put("check_no_today", jsonData.get("check_no_today"));
+				jsonResult.put("order_type", jsonData.get("order_type"));
+				jsonResult.put("order_date_time", jsonData.get("order_date_time"));
+				jsonResult.put("init_action", jsonData.get("init_action"));
 			} else {
 				response.setStatus(408);
 			}
@@ -3583,6 +3599,7 @@ public class RestC_check {
 					jsonResult.put("check_no_today", checkNoToday);
 					jsonResult.put("order_type", orderType);
 					jsonResult.put("order_date_time", orderDt);
+					jsonResult.put("init_action", "add_order");
 					
 				}else {
 					jsonResult.put(Constant.RESPONSE_CODE, "02");
@@ -3634,16 +3651,28 @@ public class RestC_check {
 			if (user != null) {
 				JSONObject jsonData = new JSONObject(data);
 				connection = dataSource.getConnection();
-
-				stmt1 = connection.prepareStatement("select * from check_detail cd "
-						+ "inner join check_status cs on cs.id = cd.check_detail_status "
-						+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and check_detail_status != 4 and kds_date_time = ? order by cd.id asc;");
-				stmt1.setString(1, jsonData.getString("checkNo"));
-				stmt1.setString(2, jsonData.getString("checkNo"));
-				stmt1.setString(3, jsonData.getString("orderDateTime"));
-				rs1 = stmt1.executeQuery();
 				
-				if (rs1.next()) {
+				if (jsonData.getString("action").equalsIgnoreCase("add_order")) {
+					stmt1 = connection.prepareStatement("select * from check_detail cd "
+							+ "inner join check_status cs on cs.id = cd.check_detail_status "
+							+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and check_detail_status != 4 and kds_date_time = ? order by cd.id asc;");
+					stmt1.setString(1, jsonData.getString("checkNo"));
+					stmt1.setString(2, jsonData.getString("checkNo"));
+					stmt1.setString(3, jsonData.getString("orderDateTime"));
+					rs1 = stmt1.executeQuery();
+				} else if (jsonData.getString("action").equalsIgnoreCase("cancel_order")) {
+					stmt1 = connection.prepareStatement("select * from check_detail cd "
+							+ "inner join check_status cs on cs.id = cd.check_detail_status "
+							+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and check_detail_status = 4 order by cd.id asc;");
+					stmt1.setString(1, jsonData.getString("checkNo"));
+					stmt1.setString(2, jsonData.getString("checkNo"));
+					rs1 = stmt1.executeQuery();
+				} else if (jsonData.getString("action").equalsIgnoreCase("split_order")) {
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				}
+				
+				if (rs1 != null && rs1.next()) {
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				}else {
@@ -3695,7 +3724,7 @@ public class RestC_check {
 						"inner join check_status cs on cs.id = cd.check_detail_status\r\n" + 
 						"left join `check` c on c.id = cd.check_id\r\n" + 
 						"where parent_check_detail_id is null \r\n" + 
-						"and kds_status_id in (2,3) and check_detail_status != 4 \r\n" + 
+						"and kds_status_id in (2,3)\r\n" + 
 						"order by cd.id asc;");	
 				rs1 = stmt1.executeQuery();
 				
@@ -3781,7 +3810,7 @@ public class RestC_check {
 
 			stmt1 = connection.prepareStatement("select * from check_detail cd "
 					+ "inner join check_status cs on cs.id = cd.check_detail_status "
-					+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and check_detail_status != 4 and kds_date_time = ? order by cd.id asc;");
+					+ "where check_id = ? and check_number = ? and parent_check_detail_id is null and kds_status_id in (2,3) and kds_date_time = ? order by cd.id asc;");
 			stmt1.setString(1, checkNo);
 			stmt1.setString(2, checkNo);
 			stmt1.setString(3, orderDateTime);
@@ -3828,13 +3857,25 @@ public class RestC_check {
 						+ "					<td style=\"width: 10%\"><label>");
 
 				if (rs1.getString("kds_status_id").equals("3")) {
-					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
-							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\" >"
-							+rs1.getString("menu_item_name") + " </span>");
+					if (rs1.getString("check_detail_status").equals("4")) {
+						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
+								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\" >"
+								+rs1.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span>");
+					}else {
+						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
+								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\" >"
+								+rs1.getString("menu_item_name") + " </span>");
+					}
 				}else {
-					strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
-							+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none; font-size: 16px;\" >"
-							+ rs1.getString("menu_item_name") + " </span>");
+					if (rs1.getString("check_detail_status").equals("4")) {
+						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
+								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none; font-size: 16px;\" >"
+								+ rs1.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span>");
+					}else {
+						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
+								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none; font-size: 16px;\" >"
+								+ rs1.getString("menu_item_name") + " </span>");
+					}
 				}
 
 				stmt2 = connection.prepareStatement(
@@ -3852,11 +3893,19 @@ public class RestC_check {
 
 					strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> ");
 					
-					if (rs1.getString("kds_status_id").equals("3"))
-						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
-					else 
-						strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
-					
+					if (rs1.getString("kds_status_id").equals("3")) {
+						if (rs1.getString("check_detail_status").equals("4")) {
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+						}else {
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+						}
+					}else {
+						if (rs1.getString("check_detail_status").equals("4")) {
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+						}else {
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+						}						
+					}
 
 					stmt3 = connection.prepareStatement(
 							"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? order by id asc;");
@@ -3871,10 +3920,19 @@ public class RestC_check {
 						String childId = rs3.getString("id");
 						strHtml.append("<li>" + " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span>");
 						
-						if (rs1.getString("kds_status_id").equals("3"))
-							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
-						else 
-							strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
+						if (rs1.getString("kds_status_id").equals("3")) {
+							if (rs1.getString("check_detail_status").equals("4")) {
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\">"+rs3.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+							}else {
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
+							}
+						} else {
+							if (rs1.getString("check_detail_status").equals("4")) {
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+							}else {
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
+							}	
+						}
 					}
 					strHtml.append("</ul>");
 				}

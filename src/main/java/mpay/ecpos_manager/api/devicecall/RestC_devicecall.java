@@ -1,5 +1,7 @@
 package mpay.ecpos_manager.api.devicecall;
 
+import java.net.InetAddress;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -7,13 +9,21 @@ import javax.sql.DataSource;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
+import mpay.ecpos_manager.general.utility.DeviceClientWs;
 import mpay.ecpos_manager.general.utility.SecureHash;
 
 @RestController
@@ -27,7 +37,10 @@ public class RestC_devicecall {
 	
 	@Autowired
 	DeviceCall deviceCall;
-
+	
+	@Value("${websocket-kds-byod}")
+	private String websocketKdsByod;
+	
 	@RequestMapping(value = { "/order/checking" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public String orderCheck(@RequestBody String data) {
 		Logger.writeActivity("----------- DEVICE CALLING ORDER CHECKING START ---------", DEVICECALL_FOLDER);
@@ -152,6 +165,16 @@ public class RestC_devicecall {
 							
 							if (jsonResult.getString("resultCode").equals("00")) {
 								connection.commit();
+								
+								//start send order to kitchen
+								JSONObject jsonObj = deviceCall.sendOrderToKitchen(connection, jsonData);
+								System.out.println("websocketKdsByod = " + websocketKdsByod);
+								DeviceClientWs d = new DeviceClientWs( new URI(websocketKdsByod));
+								d.setJsonOrder(jsonObj);
+								d.connect();
+								d.close();
+								//end send order to kitchen
+								
 								jsonResult.put("checkNo", getCheck.getString("checkNo"));
 							}
 						} else {

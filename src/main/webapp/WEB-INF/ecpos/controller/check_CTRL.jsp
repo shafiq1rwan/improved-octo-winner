@@ -3,7 +3,7 @@
 		$scope.orderType = $routeParams.orderType;
 		$scope.checkNo = $routeParams.checkNo;
 		$scope.tableNo = $routeParams.tableNo;
-		
+
 		$scope.checkDetail = {};
 		
 		$scope.mode = 1;
@@ -423,8 +423,15 @@
 				if ($scope.checkedValue === undefined || $scope.checkedValue == 0) {
 					Swal.fire("Warning","Kindly tick at least an item to proceed","warning");
 				} else {
+					
 					var jsonData = JSON.stringify({
-						"checkDetailIdArray" : $scope.checkedValue
+						"checkDetailIdArray" : $scope.checkedValue,
+						"init_action" : "cancel_order",
+						"table_no" : $scope.tableNo,
+						"check_no" : $scope.checkNo,
+						"check_no_today" : $scope.checkDetail.checkNoToday,
+						"order_type" : $scope.orderType,
+						"order_date_time" : null
 					});
 					
 					$http.post("${pageContext.request.contextPath}/rc/check/cancel_item", jsonData)
@@ -434,6 +441,7 @@
 							Swal.fire("Success","Order has been cancelled.","success");
 							$scope.getCheckDetails();
 							allGrandParentItemCheckbox.checked = false;
+							$scope.informKds(response.data);
 						} else {
 							if (response.data.response_message != null) {
 								Swal.fire("Oops...",response.data.response_message,"error");
@@ -528,14 +536,20 @@
 				if (result.value) {
 					//Add condition here
 					var jsonData = JSON.stringify({
-					"checkNo" : $scope.checkNo
+					"checkNo" : $scope.checkNo,
+					"check_no" : $scope.checkNo,
+					"init_action" : "cancel_order",
+					"table_no" : $scope.tableNo,
+					"check_no_today" : $scope.checkDetail.checkNoToday,
+					"order_type" : $scope.orderType,
+					"order_date_time" : null
 					});
 					
 				 	$http.post("${pageContext.request.contextPath}/rc/check/cancel_check", jsonData)
 					 	.then(function(response) {
 							if (response.data.response_code === "00") {
 								Swal.fire("Success","Check has been cancelled.","success");
-
+								$scope.informKds(response.data);
 								if ($scope.orderType == "table") {
 									$location.path("/table_order");
 					 			} else if ($scope.orderType == "take_away") {
@@ -649,13 +663,21 @@
 							"orderType" : $scope.orderType,
 							"tableNo" : $scope.tableNo,
 							"checkNo" : $scope.checkNo,
-							"checkDetailIdArray" : $scope.checkedValue
+							"checkDetailIdArray" : $scope.checkedValue,
+							//kds
+							"check_no" : $scope.checkNo,
+							"init_action" : "split_order",
+							"table_no" : $scope.tableNo,
+							"check_no_today" : $scope.checkDetail.checkNoToday,
+							"order_type" : $scope.orderType,
+							"order_date_time" : null
 						});
 						
 						$http.post("${pageContext.request.contextPath}/rc/check/split_check", jsonData)
 						.then(function(response) {
 							if (response.data.response_code === "00") {
 								var data = "/check/" + "table" + "/" + response.data.new_check_no + "/" + $scope.tableNo;
+								$scope.informKds(response.data);
 								$location.path(data);
 							} else {
 								if (response.data.response_message != null) {
@@ -865,7 +887,7 @@
 		
 		$scope.informKds = function (jsonData) {
 			var json = JSON.stringify(jsonData);
-			console.log("Send data: " + json)
+			/* console.log("Send data: " + json) */
 
 			var wsProtocol = window.location.protocol;
 			var wsHost = window.location.host;
@@ -876,10 +898,10 @@
 			} else {
 				wsURLHeader = "ws://"
 			}
-			wsURLHeader += wsHost + "/kdsSocket";
+			wsURLHeader += wsHost + "${pageContext.request.contextPath}/kdsSocket";
 				
 			var kdsSocket = new WebSocket(wsURLHeader);
-			console.log("Send to : " + wsURLHeader)
+			/* console.log("Send to : " + wsURLHeader) */
 			kdsSocket.onopen = function(event) {
 				console.log("Connection established");
 				if (kdsSocket != null) {
@@ -965,5 +987,45 @@
 					});
 			}
 		}
+		
+		$scope.wsOrderListener = function () {
+			
+			var wsProtocol = window.location.protocol;
+			var wsHost = window.location.host;
+			var wsURLHeader = "";
+
+			if (wsProtocol.includes("https")) {
+				wsURLHeader = "wss://"
+			} else {
+				wsURLHeader = "ws://"
+			}
+			wsURLHeader += wsHost + "${pageContext.request.contextPath}/kdsSocket";
+				
+			var kdsSocket = new WebSocket(wsURLHeader);
+			
+			kdsSocket.onopen = function(event) {
+				console.log("Connection established");
+			}
+			
+			kdsSocket.onmessage = function(event) {
+				$scope.json = angular.fromJson(event.data);
+				
+				if ($scope.json.check_no == $scope.checkNo){
+					$scope.getCheckDetails();
+				}
+			}
+
+			kdsSocket.onerror = function(event) {
+				console.error("WebSocket error observed:", event);
+				/* alert(event); */
+				Swal.fire("Oops...",event,"error");
+			}
+					
+			kdsSocket.onclose = function(event) {
+				console.log("Connection closed");
+			}	
+		}
+		
+		$scope.wsOrderListener();
 	});
 </script>

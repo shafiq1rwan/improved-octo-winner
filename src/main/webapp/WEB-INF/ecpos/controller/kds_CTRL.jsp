@@ -44,7 +44,7 @@
 		} else {
 			wsURLHeader = "ws://"
 		}
-		wsURLHeader += wsHost + "/kdsSocket";
+		wsURLHeader += wsHost + "${pageContext.request.contextPath}/kdsSocket";
 			
 		var kdsSocket = new WebSocket(wsURLHeader);
 		
@@ -60,16 +60,44 @@
 				"checkNo" : $scope.json.check_no,
 				"orderDateTime" : $scope.json.order_date_time,
 				"checkNoToday" : $scope.json.check_no_today,
-				"kdsStatusId" : 2
+				"kdsStatusId" : 2,
+				"action" : $scope.json.init_action
 			});
-			
+
 			$http.post("${pageContext.request.contextPath}/rc/check/check_kds_order_by_check", jsonData)
 			.then(function(response) {
 				if (response.data.response_code == "00") {
+					if ($scope.json.init_action == "cancel_order") {
+						Swal.fire({
+							  position: 'top-end',
+							  icon: 'info',
+							  title: 'Cancel Order Received',
+							  showConfirmButton: false,
+							  timer: 1200
+						});
+					}else if ($scope.json.init_action == "split_order") {
+						Swal.fire({
+							  position: 'top-end',
+							  icon: 'info',
+							  title: 'Split Order Received',
+							  showConfirmButton: false,
+							  timer: 1200
+						});
+					}else if ($scope.json.init_action == "add_order") {
+						Swal.fire({
+							  position: 'top-end',
+							  icon: 'info',
+							  title: 'New Order Received',
+							  showConfirmButton: false,
+							  timer: 1200
+						});
+					}
+					
 					$scope.initOrder();
+					
 				} else {
 					/* alert(response.data.response_message); */
-					Swal.fire("Oops...",response.data.response_message,"error");
+					/*Swal.fire("Invalid order",response.data.response_message,"error");*/
 				}
 			},
 			function(response) {
