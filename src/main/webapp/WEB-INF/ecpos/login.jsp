@@ -23,10 +23,6 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/jquery/jeffect.css">
 <script src="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.js"></script>
-        
-<%-- <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/jqKeyboard/jquery.ml-keyboard.css"> --%>
-<%-- <script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jquery.ml-keyboard.js"></script> --%>
-<%-- <script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jquery.ml-keyboard.min.js"></script> --%>
 
 <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/jqKeyboard/jqbtk.css">
 <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.css">
@@ -80,22 +76,6 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
   box-shadow: 1px 1px 4px grey;
 }
 </style>
-<!-- <script type="text/javascript">
-	$(function() {
-		$('input#username').mlKeyboard({
-			layout : 'en_US',
-			active_shift : false,
-			open_speed : 1,
-			close_speed : 1
-		});
-		$('input#password').mlKeyboard({
-			layout : 'en_US',
-			active_shift : false,
-			open_speed : 10,
-			close_speed : 10
-		});
-	});
-</script> -->
 </head>
 
 <body

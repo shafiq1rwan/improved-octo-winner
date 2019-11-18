@@ -63,13 +63,13 @@
 								<div style="padding-top: 5px; padding-bottom: 5px;">
 									<ul class="nav nav-pills nav-justified" role="tablist" style="border-radius: 5px;">
 										<li class="active">
-											<a data-toggle="pill" ng-click="getDataTable('0')">A La Carte</a>
+											<a data-toggle="pill" ng-click="getDataTable('0')"><b>A La Carte</b></a>
 										</li>
 										<li style="border-left: 1px solid #ddd;">
-											<a data-toggle="pill" ng-click="getDataTable('1')">Combo</a>
+											<a data-toggle="pill" ng-click="getDataTable('1')"><b>Combo</b></a>
 										</li>
 										<li style="border-left: 1px solid #ddd;">
-											<a data-toggle="pill" ng-click="getDataTable('2')">Modifier Group</a>
+											<a data-toggle="pill" ng-click="getDataTable('2')"><b>Modifier Group</b></a>
 										</li>
 									</ul>
 								</div>

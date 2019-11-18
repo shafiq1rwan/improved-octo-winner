@@ -205,7 +205,7 @@ hr {
 										<hr style="margin-bottom: 0;">
 										<div class="row" style="color: red;">
 											<div class='col-xs-12 col-sm-12'>
-												<label style="font-size: xx-small; font-weight: normal;">*Item(s) in red indicates already paid</label>
+												<label style="font-size: small; font-weight: normal;">*Item(s) in red indicates already paid</label>
 											</div>
 										</div>
 										<div class="row" style="padding-right: 15px;">

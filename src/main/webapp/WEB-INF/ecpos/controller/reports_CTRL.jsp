@@ -16,19 +16,46 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 				
 				$scope.getSalesSummary();
 			} else {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				// alert("Session TIME OUT");
+				// window.location.href = "${pageContext.request.contextPath}/signout";
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
 			}
 		},
 		function(response) {
-			alert("Session TIME OUT");
-			window.location.href = "${pageContext.request.contextPath}/signout";
+			// alert("Session TIME OUT");
+			// window.location.href = "${pageContext.request.contextPath}/signout";
+			Swal.fire({
+				title: 'Oops...',
+				text: "Session Timeout",
+				icon: 'error',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'OK'
+				},function(isConfirm){
+				if (isConfirm) {
+				window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			});
 		});
 	}
 	
 	$scope.getSalesSummary = function() {
 		if ($scope.date.start > $scope.date.end) {
-			alert("Start Date should be before End Date");
+			// alert("Start Date should be before End Date");
+			Swal.fire("Warning","Start Date should be before End Date","warning");
 		} else {
 			var dataObj = {
 				"startDate" : $scope.date.start.toISOString(),
@@ -46,8 +73,21 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 					"contentType" : "application/json; charset=utf-8",
 					"dataType" : "json",
 					"error" : function() {
-						alert("Session TIME OUT");
-						window.location.href = "${pageContext.request.contextPath}/signout";
+						// alert("Session TIME OUT");
+						// window.location.href = "${pageContext.request.contextPath}/signout";
+						Swal.fire({
+							title: 'Oops...',
+							text: "Session Timeout",
+							icon: 'error',
+							showCancelButton: false,
+							confirmButtonColor: '#3085d6',
+							cancelButtonColor: '#d33',
+							confirmButtonText: 'OK'
+							},function(isConfirm){
+							if (isConfirm) {
+							window.location.href = "${pageContext.request.contextPath}/signout";
+							}
+						});
 					}
 				},
 				"ordering" : false,
