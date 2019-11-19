@@ -370,7 +370,20 @@ function syncStore() {
 	    dataType: "json",
 	    timeout: 30 * 1000,
 	    success: function(response) {
-	    	console.log(response.result);
+	    	if (response != null && response.resultCode != null) {
+				if (response.resultCode == "00") {
+					formTypeID = response.loginType;
+					isFormSwitchable = response.loginSwitch;
+					updateLoginUI();
+					
+					isSyncStore = true;
+					loadSuccess();
+				} else {
+					loadFailed(response.resultMessage);
+				}
+			} else {
+				loadFailed("Invalid Server Response.");
+			}
 	    },
 	    failure: function(errMsg) {
 	    	loadFailed("System Error. Please Try Again.");
