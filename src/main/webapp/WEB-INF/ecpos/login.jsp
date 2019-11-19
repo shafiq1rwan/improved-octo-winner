@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/agent_login.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/mygroup.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
 <script src="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/jquery/dist/jquery.min.js"></script>
 <script src="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/jquery-ui/jquery-ui.min.js"></script>
 <script src='https://www.google.com/recaptcha/api.js'></script>
@@ -75,6 +76,44 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 .test:hover {
   box-shadow: 1px 1px 4px grey;
 }
+
+.shutdown {
+    border: 8px solid #0cf;
+    border-radius: 100px;
+    box-shadow: 0 0 10px #0cf, inset 0 0 10px #0cf;
+    height: 100px;
+    width: 100px;
+}
+
+.shutdown .inner {
+    border: 5px solid #0cf;
+    border-radius: 100px;
+    box-shadow: 0 0 10px #0cf, inset 0 0 10px #0cf;
+    height: 30px;
+    left: 30px;
+    position: relative;
+    top: 30px;
+    width: 30px;
+}
+
+.shutdown .bar {
+    border-left: 5px solid #0cf;
+    box-shadow: 0 0 10px #0cf;
+    height: 20px;
+    left: 47px;
+    position: relative;
+    top: -15px;
+    width: 0;
+}
+
+.shutdown .sub-bar {
+    border-left: 11px solid black;
+    height: 30px;
+    margin-left: 44px;
+    margin-top: -20px;
+    position: absolute;
+    width: 0;
+}​
 </style>
 </head>
 
@@ -102,7 +141,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 				<div class="panel-heading text-center">
 					<img
 						src="${pageContext.request.contextPath}/meta/img/ecpos_logo.png"
-						style="height: 200px; padding-top: 15px;">
+						style="height: 180px; padding-top: 15px;">
 				</div>
 
 				<div class="panel-body text-center">
@@ -177,6 +216,13 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 			</div>
 		</div>
 	</div>
+	<button title="Shutdown" id="shutdownBtn" type="button" style="display: inline-block; border-radius: 50px; box-shadow: 0px 0px 2px #888;
+  	padding: 0.5em 0.6em;position: absolute; bottom: 10px; left: 5%; margin-left: -50px;">
+		<i class="fa fa-power-off" style="font-size:18px"></i>
+	</button>
+	
+	
+	
 	<!-- Loading Modal [END] -->
 	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
 	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.js"></script>
@@ -231,6 +277,11 @@ $("#switchBtn").click(function() {
 	}
 	
 	updateLoginUI();
+});
+
+
+$("#shutdownBtn").click(function() {
+	shutdownPC();
 });
 
 $("#showQRLoginBtn").click(function() {
@@ -319,20 +370,7 @@ function syncStore() {
 	    dataType: "json",
 	    timeout: 30 * 1000,
 	    success: function(response) {
-	    	if (response != null && response.resultCode != null) {
-				if (response.resultCode == "00") {
-					formTypeID = response.loginType;
-					isFormSwitchable = response.loginSwitch;
-					updateLoginUI();
-					
-					isSyncStore = true;
-					loadSuccess();
-				} else {
-					loadFailed(response.resultMessage);
-				}
-			} else {
-				loadFailed("Invalid Server Response.");
-			}
+	    	console.log(response.result);
 	    },
 	    failure: function(errMsg) {
 	    	loadFailed("System Error. Please Try Again.");
@@ -398,6 +436,22 @@ function beginLoading() {
 			loadSuccess();
 		}
 	}, 500);
+}
+
+function shutdownPC() {
+	$.ajax({
+	    type: "POST",
+	    url: "${pageContext.request.contextPath}/rc/configuration/shutdown_device",
+	    contentType: "application/json; charset=utf-8",
+	    dataType: "json",
+	  /*   timeout: 30 * 1000, */
+	    success: function(response) {
+	    	console.log("response " + response.result);
+	    },
+	    failure: function(errMsg) {
+	    	console.log("error");
+	    }
+	});
 }
 
 $(document).ready(function() {

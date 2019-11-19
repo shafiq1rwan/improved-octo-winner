@@ -1,5 +1,6 @@
 package mpay.ecpos_manager.web.restcontroller;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -28,6 +29,7 @@ import javax.sql.DataSource;
 import javax.comm.*;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.SystemUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -2208,4 +2210,36 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/shutdown_device" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String shutdownDevice(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		try {
+			jsonResult.put("result", shutdown(1));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return jsonResult.toString();
+	}
+	
+	public static boolean shutdown(int time) throws IOException {
+	    String shutdownCommand = null, t = time == 0 ? "now" : String.valueOf(time);
+
+	    if(SystemUtils.IS_OS_AIX)
+	        shutdownCommand = "shutdown -Fh " + t;
+	    else if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC|| SystemUtils.IS_OS_MAC_OSX || SystemUtils.IS_OS_UNIX)
+	        shutdownCommand = "shutdown -h " + t;
+	    else if(SystemUtils.IS_OS_HP_UX)
+	        shutdownCommand = "shutdown -hy " + t;
+	    else if(SystemUtils.IS_OS_IRIX)
+	        shutdownCommand = "shutdown -y -g " + t;
+	    else if(SystemUtils.IS_OS_SOLARIS || SystemUtils.IS_OS_SUN_OS)
+	        shutdownCommand = "shutdown -y -i5 -g" + t;
+	    else if(SystemUtils.IS_OS_WINDOWS)
+	        shutdownCommand = "shutdown.exe /s /t " + t;
+	    else
+	        return false;
+
+	    Runtime.getRuntime().exec(shutdownCommand);
+	    return true;
+	}
 }
