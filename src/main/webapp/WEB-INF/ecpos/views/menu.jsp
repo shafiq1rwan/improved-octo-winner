@@ -118,9 +118,10 @@ img:hover {
 										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-3 padding-0">
 											<br>
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
-												<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
+												<div style="margin: auto; width: 120px; height: 120px; border: 5px solid white; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 													<img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="max-width: 100%; max-height: 100%;" />
 												</div>
+												<br>
 												<div class="itemname">
 													<b>{{category.name}}</b>
 												</div>
@@ -150,9 +151,10 @@ img:hover {
 										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-3 padding-0">
 											<br>
 											<div style="text-align: center" ng-click="action(item)">
-												<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
+												<div style="margin: auto; width: 120px; height: 120px; border: 5px solid white; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 													<img ng-src="${pageContext.request.contextPath}/{{item.imagePath}}" alt={{item.name}} style="max-width: 100%; max-height: 100%;" />
 												</div>
+												<br>
 												<div class="itemname">
 													<b>{{item.name}}</b>
 												</div>

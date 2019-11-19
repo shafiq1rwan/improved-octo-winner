@@ -65,7 +65,7 @@ div.containerkds p {
 			%>
 			<div class="navbar-custom-menu">
 				<ul class="nav navbar-nav">
-				<li style="float: left;"><span id='date-part' style="word-spacing: 1px; color: white;"></span></li>
+				<li style="float: left;"><span id='date-part' style="word-spacing: 1px; color: white; padding-top: 10px"></span></li>
 					<li class="dropdown user user-menu"><a class="dropdown-toggle"
 						data-toggle="dropdown"><i class="fas fa-user"></i>&nbsp;&nbsp;<span class="hidden-xs"><%=user.getName()%></span>
 					</a>

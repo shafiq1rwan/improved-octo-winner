@@ -61,7 +61,7 @@
                 [
                     ['shift', 'shift'],
                     ['space', 'space'],
-                    ['shift', 'shift']
+                    ['enter', 'enter']
                 ]
             ],
             numpadLayout: [
@@ -233,13 +233,13 @@
                             btn.attr('data-value', this[0]).attr('data-value-alt', this[1]);
                             switch (this[0]) {
                                 case 'shift':
-                                    btn.addClass('jqbtk-shift').html('<span class="glyphicon glyphicon-arrow-up"></span>');
+                                    btn.addClass('jqbtk-shift').html('<span class="glyphicon glyphicon-arrow-up"></span> Shift');
                                     break;
                                 case 'space':
                                     btn.addClass('jqbtk-space').html('&nbsp;');
                                     break;
                                 case 'del':
-                                    btn.addClass('jqbtk-del').html('<span class="glyphicon glyphicon-arrow-left"></span>');
+                                    btn.addClass('jqbtk-del').html('<span class="glyphicon glyphicon-arrow-left"></span> Backspace');
                                     break;
                                 case 'enter':
                                     btn.addClass('jqbtk-enter').html('Enter');

@@ -6,13 +6,39 @@
 				if (response.data.responseCode == "00") {
 					$scope.get_checklist();
 				} else {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					// alert("Session TIME OUT");
+					// window.location.href = "${pageContext.request.contextPath}/signout";
+					Swal.fire({
+						title: 'Oops...',
+						text: "Session Timeout",
+						icon: 'error',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'OK'
+						},function(isConfirm){
+						if (isConfirm) {
+						window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					});
 				}
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				// alert("Session TIME OUT");
+				// window.location.href = "${pageContext.request.contextPath}/signout";
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
 			});
 		}
 		
@@ -22,8 +48,21 @@
 				$scope.checks = response.data.checks;
 			},
 			function(response) {
-				alert("Session TIME OUT");
-				window.location.href = "${pageContext.request.contextPath}/signout";
+				// alert("Session TIME OUT");
+				// window.location.href = "${pageContext.request.contextPath}/signout";
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
 			});
 		}
 		
@@ -42,7 +81,8 @@
 
 		$scope.create_new_check = function() {
 			if ($('#customerName').val() == null || $('#customerName').val() == "") {
-				alert("Kindly key in customer name.");
+				// alert("Kindly key in customer name.");
+				Swal.fire("Warning","Kindly key in customer name.","warning");
 			} else {
 				var jsonData = JSON.stringify({
 					"customerName" : $('#customerName').val() 
@@ -54,15 +94,30 @@
 						$scope.redirect_to_check_detail(response.data.check_no);
 					} else {
 						if (response.data.response_message != null) {
-							alert(response.data.response_message);
+							// alert(response.data.response_message);
+							Swal.fire("Oops...",response.data.response_message,"error");
 						} else {
-							alert("Error Occured While Create Check");
+							// alert("Error Occured While Create Check");
+							Swal.fire("Oops...","Error Occured While Create Check","error");
 						}
 					}
 				},
 				function(response) {
-					alert("Session TIME OUT");
-					window.location.href = "${pageContext.request.contextPath}/signout";
+					// alert("Session TIME OUT");
+					// window.location.href = "${pageContext.request.contextPath}/signout";
+					Swal.fire({
+						title: 'Oops...',
+						text: "Session Timeout",
+						icon: 'error',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'OK'
+						},function(isConfirm){
+						if (isConfirm) {
+						window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					});
 				});
 			}
 		}
