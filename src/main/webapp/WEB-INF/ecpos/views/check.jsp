@@ -281,11 +281,13 @@ hr {
 															</button>
 														</div>
 													</td>
+													<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {%>
 													<td style="padding: 2px; width: 100%"><button
 															id="paymentButton" class="btn btn-block btn-primary shadowBox"
 															ng-click="redirectPayment()"
 															style="word-spacing: normal; padding: 12px"><b style="font-size: 20px"><i class="fa fa-dollar"></i> PAY</b>
 														</button></td>
+													<%}%>
 												</tr>
 											</tbody>
 										</table>

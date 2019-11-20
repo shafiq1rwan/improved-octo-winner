@@ -3859,18 +3859,18 @@ public class RestC_check {
 				if (rs1.getString("kds_status_id").equals("3")) {
 					if (rs1.getString("check_detail_status").equals("4")) {
 						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
-								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\" >"
-								+rs1.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span>");
+								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #FF3C3C; font-size: 16px;\" >"
+								+rs1.getString("menu_item_name") + "<span class=\"text\" style=\"color: #FF3C3C; font-size: 16px;\"> *CA</span></span>");
 					}else {
 						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" checked></label></td>\r\n"
-								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\" >"
+								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: line-through; color: #FF3C3C; font-size: 16px;\" >"
 								+rs1.getString("menu_item_name") + " </span>");
 					}
 				}else {
 					if (rs1.getString("check_detail_status").equals("4")) {
 						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
 								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none; font-size: 16px;\" >"
-								+ rs1.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span>");
+								+ rs1.getString("menu_item_name") + "<span class=\"text\" style=\"color: #FF3C3C; font-size: 16px;\"> *CA</span></span>");
 					}else {
 						strHtml.append("<input id=\"cbx_" + grandParentId + "\" type=\"checkbox\" class=\"icheckbox_minimal-red\" onClick=\"checkItem('cbx_"+grandParentId+"','"+grandParentId+"')\" ></label></td>\r\n"
 								+ "					<td style=\"width: 70%\">"+ " <span class=\"bg-black\">&nbsp;" + rs1.getInt("quantity") + "x&nbsp;</span> " + "<span id=\""+grandParentId+"\" class=\"text\" style=\"text-decoration-line: none; font-size: 16px;\" >"
@@ -3895,13 +3895,13 @@ public class RestC_check {
 					
 					if (rs1.getString("kds_status_id").equals("3")) {
 						if (rs1.getString("check_detail_status").equals("4")) {
-							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #FF3C3C; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "<span class=\"text\" style=\"color: #FF3C3C; font-size: 16px;\"> *CA</span></span></li>");
 						}else {
-							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: line-through; color: #FF3C3C; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
 						}
 					}else {
 						if (rs1.getString("check_detail_status").equals("4")) {
-							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "<span class=\"text\" style=\"color: #FF3C3C; font-size: 16px;\"> *CA</span></span></li>");
 						}else {
 							strHtml.append("<span id=\""+parentId+"\" style=\"text-decoration-line: none; font-size: 16px;\"> "+rs2.getString("menu_item_name") + "</span></li>");
 						}						
@@ -3922,13 +3922,13 @@ public class RestC_check {
 						
 						if (rs1.getString("kds_status_id").equals("3")) {
 							if (rs1.getString("check_detail_status").equals("4")) {
-								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\">"+rs3.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #FF3C3C; font-size: 16px;\">"+rs3.getString("menu_item_name") + "<span class=\"text\" style=\"color: #FF3C3C; font-size: 16px;\"> *CA</span></span></li>");
 							}else {
-								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #800000; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: line-through; color: #FF3C3C; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
 							}
 						} else {
 							if (rs1.getString("check_detail_status").equals("4")) {
-								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "<span class=\"text\" style=\"color: #800000; font-size: 16px;\"> *CA</span></span></li>");
+								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "<span class=\"text\" style=\"color: #FF3C3C; font-size: 16px;\"> *CA</span></span></li>");
 							}else {
 								strHtml.append("<span id=\""+childId+"\" style=\"text-decoration-line: none; font-size: 16px;\">"+rs3.getString("menu_item_name") + "</span></li>");
 							}	

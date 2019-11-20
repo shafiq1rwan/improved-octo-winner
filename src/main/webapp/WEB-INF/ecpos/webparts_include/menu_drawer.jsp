@@ -40,6 +40,7 @@
 					</a>
 				</li>
 				
+				<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {%>
 				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Record Management</li>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!items_listing">
@@ -69,7 +70,7 @@
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>
-				
+				<%}%>
 				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">System Management</li>
 <%-- 				<li>
 					<a href="${pageContext.request.contextPath}/#!connection_qr">
@@ -78,7 +79,7 @@
 						<span class="pull-right-container"> </span>
 					</a>
 				</li> --%>
-				<%if (user.getRoleType() == 1) {
+				<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {
 					boolean drawer = (boolean)request.getAttribute("cashDrawer");
 					if(drawer) {
 				%>
@@ -89,9 +90,8 @@
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
-				<%
-					}
-					}%>
+				<%}%>
+					
 				<li>
 					<a href="${pageContext.request.contextPath}/#!settings"> 
 						<i class="fa fa-cog"></i>
@@ -99,6 +99,7 @@
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>
+				<%}%>
 				<li>
 					<a href="${pageContext.request.contextPath}/signout"> 
 						<i class="fa fa-sign-out"></i> 

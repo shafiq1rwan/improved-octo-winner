@@ -12,6 +12,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="${pageContext.request.contextPath}/meta/img/ecpos_logo.png" type="image/x-icon">
 <title>ManagePay | VERNPOS</title>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/sweetAlert/sweetalert2.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/demo.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/agent_login.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/css_responsive/mygroup.css">
@@ -24,7 +25,7 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/meta/jquery/jeffect.css">
 <script src="${pageContext.request.contextPath}/adminLTE-2.4.5/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.js"></script>
-
+<script src="${pageContext.request.contextPath}/sweetAlert/sweetalert2.js"></script>
 <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/jqKeyboard/jqbtk.css">
 <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.css">
 
@@ -76,44 +77,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 .test:hover {
   box-shadow: 1px 1px 4px grey;
 }
-
-.shutdown {
-    border: 8px solid #0cf;
-    border-radius: 100px;
-    box-shadow: 0 0 10px #0cf, inset 0 0 10px #0cf;
-    height: 100px;
-    width: 100px;
-}
-
-.shutdown .inner {
-    border: 5px solid #0cf;
-    border-radius: 100px;
-    box-shadow: 0 0 10px #0cf, inset 0 0 10px #0cf;
-    height: 30px;
-    left: 30px;
-    position: relative;
-    top: 30px;
-    width: 30px;
-}
-
-.shutdown .bar {
-    border-left: 5px solid #0cf;
-    box-shadow: 0 0 10px #0cf;
-    height: 20px;
-    left: 47px;
-    position: relative;
-    top: -15px;
-    width: 0;
-}
-
-.shutdown .sub-bar {
-    border-left: 11px solid black;
-    height: 30px;
-    margin-left: 44px;
-    margin-top: -20px;
-    position: absolute;
-    width: 0;
-}​
+​
 </style>
 </head>
 
@@ -162,7 +126,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 					<form id="qrForm" action="${pageContext.request.contextPath}/authenticationQR" method="post" accept-charset="UTF-8" role="form" class="form-signin" autocomplete="off">
 						<fieldset>
 							<input type="hidden" id="qrContent" name="qrContent" value="">
-							<input id="showQRLoginBtn" class="btn btn-lg btn-block" style="background-color: #00FA9A; color: white;" type="button" value="Login">
+							<input id="showQRLoginBtn" class="btn btn-lg btn-block" style="background-color: #00FA9A; color: white;" type="button" value="Scan QR">
 						</fieldset>
 					</form>
 					<br>
@@ -216,12 +180,11 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 			</div>
 		</div>
 	</div>
+	
 	<button title="Shutdown" id="shutdownBtn" type="button" style="display: inline-block; border-radius: 50px; box-shadow: 0px 0px 2px #888;
-  	padding: 0.5em 0.6em;position: absolute; bottom: 10px; left: 5%; margin-left: -50px;">
+  	padding: 0.5em 0.6em;position: absolute; bottom: 10%; left: 10%; margin-left: -50px;">
 		<i class="fa fa-power-off" style="font-size:18px"></i>
 	</button>
-	
-	
 	
 	<!-- Loading Modal [END] -->
 	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
@@ -281,7 +244,19 @@ $("#switchBtn").click(function() {
 
 
 $("#shutdownBtn").click(function() {
-	shutdownPC();
+	Swal.fire({
+		  title: 'Are you sure to shutdown?',
+		  text: "You wont be able to revert this!",
+		  icon: 'warning',
+		  showCancelButton: true,
+		  confirmButtonColor: '#3085d6',
+		  cancelButtonColor: '#d33',
+		  confirmButtonText: 'OK'
+		}).then((result) => {
+			if (result.value) {
+				shutdownPC();
+			}
+		});
 });
 
 $("#showQRLoginBtn").click(function() {
