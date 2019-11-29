@@ -95,7 +95,7 @@ img:hover {
 <body>
 	<div ng-controller="menu_CTRL">
 		<div ng-init="menuInitiation();">
-			<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 80vh">
+			<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 80vh; max-height: 80vh; overflow-x:hidden; overflow-y: auto;">
 
 				<div id="menuCarousel" class="carousel" data-interval="false">
 				<div class="input-container" style="width: 100%">

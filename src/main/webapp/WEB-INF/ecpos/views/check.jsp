@@ -59,7 +59,7 @@ hr {
 						<!-- START of check well -->
 						<div id="checkWell">
 							<div class="col-sm-6" style="padding-right: 2px; padding-left: 2px;">
-								<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px;">
+								<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 80vh; max-height: 80vh; overflow-x:hidden; overflow-y: auto;">
 									<div class="row">
 										<div class="col-sm-7">
 											<div>
@@ -118,7 +118,7 @@ hr {
 											<div class='col-xs-2 col-sm-2 text-right'><b>Price</b></div>
 										</div>
 										<hr>
-										<div style="padding-right: 15px; max-height: 33vh; overflow-y: auto; height: 33vh;">
+										<div style="padding-right: 15px; max-height: 30vh;height: 30vh; overflow-y: auto; ">
 											<div ng-repeat="grandParentItem in checkDetail.grandParentItemArray">
 												
 												<div style="padding-bottom: 8px;" ng-if="grandParentItem.itemStatus != 'Paid'">
