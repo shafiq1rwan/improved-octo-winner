@@ -948,7 +948,7 @@ public class RestC_configuration {
 
 				if (rs.next()) {
 					JSONObject terminalWifiIPPort = new JSONObject();
-					if (rs.getString("wifi_IP") == null || rs.getString("wifi_Port") == null) {
+					if (rs.getString("wifi_IP") != null || rs.getString("wifi_Port") != null) {
 						terminalWifiIPPort.put("wifi_IP", rs.getString("wifi_IP"));
 						terminalWifiIPPort.put("wifi_Port", rs.getString("wifi_Port"));
 					}
