@@ -120,11 +120,11 @@
 											<button class="btn btn-block btn-primary" ng-click="printTransactionReceipt(transaction.id)"><i class="fa fa-print" aria-hidden="true"></i> Print Receipt</button>
 										</div>
 									</div>
-									<div class="col-sm-3">
+									<!-- <div class="col-sm-3">
 										<div>
 											<button class="btn btn-block btn-primary" ng-click="displayPdf(transaction.id)"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</button>
 										</div>
-									</div>
+									</div> -->
 								</div>
 
 							<!-- receipt content control -->	

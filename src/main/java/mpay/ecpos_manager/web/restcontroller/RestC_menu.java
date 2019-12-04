@@ -57,7 +57,11 @@ public class RestC_menu {
 					JSONObject category = new JSONObject();
 					category.put("id", rs.getString("id"));
 					category.put("name", rs.getString("category_name"));
-					category.put("imagePath", menuImagePath + rs.getString("category_image_path"));
+					if(menuImagePath.length() == 12) {
+						category.put("imagePath", menuImagePath + rs.getString("category_image_path"));
+					}else {
+						category.put("imagePath", menuImagePath.substring(55) + rs.getString("category_image_path"));
+					}
 					
 					jary.put(category);
 				}
@@ -117,7 +121,12 @@ public class RestC_menu {
 					menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 					menuItems.put("taxable", rs.getBoolean("is_taxable"));
 					menuItems.put("discountable", rs.getBoolean("is_discountable"));
-					menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+//					menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					if(menuImagePath.length() == 12) {
+						menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					}else {
+						menuItems.put("imagePath", menuImagePath.substring(55) + rs.getString("menu_item_image_path"));
+					}
 					
 					if (menuItems.getString("type").equals("0")) {
 						stmt = connection.prepareStatement("select count(mg.id) as count from menu_item mi " + 
@@ -262,7 +271,12 @@ public class RestC_menu {
 						menuItems.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
 						menuItems.put("taxable", rs2.getBoolean("is_taxable"));
 						menuItems.put("discountable", rs2.getBoolean("is_discountable"));
-						menuItems.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
+//						menuItems.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
+						if(menuImagePath.length() == 12) {
+							menuItems.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
+						}else {
+							menuItems.put("imagePath", menuImagePath.substring(55) + rs2.getString("menu_item_image_path"));
+						}
 						
 						menuItems.put("sequence", rs.getString("combo_item_detail_sequence"));
 						
@@ -340,7 +354,12 @@ public class RestC_menu {
 						modifierDetails.put("description", rs2.getString("menu_item_description"));
 						modifierDetails.put("price", String.format("%.2f", rs2.getBigDecimal("menu_item_base_price")));
 						modifierDetails.put("taxable", rs2.getBoolean("is_taxable"));
-						modifierDetails.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
+//						modifierDetails.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
+						if(menuImagePath.length() == 12) {
+							modifierDetails.put("imagePath", menuImagePath + rs2.getString("menu_item_image_path"));
+						}else {
+							modifierDetails.put("imagePath", menuImagePath.substring(55) + rs2.getString("menu_item_image_path"));
+						}
 						
 						jary2.put(modifierDetails);
 					}
@@ -398,7 +417,12 @@ public class RestC_menu {
 					menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 					menuItems.put("taxable", rs.getBoolean("is_taxable"));
 					menuItems.put("discountable", rs.getBoolean("is_discountable"));
-					menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+//					menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					if(menuImagePath.length() == 12) {
+						menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					}else {
+						menuItems.put("imagePath", menuImagePath.substring(55) + rs.getString("menu_item_image_path"));
+					}
 					
 					jary.put(menuItems);
 				}
@@ -451,7 +475,12 @@ public class RestC_menu {
 					jsonResult.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 					jsonResult.put("taxable", rs.getBoolean("is_taxable"));
 					jsonResult.put("discountable", rs.getBoolean("is_discountable"));
-					jsonResult.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+//					jsonResult.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					if(menuImagePath.length() == 12) {
+						jsonResult.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					}else {
+						jsonResult.put("imagePath", menuImagePath.substring(55) + rs.getString("menu_item_image_path"));
+					}
 				}
 			} else {
 				response.setStatus(408);
@@ -547,7 +576,12 @@ public class RestC_menu {
 					modifierItem.put("alternativeName", rs.getString("menu_item_alt_name"));
 					modifierItem.put("barcode", rs.getString("menu_item_barcode"));
 					modifierItem.put("description", rs.getString("menu_item_description"));
-					modifierItem.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+//					modifierItem.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					if(menuImagePath.length() == 12) {
+						modifierItem.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					}else {
+						modifierItem.put("imagePath", menuImagePath.substring(55) + rs.getString("menu_item_image_path"));
+					}
 					modifierItem.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
 					modifierItem.put("taxable", rs.getBoolean("is_taxable"));
 					modifierItem.put("sequence", rs.getString("modifier_item_sequence"));

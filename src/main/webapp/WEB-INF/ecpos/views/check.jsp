@@ -59,7 +59,7 @@ hr {
 						<!-- START of check well -->
 						<div id="checkWell">
 							<div class="col-sm-6" style="padding-right: 2px; padding-left: 2px;">
-								<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 80vh; max-height: 80vh; overflow-x:hidden; overflow-y: auto;">
+								<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x:hidden; overflow-y: auto;">
 									<div class="row">
 										<div class="col-sm-7">
 											<div>
@@ -323,7 +323,7 @@ hr {
 						
 						<!-- START of payment well -->
 						<div id="paymentWell">
-							<div class="col-md-6" style="padding-right: 2px; padding-left: 2px;">
+							<div class="col-sm-6 col-md-6" style="padding-right: 2px; padding-left: 2px;">
 								<jsp:include page="/WEB-INF/ecpos/views/payment.jsp" flush="true"></jsp:include>
 							</div>
 						</div>
@@ -348,12 +348,12 @@ hr {
 								<img id="QRImage" style="height: 50%; width: 50%;" />
 							</div>
  							<div class="row">
-								<div class="col-xs-6 col-sm-6" >
+								<div class="col-xs-12 col-sm-12" >
 										<button class="btn bg-maroon" ng-click="printQR()" style="float: right;"><i class="fa fa-print" aria-hidden="true"></i> Print</button>
 								</div>
-								<div class="col-xs-6 col-sm-6" >
+								<!-- <div class="col-xs-6 col-sm-6" >
 										<button class="btn bg-maroon" ng-click="displayQRPdf()"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</button>
-								</div>
+								</div> -->
 							</div>
 						</div>
 						<!-- <div class="modal-footer"></div> -->

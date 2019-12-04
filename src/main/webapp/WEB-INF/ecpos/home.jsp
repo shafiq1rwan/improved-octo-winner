@@ -140,7 +140,7 @@
 
 <!-- Body -->
 <!-- appCtrl controller with serveral data used in theme on diferent view -->
-<body ng-app="myApp" class="hold-transition skin-blue sidebar-mini font-roboto-regular">
+<body ng-app="myApp" class="hold-transition skin-blue sidebar-mini font-roboto-regular sidebar-collapse">
 	<div class="wrapper">
 		<!-- *****************************TO-DO : INCLUDE main_header***************************** -->
 		<jsp:include page="/WEB-INF/ecpos/webparts_include/main_header.jsp" />

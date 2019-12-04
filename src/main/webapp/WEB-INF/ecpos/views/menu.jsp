@@ -95,7 +95,7 @@ img:hover {
 <body>
 	<div ng-controller="menu_CTRL">
 		<div ng-init="menuInitiation();">
-			<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 80vh; max-height: 80vh; overflow-x:hidden; overflow-y: auto;">
+			<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x:hidden; overflow-y: auto;">
 
 				<div id="menuCarousel" class="carousel" data-interval="false">
 				<div class="input-container" style="width: 100%">
@@ -103,7 +103,7 @@ img:hover {
 						<input type="text" class="form-control" ng-model="barcode"
 							ng-click="barcodeOrder()"
 							ng-keydown="$event.keyCode === 13 && barcodeOrder()"
-							id="barcode_input" required placeholder="Search or scan for items" autofocus="autofocus" onblur="this.focus()"/>
+							id="barcode_input" required placeholder="Search or scan for items"/>
 					</div>
 					<div class="carousel-inner">
 						<div class="item active">

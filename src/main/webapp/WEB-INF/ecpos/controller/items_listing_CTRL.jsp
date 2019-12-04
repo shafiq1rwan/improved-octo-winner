@@ -94,8 +94,8 @@
 							buttonValue = "Combo Details";
 						}
 						
-						return '<button class="btn btn-sm btn-info blue-button" style="background-color: #0005B8; border-color: #010475;" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button>' +
-						'&nbsp;<button class="btn btn-sm btn-info green-button" style="background-color: #00B431; border-color: #009829;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button>';
+						return '<button class="btn btn-sm btn-primary" style="background-color: #3c8dbc;" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', -1)">Details</button>' +
+						'&nbsp;<button class="btn btn-sm btn-success" style="background-color: #00a65a; border-color: #009829;" ng-click="redirectItemCarousel('+ $scope.itemType + ', \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\', -1)">' + buttonValue + '</button>';
 					}, "width": "30%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -133,7 +133,7 @@
 				"columns" : [{"data" : "id", "width": "5%"},
 					{"data" : "name", "width": "67%"},
 					{"render" : function(data, type, full, meta) {
-						return '<button class="btn btn-sm btn-info blue-button" style="background-color: #0005B8; border-color: #010475;" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\', -1)">Details</button>';
+						return '<button class="btn btn-sm btn-primary" style="background-color: #3c8dbc;" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\', -1)">Details</button>';
 					}, "width": "28%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -206,7 +206,7 @@
 					{"data" : "backendId", "width": "20%"}, 
 					{"data" : "name", "width": "50%"},
 					{"render" : function(data, type, full, meta) {
-						return '<button class="btn btn-sm btn-info blue-button" style="background-color: #0005B8; border-color: #010475;" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 1)">Details</button>';
+						return '<button class="btn btn-sm btn-primary" style="background-color: #3c8dbc;" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 1)">Details</button>';
 					}, "width": "12%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
@@ -257,7 +257,7 @@
 					"columns" : [{"data" : "sequence", "width": "18%"},
 						{"data" : "name", "width": "70%"},
 						{"render" : function(data, type, full, meta) {
-							return '<button class="btn btn-sm btn-info blue-button" style="background-color: #0005B8; border-color: #010475;" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button>';
+							return '<button class="btn btn-sm btn-primary" style="background-color: #3c8dbc;" ng-click="getModifierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button>';
 						}, "width": "12%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
@@ -306,7 +306,7 @@
 						{"data" : "name", "width": "58%"}, 
 						{"data" : "quantity", "width": "15%"},
 						{"render" : function(data, type, full, meta) {
-							return '<button class="btn btn-sm btn-info blue-button" style="background-color: #0005B8; border-color: #010475;" ng-click="getComboItemTierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button>';
+							return '<button class="btn btn-sm btn-primary" style="background-color: #3c8dbc;" ng-click="getComboItemTierItemsList(' + full.id + ', \'' + full.name + '\')">Details</button>';
 						}, "width": "12%"}],
 					"createdRow": function ( row, data, index ) {
 						$compile(row)($scope);
@@ -351,8 +351,8 @@
 				"columns" : [{"data" : "backendId", "width": "15%"}, 
 					{"data" : "name", "width": "50%"},
 					{"render" : function(data, type, full, meta) {
-						return '<button class="btn btn-sm btn-info blue-button" style="background-color: #0005B8; border-color: #010475;" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 4)">Details</button>' +
-						'<button class="btn btn-sm btn-info green-button" style="background-color: #00B431; border-color: #009829; margin-left: 7px;" ng-click="redirectItemCarousel(0, \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\')">Modifier Groups</button>';
+						return '<button class="btn btn-sm btn-primary" style="background-color: #3c8dbc;" ng-click="getItemDetails('+ full.id + ', \'' + full.backendId + '\', 4)">Details</button>' +
+						'<button class="btn btn-sm btn-success" style="background-color: #00a65a; border-color: #009829; margin-left: 7px;" ng-click="redirectItemCarousel(0, \'' + full.id + '\', \'' + full.backendId + '\', \'' + full.name + '\')">Modifier Groups</button>';
 					}, "width": "35%"}],
 				"createdRow": function ( row, data, index ) {
 					$compile(row)($scope);
