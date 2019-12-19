@@ -245,6 +245,29 @@ hr {
 													</div>
 												</div>
 											</div>
+											<div class="col-sm-6">
+												<div class="row" style="margin-bottom:5px;">
+													<div class="col-sm-12"> 
+														<font size="3"><b>Operating System</b></font>
+														<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="osDetection()">
+														Detect OS
+														</button>
+													</div>
+												</div>
+												<!-- <div class="info-box border-shadow" style="padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
+											    	<div class="row">
+														<div class="col-sm-12">
+															<font size="2">OS Type: </font><label name="osDetect"></label>
+															<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+																<select id="receiptPrinterManufacturer" class="form-control" ng-model="selectedReceiptPrinterManufacturer"
+																	ng-options="manufacturer.id as manufacturer.name for manufacturer in receiptPrinterData.device_manufacturers">
+																	<option value="" disabled>-- SELECT --</option>
+																</select>
+															</div>
+														</div>
+													</div>
+												</div> -->
+											</div>
 										</div>
 									</div>								
 								</div>						  	
