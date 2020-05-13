@@ -1277,7 +1277,8 @@ public class ReceiptPrinter {
 								receiptResultContents2.add(cardData.getString("date"));
 								receiptResultContents2.add(cardData.getString("time"));
 								receiptResultContents2.add(cardData.getString("maskedCardNo"));
-								receiptResultContents2.add(cardData.getString("cardExpiry") == null ? " " : cardData.getString("cardExpiry"));
+//								receiptResultContents2.add(cardData.getString("cardExpiry") == null ? " " : cardData.getString("cardExpiry"));
+								receiptResultContents2.add(cardData.optString("cardExpiry"));
 								receiptResultContents2.add(cardData.getString("approvalCode"));
 								receiptResultContents2.add(cardData.getString("rRefNo"));
 								receiptResultContents2.add(cardData.getString("batchNo"));
@@ -1285,7 +1286,8 @@ public class ReceiptPrinter {
 								receiptResultContents2.add(cardData.getString("uid"));
 								receiptResultContents2.add(cardData.getString("tc"));
 								receiptResultContents2.add(cardData.getString("aid"));
-								receiptResultContents2.add(cardData.getString("app"));
+//								receiptResultContents2.add(cardData.getString("app"));
+								receiptResultContents2.add(cardData.optString("app"));
 
 								for (int i = 0; i < receiptResultLabels2.size(); i++) {
 									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
