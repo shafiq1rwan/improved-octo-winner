@@ -195,7 +195,7 @@ public class SocketHandler extends TextWebSocketHandler {
 									transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, session);
 									
 									if(transactionResult.has("responseCode")) { 
-										if (transactionResult.getString("responseCode").equals("00")) {
+										if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
 											paymentFlag = true;
 											updateTransactionResult = updateTransactionResult(transactionResult,"card");
 										} else {
@@ -588,7 +588,7 @@ public class SocketHandler extends TextWebSocketHandler {
 					JSONObject cardResponse = transactionResult.getJSONObject("cardResponse");
 					
 					int transactionStatus = 4;
-					if (transactionResult.getString("responseCode").equals("00")) {
+					if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
 						transactionStatus = 3;
 					}
 
@@ -649,7 +649,7 @@ public class SocketHandler extends TextWebSocketHandler {
 					JSONObject qrResponse = transactionResult.getJSONObject("qrResponse");
 					
 					int transactionStatus = 4;
-					if (transactionResult.getString("responseCode").equals("00")) {
+					if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
 						transactionStatus = 3;
 					}
 					

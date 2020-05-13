@@ -1277,7 +1277,7 @@ public class ReceiptPrinter {
 								receiptResultContents2.add(cardData.getString("date"));
 								receiptResultContents2.add(cardData.getString("time"));
 								receiptResultContents2.add(cardData.getString("maskedCardNo"));
-								receiptResultContents2.add(cardData.getString("cardExpiry"));
+								receiptResultContents2.add(cardData.getString("cardExpiry") == null ? " " : cardData.getString("cardExpiry"));
 								receiptResultContents2.add(cardData.getString("approvalCode"));
 								receiptResultContents2.add(cardData.getString("rRefNo"));
 								receiptResultContents2.add(cardData.getString("batchNo"));

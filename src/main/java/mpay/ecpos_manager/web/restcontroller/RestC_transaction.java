@@ -820,7 +820,7 @@ public class RestC_transaction {
 										transactionResult = iposCard.cardSalePayment(String.format("%04d", storeId), "card-sale", paymentAmount, "0.00", uniqueTranNumber, terminalWifiIPPort, null);
 
 										if (transactionResult.has("responseCode")) {
-											if (transactionResult.getString("responseCode").equals("00")) {
+											if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
 												paymentFlag = true;
 												updateTransactionResult = updateTransactionResult(transactionResult, "card");
 											} else {
@@ -1554,7 +1554,7 @@ public class RestC_transaction {
 					JSONObject cardResponse = transactionResult.getJSONObject("cardResponse");
 
 					int transactionStatus = 4;
-					if (transactionResult.getString("responseCode").equals("00")) {
+					if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
 						transactionStatus = 3;
 					}
 
@@ -1599,10 +1599,12 @@ public class RestC_transaction {
 					if (updateTransaction > 0) {
 						jsonResult.put(Constant.RESPONSE_CODE, "00");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+						System.out.println("Card Sales Success and Update Table");
 						Logger.writeActivity("Card Sale Payment Response Successfully Update Transaction Table", ECPOS_FOLDER);
 					} else {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
 						jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
+						System.out.println("Card Sales Failed to update table: "+transactionResult.getString("responseMessage"));
 						Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
 					}
 				}
@@ -1615,7 +1617,7 @@ public class RestC_transaction {
 					JSONObject qrResponse = transactionResult.getJSONObject("qrResponse");
 
 					int transactionStatus = 4;
-					if (transactionResult.getString("responseCode").equals("00")) {
+					if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
 						transactionStatus = 3;
 					}
 
