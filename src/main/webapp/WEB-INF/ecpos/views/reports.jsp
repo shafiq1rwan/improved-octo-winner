@@ -41,6 +41,8 @@
 										<input type="datetime-local" class="form-control" ng-model="date.end" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
 									</div>
 								</div>
+								<div class="box-header with-border" style="border:1px grey solid;">
+					              <h3 class="box-title">Sales Report</h3>
 								<div>
 									<table id="datatable_salesSummary" class="table table-bordered table-striped">
 										<thead>
@@ -53,6 +55,33 @@
 										<tbody></tbody>
 										<tfoot></tfoot>
 									</table>
+								</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>Start Date</label> 
+										<input type="datetime-local" class="form-control" ng-model="date.startItem" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
+									</div>
+									<div class="col-sm-4 col-lg-3 form-group">
+										<label>End Date</label> 
+										<input type="datetime-local" class="form-control" ng-model="date.endItem" ng-model-options="{timezone: 'UTC'}" ng-change="getSalesSummary()" required />
+									</div>
+								</div>
+								<div class="box-header with-border" style="border:1px grey solid;">
+					              <h3 class="box-title">Best Selling Item</h3>
+								<div>
+									<table id="datatable_itemSummary" class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>Name of Item</th>
+												<th>Total Item</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+										<tfoot></tfoot>
+									</table>
+								</div>
 								</div>
 							</div>
 						</div>	

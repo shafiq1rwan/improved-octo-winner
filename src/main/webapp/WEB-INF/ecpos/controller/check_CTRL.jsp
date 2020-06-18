@@ -964,8 +964,10 @@
 								if (response.data.response_code == "00") {
 									Swal.fire("Success",response.data.response_message,"success");
 									$scope.informKds(response.data);
+									printReceipt($scope.checkNo);
 								} else {
 									Swal.fire("Oops...",response.data.response_message,"error");
+									printReceipt($scope.checkNo);
 								}
 							},
 							function(response) {
@@ -1024,6 +1026,68 @@
 			kdsSocket.onclose = function(event) {
 				console.log("Connection closed");
 			}	
+		}
+		
+		function printReceipt(checkNo) {
+			var jsonData = JSON.stringify({
+				"checkNo" : checkNo
+			});
+			console.log("enter printReceipt");
+			$http.post("${pageContext.request.contextPath}/rc/configuration/print_kitchen_receipt",jsonData)
+			.then(function(response) {
+				if (response.data.response_code === "00") {
+					console.log("Success Printable");
+				}
+			},
+			function(response) {
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+			});
+		}
+		
+		$scope.printReceiptBeforePay = function() {
+			printReceiptBeforePayData($scope.checkNo);
+		}
+		
+		function printReceiptBeforePayData(checkNo) {
+			var jsonData = JSON.stringify({
+				"checkNo" : checkNo
+			});
+			console.log("enter printReceipt");
+			$http.post("${pageContext.request.contextPath}/rc/configuration/print_receipt_before_pay",jsonData)
+			.then(function(response) {
+				if (response.data.response_code === "00") {
+					console.log("Success Printable");
+				}
+			},
+			function(response) {
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+			});
 		}
 		
 		$scope.wsOrderListener();

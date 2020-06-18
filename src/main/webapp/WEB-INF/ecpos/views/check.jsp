@@ -100,6 +100,7 @@ hr {
 											</div>
 											<div ng-if="mode == 2">
 												<button class="btn btn-block btn-info" ng-click="redirectMenu()">Back To Previous</button>
+												<button class="btn btn-block btn-info" ng-click="printReceiptBeforePay()">Print Receipt</button>
 											</div>
 										</div>
 									</div>

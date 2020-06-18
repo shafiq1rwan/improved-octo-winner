@@ -2242,4 +2242,189 @@ public class RestC_configuration {
 	    Runtime.getRuntime().exec(shutdownCommand);
 	    return true;
 	}
+	
+	// Printer APIs
+	@RequestMapping(value = { "/print_kitchen_receipt" }, method = RequestMethod.POST, produces = "application/json")
+	public String printKitchenReceipt(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				JSONObject jsonData = new JSONObject(data);
+
+				if (jsonData.has("checkNo")) {
+					JSONObject printableJson = receiptPrinter.printKitchenReceipt(user.getName(), user.getStoreType(),
+							jsonData.getString("checkNo"), false);
+
+					if (printableJson.getString("response_code").equals("00")) {
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					} else {
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE,
+								"Printing Failed. Please check your printer configuration.");
+					}
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check No Not Found");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+
+		}
+
+		return jsonResult.toString();
+	}
+	
+	// Printer APIs
+	@RequestMapping(value = { "/print_receipt_before_pay" }, method = RequestMethod.POST, produces = "application/json")
+	public String printReceiptBeforePay(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				JSONObject jsonData = new JSONObject(data);
+
+				if (jsonData.has("checkNo")) {
+					JSONObject printableJson = receiptPrinter.printReceiptBeforePay(user.getName(), user.getStoreType(),
+							jsonData.getString("checkNo"), false);
+
+					if (printableJson.getString("response_code").equals("00")) {
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					} else {
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE,
+								"Printing Failed. Please check your printer configuration.");
+					}
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check No Not Found");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+
+		}
+
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/receiptKitchenSet" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String receiptKitchenSet(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+
+//				JSONObject terminal = new JSONObject(data);
+//				String receiptKitchen = terminal.getString("receiptKitchen");
+				String receiptKitchen = "receiptKitchen";
+				
+				stmt = connection
+						.prepareStatement("select value from general_configuration where parameter = ?");
+				stmt.setString(1, receiptKitchen);
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					
+					String value = rs.getString("value");
+					String changeParam = "";
+					
+					if(value.equals("1")) {
+						changeParam = "0";
+					}else {
+						changeParam = "1";
+					}
+					stmt2 = connection.prepareStatement(
+							"update general_configuration set value = ? where parameter = ?");
+					stmt2.setString(1, receiptKitchen);
+					stmt2.setString(2, changeParam);
+					
+					int rs2 = stmt2.executeUpdate();
+					
+					if (rs2 > 0) {
+						connection.commit();
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "Kitchen Settings has been saved");
+						Logger.writeActivity("Terminal Information has been saved", ECPOS_FOLDER);
+					} else {
+						connection.rollback();
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "Kitchen Settings failed to save");
+						Logger.writeActivity("Terminal Information failed to save", ECPOS_FOLDER);
+					}
+				} else {
+					stmt2 = connection.prepareStatement(
+							"insert into general_configuration (description,parameter,value) values (?,?,?);");
+					stmt2.setString(1, "Kitchen Setting");
+					stmt2.setString(2, "receiptKitchen");
+					stmt2.setString(3, "1");
+					
+					int rs2 = stmt2.executeUpdate();
+
+					if (rs2 > 0) {
+						connection.commit();
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "Kitchen Settings has been saved");
+						Logger.writeActivity("Terminal Information has been saved", ECPOS_FOLDER);
+					} else {
+						connection.rollback();
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "Kitchen Settings failed to save");
+						Logger.writeActivity("Terminal Information failed to save", ECPOS_FOLDER);
+					}
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
 }
