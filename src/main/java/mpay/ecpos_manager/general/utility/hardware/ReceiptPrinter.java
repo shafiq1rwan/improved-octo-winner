@@ -488,6 +488,10 @@ public class ReceiptPrinter {
 						parentItem.put("itemPrice", rs4.getString("menu_item_price"));
 						parentItem.put("itemQuantity", rs4.getString("quantity"));
 						parentItem.put("totalAmount", rs4.getString("total_amount"));
+						
+						System.out.println("id: "+id); 
+						System.out.println("checkNo: "+checkNo);
+						System.out.println("parentId: "+parentId);
 
 						stmt5 = connection.prepareStatement(
 								"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status in (2, 3) order by id asc;");
@@ -1287,7 +1291,7 @@ public class ReceiptPrinter {
 								receiptResultContents2.add(cardData.getString("tc"));
 								receiptResultContents2.add(cardData.getString("aid"));
 //								receiptResultContents2.add(cardData.getString("app"));
-								receiptResultContents2.add(cardData.optString("app"));
+								receiptResultContents2.add(cardData.optString("app") == "" ? cardData.getString("cardType") : cardData.optString("app"));
 
 								for (int i = 0; i < receiptResultLabels2.size(); i++) {
 									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
@@ -1571,4 +1575,1287 @@ public class ReceiptPrinter {
 		styles.addStyle(style);
 	}
 
+	private JSONObject printKitchenReceiptData(String staffName, int storeType, JSONObject receiptHeaderJson, JSONObject receiptContentJson,
+			JSONObject receiptFooterJson, boolean isDisplayPdf) {
+		XWPFParagraph emptyParagraph = null;
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			if (receiptHeaderJson.length() == 0 || receiptContentJson.length() == 0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
+			} else {
+				JSONArray jsonGrandParentArray = receiptContentJson.optJSONArray("grandParentItemArray");
+
+				if (jsonGrandParentArray.length() == 0) {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Item Not Available");
+				} else {
+					JSONObject printerResult = getSelectedReceiptPrinter();
+
+					new File(receiptPath).mkdirs();
+
+					PrintService myPrintService = null;
+					String templateName = "ReceiptStyleTemplate_EPSON";
+
+					if (printerResult.has("receipt_printer")) {
+						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+								ECPOS_FOLDER);
+
+						if (printerResult.getString("receipt_printer").equals("No Printing")) {
+							Logger.writeActivity("No Printing", ECPOS_FOLDER);
+						} else {
+							myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+							if (myPrintService != null) {
+								Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+							} else {
+								Logger.writeActivity("No such Printer Exist in your PC", ECPOS_FOLDER);
+							}
+						}
+
+						if (printerResult.getString("receipt_printer").equals("EPSON"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else if (printerResult.getString("receipt_printer").equals("Posiflex"))
+							templateName = "ReceiptStyleTemplate_Posiflex";
+						else if (printerResult.getString("receipt_printer").equals("IBM"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else if (printerResult.getString("receipt_printer").equals("TP8"))
+							templateName = "ReceiptStyleTemplate_Posiflex";
+						else {
+							templateName = "ReceiptStyleTemplate_Posiflex";
+						}
+					}
+
+					System.out.println("Template Name: " + templateName);
+					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+					try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
+							.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+							.toString().substring("file:/".length()), "UTF-8")))) {
+
+						if (doc.getStyles() != null) {
+
+							System.out.println("Loaded Template Style: " + doc.getStyles().toString());
+							Logger.writeActivity("Loaded Template Style: " + doc.getStyles().toString(), ECPOS_FOLDER);
+							XWPFStyles styles = doc.getStyles();
+							CTFonts fonts = CTFonts.Factory.newInstance();
+							fonts.setAscii(RECEIPT_FONT_FAMILY);
+							styles.setDefaultFonts(fonts);
+
+						}
+
+						// Header Store Name
+						XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
+						headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
+						headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
+						headerStoreNameParagraph.setSpacingAfter(0);
+
+						XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
+						runHeaderStoreNameParagraph.setBold(true);
+						runHeaderStoreNameParagraph.setFontSize(12);
+						runHeaderStoreNameParagraph.setText(receiptHeaderJson.getString("storeName"));
+
+						// Header Store Address
+						XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
+						headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+						headerStoreAddressParagraph.setSpacingAfter(0);
+
+						XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
+						runHeaderStoreAddressParagraph.setFontSize(9);
+						runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
+						runHeaderStoreAddressParagraph.addBreak();
+						runHeaderStoreAddressParagraph
+								.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
+						runHeaderStoreAddressParagraph.addBreak();
+
+//						emptyParagraph = doc.createParagraph();
+//						emptyParagraph.setSpacingAfter(0);
+//						emptyParagraph.createRun().addBreak();
+//						emptyParagraph.removeRun(0);
+
+						// Receipt Info Table
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Order Type",
+								"Table No", "Order At", "Printed At", "Cust Name", "Staff"));
+
+						if (receiptContentJson.getString("customerName").equals("-")) {
+							receiptInfoLabels.remove(5);
+						}
+
+						if (storeType == 1) {
+							receiptInfoLabels.remove(2); // remove table number if it is retail business
+						}
+
+						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(
+								receiptContentJson.getString("checkNoByDay"), receiptContentJson.getString("tableNo"),
+								receiptContentJson.getString("createdDate"), sdf.format(new Date()), staffName));
+
+						if (!receiptContentJson.getString("customerName").equals("-")) {
+							receiptInfoContents.add(receiptInfoContents.size() - 1,
+									receiptContentJson.getString("customerName"));
+						}
+
+						if (storeType == 1) { // if it is retail
+							// only deposit and sales appereaed in reatail
+							if (!receiptContentJson.getString("orderType").equals("deposit")) {
+								receiptInfoContents.add(1, "Purchase");
+							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
+								receiptInfoContents.add(1, "Deposit");
+							}
+							receiptInfoContents.remove(2); // remove table since it is retail
+						} else if (storeType == 2) { // if it is f&b
+							String orderTypeName = null;
+
+							if (receiptContentJson.getString("orderType").equals("table")) {
+								orderTypeName = "Dine In";
+							} else if (receiptContentJson.getString("orderType").equals("take away")) {
+								orderTypeName = "Take Away";
+							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
+								orderTypeName = "Deposit";
+							}
+							receiptInfoContents.add(1, orderTypeName);
+						}
+
+						receiptInfoLabels.add("Trans Type");
+
+						if (!receiptContentJson.isNull("transactionType")) {
+							if (receiptContentJson.getString("transactionType").equals("Void")) {
+								// change order at to void at
+								receiptInfoLabels.set(3, "Void At");
+
+							}
+							receiptInfoContents.add(receiptContentJson.getString("transactionType"));
+						}
+
+						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
+						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); 
+						receiptInfoTableType.setType(STTblLayoutType.FIXED);
+						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
+
+						for (int i = 0; i < receiptInfoLabels.size(); i++) {
+							
+							if(i == 5) {
+								break;
+							}
+							
+							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
+							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
+									ParagraphAlignment.LEFT);
+							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
+									ParagraphAlignment.LEFT);
+						}
+
+						long receiptInfoTableWidths[] = { 1400, 2000 };
+
+						CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
+						cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+						cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
+
+						for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
+							XWPFTableRow row = receiptInfoTable.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW()
+										.setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+							}
+						}
+
+						// Receipt Content
+						XWPFTable table = doc.createTable();
+						CTTblLayoutType type = table.getCTTbl().getTblPr().addNewTblLayout(); // set Layout
+						type.setType(STTblLayoutType.FIXED);
+
+						table.getCTTbl().getTblPr().unsetTblBorders(); // set table no border
+
+						XWPFTableRow tableRowOne = table.getRow(0);
+						XWPFTableRow tableRowTwo = table.createRow();
+
+						XWPFParagraph tableHeaderOne = tableRowOne.getCell(0).getParagraphs().get(0);
+						tableHeaderOne.setSpacingBefore(0);
+						tableHeaderOne.setSpacingAfter(0);
+						tableHeaderOne.setVerticalAlignment(TextAlignment.CENTER);
+						XWPFRun tableHeaderOneRun = tableHeaderOne.createRun();
+						tableHeaderOneRun.setFontSize(9);
+						tableHeaderOneRun.setBold(true);
+						tableHeaderOneRun.setText("Qty");
+
+						XWPFParagraph tableHeaderTwo = tableRowOne.addNewTableCell().getParagraphs().get(0);
+						tableHeaderTwo.setSpacingBefore(0);
+						tableHeaderTwo.setSpacingAfter(0);
+						tableHeaderTwo.setVerticalAlignment(TextAlignment.CENTER);
+						XWPFRun tableHeaderTwoRun = tableHeaderTwo.createRun();
+						tableHeaderTwoRun.setFontSize(9);
+						tableHeaderTwoRun.setBold(true);
+						tableHeaderTwoRun.setText("Name");
+
+						XWPFParagraph tableHeaderThree = tableRowOne.addNewTableCell().getParagraphs().get(0);
+						tableHeaderThree.setSpacingBefore(0);
+						tableHeaderThree.setSpacingAfter(0);
+						tableHeaderThree.setVerticalAlignment(TextAlignment.CENTER);
+						tableHeaderThree.setAlignment(ParagraphAlignment.RIGHT);
+						XWPFRun tableHeaderThreeRun = tableHeaderThree.createRun();
+						tableHeaderThreeRun.setFontSize(9);
+						tableHeaderThreeRun.setBold(true);
+						tableHeaderThreeRun.setText("");
+
+						CTTc cellOne = table.getRow(0).getCell(0).getCTTc();
+						CTTcPr tcPr = cellOne.addNewTcPr();
+						CTTcBorders border = tcPr.addNewTcBorders();
+						border.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellTwo = table.getRow(0).getCell(1).getCTTc();
+						CTTcPr tcPr2 = cellTwo.addNewTcPr();
+						CTTcBorders border2 = tcPr2.addNewTcBorders();
+						border2.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellThree = table.getRow(0).getCell(2).getCTTc();
+						CTTcPr tcPr3 = cellThree.addNewTcPr();
+						CTTcBorders border3 = tcPr3.addNewTcBorders();
+						border3.addNewTop().setVal(STBorder.SINGLE);
+
+						XWPFParagraph tableBottomOne = tableRowTwo.getCell(0).getParagraphs().get(0);
+						tableBottomOne.setSpacingBefore(0);
+						tableBottomOne.setSpacingAfter(0);
+						tableBottomOne.createRun().setFontSize(1);
+
+						XWPFParagraph tableBottomTwo = tableRowTwo.addNewTableCell().getParagraphs().get(0);
+						tableBottomTwo.setSpacingBefore(0);
+						tableBottomTwo.setSpacingAfter(0);
+						tableBottomTwo.createRun().setFontSize(1);
+
+						XWPFParagraph tableBottomThree = tableRowTwo.addNewTableCell().getParagraphs().get(0);
+						tableBottomThree.setSpacingBefore(0);
+						tableBottomThree.setSpacingAfter(0);
+						tableBottomThree.createRun().setFontSize(1);
+
+						int twipsPerInch = 1000;
+						tableRowTwo.setHeight((int) (twipsPerInch * 1 / 10)); // set height 1/10 inch.
+						tableRowTwo.getCtRow().getTrPr().getTrHeightArray(0).setHRule(STHeightRule.EXACT); 
+						
+						// Grand parent loop
+						for (int k = 0; k < jsonGrandParentArray.length(); k++) {
+							JSONObject grandParentItem = jsonGrandParentArray.optJSONObject(k);
+
+							XWPFTableRow grandParentTableRow = table.createRow();
+
+							createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
+									false, ParagraphAlignment.LEFT);
+
+							createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
+									ParagraphAlignment.LEFT);
+
+							createCellText(grandParentTableRow.getCell(2), "", false, ParagraphAlignment.RIGHT);
+
+							if (grandParentItem.has("parentItemArray")) {
+								JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
+
+								// Parent loop
+								for (int p = 0; p < jsonParentArray.length(); p++) {
+									JSONObject parentItem = jsonParentArray.optJSONObject(p);
+									XWPFTableRow parentTableRow = table.createRow();
+
+									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
+
+									createCellText(parentTableRow.getCell(1), "  - " + parentItem.getString("itemName"),
+											false, ParagraphAlignment.LEFT);
+
+									createCellText(parentTableRow.getCell(2), "", false,
+											ParagraphAlignment.RIGHT);
+
+									// Child loop
+									if (parentItem.has("childItemArray")) {
+										JSONArray jsonChildArray = parentItem.getJSONArray("childItemArray");
+
+										for (int c = 0; c < jsonChildArray.length(); c++) {
+											JSONObject childItem = jsonChildArray.optJSONObject(c);
+											XWPFTableRow childTableRow = table.createRow();
+
+											createCellText(childTableRow.getCell(0), "", false,
+													ParagraphAlignment.LEFT);
+
+											createCellText(childTableRow.getCell(1),
+													"    * " + childItem.getString("itemName"), false,
+													ParagraphAlignment.LEFT);
+
+											createCellText(childTableRow.getCell(2), "", false,
+													ParagraphAlignment.RIGHT);
+										}
+									}
+								}
+							}
+						}
+
+						// Set the table content bottom line
+						CTTc cellBottomOne = table.getRow(2).getCell(0).getCTTc();
+						CTTcPr tcBottomPr = cellBottomOne.addNewTcPr();
+						CTTcBorders borderBottom = tcBottomPr.addNewTcBorders();
+						borderBottom.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellBottomTwo = table.getRow(2).getCell(1).getCTTc();
+						CTTcPr tcBottomPr2 = cellBottomTwo.addNewTcPr();
+						CTTcBorders borderBottom2 = tcBottomPr2.addNewTcBorders();
+						borderBottom2.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellBottomThree = table.getRow(2).getCell(2).getCTTc();
+						CTTcPr tcBottomPr3 = cellBottomThree.addNewTcPr();
+						CTTcBorders borderBottom3 = tcBottomPr3.addNewTcBorders();
+						borderBottom3.addNewTop().setVal(STBorder.SINGLE);
+
+						// 121x20, 28x20, 50x20
+						long columnWidths[] = { 560, 2420, 1200 };
+
+						CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2220"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1200"));
+
+						for (int x = 0; x < table.getNumberOfRows(); x++) {
+							XWPFTableRow row = table.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(columnWidths[y]));
+							}
+						}
+
+						XWPFParagraph receiptContentBreak = doc.createParagraph();
+						receiptContentBreak.setSpacingAfter(0);
+						receiptContentBreak.createRun().addBreak();
+						receiptContentBreak.removeRun(0);
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().setText("------------ Order List ------------");
+
+						// output the result as doc file
+						try (FileOutputStream out = new FileOutputStream(
+								Paths.get(receiptPath, "receipt.docx").toString())) {
+							doc.write(out);
+						}
+
+					}
+
+					XWPFDocument document = new XWPFDocument(
+							new FileInputStream(new File(Paths.get(receiptPath, "receipt.docx").toString())));
+					PdfOptions options = PdfOptions.create();
+					OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+					PdfConverter.getInstance().convert(document, out, options);
+					document.close();
+					out.close();
+
+					// print pdf if isDisplay pdf is false
+					if (myPrintService != null && !isDisplayPdf) {
+						PDDocument printablePdf = PDDocument
+								.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+						// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
+						// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
+
+						PrinterJob job = PrinterJob.getPrinterJob();
+						job.setJobName("Receipt - " + receiptContentJson.getString("checkNoByDay"));
+						job.setPageable(new PDFPageable(printablePdf));
+						job.setPrintService(myPrintService);
+						job.print();
+
+						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+						printablePdf.save(byteArrayOutputStream);
+						printablePdf.close();
+						InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+						System.out.println(inputStream.toString());
+
+						printablePdf.close();
+					}
+
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+
+				}
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", HARDWARE_FOLDER);
+			e.printStackTrace();
+		}
+		System.out.println(jsonResult.toString());
+		return jsonResult;
+	}
+	
+	public JSONObject printKitchenReceipt(String staffName, int storeType, String checkNo, boolean isDisplayPdf) {
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			JSONObject receiptHeader = getReceiptHeader();
+			JSONObject receiptContent = getKitchenReceiptContent(checkNo);
+			// JSONObject receiptFooter
+			JSONObject printReceiptResponse = printKitchenReceiptData(staffName, storeType, receiptHeader, receiptContent, null, isDisplayPdf);
+
+			if (printReceiptResponse.length() > 0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			} else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "PRINTING FAIL");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}		
+		Logger.writeActivity("Print Receipt Result: " + jsonResult.toString(), ECPOS_FOLDER);
+		return jsonResult;
+	}
+	
+	// receipt content
+	private JSONObject getKitchenReceiptContent(String checkNo) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmtA = null;
+		PreparedStatement stmt6 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
+		ResultSet rsA = null;
+		ResultSet rs6 = null;
+
+		try {
+			connection = dataSource.getConnection();
+
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+			stmt = connection.prepareStatement("select *,ot.name as 'order_type_name' from `check` c "
+					+ "inner join check_status cs on cs.id = c.check_status "
+					+ "inner join order_type ot on ot.id = c.order_type "
+					+ "where check_number = ? and check_status in (2,3);");
+			stmt.setString(1, checkNo);
+			rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				long id = rs.getLong("id");
+
+				jsonResult.put("checkNo", rs.getString("check_number"));
+				jsonResult.put("checkNoByDay", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
+				jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
+				jsonResult.put("orderType", rs.getString("order_type_name"));
+				jsonResult.put("customerName",
+						rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
+				jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
+				jsonResult.put("totalAmount",
+						new BigDecimal(rs.getString("total_amount") == null ? "0.00" : rs.getString("total_amount")));
+				jsonResult.put("totalAmountWithTax",
+						new BigDecimal(rs.getString("total_amount_with_tax") == null ? "0.00"
+								: rs.getString("total_amount_with_tax")));
+				jsonResult.put("totalAmountWithTaxRoundingAdjustment",
+						new BigDecimal(rs.getString("total_amount_with_tax_rounding_adjustment") == null ? "0.00"
+								: rs.getString("total_amount_with_tax_rounding_adjustment")));
+				jsonResult.put("grandTotalAmount", new BigDecimal(
+						rs.getString("grand_total_amount") == null ? "0.00" : rs.getString("grand_total_amount")));
+				jsonResult.put("status", rs.getString("name"));
+				jsonResult.put("tenderAmount",
+						rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
+				jsonResult.put("overdueAmount",
+						rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
+
+				stmt2 = connection.prepareStatement(
+						"select * from tax_charge tc " + "inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id "
+								+ "where ctc.check_id = ? and ctc.check_number = ?" + "order by tc.charge_type;");
+				stmt2.setLong(1, id);
+				stmt2.setString(2, checkNo);
+				rs2 = stmt2.executeQuery();
+
+				JSONArray taxCharges = new JSONArray();
+				while (rs2.next()) {
+					JSONObject taxCharge = new JSONObject();
+					taxCharge.put("name", rs2.getString("tax_charge_name"));
+					taxCharge.put("rate", rs2.getBigDecimal("rate"));
+					taxCharge.put("chargeAmount", new BigDecimal(rs2.getString("grand_total_charge_amount")));
+
+					taxCharges.put(taxCharge);
+				}
+				jsonResult.put("taxCharges", taxCharges);
+
+				stmt3 = connection.prepareStatement(
+						"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id is null and check_detail_status in (1, 2, 3) order by id asc;");
+				stmt3.setLong(1, id);
+				stmt3.setString(2, checkNo);
+				rs3 = stmt3.executeQuery();
+
+				JSONArray grandParentItemArray = new JSONArray();
+				while (rs3.next()) {
+					long grandParentId = rs3.getLong("id");
+
+					JSONObject grandParentItem = new JSONObject();
+					grandParentItem.put("checkDetailId", rs3.getString("id"));
+					grandParentItem.put("itemId", rs3.getString("menu_item_id"));
+					grandParentItem.put("itemCode", rs3.getString("menu_item_code"));
+					grandParentItem.put("itemName", rs3.getString("menu_item_name"));
+					grandParentItem.put("itemPrice", rs3.getString("menu_item_price"));
+					grandParentItem.put("itemQuantity", rs3.getInt("quantity"));
+					grandParentItem.put("totalAmount", rs3.getString("total_amount"));
+
+					stmtA = connection.prepareStatement("select * from menu_item mi "
+							+ "left join menu_item_modifier_group mimg on mimg.menu_item_id = mi.id "
+							+ "where mi.id = ?;");
+					stmtA.setString(1, rs3.getString("menu_item_id"));
+					rsA = stmtA.executeQuery();
+
+					if (rsA.next()) {
+						if (rsA.getInt("menu_item_type") == 0) {
+							grandParentItem.put("isAlaCarte", true);
+
+							if (rsA.getLong("menu_item_id") > 0) {
+								grandParentItem.put("hasModified", true);
+							} else {
+								grandParentItem.put("hasModified", false);
+							}
+						} else {
+							grandParentItem.put("isAlaCarte", false);
+						}
+					} else {
+						grandParentItem.put("isAlaCarte", false);
+					}
+
+					stmt4 = connection.prepareStatement(
+							"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status = 1 order by id asc;");
+					stmt4.setLong(1, id);
+					stmt4.setString(2, checkNo);
+					stmt4.setLong(3, grandParentId);
+					rs4 = stmt4.executeQuery();
+
+					JSONArray parentItemArray = new JSONArray();
+					while (rs4.next()) {
+						long parentId = rs4.getLong("id");
+
+						JSONObject parentItem = new JSONObject();
+						parentItem.put("itemId", rs4.getString("menu_item_id"));
+						parentItem.put("itemCode", rs4.getString("menu_item_code"));
+						parentItem.put("itemName", rs4.getString("menu_item_name"));
+						parentItem.put("itemPrice", rs4.getString("menu_item_price"));
+						parentItem.put("itemQuantity", rs4.getString("quantity"));
+						parentItem.put("totalAmount", rs4.getString("total_amount"));
+
+						stmt5 = connection.prepareStatement(
+								"select * from check_detail where check_id = ? and check_number = ? and parent_check_detail_id = ? and check_detail_status = 1 order by id asc;");
+						stmt5.setLong(1, id);
+						stmt5.setString(2, checkNo);
+						stmt5.setLong(3, parentId);
+						rs5 = stmt5.executeQuery();
+
+						JSONArray childItemArray = new JSONArray();
+						while (rs5.next()) {
+							JSONObject childItem = new JSONObject();
+							childItem.put("itemId", rs5.getString("menu_item_id"));
+							childItem.put("itemCode", rs5.getString("menu_item_code"));
+							childItem.put("itemName", rs5.getString("menu_item_name"));
+							childItem.put("itemPrice", rs5.getString("menu_item_price"));
+							childItem.put("itemQuantity", rs5.getString("quantity"));
+							childItem.put("totalAmount", rs5.getString("total_amount"));
+
+							childItemArray.put(childItem);
+						}
+						parentItem.put("childItemArray", childItemArray);
+						parentItemArray.put(parentItem);
+					}
+					grandParentItem.put("parentItemArray", parentItemArray);
+					grandParentItemArray.put(grandParentItem);
+				}
+				jsonResult.put("grandParentItemArray", grandParentItemArray);
+
+				stmt6 = connection
+						.prepareStatement("SELECT * FROM transaction WHERE check_number = ? ORDER BY id DESC;");
+				stmt6.setString(1, checkNo);
+				rs6 = stmt6.executeQuery();
+				if (rs6.next()) {
+					jsonResult.put("paymentMethod", rs6.getInt("payment_method"));
+					if (rs6.getInt("payment_method") == 1) {
+						JSONObject cashData = new JSONObject();
+						cashData.put("cashReceivedAmount", new BigDecimal(rs6.getString("received_amount")));
+						cashData.put("cashChangeAmount", new BigDecimal(rs6.getString("change_amount")));
+
+						jsonResult.put("cashData", cashData);
+					} else if (rs6.getInt("payment_method") == 2) {
+						JSONObject cardData = new JSONObject();
+						cardData.put("uid", rs6.getString("unique_trans_number"));
+						cardData.put("approvalCode", rs6.getString("approval_code"));
+						cardData.put("mid", rs6.getString("bank_mid"));
+						cardData.put("tid", rs6.getString("bank_tid"));
+						cardData.put("date", rs6.getString("transaction_date"));
+						cardData.put("time", rs6.getString("transaction_time"));
+						cardData.put("invoiceNo", rs6.getString("invoice_number"));
+						cardData.put("cardType", rs6.getString("card_issuer_name"));
+						cardData.put("app", rs6.getString("app_label"));
+						cardData.put("aid", rs6.getString("aid"));
+						cardData.put("maskedCardNo", rs6.getString("masked_card_number"));
+						cardData.put("cardExpiry", rs6.getString("card_expiry_date"));
+						cardData.put("batchNo", rs6.getString("batch_number"));
+						cardData.put("rRefNo", rs6.getString("rrn"));
+						cardData.put("tc", rs6.getString("tc"));
+						cardData.put("terminalVerification", rs6.getString("terminal_verification_result"));
+
+						jsonResult.put("cardData", cardData);
+					} else if (rs6.getInt("payment_method") == 3) {
+						JSONObject qrData = new JSONObject();
+						qrData.put("issuerType", rs6.getString("qr_issuer_type"));
+						qrData.put("uid", rs6.getString("unique_trans_number"));
+						qrData.put("mid", rs6.getString("bank_mid"));
+						qrData.put("tid", rs6.getString("bank_tid"));
+						qrData.put("date", rs6.getString("transaction_date"));
+						qrData.put("time", rs6.getString("transaction_time"));
+						qrData.put("traceNo", rs6.getString("trace_number"));
+						qrData.put("authNo", rs6.getString("auth_number"));
+						qrData.put("amountMYR", rs6.getString("qr_amount_myr"));
+						qrData.put("amountRMB", rs6.getString("qr_amount_rmb"));
+						qrData.put("userID", rs6.getString("qr_user_id"));
+						qrData.put("refID", rs6.getString("qr_ref_id"));
+
+						jsonResult.put("qrData", qrData);
+					}
+
+					switch (rs6.getInt("transaction_type")) {
+					case 1:
+						jsonResult.put("transactionType", "Sale");
+						break;
+					case 2:
+						jsonResult.put("transactionType", "Void");
+						break;
+					case 3:
+						jsonResult.put("transactionType", "Refund");
+						break;
+					case 4:
+						jsonResult.put("transactionType", "Reversal");
+						break;
+					default:
+						jsonResult.put("transactionType", "-");
+						break;
+					}
+
+				}
+
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			} else {
+				Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
+
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (stmt3 != null)
+					stmt3.close();
+				if (stmt4 != null)
+					stmt4.close();
+				if (stmt5 != null)
+					stmt5.close();
+				if (stmtA != null)
+					stmtA.close();
+				if (stmt6 != null)
+					stmt6.close();
+
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (rs3 != null) {
+					rs3.close();
+					rs3 = null;
+				}
+				if (rs4 != null) {
+					rs4.close();
+					rs4 = null;
+				}
+				if (rs5 != null) {
+					rs5.close();
+					rs5 = null;
+				}
+				if (rsA != null) {
+					rsA.close();
+					rsA = null;
+				}
+				if (rs6 != null) {
+					rs6.close();
+					rs6 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Printable Result: " + jsonResult.toString());
+		return jsonResult;
+	}
+	
+	public JSONObject printReceiptBeforePay(String staffName, int storeType, String checkNo, boolean isDisplayPdf) {
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			JSONObject receiptHeader = getReceiptHeader();
+			JSONObject receiptContent = getKitchenReceiptContent(checkNo);
+			// JSONObject receiptFooter
+			JSONObject printReceiptResponse = printReceiptBeforePayData(staffName, storeType, receiptHeader, receiptContent, null, isDisplayPdf);
+
+			if (printReceiptResponse.length() > 0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			} else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "PRINTING FAIL");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}		
+		Logger.writeActivity("Print Receipt Result: " + jsonResult.toString(), ECPOS_FOLDER);
+		return jsonResult;
+	}
+	
+	private JSONObject printReceiptBeforePayData(String staffName, int storeType, JSONObject receiptHeaderJson, JSONObject receiptContentJson,
+			JSONObject receiptFooterJson, boolean isDisplayPdf) {
+		XWPFParagraph emptyParagraph = null;
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			if (receiptHeaderJson.length() == 0 || receiptContentJson.length() == 0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
+			} else {
+				JSONArray jsonGrandParentArray = receiptContentJson.optJSONArray("grandParentItemArray");
+
+				if (jsonGrandParentArray.length() == 0) {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Item Not Available");
+				} else {
+					JSONObject printerResult = getSelectedReceiptPrinter();
+
+					new File(receiptPath).mkdirs();
+
+					PrintService myPrintService = null;
+					String templateName = "ReceiptStyleTemplate_EPSON";
+
+					if (printerResult.has("receipt_printer")) {
+						Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+								ECPOS_FOLDER);
+
+						if (printerResult.getString("receipt_printer").equals("No Printing")) {
+							Logger.writeActivity("No Printing", ECPOS_FOLDER);
+						} else {
+							myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+							if (myPrintService != null) {
+								Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+							} else {
+								Logger.writeActivity("No such Printer Exist in your PC", ECPOS_FOLDER);
+							}
+						}
+
+						if (printerResult.getString("receipt_printer").equals("EPSON"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else if (printerResult.getString("receipt_printer").equals("Posiflex"))
+							templateName = "ReceiptStyleTemplate_Posiflex";
+						else if (printerResult.getString("receipt_printer").equals("IBM"))
+							templateName = "ReceiptStyleTemplate_EPSON";
+						else if (printerResult.getString("receipt_printer").equals("TP8"))
+							templateName = "ReceiptStyleTemplate_Posiflex";
+						else {
+							templateName = "ReceiptStyleTemplate_Posiflex";
+						}
+					}
+
+					System.out.println("Template Name: " + templateName);
+					Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+					try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
+							.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+							.toString().substring("file:/".length()), "UTF-8")))) {
+
+						if (doc.getStyles() != null) {
+
+							System.out.println("Loaded Template Style: " + doc.getStyles().toString());
+							Logger.writeActivity("Loaded Template Style: " + doc.getStyles().toString(), ECPOS_FOLDER);
+							XWPFStyles styles = doc.getStyles();
+							CTFonts fonts = CTFonts.Factory.newInstance();
+							fonts.setAscii(RECEIPT_FONT_FAMILY);
+							styles.setDefaultFonts(fonts);
+							
+						}
+
+						// Header Store Name
+						XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
+						headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
+						headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
+						headerStoreNameParagraph.setSpacingAfter(0);
+
+						XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
+						runHeaderStoreNameParagraph.setBold(true);
+						runHeaderStoreNameParagraph.setFontSize(12);
+						runHeaderStoreNameParagraph.setText(receiptHeaderJson.getString("storeName"));
+
+						// Header Store Address
+						XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
+						headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+						headerStoreAddressParagraph.setSpacingAfter(0);
+
+						XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
+						runHeaderStoreAddressParagraph.setFontSize(9);
+						runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
+						runHeaderStoreAddressParagraph.addBreak();
+						runHeaderStoreAddressParagraph
+								.setText("Contact No: " + receiptHeaderJson.getString("storeContactHpNumber"));
+						runHeaderStoreAddressParagraph.addBreak();
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().addBreak();
+						emptyParagraph.removeRun(0);
+
+						// Receipt Info Table
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Order Type",
+								"Table No", "Order At", "Printed At", "Cust Name", "Staff"));
+
+						if (receiptContentJson.getString("customerName").equals("-")) {
+							receiptInfoLabels.remove(5);
+						}
+
+						if (storeType == 1) {
+							receiptInfoLabels.remove(2); // remove table number if it is retail business
+						}
+
+						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(
+								receiptContentJson.getString("checkNoByDay"), receiptContentJson.getString("tableNo"),
+								receiptContentJson.getString("createdDate"), sdf.format(new Date()), staffName));
+
+						if (!receiptContentJson.getString("customerName").equals("-")) {
+							receiptInfoContents.add(receiptInfoContents.size() - 1,
+									receiptContentJson.getString("customerName"));
+						}
+
+						if (storeType == 1) { // if it is retail
+							// only deposit and sales appereaed in reatail
+							if (!receiptContentJson.getString("orderType").equals("deposit")) {
+								receiptInfoContents.add(1, "Purchase");
+							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
+								receiptInfoContents.add(1, "Deposit");
+							}
+							receiptInfoContents.remove(2); // remove table since it is retail
+						} else if (storeType == 2) { // if it is f&b
+							String orderTypeName = null;
+
+							if (receiptContentJson.getString("orderType").equals("table")) {
+								orderTypeName = "Dine In";
+							} else if (receiptContentJson.getString("orderType").equals("take away")) {
+								orderTypeName = "Take Away";
+							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
+								orderTypeName = "Deposit";
+							}
+							receiptInfoContents.add(1, orderTypeName);
+						}
+
+						receiptInfoLabels.add("Trans Type");
+
+						if (!receiptContentJson.isNull("transactionType")) {
+							if (receiptContentJson.getString("transactionType").equals("Void")) {
+								// change order at to void at
+								receiptInfoLabels.set(3, "Void At");
+
+							}
+							receiptInfoContents.add(receiptContentJson.getString("transactionType"));
+						}
+
+						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
+						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
+																															// //
+																															// Layout
+						receiptInfoTableType.setType(STTblLayoutType.FIXED);
+						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
+
+						for (int i = 0; i < receiptInfoLabels.size(); i++) {
+							
+							if(i == 5) {
+								break;
+							}
+							
+							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
+							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
+									ParagraphAlignment.LEFT);
+							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
+									ParagraphAlignment.LEFT);
+						}
+
+						long receiptInfoTableWidths[] = { 1400, 2000 };
+
+						CTTblGrid cttblgrid = receiptInfoTable.getCTTbl().addNewTblGrid();
+						cttblgrid.addNewGridCol().setW(new BigInteger("1400"));
+						cttblgrid.addNewGridCol().setW(new BigInteger("2000"));
+
+						for (int x = 0; x < receiptInfoTable.getNumberOfRows(); x++) {
+							XWPFTableRow row = receiptInfoTable.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW()
+										.setW(BigInteger.valueOf(receiptInfoTableWidths[y]));
+							}
+						}
+
+//						XWPFParagraph receiptInfoBreak = doc.createParagraph();
+//						receiptInfoBreak.setSpacingAfter(0);
+//						receiptInfoBreak.createRun().addBreak();
+//						receiptInfoBreak.removeRun(0);
+
+						// Receipt Content
+						XWPFTable table = doc.createTable();
+						CTTblLayoutType type = table.getCTTbl().getTblPr().addNewTblLayout(); // set Layout
+						type.setType(STTblLayoutType.FIXED);
+
+						table.getCTTbl().getTblPr().unsetTblBorders(); // set table no border
+
+						XWPFTableRow tableRowOne = table.getRow(0);
+						XWPFTableRow tableRowTwo = table.createRow();
+
+						XWPFParagraph tableHeaderOne = tableRowOne.getCell(0).getParagraphs().get(0);
+						tableHeaderOne.setSpacingBefore(0);
+						tableHeaderOne.setSpacingAfter(0);
+						tableHeaderOne.setVerticalAlignment(TextAlignment.CENTER);
+						XWPFRun tableHeaderOneRun = tableHeaderOne.createRun();
+						tableHeaderOneRun.setFontSize(9);
+						tableHeaderOneRun.setBold(true);
+						tableHeaderOneRun.setText("Qty");
+
+						XWPFParagraph tableHeaderTwo = tableRowOne.addNewTableCell().getParagraphs().get(0);
+						tableHeaderTwo.setSpacingBefore(0);
+						tableHeaderTwo.setSpacingAfter(0);
+						tableHeaderTwo.setVerticalAlignment(TextAlignment.CENTER);
+						XWPFRun tableHeaderTwoRun = tableHeaderTwo.createRun();
+						tableHeaderTwoRun.setFontSize(9);
+						tableHeaderTwoRun.setBold(true);
+						tableHeaderTwoRun.setText("Name");
+
+						XWPFParagraph tableHeaderThree = tableRowOne.addNewTableCell().getParagraphs().get(0);
+						tableHeaderThree.setSpacingBefore(0);
+						tableHeaderThree.setSpacingAfter(0);
+						tableHeaderThree.setVerticalAlignment(TextAlignment.CENTER);
+						tableHeaderThree.setAlignment(ParagraphAlignment.RIGHT);
+						XWPFRun tableHeaderThreeRun = tableHeaderThree.createRun();
+						tableHeaderThreeRun.setFontSize(9);
+						tableHeaderThreeRun.setBold(true);
+						tableHeaderThreeRun.setText("Amt(" + receiptHeaderJson.getString("storeCurrency") + ")");
+
+						CTTc cellOne = table.getRow(0).getCell(0).getCTTc();
+						CTTcPr tcPr = cellOne.addNewTcPr();
+						CTTcBorders border = tcPr.addNewTcBorders();
+						border.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellTwo = table.getRow(0).getCell(1).getCTTc();
+						CTTcPr tcPr2 = cellTwo.addNewTcPr();
+						CTTcBorders border2 = tcPr2.addNewTcBorders();
+						border2.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellThree = table.getRow(0).getCell(2).getCTTc();
+						CTTcPr tcPr3 = cellThree.addNewTcPr();
+						CTTcBorders border3 = tcPr3.addNewTcBorders();
+						border3.addNewTop().setVal(STBorder.SINGLE);
+
+						XWPFParagraph tableBottomOne = tableRowTwo.getCell(0).getParagraphs().get(0);
+						tableBottomOne.setSpacingBefore(0);
+						tableBottomOne.setSpacingAfter(0);
+						tableBottomOne.createRun().setFontSize(1);
+
+						XWPFParagraph tableBottomTwo = tableRowTwo.addNewTableCell().getParagraphs().get(0);
+						tableBottomTwo.setSpacingBefore(0);
+						tableBottomTwo.setSpacingAfter(0);
+						tableBottomTwo.createRun().setFontSize(1);
+
+						XWPFParagraph tableBottomThree = tableRowTwo.addNewTableCell().getParagraphs().get(0);
+						tableBottomThree.setSpacingBefore(0);
+						tableBottomThree.setSpacingAfter(0);
+						tableBottomThree.createRun().setFontSize(1);
+
+						int twipsPerInch = 1000;
+						tableRowTwo.setHeight((int) (twipsPerInch * 1 / 10)); // set height 1/10 inch.
+						tableRowTwo.getCtRow().getTrPr().getTrHeightArray(0).setHRule(STHeightRule.EXACT); // set
+																											// w:hRule="exact"
+
+						// Grand parent loop
+						for (int k = 0; k < jsonGrandParentArray.length(); k++) {
+							JSONObject grandParentItem = jsonGrandParentArray.optJSONObject(k);
+
+							XWPFTableRow grandParentTableRow = table.createRow();
+
+							createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
+									false, ParagraphAlignment.LEFT);
+
+							createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
+									ParagraphAlignment.LEFT);
+
+							createCellText(grandParentTableRow.getCell(2),
+									grandParentItem.getString("totalAmount").substring(0,
+											grandParentItem.getString("totalAmount").length() - 2),
+									false, ParagraphAlignment.RIGHT);
+
+							if (grandParentItem.has("parentItemArray")) {
+								JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
+
+								// Parent loop
+								for (int p = 0; p < jsonParentArray.length(); p++) {
+									JSONObject parentItem = jsonParentArray.optJSONObject(p);
+
+									String parentItemPrice = (formatDecimalString(parentItem.getString("totalAmount"))
+											.equals("0.00")) ? ""
+													: formatDecimalString(parentItem.getString("totalAmount"));
+
+									XWPFTableRow parentTableRow = table.createRow();
+
+									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
+
+									createCellText(parentTableRow.getCell(1), "  - " + parentItem.getString("itemName"),
+											false, ParagraphAlignment.LEFT);
+
+									createCellText(parentTableRow.getCell(2), parentItemPrice, false,
+											ParagraphAlignment.RIGHT);
+
+									// Child loop
+									if (parentItem.has("childItemArray")) {
+										JSONArray jsonChildArray = parentItem.getJSONArray("childItemArray");
+
+										for (int c = 0; c < jsonChildArray.length(); c++) {
+											JSONObject childItem = jsonChildArray.optJSONObject(c);
+
+											String childItemPrice = (formatDecimalString(
+													childItem.getString("totalAmount")).equals("0.00")) ? ""
+															: formatDecimalString(childItem.getString("totalAmount"));
+
+											XWPFTableRow childTableRow = table.createRow();
+
+											createCellText(childTableRow.getCell(0), "", false,
+													ParagraphAlignment.LEFT);
+
+											createCellText(childTableRow.getCell(1),
+													"    * " + childItem.getString("itemName"), false,
+													ParagraphAlignment.LEFT);
+
+											createCellText(childTableRow.getCell(2), childItemPrice, false,
+													ParagraphAlignment.RIGHT);
+										}
+									}
+
+								}
+							}
+						}
+
+						// Set the table content bottom line
+						CTTc cellBottomOne = table.getRow(2).getCell(0).getCTTc();
+						CTTcPr tcBottomPr = cellBottomOne.addNewTcPr();
+						CTTcBorders borderBottom = tcBottomPr.addNewTcBorders();
+						borderBottom.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellBottomTwo = table.getRow(2).getCell(1).getCTTc();
+						CTTcPr tcBottomPr2 = cellBottomTwo.addNewTcPr();
+						CTTcBorders borderBottom2 = tcBottomPr2.addNewTcBorders();
+						borderBottom2.addNewTop().setVal(STBorder.SINGLE);
+
+						CTTc cellBottomThree = table.getRow(2).getCell(2).getCTTc();
+						CTTcPr tcBottomPr3 = cellBottomThree.addNewTcPr();
+						CTTcBorders borderBottom3 = tcBottomPr3.addNewTcBorders();
+						borderBottom3.addNewTop().setVal(STBorder.SINGLE);
+
+						// 121x20, 28x20, 50x20
+						long columnWidths[] = { 560, 2420, 1200 };
+
+						CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2220"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1200"));
+
+						for (int x = 0; x < table.getNumberOfRows(); x++) {
+							XWPFTableRow row = table.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(columnWidths[y]));
+							}
+						}
+
+						XWPFParagraph receiptContentBreak = doc.createParagraph();
+						receiptContentBreak.setSpacingAfter(0);
+						receiptContentBreak.createRun().addBreak();
+						receiptContentBreak.removeRun(0);
+
+						JSONArray taxCharges = receiptContentJson.getJSONArray("taxCharges");
+						// Receipt Result
+						XWPFTable receiptResultTable = doc.createTable(3 + taxCharges.length() + 2, 2);
+						receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+						receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+
+						List<String> receiptResultLabels = new ArrayList<>();
+						receiptResultLabels.add("Subtotal");
+						for (int x = 0; x < taxCharges.length(); x++) {
+							receiptResultLabels.add(taxCharges.getJSONObject(x).getString("name") + " ("
+									+ taxCharges.getJSONObject(x).getString("rate") + "%)");
+						}
+						receiptResultLabels.add("Rounding Adjustment");
+						receiptResultLabels.add("Net Total");
+						List<String> receiptResultContents = new ArrayList<String>();
+
+						receiptResultContents.add(formatDecimalString(receiptContentJson.getString("totalAmount")));
+						for (int x = 0; x < taxCharges.length(); x++) {
+							receiptResultContents
+									.add(formatDecimalString(taxCharges.getJSONObject(x).getString("chargeAmount")));
+						}
+						receiptResultContents.add(formatDecimalString(
+								receiptContentJson.getString("totalAmountWithTaxRoundingAdjustment")));
+						receiptResultContents
+								.add(formatDecimalString(receiptContentJson.getString("grandTotalAmount")));
+
+						for (int i = 0; i < receiptResultLabels.size(); i++) {
+							XWPFTableRow receiptResultRow = receiptResultTable.getRow(i);
+
+							if (receiptResultLabels.get(i).equals("Net Total")) {
+
+								XWPFParagraph netTotalBlankCellOne = receiptResultRow.getCell(0).getParagraphs().get(0);
+								netTotalBlankCellOne.setSpacingBefore(0);
+								netTotalBlankCellOne.setSpacingAfter(0);
+								netTotalBlankCellOne.createRun().setFontSize(1);
+
+								XWPFParagraph netTotalBlankCellTwo = receiptResultRow.getCell(1).getParagraphs().get(0);
+								netTotalBlankCellTwo.setSpacingBefore(0);
+								netTotalBlankCellTwo.setSpacingAfter(0);
+								netTotalBlankCellTwo.createRun().setFontSize(1);
+
+								receiptResultRow.setHeight((int) (twipsPerInch * 1 / 10));
+								receiptResultRow.getCtRow().getTrPr().getTrHeightArray(0).setHRule(STHeightRule.EXACT);
+
+								CTTc cell = receiptResultRow.getCell(1).getCTTc();
+								CTTcPr tcPr4 = cell.addNewTcPr();
+								CTTcBorders border4 = tcPr4.addNewTcBorders();
+								border4.addNewBottom().setVal(STBorder.SINGLE);
+
+								createCellText(receiptResultTable.getRow(i + 1).getCell(0), receiptResultLabels.get(i),
+										true, ParagraphAlignment.LEFT);
+
+								createCellText(receiptResultTable.getRow(i + 1).getCell(1),
+										receiptResultContents.get(i), true, ParagraphAlignment.RIGHT);
+
+								XWPFParagraph netTotalBottomBlankCellOne = receiptResultTable.getRow(i + 2).getCell(0)
+										.getParagraphs().get(0);
+								netTotalBottomBlankCellOne.setSpacingBefore(0);
+								netTotalBottomBlankCellOne.setSpacingAfter(0);
+								netTotalBottomBlankCellOne.createRun().setFontSize(1);
+
+								XWPFParagraph netTotalBottomBlankCellTwo = receiptResultTable.getRow(i + 2).getCell(1)
+										.getParagraphs().get(0);
+								netTotalBottomBlankCellTwo.setSpacingBefore(0);
+								netTotalBottomBlankCellTwo.setSpacingAfter(0);
+								netTotalBottomBlankCellTwo.createRun().setFontSize(1);
+
+								receiptResultTable.getRow(i + 2).setHeight((int) (twipsPerInch * 1 / 10));
+								receiptResultTable.getRow(i + 2).getCtRow().getTrPr().getTrHeightArray(0)
+										.setHRule(STHeightRule.EXACT);
+
+								CTTc cell5 = receiptResultTable.getRow(i + 2).getCell(1).getCTTc();
+								CTTcPr tcPr5 = cell5.addNewTcPr();
+								CTTcBorders border5 = tcPr5.addNewTcBorders();
+								border5.addNewBottom().setVal(STBorder.DOUBLE_D);
+
+							} else {
+								createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
+										ParagraphAlignment.LEFT);
+
+								createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
+										ParagraphAlignment.RIGHT);
+							}
+						}
+
+						long receiptResultTableWidths[] = { 2980, 1200 };
+
+						CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
+						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2780"));
+						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1200"));
+
+						for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
+							XWPFTableRow row = receiptResultTable.getRow(x);
+							int numberOfCell = row.getTableCells().size();
+							for (int y = 0; y < numberOfCell; y++) {
+								XWPFTableCell cell = row.getCell(y);
+								cell.getCTTc().addNewTcPr().addNewTcW()
+										.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
+							}
+						}
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().addBreak();
+						emptyParagraph.removeRun(0);
+
+						emptyParagraph = doc.createParagraph();
+						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.createRun().setText("Please Come Again");
+
+						// output the result as doc file
+						try (FileOutputStream out = new FileOutputStream(
+								Paths.get(receiptPath, "receipt.docx").toString())) {
+							doc.write(out);
+						}
+
+					}
+
+					XWPFDocument document = new XWPFDocument(
+							new FileInputStream(new File(Paths.get(receiptPath, "receipt.docx").toString())));
+					PdfOptions options = PdfOptions.create();
+					OutputStream out = new FileOutputStream(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+					PdfConverter.getInstance().convert(document, out, options);
+					document.close();
+					out.close();
+
+					// print pdf if isDisplay pdf is false
+					if (myPrintService != null && !isDisplayPdf) {
+						PDDocument printablePdf = PDDocument
+								.load(new File(Paths.get(receiptPath, "receipt.pdf").toString()));
+
+						PrinterJob job = PrinterJob.getPrinterJob();
+						job.setJobName("Receipt - " + receiptContentJson.getString("checkNoByDay"));
+						job.setPageable(new PDFPageable(printablePdf));
+						job.setPrintService(myPrintService);
+						job.print();
+
+						ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+						printablePdf.save(byteArrayOutputStream);
+						printablePdf.close();
+						InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+						System.out.println(inputStream.toString());
+
+						printablePdf.close();
+					}
+
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+
+				}
+
+				// }
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", HARDWARE_FOLDER);
+			e.printStackTrace();
+		}
+		System.out.println(jsonResult.toString());
+		return jsonResult;
+	}
 }

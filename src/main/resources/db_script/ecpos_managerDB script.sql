@@ -550,12 +550,12 @@ insert into `nii_type` values
 insert into general_configuration (description, parameter, value)
 values ('BYOD_QR_Encrypt_Key', 'BYOD QR ENCRYPT KEY', '8y0DtH3s3Cr3Tk3Y');
 
-insert into device_manufacturer_lookup values (1, 'No Cash Drawer'), (2, 'Posiflex'), (3, 'ETech');
+insert into device_manufacturer_lookup values (1, 'No Cash Drawer'), (2, 'Posiflex'), (3, 'ETech'), (4, 'Clientron');
 
 insert into port_name_lookup values 
 (1, 'COM1'), (2, 'COM2'), (3, 'COM3'), (4, 'COM4'), (5, 'COM5'), (6, 'COM6'), (7, 'COM7'), (8, 'COM8');
 
-insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, 'Posiflex'), (3,'EPSON'), (4,'IBM');
+insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, 'Posiflex'), (3,'EPSON'), (4,'IBM'), (5,'Printer1400 (Copy 1)');
 
 INSERT INTO status_lookup (id, name) VALUES (1, 'PENDING');
 INSERT INTO status_lookup (id, name) VALUES (2, 'ACTIVE');
