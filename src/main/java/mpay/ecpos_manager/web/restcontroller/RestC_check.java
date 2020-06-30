@@ -10,9 +10,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,32 +22,17 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.converter.StringMessageConverter;
-import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.handler.AbstractWebSocketHandler;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.RestTemplateXhrTransport;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.Transport;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
 import mpay.ecpos_manager.general.utility.WebComponents;
-import mpay.ecpos_manager.web.websocket.KdsHandshakeInterceptor;
-import mpay.ecpos_manager.web.websocket.KdsSocketHandler;
 
 @RestController
 @RequestMapping("/rc/check")
@@ -4318,4 +4301,129 @@ public class RestC_check {
 		}
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/retrieve_order_secondDisplay" }, method = {
+			RequestMethod.POST }, produces = "application/json")
+	public String retrieveOrderSecondDisplay(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) throws JSONException {
+		JSONObject jsonResult = new JSONObject();
+		JSONObject jsonData = null;
+		JSONObject jsonObj = new JSONObject(data);
+		Connection connection = null;
+		PreparedStatement stmt1 = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs1 = null;
+		ResultSet rs2 = null;
+		
+		System.out.println("checkNo: "+jsonObj.getString("checkNo"));
+		System.out.println("tableNo: "+jsonObj.getInt("tableNo"));
+		System.out.println("orderType: "+jsonObj.getString("orderType"));
+		
+		try {
+			connection = dataSource.getConnection();
+			String totalAmount = "";
+			String checkId = "";
+			String orderType = "";
+			String receivedAmount = "";
+			String changeAmount = "";
+			
+			if(jsonObj.getString("orderType").equalsIgnoreCase("1") || jsonObj.getString("orderType").equalsIgnoreCase("table")) {
+				orderType = "1";
+			}else if(jsonObj.getString("orderType").equalsIgnoreCase("2") || jsonObj.getString("orderType").equalsIgnoreCase("take_away")) {
+				orderType = "2";
+			}else {
+				orderType = "3";
+			}
+			
+			if(jsonObj.getString("orderType").equalsIgnoreCase("1")) {
+				stmt1 = connection.prepareStatement("select id, grand_total_amount from ecpos_manager.check where check_number = ? and table_number = ? and order_type = ?");
+				stmt1.setString(1, jsonObj.getString("checkNo"));
+				stmt1.setString(2, jsonObj.getString("tableNo"));
+				stmt1.setString(3, orderType);
+				rs1 = stmt1.executeQuery();
+
+				while (rs1.next()) {
+					jsonData = new JSONObject();
+					totalAmount = String.format("%.2f", rs1.getFloat("grand_total_amount"));
+					checkId = rs1.getString("id");
+				}
+				
+				stmt2 = connection.prepareStatement("select received_amount, change_amount from ecpos_manager.transaction where check_id = ?");
+				stmt2.setString(1, checkId);
+				rs2 = stmt2.executeQuery();
+				
+				while (rs2.next()) {
+					jsonData = new JSONObject();
+					receivedAmount = String.format("%.2f", rs2.getFloat("received_amount"));
+					changeAmount = String.format("%.2f", rs2.getFloat("change_amount"));
+				}
+				
+			}else {
+				stmt1 = connection.prepareStatement("select id, grand_total_amount from ecpos_manager.check where check_number = ? and order_type = ?");
+				stmt1.setString(1, jsonObj.getString("checkNo"));
+				stmt1.setString(2, orderType);
+				rs1 = stmt1.executeQuery();
+
+				while (rs1.next()) {
+					jsonData = new JSONObject();
+					totalAmount = String.format("%.2f", rs1.getFloat("grand_total_amount"));
+					checkId = rs1.getString("id");
+				}
+				
+				stmt2 = connection.prepareStatement("select received_amount, change_amount from ecpos_manager.transaction where check_id = ?");
+				stmt2.setString(1, checkId);
+				rs2 = stmt2.executeQuery();
+				
+				while (rs2.next()) {
+					jsonData = new JSONObject();
+					receivedAmount = String.format("%.2f", rs2.getFloat("received_amount"));
+					changeAmount = String.format("%.2f", rs2.getFloat("change_amount"));
+				}
+			}
+			
+			if(receivedAmount.equalsIgnoreCase("")) {
+				receivedAmount = "0.00";
+			}
+			
+			if(changeAmount.equalsIgnoreCase("")) {
+				changeAmount = "0.00";
+			}
+			
+			StringBuilder strBuild = new StringBuilder();
+			strBuild.append("<section class=\"content\"><div class=\"row\"><span style=\"0float: left;\">Total Bill :</span><span> RM</span><span style=\"float: right;\">"+ totalAmount
+					+ "</span>");
+			strBuild.append("<br><span style=\"0float: left;\">Tendered: </span><span> RM</span><span style=\"float: right;\">"+ receivedAmount +"</span>");
+			strBuild.append("<br><span style=\"0float: left;\">Balance&nbsp; : </span><span> RM</span><span style=\"float: right;\">"+ changeAmount +"</span>");
+			strBuild.append("</div></section>");
+			jsonResult.put(Constant.RESPONSE_CODE, "00");
+			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			jsonResult.put("html_str", strBuild.toString());
+		} catch (Exception e) {
+			try {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "INVALID REQUEST");
+				Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+				e.printStackTrace();
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				if (stmt1 != null)
+					stmt1.close();
+				if (rs1 != null) {
+					rs1.close();
+					rs1 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 }

@@ -221,6 +221,15 @@
 							if ($scope.isCashAlert) {
 								$scope.alertMessage = $sce.trustAsHtml($scope.alertMessage + "<br>" + "Cash amount exceed. Please perform cash collection.");
 							}
+							
+							var jsonData2ndDisplay = JSON.stringify({
+								"deviceType" : 1,
+								"orderType" : $scope.orderType,
+								"tableNo" : $scope.tableNo,
+								"checkNo" : $scope.checkNo,
+							});
+							$scope.informSecondDisplay(jsonData2ndDisplay);
+							
 							$scope.paymentButtonFn = function() {
 								$('#receivedAmountModal').modal('hide');
 								$('.modal-backdrop').remove();
@@ -602,5 +611,42 @@
 
 			});
 		});
+		
+		$scope.informSecondDisplay = function (jsonData) {
+
+			var wsProtocol = window.location.protocol;
+			var wsHost = window.location.host;
+			var wsURLHeader = "";
+
+			if (wsProtocol.includes("https")) {
+				wsURLHeader = "wss://"
+			} else {
+				wsURLHeader = "ws://"
+			}
+			wsURLHeader += wsHost + "${pageContext.request.contextPath}/secondDisplaySocket";
+				
+			var kdsSocket = new WebSocket(wsURLHeader);
+			/* console.log("Send to : " + wsURLHeader) */
+			kdsSocket.onopen = function(event) {
+				console.log("Connection established");
+				if (kdsSocket != null) {
+					kdsSocket.send(jsonData);
+				}
+			}
+			
+			kdsSocket.onmessage = function(event) {
+				console.log("onMessage :" + event.data);
+			}
+
+			kdsSocket.onerror = function(event) {
+				console.error("WebSocket error observed:", event);
+				Swal.fire("Error",event,"error");
+			}
+					
+			kdsSocket.onclose = function(event) {
+				console.log($scope.jsonResult);
+				console.log("Connection closed");
+			}	
+		}
 	});
 </script>

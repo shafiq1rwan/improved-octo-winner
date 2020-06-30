@@ -82,7 +82,6 @@ ul.select2-results__options li {
 										<label>PAYMENT TYPE</label>
 									</div>
 								</div>
-								<br><br><br><br>
 								<div class="row">
 									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
 										<button class="btn btn-block bg-maroon" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px;" ng-click="proceedPaymentMethod('full')">
@@ -90,7 +89,6 @@ ul.select2-results__options li {
 										</button>
 									</div>
 								</div>
-								<br><br><br><br>
 								<div ng-if="checkDetail.orderType != '3'">
 								<div class="row">
 									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
@@ -125,19 +123,16 @@ ul.select2-results__options li {
 									</div>
 									<div class="col-sm-2"></div>
 								</div>
-								<br>
 								<div class="row">
 									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
 										<button class="btn btn-block" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background: coral; background-image:url('${pageContext.request.contextPath}/img/icon/money.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('Cash')"></button>
 									</div>
 								</div>
-								<br>
 								<div class="row">
 									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
 										<button class="btn btn-block" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background: coral; background-image:url('${pageContext.request.contextPath}/img/icon/credit-card.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('Card')"></button>
 									</div>
 								</div>
-								<br>
 								<div class="row">
 									<div class="col-sm-12" style="margin-top: 15px; margin-bottom: 15px;">
 										<button class="btn btn-block" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background: coral; background-image:url('${pageContext.request.contextPath}/img/icon/qr-code.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('QR')"></button>

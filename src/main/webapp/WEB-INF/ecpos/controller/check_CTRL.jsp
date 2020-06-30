@@ -442,6 +442,15 @@
 							$scope.getCheckDetails();
 							allGrandParentItemCheckbox.checked = false;
 							$scope.informKds(response.data);
+							
+							var jsonData2ndDisplay = JSON.stringify({
+								"deviceType" : 1,
+								"orderType" : $scope.orderType,
+								"tableNo" : $scope.tableNo,
+								"checkNo" : $scope.checkNo,
+							});
+							$scope.informSecondDisplay(jsonData2ndDisplay);
+							
 						} else {
 							if (response.data.response_message != null) {
 								Swal.fire("Oops...",response.data.response_message,"error");
@@ -866,6 +875,15 @@
 			$scope.fullPaymentAmount = $('#tenderAmount').text();
 
 			$('#paymentCarousel').carousel(0);
+			
+			var jsonData2ndDisplay = JSON.stringify({
+				"deviceType" : 1,
+				"orderType" : $scope.orderType,
+				"tableNo" : $scope.tableNo,
+				"checkNo" : $scope.checkNo,
+			});
+			
+			$scope.informSecondDisplay(jsonData2ndDisplay);
 		}
 		
 		$scope.redirectMenu = function() {
@@ -995,15 +1013,20 @@
 			var wsProtocol = window.location.protocol;
 			var wsHost = window.location.host;
 			var wsURLHeader = "";
+			var wsURLHeader2ndDisplay = "";
 
 			if (wsProtocol.includes("https")) {
 				wsURLHeader = "wss://"
+				wsURLHeader2ndDisplay = "wss://";
 			} else {
 				wsURLHeader = "ws://"
+				wsURLHeader2ndDisplay = "ws://";
 			}
 			wsURLHeader += wsHost + "${pageContext.request.contextPath}/kdsSocket";
+			// wsURLHeader2ndDisplay += wsHost + "${pageContext.request.contextPath}/secondDisplaySocket";
 				
 			var kdsSocket = new WebSocket(wsURLHeader);
+			// var secondDisplaySocket = new WebSocket(wsURLHeader2ndDisplay);
 			
 			kdsSocket.onopen = function(event) {
 				console.log("Connection established");
@@ -1088,6 +1111,88 @@
 					}
 				});
 			});
+		}
+		
+		$scope.sendToCustomerDisplay = function () {
+			if ($scope.checkDetail.grandParentItemArray.length == 0) {
+				Swal.fire("Warning","Please make an order!","warning");
+			}else {
+				Swal.fire({
+					  title: 'Are you sure?',
+					  text: "You wont be able to revert this!",
+					  icon: 'warning',
+					  showCancelButton: true,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					}).then((result) => {
+						  if (result.value) {
+					    	$http.post("${pageContext.request.contextPath}/rc/check/send_to_kds/"+ $scope.orderType + "/" + $scope.checkNo + "/" + $scope.tableNo)
+							.then(function(response) {
+								if (response.data.response_code == "00") {
+									Swal.fire("Success",response.data.response_message,"success");
+									$scope.informKds(response.data);
+									printReceipt($scope.checkNo);
+								} else {
+									Swal.fire("Oops...",response.data.response_message,"error");
+									printReceipt($scope.checkNo);
+								}
+							},
+							function(response) {
+								Swal.fire({
+									  title: 'Oops...',
+									  text: "Session Timeout",
+									  icon: 'error',
+									  showCancelButton: false,
+									  confirmButtonColor: '#3085d6',
+									  cancelButtonColor: '#d33',
+									  confirmButtonText: 'OK'
+									},function(isConfirm){
+									    if (isConfirm) {
+											 window.location.href = "${pageContext.request.contextPath}/signout";
+										  }
+									});
+							});
+						  }
+					});
+			}
+		}
+		
+		$scope.informSecondDisplay = function (jsonData) {
+
+			var wsProtocol = window.location.protocol;
+			var wsHost = window.location.host;
+			var wsURLHeader = "";
+
+			if (wsProtocol.includes("https")) {
+				wsURLHeader = "wss://"
+			} else {
+				wsURLHeader = "ws://"
+			}
+			wsURLHeader += wsHost + "${pageContext.request.contextPath}/secondDisplaySocket";
+				
+			var kdsSocket = new WebSocket(wsURLHeader);
+			/* console.log("Send to : " + wsURLHeader) */
+			kdsSocket.onopen = function(event) {
+				console.log("Connection established");
+				if (kdsSocket != null) {
+					kdsSocket.send(jsonData);
+				}
+			}
+			
+			kdsSocket.onmessage = function(event) {
+				console.log("onMessage :" + event.data);
+			}
+
+			kdsSocket.onerror = function(event) {
+				console.error("WebSocket error observed:", event);
+				Swal.fire("Error",event,"error");
+			}
+					
+			kdsSocket.onclose = function(event) {
+				console.log($scope.jsonResult);
+				console.log("Connection closed");
+			}	
 		}
 		
 		$scope.wsOrderListener();

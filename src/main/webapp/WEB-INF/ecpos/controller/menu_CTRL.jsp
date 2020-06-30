@@ -444,6 +444,7 @@
 					
 					$("#alaCarteModifier").show();
 					$("#back").show();
+					$scope.informSecondDisplay(jsonData);
 				} else {
 					if (response.data.response_message != null) {
 						/* alert(response.data.response_message); */
@@ -527,6 +528,46 @@
 			/* else {
 				alert("Barcode value is empty");
 			} */
+		}
+		
+		$scope.informSecondDisplay = function (jsonData) {
+			/* var json = JSON.stringify(jsonData); */
+			/* console.log("Send data: " + json) */
+
+			var wsProtocol = window.location.protocol;
+			var wsHost = window.location.host;
+			var wsURLHeader = "";
+
+			if (wsProtocol.includes("https")) {
+				wsURLHeader = "wss://"
+			} else {
+				wsURLHeader = "ws://"
+			}
+			wsURLHeader += wsHost + "${pageContext.request.contextPath}/secondDisplaySocket";
+				
+			var kdsSocket = new WebSocket(wsURLHeader);
+			/* console.log("Send to : " + wsURLHeader) */
+			kdsSocket.onopen = function(event) {
+				console.log("Connection established");
+				if (kdsSocket != null) {
+					kdsSocket.send(jsonData);
+				}
+			}
+			
+			kdsSocket.onmessage = function(event) {
+				console.log("onMessage :" + event.data);
+			}
+
+			kdsSocket.onerror = function(event) {
+				console.error("WebSocket error observed:", event);
+				Swal.fire("Error",event,"error");
+				/* alert(event); */
+			}
+					
+			kdsSocket.onclose = function(event) {
+				console.log($scope.jsonResult);
+				console.log("Connection closed");
+			}	
 		}
 	});
 </script>

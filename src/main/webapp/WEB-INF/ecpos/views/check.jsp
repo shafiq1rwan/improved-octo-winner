@@ -12,13 +12,13 @@
 <style>
 .sectioncalibrator {
 	height: calc(100vh - 50px);
-	overflow-y: scroll;
+	overflow-y: hidden;
 }
 
 @media only screen and (max-width:600px) {
 	.sectioncalibrator {
 		height: calc(100vh - 100px);
-		overflow-y: scroll;
+		overflow-y: hidden;
 	}
 }
 

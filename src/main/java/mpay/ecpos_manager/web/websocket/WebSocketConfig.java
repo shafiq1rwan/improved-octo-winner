@@ -19,10 +19,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
 	@Autowired
 	private KdsHandshakeInterceptor kdsHandshakeInterceptor;
 	
+	@Autowired
+	private SecondDisplayHandshakeInterceptor secondDisplayHandshakeInterceptor;
+	
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 		registry.addHandler(new SocketHandler(), "/paymentSocket").addInterceptors(httpSessionIdHandshakeInterceptor);
 		registry.addHandler(new PrinterSocketHandler(), "/printerSocket").addInterceptors(printerHandshakeInterceptor);
-		registry.addHandler(new KdsSocketHandler(), "/kdsSocket").setAllowedOrigins("*").addInterceptors(kdsHandshakeInterceptor);;
+		registry.addHandler(new KdsSocketHandler(), "/kdsSocket").setAllowedOrigins("*").addInterceptors(kdsHandshakeInterceptor);
+		registry.addHandler(new SecondDisplaySocketHandler(), "/secondDisplaySocket").addInterceptors(secondDisplayHandshakeInterceptor);
 	}
 }
