@@ -4389,10 +4389,10 @@ public class RestC_check {
 			}
 			
 			StringBuilder strBuild = new StringBuilder();
-			strBuild.append("<section class=\"content\"><div class=\"row\"><span style=\"0float: left;\">Total Bill :</span><span> RM</span><span style=\"float: right;\">"+ totalAmount
+			strBuild.append("<section class=\"content\"><div class=\"row\"><span style=\"0float: left;\">TOTAL BILL&nbsp;: </span><span> RM</span><span style=\"float: right;\">"+ totalAmount
 					+ "</span>");
-			strBuild.append("<br><span style=\"0float: left;\">Tendered: </span><span> RM</span><span style=\"float: right;\">"+ receivedAmount +"</span>");
-			strBuild.append("<br><span style=\"0float: left;\">Balance&nbsp; : </span><span> RM</span><span style=\"float: right;\">"+ changeAmount +"</span>");
+			strBuild.append("<br><span style=\"0float: left;\">TENDERED&nbsp;&nbsp;: </span><span> RM</span><span style=\"float: right;\">"+ receivedAmount +"</span>");
+			strBuild.append("<br><span style=\"0float: left;\">BALANCE&nbsp;&nbsp;&nbsp; : </span><span> RM</span><span style=\"float: right;\">"+ changeAmount +"</span>");
 			strBuild.append("</div></section>");
 			jsonResult.put(Constant.RESPONSE_CODE, "00");
 			jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");

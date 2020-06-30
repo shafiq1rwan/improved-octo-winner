@@ -184,10 +184,10 @@
 	class="hold-transition skin-blue sidebar-mini font-roboto-regular">
 	<div ng-controller="secondDisplay_CTRL" class="wrapper"
 		style="background-color: #0000000d; height: 100%; width: 100%; overflow-y: hidden;">
-		<div style="width: 100%; height:100%; font-size: 40px; background: #ecf0f1; color: #FFFFFF; margin: 0px; height: 100vh; position: absolute;">
-			<marquee direction="left" width="100%" style="text-align: center; "><span id='storename' style="word-spacing: 1px; font-style:italic; color: #e74c3c; font-size: 44px;">Welcome to Cufel 101</span>
-			<!--  - <span id='date-part' style="word-spacing: 1px; color: white; font-size: 40px;"></span> --></marquee>
-			<div ng-bind-html="contentKds" style="padding-left: 10px; padding-right: 10px; color: #34495e"></div>
+		<div style="width: 100%; height:100%; font-size: 20px; background: #f1f2f6; color: #FFFFFF; margin: 0px; height: 100vh; position: absolute;">
+			<marquee direction="left" width="100%" style="text-align: center;" Scrollamount=7><span id='storename' style="word-spacing: 1px; font-style:italic; color: #ff6348; font-size: 44px;"><b>Welcome to Cufel 101</b></span></marquee>
+			<!--  - <span id='date-part' style="word-spacing: 1px; color: white; font-size: 40px;"></span> -->
+			<div ng-bind-html="contentKds" style="padding-left: 10px; padding-right: 40px; color: #2f3542; font-size: 30px;"></div>
 		</div>
 		<div ng-init="initOrder();" id="contentId"
 			style="height: calc(100vh - 0px); ">

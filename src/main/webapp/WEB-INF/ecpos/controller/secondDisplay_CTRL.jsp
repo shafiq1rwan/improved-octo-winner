@@ -6,7 +6,7 @@
 	$scope.initOrder = function () {
 		
 		/* $scope.contentKds = $sce.trustAsHtml("<section class=\"content\"><div class=\"row\" style=\"padding-left: 10px; padding-right: 10px\"><span style=\"float:left;\">Total Amt: RM</span><span style=\"float:right;\">0.00</span><br><span style=\"float:left;\">Amt Received: RM</span><span style=\"float:right;\">0.00</span><br><span style=\"float:left;\">Balance Amt: RM</span><span style=\"float:right;\">0.00</span></div></section>"); */
-		$scope.contentKds = $sce.trustAsHtml("<section class=\"content\"><div class=\"row\"><span style=\"0float: left;\">Total Bill :</span><span> RM</span><span style=\"float: right;\">0.00</span><br /><span style=\"0float: left;\">Tendered: </span><span> RM</span><span style=\"float: right;\">0.00</span><br /><span style=\"0float: left;\">Balance&nbsp; : </span><span> RM</span><span style=\"float: right;\">0.00</span></div></section>");
+		$scope.contentKds = $sce.trustAsHtml("<section class=\"content\"><div class=\"row\"><span style=\"0float: left; color:#1e90ff;\">TOTAL BILL&nbsp; </span><span>: RM</span><span style=\"float: right;\">0.00</span><br /><span style=\"0float: left;color:#1e90ff;\">TENDERED&nbsp;&nbsp; </span><span>: RM</span><span style=\"float: right;\">0.00</span><br /><span style=\"0float: left; color:#1e90ff;\">BALANCE&nbsp;&nbsp;&nbsp;&nbsp; </span><span>:  RM</span><span style=\"float: right;\">0.00</span></div></section>");
 
 	}
 	

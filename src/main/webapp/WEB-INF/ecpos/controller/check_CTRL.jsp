@@ -27,6 +27,15 @@
 			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
 			.then(function(response) {
 				if (response.data.responseCode == "00") {
+					
+					var jsonData2ndDisplay = JSON.stringify({
+						"deviceType" : 1,
+						"orderType" : $scope.orderType,
+						"tableNo" : $scope.tableNo,
+						"checkNo" : $scope.checkNo,
+					});
+					$scope.informSecondDisplay(jsonData2ndDisplay);
+					
 					if ($scope.orderType == "table") {
 						$('#generateQRButton').show();
 					} else  {
