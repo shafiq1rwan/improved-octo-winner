@@ -1014,6 +1014,68 @@
 		
 		  Swal.fire("Warning","Your OS: "+os,"warning");
 		};
+		
+		$scope.checkBoxReceipt = function () {
+			var jsonData = JSON.stringify({
+				"receiptKitchen" : 1
+			});
+			
+			$http.post("${pageContext.request.contextPath}/rc/configuration/receiptKitchenSet", jsonData)
+			.then(function(response) {
+				if(response.data.response_code == "00"){
+					/* $scope.specialPopOut(response.data.response_message, "Success"); */
+					Swal.fire("Congratulation",response.data.response_message,"success");
+				} else {
+					/* $scope.specialPopOut(response.data.response_message, "Failed"); */
+					Swal.fire("Oops...",response.data.response_message,"error");
+				}
+			},
+			function(response) {
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
+			});
+		}
+		
+		$scope.checkBoxKDS = function () {
+			var jsonData = JSON.stringify({
+				"receiptKitchen" : 1
+			});
+			
+			$http.post("${pageContext.request.contextPath}/rc/configuration/receiptKitchenSet", jsonData)
+			.then(function(response) {
+				if(response.data.response_code == "00"){
+					Swal.fire("Congratulation",response.data.response_message,"success");
+				} else {
+					Swal.fire("Oops...",response.data.response_message,"error");
+				}
+			},
+			function(response) {
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
+			});
+		}
 
 	});
 </script>

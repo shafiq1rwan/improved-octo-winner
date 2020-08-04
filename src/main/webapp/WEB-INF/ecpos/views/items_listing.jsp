@@ -15,8 +15,8 @@
 }
 
 .nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover {
-	border-top-color: #7C01A6;
-	background-color: #9200C4;
+	border-top-color: #1F8CE8;
+	background-color: #1F8CE8;
 }
 
 .nav-pills {
@@ -54,7 +54,7 @@
 				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="box box-primary" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
+							<div class="box box-success" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
 										<font size="4">ITEMS LISTING</font>
@@ -74,7 +74,7 @@
 									</ul>
 								</div>
 								<div ng-show="itemType == '0' || itemType == '1'">
-									<table id="datatable_items" class="table table-bordered table-striped">
+									<table id="datatable_items" class="table table-bordered table-striped" width="100%">
 										<thead>
 											<tr>
 												<th>No</th>
@@ -88,7 +88,7 @@
 									</table>
 								</div>
 								<div ng-show="itemType == '2'">
-									<table id="datatable_modifierGroups" class="table table-bordered table-striped">
+									<table id="datatable_modifierGroups" class="table table-bordered table-striped" width="100%">
 										<thead>
 											<tr>
 												<th>No</th>
@@ -134,8 +134,8 @@
 												</div>
 												<div class="row">
 													<div style="text-align: center">
-														<div style="margin: auto; margin-bottom: 10px; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
-															<img ng-src="${pageContext.request.contextPath}/{{itemDetails.imagePath}}" alt=itemImage style="max-width: 135px; max-height: 135px;" />
+														<div style="margin: auto; width: 135px; height: 135px; border: 1px solid #d2d6de; border-radius: 5px; display: flex;">
+															<img ng-src="${pageContext.request.contextPath}/{{itemDetails.imagePath}}" style="max-width: 100%; max-height: 100%; background-repeat: no-repeat; background-size: contain;" />
 														</div>
 													</div>
 												</div>

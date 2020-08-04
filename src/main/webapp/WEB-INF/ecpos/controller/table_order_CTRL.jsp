@@ -58,7 +58,7 @@
 		
 		$scope.display_table_check_no = function(check_no) {
 			if (check_no > 0) {
-				return '#00FA9A';
+				return '#1EC676';
 			} else {
 				return '#000000';
 			}
@@ -66,9 +66,9 @@
 
 		$scope.display_table_check_no_title_color = function(check_no) {
 			if (check_no > 0) {
-				return '#696969';
+				return '#ffffff';
 			} else {
-				return '#ababab';
+				return '#ffffff';
 			}
 		}
 		

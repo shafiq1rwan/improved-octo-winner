@@ -78,8 +78,10 @@ public class RestC_synctransaction {
 			} else {
 				Date date = new Date();
 				Timestamp currentDate = new Timestamp(date.getTime());
-				
 				Timestamp lastSyncDate = new Timestamp(0);
+				
+				System.out.println("currendDate: "+currentDate);
+				System.out.println("lastSyncDate: "+lastSyncDate);
 				
 				stmt = connection.prepareStatement("select * from check_transaction_settlement_cloud_sync where response_code = '00' order by sync_date desc limit 1;");
 				rs = stmt.executeQuery();

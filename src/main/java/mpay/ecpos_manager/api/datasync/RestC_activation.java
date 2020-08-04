@@ -178,6 +178,7 @@ public class RestC_activation {
 					BufferedReader br2 = new BufferedReader(new FileReader(queryFile));
 					String readLine = null;
 					while ((readLine = br2.readLine()) != null) {
+						System.out.println("SQL Query: "+readLine);
 						statement.execute(readLine);
 					}
 					br2.close();

@@ -114,23 +114,24 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 					<%} %>
 					<form id="normalForm" action="${pageContext.request.contextPath}/authentication" method="post" accept-charset="UTF-8" role="form" class="form-signin" autocomplete="off">
 						<fieldset>
-							<label class="login-label" style="color: white;">User Name</label>
+							<!-- <label class="login-label" style="color: white;">User Name</label> -->
 							<input class="form-control" id="username" name="username" placeholder="User Name" type="text" required>
 							<br>
-							<label class="login-label"  style="color: white;">Password</label>
+							<!-- <label class="login-label"  style="color: white;">Password</label> -->
 							<input class="form-control" id="password" name="password" placeholder="Password" type="password" required>
 							<br> 
-							<input class="btn btn-lg btn-block" style="background-color: #00FA9A; color: white;" type="submit" value="Login">
+							<input class="btn btn-lg btn-block" style="background-color: #1EC676; color: white;" type="submit" value="Login">
 						</fieldset>
 					</form>
 					<form id="qrForm" action="${pageContext.request.contextPath}/authenticationQR" method="post" accept-charset="UTF-8" role="form" class="form-signin" autocomplete="off">
 						<fieldset>
 							<input type="hidden" id="qrContent" name="qrContent" value="">
-							<input id="showQRLoginBtn" class="btn btn-lg btn-block" style="background-color: #00FA9A; color: white;" type="button" value="Scan QR">
+							<input id="showQRLoginBtn" class="btn btn-lg btn-block" style="background-color: #1EC676; color: white;" type="button" value="Scan QR">
 						</fieldset>
 					</form>
 					<br>
-					<button id="switchBtn" type="button" class="btn btn-primary btn-xs">Switch to Form Login</button>
+					<!-- <button id="switchBtn" type="button" class="btn btn-primary btn-xs">Switch to Form Login</button> -->
+					<button id="switchBtn" type="button" class="btn" style="background-color: #1F8CE8; color: white;">Switch to Form Login</button>
 				</div>
 			</div>
 		</div>
@@ -187,8 +188,8 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 	</button>
 	
 	<!-- Loading Modal [END] -->
-	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
-	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.js"></script>
+	<%-- <script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.js"></script> --%>
 </body>
 <script type="text/javascript">
 	$(function() {

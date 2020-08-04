@@ -11,7 +11,7 @@
 <style>
 .sectioncalibrator {
 	height: calc(100vh - 50px);
-	/* overflow-y: scroll; */
+	overflow-y: scroll;
 }
 
 @media only screen and (max-width:600px) {
@@ -61,16 +61,16 @@ hr {
 				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="box box-primary" style="height: 89vh; overflow-y: hidden; background-color: white; margin-bottom: 0px; padding: 15px;">
+							<div class="box box-success" style="height: 89vh; overflow-x:hidden; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 15px;">
 								<div class="row" style="text-align: center;">
 								    <div class="col-sm-12">
 										<font size="4">SETTINGS</font>
 									</div>
 								</div>
 								<div class="row" style="margin-bottom:5px;">
-								    <div class="col-sm-12">
+								    <!-- <div class="col-sm-12">
 										<font size="3"><b>Synchronization Configuration</b></font>
-									</div>
+									</div> -->
 								</div>
 								<div class="row">
 									<div class="col-sm-4"> 
@@ -132,7 +132,7 @@ hr {
 										<div class="row" style="margin-bottom:5px;">
 											<div class="col-sm-12"> 
 												<font size="3"><b>Cash Drawer</b></font>
-												<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="saveCashDrawer()">
+												<button type="button" class="btn btn-sm pull-right custom-button" ng-click="saveCashDrawer()" style="background-color: #1F8CE8; color: white;">
 												Update Cash Drawer
 												</button>
 											</div>
@@ -170,9 +170,9 @@ hr {
 											</div>
 											<div class="row">
 												<div class="col-sm-12">													
-												    <button class="btn btn-primary btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashModal('cashOut')">Cash Out</button>
-												    <button class="btn btn-primary btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashModal('cashIn')">Cash In</button>
-												    <button class="btn btn-info btn-sm pull-right" style="margin: 4px 0 0 4px;" ng-click="showCashLogModal()">View Log</button>				
+												    <button class="btn btn-sm pull-right" style="margin: 4px 0 0 4px; background-color: #1F8CE8; color: white;" ng-click="showCashModal('cashOut')">Cash Out</button>
+												    <button class="btn btn-sm pull-right" style="margin: 4px 0 0 4px; background-color: #1F8CE8; color: white;" ng-click="showCashModal('cashIn')">Cash In</button>
+												    <button class="btn btn-sm pull-right" style="margin: 4px 0 0 4px; background-color: #1F8CE8; color: white;" ng-click="showCashLogModal()">View Log</button>				
 													<span class="pull-right" style="margin-top: 8px; margin-right: 15px; font-size:18px;"><b>Cash Amount : {{cashDrawerData.cash_amount | number : 2}}</b></span>											 
 												</div>
 											</div>
@@ -182,7 +182,7 @@ hr {
 										<div class="row" style="margin-bottom:5px;">
 											<div class="col-sm-12">
 												<font size="3"><b>Terminal</b></font>
-												<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="showTerminalModal('create')">
+												<button type="button" class="btn btn-sm pull-right custom-button" ng-click="showTerminalModal('create')" style="background-color: #1F8CE8; color: white;">
 												Add Terminal
 												</button>
 											</div>
@@ -226,7 +226,7 @@ hr {
 												<div class="row" style="margin-bottom:5px;">
 													<div class="col-sm-12"> 
 														<font size="3"><b>Receipt Printer</b></font>
-														<button type="button" class="btn bg-purple btn-sm pull-right custom-button" ng-click="saveReceiptPrinter()">
+														<button type="button" class="btn btn-sm pull-right custom-button" ng-click="saveReceiptPrinter()" style="background-color: #1F8CE8; color: white;">
 														Update Printer
 														</button>
 													</div>
@@ -245,7 +245,7 @@ hr {
 													</div>
 												</div>
 											</div>
-											<div class="col-sm-6">
+											<!-- <div class="col-sm-6">
 												<div class="row" style="margin-bottom:5px;">
 													<div class="col-sm-12"> 
 														<font size="3"><b>Operating System</b></font>
@@ -254,20 +254,20 @@ hr {
 														</button>
 													</div>
 												</div>
-												<!-- <div class="info-box border-shadow" style="padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
-											    	<div class="row">
-														<div class="col-sm-12">
-															<font size="2">OS Type: </font><label name="osDetect"></label>
+											</div> -->
+											<!-- <div class="col-sm-6">
+												<div class="row" style="margin-bottom:5px;">
+													<div class="col-sm-12"> 
+														<font size="3"><b>Kitchen Settings</b></font>
+														<div class="info-box border-shadow" style="padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
 															<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
-																<select id="receiptPrinterManufacturer" class="form-control" ng-model="selectedReceiptPrinterManufacturer"
-																	ng-options="manufacturer.id as manufacturer.name for manufacturer in receiptPrinterData.device_manufacturers">
-																	<option value="" disabled>-- SELECT --</option>
-																</select>
+																<input type="checkbox" id="checkBoxReceipt" ng-click="checkBoxReceipt()" style="margin: 2px 0 0;" class="icheckbox_minimal-red"> Receipt </br>
+																<input type="checkbox" id="checkBoxKDS" ng-click="checkBoxKDS()" style="margin: 2px 0 0;" class="icheckbox_minimal-red"> KDS (Kitchen Display System)
 															</div>
 														</div>
 													</div>
-												</div> -->
-											</div>
+												</div>
+											</div> -->
 										</div>
 									</div>								
 								</div>						  	
@@ -476,9 +476,9 @@ hr {
 							<div class="row">
 								<div class="col-sm-12">
 									<div class="pull-right">
-										<input type="button" class="btn btn-info" value="Clear"
+										<input type="button" class="btn btn-primary" value="Clear"
 											ng-click="clearCashAmount()" /> <input type="button"
-											class="btn btn-info" value="Update"
+											class="btn btn-primary" value="Update"
 											ng-click="submitCashInfo()" />
 									</div>
 								</div>
@@ -566,8 +566,8 @@ hr {
 								<div class="row">
 									<div class="col-sm-12" >
 										<div class="pull-right">
-											<input ng-if="action=='create'" type="submit" class="btn btn-info" value="Add" />  
-											<input ng-if="action=='update'" type="submit" class="btn btn-info" value="Update" />  
+											<input ng-if="action=='create'" type="submit" class="btn btn-primary" value="Add" />  
+											<input ng-if="action=='update'" type="submit" class="btn btn-primary" value="Update" />  
 										</div>
 									</div>
 								</div>

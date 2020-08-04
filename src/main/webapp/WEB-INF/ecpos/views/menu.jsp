@@ -7,8 +7,8 @@
 <style>
 .nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover
 	{
-	border-top-color: #00dcfb;
-	background-color: #00dcfb;
+	border-top-color: #1F8CE8;
+	background-color: #1F8CE8;
 }
 
 .nav-pills {
@@ -95,7 +95,7 @@ img:hover {
 <body>
 	<div ng-controller="menu_CTRL">
 		<div ng-init="menuInitiation();">
-			<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x:hidden; overflow-y: auto;">
+			<div class="box box-success" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x:hidden; overflow-y: auto;">
 
 				<div id="menuCarousel" class="carousel" data-interval="false">
 				<div class="input-container" style="width: 100%">
@@ -251,14 +251,14 @@ img:hover {
 												<div id="selectedModifiers{{$index+1}}"></div>
 											</div>
 											<div class="col-xs-7.5 col-sm-4">
-												<button class="btn btn-primary pull-right" ng-click="openMenuItemModal(tierDetails, $index+1, 'combo')">Select Item</button>
+												<button class="btn pull-right" style="background-color: #1F8CE8; color: white;" ng-click="openMenuItemModal(tierDetails, $index+1, 'combo')">Select Item</button>
 											</div>
 										</div>
 										<hr style="margin: 8px;">
 									</div>
 								</div>
 								<div style="text-align: center;">
-									<button class="btn btn-primary" ng-click="submitOrder()">Submit</button>
+									<button class="btn" style="background-color: #1F8CE8; color: white;" ng-click="submitOrder()">Submit</button>
 								</div>
 							</div>
 						</div>
@@ -286,13 +286,13 @@ img:hover {
 										<div ng-if="screenWidth > 1050" style="width: 120px; height: 120px; align-items: flex-end; display: flex;">
 											<div class="input-group input-group-sm">
 												<span class="input-group-btn" ng-click="minusAlaCarteItemQuantity()">
-													<button type="button" class="btn btn-number">
+													<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
 														<span class="glyphicon glyphicon-minus"></span>
 													</button>
 												</span> 
 												<input id="alaCarteItemQuantity" type="text" style="text-align: center;" class="form-control input-number" value="1"> 
 												<span class="input-group-btn" ng-click="addAlaCarteItemQuantity()">
-													<button type="button" class="btn btn-number">
+													<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
 														<span class="glyphicon glyphicon-plus"></span>
 													</button>
 												</span>
@@ -301,13 +301,13 @@ img:hover {
 										<div ng-if="screenWidth < 1050" style="width: 120px; height: 120px; align-items: flex-end; display: flex;">
 											<div class="input-group input-group-sm">
 												<span class="input-group-btn" ng-click="minusAlaCarteItemQuantity()">
-													<button type="button" class="btn btn-number">
+													<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
 														<span class="glyphicon glyphicon-minus"></span>
 													</button>
 												</span> 
 												<input id="alaCarteItemQuantity" type="text" style="text-align: center;" class="form-control input-number" value="1"> 
 												<span class="input-group-btn" ng-click="addAlaCarteItemQuantity()">
-													<button type="button" class="btn btn-number">
+													<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
 														<span class="glyphicon glyphicon-plus"></span>
 													</button>
 												</span>
@@ -350,7 +350,7 @@ img:hover {
 									<hr style="margin: 8px;">
 								</div>
 								<div style="text-align: center;">
-									<button class="btn btn-primary" ng-click="submitOrder()">Submit</button>
+									<button class="btn" ng-click="submitOrder()" style="background-color: #1F8CE8; color: white;">Submit</button>
 								</div>
 							</div>
 						</div>
@@ -422,7 +422,7 @@ img:hover {
 											</div>
 											<br>
 											<div>
-												<button class="btn btn-primary pull-right" ng-click="saveTemporaryArray()">Save</button>
+												<button class="btn pull-right" style="background-color: #1F8CE8; color: white;" ng-click="saveTemporaryArray()">Save</button>
 											</div>
 										</div>
 									</div>

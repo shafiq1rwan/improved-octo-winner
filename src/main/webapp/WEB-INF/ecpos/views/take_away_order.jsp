@@ -50,7 +50,7 @@ hr {
 				<section class="content sectioncalibrator" style="padding-top: 8px; padding-bottom: 8px;">
 					<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 						<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-							<div class="well box box-primary" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
+							<div class="well box box-success" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
 										<font size="4">TAKE AWAY ORDER</font>
@@ -66,12 +66,12 @@ hr {
 										<div id="keyboard"></div>
 										<br>
 										<div style="text-align: center;">
-											<button class="btn btn-info" ng-click="create_new_check()">Create New Check</button>
+											<button class="btn btn-success" ng-click="create_new_check()">Create New Check</button>
 										</div>
 										<%} else {%>
 										<br>
 										<div style="text-align: center;">
-											<button class="btn btn-info btn-lg" ng-click="create_new_check()">Create New Check</button>
+											<button class="btn btn-success btn-lg" ng-click="create_new_check()">Create New Check</button>
 										</div>
 										<%}%>
 									</div>

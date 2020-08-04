@@ -61,11 +61,11 @@
 						<div class="carousel-inner">
 							<div class="item active" id="checkList">
 								<div class="text-center" style="margin: 5px;">
-									<div class="col-xs-6 col-sm-2 sectioncalibrator2" ng-repeat="check in checks" style="padding-left: 2px; padding-right: 2px;">
+									<div class="col-xs-6 col-sm-2 sectioncalibrator2" ng-repeat="check in checks" style="padding-left: 12px; padding-right: 12px;">
 										<div data-dismiss='modal' ng-click="redirect_to_check_detail(check.check_number)">
-											<div class="panel panel-default text-center shadowBox test" >
-												<div class="panel-heading" style="color: #333333e0; background-color: #00FA9A">
-													<h3 class="panel-title">CHECK NO</h3>
+											<div class="panel panel-default text-center shadowBox test" style="border-color: #1EC676;">
+												<div class="panel-heading" style="color: #333333; background-color: #1EC676">
+													<h3 class="panel-title" style="color: white;">CHECK NO</h3>
 												</div>
 												<div class="panel-body">
 													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
@@ -76,11 +76,11 @@
 										</div>
 									</div>
 			
-									<div class="col-xs-6 col-sm-2 sectioncalibrator2" style="padding-left: 2px; padding-right: 2px;">
+									<div class="col-xs-6 col-sm-2 sectioncalibrator2" style="padding-left: 12px; padding-right: 12px;">
 										<div data-dismiss='modal'>
-											<div class="panel panel-default text-center shadowBox test">
-												<div class="panel-heading">
-													<h3 class="panel-title">NEW</h3>
+											<div class="panel panel-default text-center shadowBox test" style="border-color: black">
+												<div class="panel-heading" style="background: black;">
+													<h3 class="panel-title" style="color: white;">NEW</h3>
 												</div>
 												<div class="panel-body" data-target="#depositOrderCarousel" data-slide="next">
 													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
@@ -96,7 +96,7 @@
 							<div class="item" id="newCheck">
 								<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 									<div class="col-sm-12" style="padding-right: 2px; padding-left: 2px;">
-										<div class="box box-primary" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
+										<div class="box box-success" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding-top: 10px; padding-bottom: 10px; padding-left: 15px; padding-right: 15px;">
 											<div class="row" style="text-align: center">
 												<div class="col-sm-1" style="font-size: large">
 													<a data-target="#depositOrderCarousel" data-slide="prev">
@@ -117,7 +117,7 @@
 													<div id="keyboard"></div>
 													<br>
 													<div style="text-align: center;">
-														<button class="btn btn-info" ng-click="create_new_check()">Create New Check</button>
+														<button class="btn btn-success" ng-click="create_new_check()">Create New Check</button>
 													</div>
 												</div>
 												<div class="col-sm-1 form-group"></div>

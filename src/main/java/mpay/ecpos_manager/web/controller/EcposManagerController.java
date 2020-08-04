@@ -323,4 +323,11 @@ public class EcposManagerController {
 		
 		return model;
 	}
+	
+	@RequestMapping(value = { "/secondDisplay" }, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView secondDisplay(HttpServletRequest request) {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/secondDisplay");
+		return model;
+	}
 }

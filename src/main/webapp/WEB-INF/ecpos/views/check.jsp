@@ -59,7 +59,7 @@ hr {
 						<!-- START of check well -->
 						<div id="checkWell">
 							<div class="col-sm-6" style="padding-right: 2px; padding-left: 2px;">
-								<div class="box box-primary" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x:hidden; overflow-y: auto;">
+								<div class="box box-success" style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x:hidden; overflow-y: auto;">
 									<div class="row">
 										<div class="col-sm-7">
 											<div>
@@ -99,8 +99,8 @@ hr {
 											<%}%>
 											</div>
 											<div ng-if="mode == 2">
-												<button class="btn btn-block btn-info" ng-click="redirectMenu()">Back To Previous</button>
-												<button class="btn btn-block btn-info" ng-click="printReceiptBeforePay()">Print Receipt</button>
+												<button class="btn btn-block shadowBox" ng-click="redirectMenu()" style="background-color: #1F8CE8; color: white;">Back To Previous</button>
+												<button class="btn btn-block shadowBox" ng-click="printReceiptBeforePay()" style="background-color: #1F8CE8; color: white;">Print Receipt</button>
 											</div>
 										</div>
 									</div>
@@ -266,10 +266,9 @@ hr {
 													<td style="padding: 2px;"><div
 															ng-if="orderType == 'table'">
 															<button id="splitCheckButton"
-																class="btn btn-primary shadowBox"
-																ng-click="splitCheck()" style="word-spacing: normal;">
-																<i class="fa fa-copy"></i><br> <b
-																	style="font-size: 11px">SPLIT CHECK </b>
+																class="btn shadowBox"
+																ng-click="splitCheck()" style="word-spacing: normal; background-color: #1F8CE8;">
+																<b style="font-size: 11px; color: white;"><i class="fa fa-copy"></i><br> SPLIT CHECK </b>
 															</button>
 														</div></td>
 													<td style="padding: 2px;">
@@ -277,16 +276,15 @@ hr {
 															<button id="closeCheckButton"
 																class="btn btn-block test bg-maroon shadowBox"
 																ng-click="closeCheck()" style="word-spacing: normal;">
-																<i class="fa fa-remove"></i><br> <b
-																	style="font-size: 11px">CLOSE CHECK</b>
+																<b style="font-size: 11px"><i class="fa fa-remove"></i><br> CLOSE CHECK</b>
 															</button>
 														</div>
 													</td>
 													<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {%>
 													<td style="padding: 2px; width: 100%"><button
-															id="paymentButton" class="btn btn-block btn-primary shadowBox"
+															id="paymentButton" class="btn btn-block shadowBox"
 															ng-click="redirectPayment()"
-															style="word-spacing: normal; padding: 12px"><b style="font-size: 20px"><i class="fa fa-dollar"></i> PAY</b>
+															style="word-spacing: normal; padding: 12px; background-color: #1F8CE8;"><b style="font-size: 20px; color: white;"><i class="fa fa-dollar"></i> PAY</b>
 														</button></td>
 													<%}%>
 												</tr>

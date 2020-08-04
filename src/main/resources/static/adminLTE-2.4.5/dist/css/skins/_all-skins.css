@@ -640,7 +640,7 @@
  * -----------
  */
 .skin-green .main-header .navbar {
-  background-color: #00fa9a;
+  background-color: #1EC676;
 }
 .skin-green .main-header .navbar .nav > li > a {
   color: #ffffff;
@@ -688,7 +688,7 @@
   background-color: #008749;
 }
 .skin-green .main-header li.user-header {
-  background-color: #00fa9a;
+  background-color: #1EC676;
 }
 .skin-green .content-header {
   background: transparent;
@@ -716,7 +716,7 @@
   background: #1e282c;
 }
 .skin-green .sidebar-menu > li.active > a {
-  border-left-color: #00fa9a;
+  border-left-color: #1EC676;
 }
 .skin-green .sidebar-menu > li > .treeview-menu {
   margin: 0 1px;
@@ -774,7 +774,7 @@
  * -----------
  */
 .skin-green-light .main-header .navbar {
-  background-color: #00fa9a;
+  background-color: #1EC676;
 }
 .skin-green-light .main-header .navbar .nav > li > a {
   color: #ffffff;
@@ -814,7 +814,7 @@
   }
 }
 .skin-green-light .main-header .logo {
-  background-color: #00fa9a;
+  background-color: #1EC676;
   color: #ffffff;
   border-bottom: 0 solid transparent;
 }
@@ -822,7 +822,7 @@
   background-color: #00a157;
 }
 .skin-green-light .main-header li.user-header {
-  background-color: #00fa9a;
+  background-color: #1EC676;
 }
 .skin-green-light .content-header {
   background: transparent;
@@ -858,7 +858,7 @@
   background: #f4f4f5;
 }
 .skin-green-light .sidebar-menu > li.active {
-  border-left-color: #00fa9a;
+  border-left-color: #1EC676;
 }
 .skin-green-light .sidebar-menu > li.active > a {
   font-weight: 600;

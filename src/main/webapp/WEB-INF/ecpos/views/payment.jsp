@@ -31,9 +31,9 @@
 }
 
 .calculator:hover:enabled {
-  background-color: #00fa9a;
+  background-color: #1EC676;
   color: white;
-  border-color: #00fa9a;
+  border-color: #1EC676;
 }
 
 .calculator:hover:disabled {
@@ -51,9 +51,9 @@
 }
 
 .calculatoraction:hover:enabled {
-  background-color: #00fa9a;
+  background-color: #1EC676;
   color: white;
-  border-color: #00fa9a;
+  border-color: #1EC676;
 }
 
 .calculatoraction:hover:disabled {
@@ -71,7 +71,7 @@ ul.select2-results__options li {
 <body>
 	<div ng-controller="payment_CTRL">
 		<div>
-			<div class="box box-primary" style="height: 90vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
+			<div class="box box-success" style="height: 90vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 10px;">
 					
 				<div id="paymentCarousel" class="carousel" data-interval="false">
 					<div class="carousel-inner">
