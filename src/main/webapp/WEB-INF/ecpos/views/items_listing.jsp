@@ -15,8 +15,8 @@
 }
 
 .nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover {
-	border-top-color: #1F8CE8;
-	background-color: #1F8CE8;
+	border-top-color: #1EC676;
+	background-color: #1EC676;
 }
 
 .nav-pills {

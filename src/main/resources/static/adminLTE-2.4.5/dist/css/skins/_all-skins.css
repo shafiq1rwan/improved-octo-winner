@@ -696,15 +696,15 @@
 .skin-green .wrapper,
 .skin-green .main-sidebar,
 .skin-green .left-side {
-  background-color: #222d32;
+  background-color: white;
 }
 .skin-green .user-panel > .info,
 .skin-green .user-panel > .info > a {
   color: #fff;
 }
 .skin-green .sidebar-menu > li.header {
-  color: #4b646f;
-  background: #1a2226;
+  color: #F4F6F8;
+  background: #F4F6F8;
 }
 .skin-green .sidebar-menu > li > a {
   border-left: 3px solid transparent;

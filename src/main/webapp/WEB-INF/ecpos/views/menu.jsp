@@ -118,7 +118,7 @@ img:hover {
 										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-3 padding-0">
 											<br>
 											<div style="text-align: center;" ng-click="getMenuItems(category)">
-												<div style="margin: auto; width: 120px; height: 120px; border: 5px solid white; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
+												<div style="margin: auto; width: 120px; height: 120px; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 													<img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="max-width: 100%; max-height: 100%;" />
 												</div>
 												<br>
@@ -151,7 +151,7 @@ img:hover {
 										<div class="col-xs-6 col-sm-4 col-m-6 col-lg-3 padding-0">
 											<br>
 											<div style="text-align: center" ng-click="action(item)">
-												<div style="margin: auto; width: 120px; height: 120px; border: 5px solid white; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
+												<div style="margin: auto; width: 120px; height: 120px; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 													<img ng-src="${pageContext.request.contextPath}/{{item.imagePath}}" alt={{item.name}} style="max-width: 100%; max-height: 100%;" />
 												</div>
 												<br>
@@ -177,10 +177,10 @@ img:hover {
 								<div class="row" style="text-align: center">
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;"></div>
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;">
-										<div ng-if="screenWidth > 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+										<div ng-if="screenWidth > 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 100%; max-height: 100%;" />
 										</div>
-										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 											<img ng-src="${pageContext.request.contextPath}/{{tiers.imagePath}}" style="max-width: 100%; max-height: 100%;" />
 										</div>
 									</div>
@@ -275,10 +275,10 @@ img:hover {
 								<div class="row" style="text-align: center">
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;"></div>
 									<div class="col-xs-4 col-sm-4" style="padding: 0px;">
-										<div ng-if="screenWidth > 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+										<div ng-if="screenWidth > 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 100%; max-height: 100%;" />
 										</div>
-										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+										<div ng-if="screenWidth < 1050" style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 											<img ng-src="${pageContext.request.contextPath}/{{alaCarte.imagePath}}" style="max-width: 100%; max-height: 100%;" />
 										</div>
 									</div>
@@ -379,7 +379,7 @@ img:hover {
 													<div class="col-xs-6 col-sm-4">
 														<br>
 														<div style="text-align: center" ng-click="getModifiers(tierItemDetail)">
-															<div style="margin: auto; width: 120px; height: 120px; border: 1px solid #d2d6de; border-radius: 5px; align-items: center; display: flex;">
+															<div style="margin: auto; width: 120px; height: 120px; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
 																<img ng-src="${pageContext.request.contextPath}/{{tierItemDetail.imagePath}}" style="max-width: 100%; max-height: 100%;" />
 															</div>
 															<div class="itemname">

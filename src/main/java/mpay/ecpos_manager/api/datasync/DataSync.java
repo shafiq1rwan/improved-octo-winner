@@ -513,6 +513,7 @@ public class DataSync {
 				
 				jary.put(transaction);
 			}
+			System.out.println("JSON: "+jary.toString());
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", SYNC_FOLDER);
 			e.printStackTrace();

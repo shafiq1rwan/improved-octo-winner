@@ -81,12 +81,14 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 </style>
 </head>
 
-<body
-	style="background: url(${pageContext.request.contextPath}/img/cover/Cover.jpg) no-repeat; background-size: cover; min-height: 100vh; opacity: 0.9;">
+<%-- <body
+	style="background: url(${pageContext.request.contextPath}/img/cover/Cover.jpg) no-repeat; background-size: cover; min-height: 100vh; opacity: 0.9;"> --%>
+	<body
+	style="background-color: #1EC676; background-size: cover; min-height: 100vh; opacity: 0.9;">
 	<div id="loadingPanel" style="min-height: 100vh; display: flex; align-items: center; position: absolute;">
 		<div style="min-width: 100vw; display: flex; flex-direction: column; align-items: center;">
 			<div class="panel"
-				style="background-color: rgba(0, 0, 0, 0.9); text-align: center;">
+				style="background-color: #1EC676; text-align: center;">
 				<span id="progressText" style="color: white; margin-top: 10px;">Initializing...</span>
 				<div class="progress" style="width: 90vh; margin: 10px;">
 				  	<div id="progressBar" class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
@@ -101,7 +103,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 	</div>
 	<div id="loginPanel" style="min-height: 100vh; display: flex; align-items: center; position: absolute;">
 		<div style="min-width: 100vw; display: flex; flex-direction: column; align-items: center;">
-			<div class="panel" style="background-color: rgba(0, 0, 0, 0.9);">
+			<div class="panel" style="background-color: #1EC676">
 				<div class="panel-heading text-center">
 					<img
 						src="${pageContext.request.contextPath}/meta/img/ecpos_logo.png"
@@ -120,18 +122,18 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 							<!-- <label class="login-label"  style="color: white;">Password</label> -->
 							<input class="form-control" id="password" name="password" placeholder="Password" type="password" required>
 							<br> 
-							<input class="btn btn-lg btn-block" style="background-color: #1EC676; color: white;" type="submit" value="Login">
+							<input class="btn btn-lg btn-block" style="background-color: #0C6D40; color: white;" type="submit" value="Login">
 						</fieldset>
 					</form>
 					<form id="qrForm" action="${pageContext.request.contextPath}/authenticationQR" method="post" accept-charset="UTF-8" role="form" class="form-signin" autocomplete="off">
 						<fieldset>
 							<input type="hidden" id="qrContent" name="qrContent" value="">
-							<input id="showQRLoginBtn" class="btn btn-lg btn-block" style="background-color: #1EC676; color: white;" type="button" value="Scan QR">
+							<input id="showQRLoginBtn" class="btn btn-lg btn-block" style="background-color: #0C6D40; color: white;" type="button" value="Scan QR">
 						</fieldset>
 					</form>
 					<br>
 					<!-- <button id="switchBtn" type="button" class="btn btn-primary btn-xs">Switch to Form Login</button> -->
-					<button id="switchBtn" type="button" class="btn" style="background-color: #1F8CE8; color: white;">Switch to Form Login</button>
+					<button id="switchBtn" type="button" class="btn" style="background-color: #1EC676; color: white;">Switch to Form Login</button>
 				</div>
 			</div>
 		</div>

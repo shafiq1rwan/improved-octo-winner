@@ -7,11 +7,11 @@
 <!DOCTYPE html>
 <html>
 <body>
-	<aside class="main-sidebar">
+	<aside class="main-sidebar" style="border-right: 1px solid lightgrey;">
 		<section class="sidebar">
 			<ul class="sidebar-menu">
 
-				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Order Management</li>
+				<li class="header" style="font-size: 1em; color: grey; /* font-weight: bold; */">Order Management</li>
 				<%if (user.getStoreType() == 2) {%>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!table_order">
@@ -41,7 +41,7 @@
 				</li>
 				
 				<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {%>
-				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">Record Management</li>
+				<li class="header" style="font-size: 1em; color: grey; /* font-weight: bold; */">Record Management</li>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!items_listing">
 						<i class="fa fa-object-group"></i> 
@@ -71,7 +71,7 @@
 					</a>
 				</li>
 				<%}%>
-				<li class="header" style="font-size: 1em; color: white; font-weight: bold;">System Management</li>
+				<li class="header" style="font-size: 1em; color: grey; /* font-weight: bold; */">System Management</li>
 <%-- 				<li>
 					<a href="${pageContext.request.contextPath}/#!connection_qr">
 						<i class="fa fa-qrcode"></i> 
