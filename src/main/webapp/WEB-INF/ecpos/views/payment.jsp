@@ -68,6 +68,10 @@ ul.select2-results__options li {
 	padding: 0;
 	font-size: 20px;
 }
+
+.shadowBox {
+	box-shadow: 1px 1px 4px grey;
+}
 </style>
 </head>
 
@@ -89,7 +93,7 @@ ul.select2-results__options li {
 								<div class="row">
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
-										<button class="btn btn-block btn-success"
+										<button class="btn btn-block btn-success shadowBox"
 											style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: top; border: 10px solid transparent"
 											ng-click="proceedPaymentMethod('full')">
 											<font size="4"
@@ -102,7 +106,7 @@ ul.select2-results__options li {
 									<div class="row">
 										<div class="col-sm-12"
 											style="margin-top: 15px; margin-bottom: 15px;">
-											<button class="btn btn-block btn-success"
+											<button class="btn btn-block btn-success shadowBox"
 												style="margin: auto; width: 200px; height: 125px; border: 1px solid grey; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: top; border: 10px solid transparent"
 												ng-click="proceedPaymentMethod('partial')" disabled>
 												<font size="4"
@@ -116,7 +120,7 @@ ul.select2-results__options li {
 									<div class="row">
 										<div class="col-sm-12"
 											style="margin-top: 15px; margin-bottom: 15px;">
-											<button class="btn btn-block bg-maroon"
+											<button class="btn btn-block btn-success shadowBox"
 												style="margin: auto; width: 200px; height: 125px; border: 1px solid grey; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: top; border: 10px solid transparent"
 												ng-click="proceedPaymentMethod('partial')">
 												<font size="4"
@@ -146,7 +150,7 @@ ul.select2-results__options li {
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
 										<%-- <button class="btn btn-block btn-success" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/money.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('Cash')"></button> --%>
-										<button class="btn btn-block btn-success"
+										<button class="btn btn-block btn-success shadowBox"
 											style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/Cash.png'); background-repeat: no-repeat; background-size: 47% 65%; background-position: top; border: 10px solid transparent"
 											ng-click="proceedPayment('Cash')">
 											<font size="4"
@@ -158,7 +162,7 @@ ul.select2-results__options li {
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
 										<%-- <button class="btn btn-block btn-success" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/credit-card.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('Card')"></button> --%>
-										<button class="btn btn-block btn-success"
+										<button class="btn btn-block btn-success shadowBox"
 											style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/Cards.png'); background-repeat: no-repeat; background-size: 40% 58%; background-position: center; border: 10px solid transparent"
 											ng-click="proceedPayment('Card')">
 											<font size="4"
@@ -170,7 +174,7 @@ ul.select2-results__options li {
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
 										<%-- <button class="btn btn-block btn-success" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/qr-code.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('QR')"></button> --%>
-										<button class="btn btn-block btn-success"
+										<button class="btn btn-block btn-success shadowBox"
 											style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/eWallet.png'); background-repeat: no-repeat; background-size: 48% 75%; background-position: top; border: 10px solid transparent"
 											ng-click="proceedPayment('QR')">
 											<font size="4"

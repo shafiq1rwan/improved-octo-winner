@@ -67,7 +67,7 @@ hr {
 								<div class="box box-success"
 									style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x: hidden; overflow-y: auto;">
 									<div class="row">
-										<div class="col-sm-7">
+										<div class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
 											<div style="margin-bottom: 10px;">
 												<!-- <font><b>Check : {{checkDetail.checkNoToday}}</b> / <b>Table : {{checkDetail.tableName}}</b></font> -->
 												<font><b>Check:</b> {{checkDetail.checkNoToday}} /
@@ -89,7 +89,7 @@ hr {
 													{{checkDetail.customerName}}</font>
 											</div>
 										</div>
-										<div class="col-sm-5">
+										<div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
 											<div ng-if="mode == 1">
 												<%
 													if (user.getStoreType() == 2) {
@@ -392,93 +392,75 @@ hr {
 									</div>
 									<hr style="margin-bottom: 10px;">
 									<div id="checkActionButtons" style="width: 100%">
-										<table style="width: 100%;">
-											<tbody>
-												<tr style="width: 100%;">
-													<td style="padding: 2px;"><button
-															id="cancelItemButton"
-															class="btn btn-block test bg-orange shadowBox"
-															ng-click="cancelItem()"
-															style="word-spacing: normal; word-wrap: break-word; width: 140px; height: 80px; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-															<!-- <i class="fa fa-trash"></i> -->
-															<br> <font
-																style="font-size: 14px; position: relative; bottom: -11px;">CANCEL
-																ITEM </font>
-														</button></td>
-													<td style="padding: 2px;">
-														<button id="cancelCheckButton"
-															class="btn btn-block btn-danger shadowBox"
-															ng-click="cancelCheck()"
-															style="width: 140px; height: 80px; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelCheck.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-															<!-- <i class="fa fa-remove"></i> -->
-															<br> <font style="font-size: 14px; position: relative; bottom: -11px;">CANCEL CHECK</font>
-														</button>
-													</td>
-													<td style="padding: 2px;"><div
-															ng-if="orderType == 'table'">
-															<button id="splitCheckButton"
-																class="btn btn-primary shadowBox"
-																ng-click="splitCheck()"
-																style="word-spacing: normal; background-color: #1F8CE8; width: 140px; height: 80px; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/SplitCheck.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-																<font style="font-size: 14px; position: relative; bottom: -11px;"> <!-- <i
-																	class="fa fa-copy"></i> --> <br> SPLIT CHECK
-																</font>
-															</button>
-														</div></td>
-													<td style="padding: 2px;">
-														<div ng-if="orderType == 'deposit'">
-															<button id="closeCheckButton"
-																class="btn btn-block btn-danger shadowBox"
-																ng-click="closeCheck()"
-																style="word-spacing: normal; width: 140px; height: 80px; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-																<font style="font-size: 14px; position: relative; bottom: -11px;"> <!-- <i class="fa fa-remove"></i> -->
-																	<br> CLOSE CHECK
-																</font>
-															</button>
-														</div>
-													</td>
-													<%
-														if (user.getRoleType() == 1 || user.getRoleType() == 3) {
-													%>
-													<td style="padding: 2px;"><button
-															id="paymentButton"
-															class="btn btn-block btn-success shadowBox"
-															ng-click="redirectPayment()"
-															style="word-spacing: normal; width: 140px; height: 80px; margin-right: 15px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-															<font style="font-size: 14px; position: relative; bottom: -22px;"> <!-- <i
-																class="fa fa-dollar"></i> --> PAY
-															</font>
-														</button></td>
-													<%
-														}
-													%>
-												</tr>
-											</tbody>
-										</table>
-										<!-- Comment on 17-09-2019 - For redesign and new arrangement -->
-										<!-- <div class="row" style="margin-bottom: 5px;">
-											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-												<button id="cancelItemButton" class="btn btn-block btn-info" ng-click="cancelItem()">CANCEL ITEM</button>
-											</div>
-											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-												<button id="paymentButton" class="btn btn-block btn-info" ng-click="redirectPayment()">PAYMENT</button>
+										<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+											<button id="cancelItemButton"
+												class="btn btn-block test bg-orange shadowBox"
+												ng-click="cancelItem()"
+												style="word-spacing: normal; word-wrap: break-word; width: 100%; height: 50%; margin-right: 13px; border: 10px solid transparent; background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; ">
+												<br> 
+												<%-- Make sure to undo if didnt work, TQ --%>
+												<%-- background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; --%>
+												<%-- <img src="${pageContext.request.contextPath}/img/icon/CancelItems.png" style="background-repeat: no-repeat; object-fit: contain; max-width: 50%; max-height: 100%"><br> --%>
+												<font
+													style="font-size: 14px; position: relative; bottom: -11px; left: -7%">CANCEL
+													ITEM </font>
+											</button>
+										</div>
+
+										<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+											<button id="cancelCheckButton"
+												class="btn btn-block btn-danger shadowBox"
+												ng-click="cancelCheck()"
+												style="word-spacing: normal; width: 100%; height: 100%; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelCheck.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
+												<br> <font
+													style="font-size: 14px; position: relative; bottom: -11px; left: -17%">CANCEL
+													CHECK</font>
+											</button>
+										</div>
+
+										<div ng-if="orderType == 'table'">
+											<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+												<button id="splitCheckButton"
+													class="btn btn-primary shadowBox" ng-click="splitCheck()"
+													style="word-spacing: normal; width: 100%; height: 100%; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/SplitCheck.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
+													<font
+														style="font-size: 14px; position: relative; bottom: -11px; left: -7%">
+														<br> SPLIT CHECK
+													</font>
+												</button>
 											</div>
 										</div>
-										<div class="row">
-											<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-												<button id="cancelCheckButton" class="btn btn-block btn-info" ng-click="cancelCheck()">CANCEL CHECK</button>
+
+										<div ng-if="orderType == 'deposit'">
+											<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+												<button id="closeCheckButton"
+													class="btn btn-block btn-danger shadowBox"
+													ng-click="closeCheck()"
+													style="word-spacing: normal; width: 100%; height: 100%; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
+													<font
+														style="font-size: 14px; position: relative; bottom: -11px; left: -7%">
+														<br> CLOSE CHECK
+													</font>
+												</button>
 											</div>
-											<div ng-if="orderType == 'table'">
-												<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-													<button id="splitCheckButton" class="btn btn-block btn-info" ng-click="splitCheck()">SPLIT CHECK</button>
-												</div>
-											</div>
-											<div ng-if="orderType == 'deposit'">
-												<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-													<button id="closeCheckButton" class="btn btn-block btn-info" ng-click="closeCheck()">CLOSE CHECK</button>
-												</div>
-											</div>
-										</div> -->
+										</div>
+
+										<div class="col-lg-3 col-md-3 col-sm-3 col-xs-4">
+											<%
+												if (user.getRoleType() == 1 || user.getRoleType() == 3) {
+											%>
+											<button id="paymentButton"
+												class="btn btn-block btn-success shadowBox"
+												ng-click="redirectPayment()"
+												style="word-spacing: normal; width: 100%; height: 72px; margin-right: 15px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
+												<font
+													style="font-size: 14px; position: relative; bottom: -22px;">
+													PAY </font>
+											</button>
+											<%
+												}
+											%>
+										</div>
 									</div>
 								</div>
 							</div>

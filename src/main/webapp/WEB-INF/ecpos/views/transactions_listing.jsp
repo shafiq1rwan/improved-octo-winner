@@ -141,13 +141,13 @@
 								<table width="100%">
 									<tbody>
 										<tr>
-											<td><button class="btn"
-													ng-click="voidTransaction(transaction.id, transaction.isVoid)" style="width: 150px; float: right; margin-right: 20px; background: #EE202E; color: white; box-shadow: 1px 1px 3px grey">
+											<td><button class="btn btn-danger"
+													ng-click="voidTransaction(transaction.id, transaction.isVoid)" style="width: 150px; float: right; margin-right: 20px; box-shadow: 1px 1px 3px grey">
 													<!-- <i class="fa fa-remove" aria-hidden="true"></i> --> Void
 												</button></td>
 											<td><button
-													class="btn"
-													ng-click="printTransactionReceipt(transaction.id)" style="width: 150px; background: #EE202E; color: white; box-shadow: 1px 1px 3px grey">
+													class="btn btn-danger"
+													ng-click="printTransactionReceipt(transaction.id)" style="width: 150px; box-shadow: 1px 1px 3px grey">
 													<!-- <i class="fa fa-print" aria-hidden="true"></i> --> Print
 													Receipt
 												</button></td>
