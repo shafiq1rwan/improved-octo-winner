@@ -410,6 +410,11 @@ public class ReceiptPrinter {
 						rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 				jsonResult.put("overdueAmount",
 						rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
+				
+				//Author: Shafiq Irwan
+				//Date: 05/10/2020
+				//Purpose: Add receipt number on receipt
+				jsonResult.put("receiptNumber", rs.getString("receipt_number") == null ? "-" : rs.getString("receipt_number"));
 
 				stmt2 = connection.prepareStatement(
 						"select * from tax_charge tc " + "inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id "
@@ -850,7 +855,7 @@ public class ReceiptPrinter {
 
 							// Receipt Info Table
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Order Type","Table No", "Order At", "Printed At",
+							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type","Table No", "Order At", "Printed At",
 									"Cust Name", "Staff"));
 								
 							if(receiptContentJson.getString("customerName").equals("-")) {
@@ -861,7 +866,8 @@ public class ReceiptPrinter {
 								receiptInfoLabels.remove(2); //remove table number if it is retail business
 							}
 								
-							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("checkNoByDay"),
+							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
+									receiptContentJson.getString("checkNoByDay"),
 									receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
 									sdf.format(new Date()), staffName));
 													
@@ -2059,6 +2065,11 @@ public class ReceiptPrinter {
 						rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 				jsonResult.put("overdueAmount",
 						rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
+				
+				//Author: Shafiq Irwan
+				//Date: 05/10/2020
+				//Purpose: Add Receipt Number in Receipt
+				jsonResult.put("receiptNumber", rs.getString("receipt_number") == null ? "-" : rs.getString("receipt_number"));
 
 				stmt2 = connection.prepareStatement(
 						"select * from tax_charge tc " + "inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id "
@@ -2426,7 +2437,7 @@ public class ReceiptPrinter {
 
 						// Receipt Info Table
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Check No", "Order Type",
+						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type",
 								"Table No", "Order At", "Printed At", "Cust Name", "Staff"));
 
 						if (receiptContentJson.getString("customerName").equals("-")) {
@@ -2437,7 +2448,7 @@ public class ReceiptPrinter {
 							receiptInfoLabels.remove(2); // remove table number if it is retail business
 						}
 
-						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(
+						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
 								receiptContentJson.getString("checkNoByDay"), receiptContentJson.getString("tableNo"),
 								receiptContentJson.getString("createdDate"), sdf.format(new Date()), staffName));
 

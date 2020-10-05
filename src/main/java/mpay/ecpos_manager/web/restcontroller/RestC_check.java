@@ -733,15 +733,28 @@ public class RestC_check {
 							stmt3 = connection.prepareStatement("update master set count = ? where type = 'check';");
 							stmt3.setString(1, Integer.toString(newCheckNo));
 							int rs3 = stmt3.executeUpdate();
+							
+							/***
+							 * Author: Shafiq Irwan
+							 * Date: 05/10/2020
+							 * Purpose: To add receipt number during check creation
+							 */
+							
+							Date date = new Date();
+						    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+						    String receiptDate = sdf.format(date);
+						    
+						    String receiptNumber = receiptDate+"-"+newCheckNo;
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
-										"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?);");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,receipt_number) " + 
+										"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?,?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setString(2, checkRef);
 								stmt4.setLong(3, staffId);
 								stmt4.setString(4, tableNo);
 								stmt4.setLong(5, user.getDeviceId());
+								stmt4.setString(6, receiptNumber);
 								int rs4 = stmt4.executeUpdate();
 								
 								if (rs4 > 0) {
@@ -893,20 +906,32 @@ public class RestC_check {
 							stmt3 = connection.prepareStatement("update master set count = ? where type = 'check';");
 							stmt3.setString(1, Integer.toString(newCheckNo));
 							int rs3 = stmt3.executeUpdate();
+							
+							/***
+							 * Author: Shafiq Irwan
+							 * Date: 05/10/2020
+							 * Purpose: To add receipt number during check creation
+							 */
+							
+							Date date = new Date();
+						    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+						    String receiptDate = sdf.format(date);
+						    String receiptNumber = receiptDate+"-"+newCheckNo;
 		
 							if (rs3 > 0) {
 								if (user.isTakeAwayFlag() == true) {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,customer_name) " + 
-											"values (?,?,?,2,0,0,0,0,0,0,0,1,now(),?,?);");
-									stmt4.setString(5, jsonObj.getString("customerName"));
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,receipt_number,customer_name) " + 
+											"values (?,?,?,2,0,0,0,0,0,0,0,1,now(),?,?,?);");
+									stmt4.setString(6, jsonObj.getString("customerName"));
 								} else {
-									stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
-											"values (?,?,?,2,0,0,0,0,0,0,0,1,now(),?);");
+									stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,receipt_number) " + 
+											"values (?,?,?,2,0,0,0,0,0,0,0,1,now(),?,?);");
 								}
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setString(2, checkRef);
 								stmt4.setLong(3, staffId);
 								stmt4.setLong(4, user.getDeviceId());
+								stmt4.setString(5, receiptNumber);
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {
@@ -1059,15 +1084,27 @@ public class RestC_check {
 							stmt3 = connection.prepareStatement("update master set count = ? where type = 'check';");
 							stmt3.setString(1, Integer.toString(newCheckNo));
 							int rs3 = stmt3.executeUpdate();
+							
+							/***
+							 * Author: Shafiq Irwan
+							 * Date: 05/10/2020
+							 * Purpose: To add receipt number during check creation
+							 */
+							
+							Date date = new Date();
+						    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+						    String receiptDate = sdf.format(date);
+						    String receiptNumber = receiptDate+"-"+newCheckNo;
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name,device_id) " + 
-										"values (?,?,?,3,0,0,0,0,0,0,0,1,now(),?,?);");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,customer_name,device_id,receipt_number) " + 
+										"values (?,?,?,3,0,0,0,0,0,0,0,1,now(),?,?,?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setString(2, checkRef);
 								stmt4.setLong(3, staffId);
 								stmt4.setString(4, jsonObj.getString("customerName"));
 								stmt4.setLong(5, user.getDeviceId());
+								stmt4.setString(6, receiptNumber);
 								int rs4 = stmt4.executeUpdate();
 		
 								if (rs4 > 0) {

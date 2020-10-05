@@ -94,6 +94,7 @@
 										<tr>
 											<th>Check No</th>
 											<th>By</th>
+											<th>Receipt No</th>
 											<th>Transaction Type</th>
 											<th>Payment Method</th>
 											<th>Payment Type</th>
@@ -174,6 +175,10 @@
 										<table class="table receipt_content_table" border="0"
 											style="margin: 10px;">
 											<tbody>
+												<tr>
+													<td>Receipt No</td>
+													<td>{{receiptData.receipt_number}}</td>
+												</tr>
 												<tr>
 													<td>Check No</td>
 													<td>{{receiptData.checkNoByDay}}</td>

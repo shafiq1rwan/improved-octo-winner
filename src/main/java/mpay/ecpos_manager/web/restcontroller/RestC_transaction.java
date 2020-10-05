@@ -77,6 +77,7 @@ public class RestC_transaction {
 						+ "t.transaction_amount,tss.name as transaction_status, "
 						+ "case when pm.id = 1 then t.created_date else case when t.transaction_date is not null and t.transaction_time is not null then "
 						+ "concat('20',SUBSTRING(t.transaction_date, 1, 2),'-',SUBSTRING(t.transaction_date, 3, 2),'-',SUBSTRING(t.transaction_date, 5, 2),' ',SUBSTRING(t.transaction_time, 1, 2),':',SUBSTRING(t.transaction_time, 3, 2),':',SUBSTRING(t.transaction_time, 5, 2)) else '' end end as transaction_date "
+						+ ", c.receipt_number "
 						+ "from transaction t " + "inner join staff s on s.id = t.staff_id "
 						+ "inner join `check` c on c.id = t.check_id and c.check_number = t.check_number "
 						+ "inner join transaction_type tt on tt.id = t.transaction_type "
@@ -115,6 +116,7 @@ public class RestC_transaction {
 					transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
 					transaction.put("transactionStatus", rs.getString("transaction_status"));
 					transaction.put("transactionDate", rs.getString("transaction_date"));
+					transaction.put("receipt_number", rs.getString("receipt_number") == null ? "-" : rs.getString("receipt_number"));
 
 					jary.put(transaction);
 				}
@@ -356,6 +358,11 @@ public class RestC_transaction {
 						receiptData.put("overdueAmount", rs3.getString("overdue_amount") == null ? "0.00" : rs3.getString("overdue_amount"));
 						receiptData.put("staff", staffName);
 						receiptData.put("transType", rs.getString("name"));
+						
+						//Author: Shafiq Irwan
+						//Date: 05/10/2020
+						//Purpose: add receipt no
+						receiptData.put("receipt_number", rs3.getString("receipt_number") == null ? "-" : rs3.getString("receipt_number"));
 
 						jsonResult.put("receiptData", receiptData);
 
