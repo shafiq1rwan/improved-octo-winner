@@ -859,7 +859,7 @@ public class ReceiptPrinter {
 									"Cust Name", "Staff"));
 								
 							if(receiptContentJson.getString("customerName").equals("-")) {
-								receiptInfoLabels.remove(5);
+								receiptInfoLabels.remove(6);
 							}
 							
 							if(storeType == 1) {
@@ -893,7 +893,7 @@ public class ReceiptPrinter {
 								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
 									orderTypeName = "Deposit";
 								}
-								receiptInfoContents.add(1,orderTypeName);
+								receiptInfoContents.add(2,orderTypeName);
 							}
 
 							receiptInfoLabels.add("Trans Type");
@@ -2441,7 +2441,7 @@ public class ReceiptPrinter {
 								"Table No", "Order At", "Printed At", "Cust Name", "Staff"));
 
 						if (receiptContentJson.getString("customerName").equals("-")) {
-							receiptInfoLabels.remove(5);
+							receiptInfoLabels.remove(6);
 						}
 
 						if (storeType == 1) {
@@ -2475,7 +2475,7 @@ public class ReceiptPrinter {
 							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
 								orderTypeName = "Deposit";
 							}
-							receiptInfoContents.add(1, orderTypeName);
+							receiptInfoContents.add(2, orderTypeName);
 						}
 
 						receiptInfoLabels.add("Trans Type");
