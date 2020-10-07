@@ -2683,15 +2683,27 @@ public class RestC_check {
 										stmt4 = connection.prepareStatement("update master set count = ? where type = 'check';");
 										stmt4.setString(1, Integer.toString(newCheckNo));
 										int updateMaster = stmt4.executeUpdate();
+										
+										/***
+										 * Author: Shafiq Irwan
+										 * Date: 05/10/2020
+										 * Purpose: To add receipt number during check creation
+										 */
+										
+										Date date = new Date();
+									    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+									    String receiptDate = sdf.format(date);
+									    String receiptNumber = receiptDate+"-"+newCheckNo;
 					
 										if (updateMaster > 0) {
-											stmt5 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id) " + 
-													"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?);", Statement.RETURN_GENERATED_KEYS);
+											stmt5 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,receipt_number) " + 
+													"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?,?);", Statement.RETURN_GENERATED_KEYS);
 											stmt5.setString(1, Integer.toString(newCheckNo));
 											stmt5.setString(2, checkRef);
 											stmt5.setLong(3, staffId);
 											stmt5.setString(4, jsonData.getString("tableNo"));
 											stmt5.setLong(5, user.getDeviceId());
+											stmt5.setString(6, receiptNumber);
 											int insertCheck = stmt5.executeUpdate();
 					
 											if (insertCheck > 0) {

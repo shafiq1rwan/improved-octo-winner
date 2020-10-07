@@ -245,6 +245,7 @@ create table `check` (
 	`device_id` bigint (20) NULL,
 	`check_number` bigint (20) NOT NULL,
     `check_ref_no` varchar(45) DEFAULT NULL,
+    `receipt_number` varchar(100) DEFAULT NULL,
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
 	`customer_name` text NULL,

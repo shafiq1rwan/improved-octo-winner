@@ -354,6 +354,8 @@ public class DataSync {
 				check.put("check_status", rs.getString("check_status") == null ? JSONObject.NULL : rs.getString("check_status"));
 				check.put("created_date", rs.getString("created_date") == null ? JSONObject.NULL : rs.getString("created_date"));
 				check.put("updated_date", rs.getString("updated_date") == null ? JSONObject.NULL : rs.getString("updated_date"));
+				check.put("receipt_number", rs.getString("receipt_number") == null ? JSONObject.NULL : rs.getString("receipt_number"));
+				check.put("check_ref_no", rs.getString("check_ref_no") == null ? JSONObject.NULL : rs.getString("check_ref_no"));
 				
 				stmt2 = connection.prepareStatement("select * from tax_charge tc " + 
 						"inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id " + 

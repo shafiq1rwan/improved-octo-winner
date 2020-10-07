@@ -8,6 +8,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet"
 	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
 <style>
@@ -395,38 +396,35 @@ hr {
 										<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
 											<button id="cancelItemButton"
 												class="btn btn-block test bg-orange shadowBox"
-												ng-click="cancelItem()"
-												style="word-spacing: normal; word-wrap: break-word; width: 100%; height: 50%; margin-right: 13px; border: 10px solid transparent; background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; ">
-												<br> 
-												<%-- Make sure to undo if didnt work, TQ --%>
-												<%-- background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; --%>
-												<%-- <img src="${pageContext.request.contextPath}/img/icon/CancelItems.png" style="background-repeat: no-repeat; object-fit: contain; max-width: 50%; max-height: 100%"><br> --%>
-												<font
+												ng-click="cancelItem()" style="white-space: normal; padding: 5px">
+												<img src="${pageContext.request.contextPath}/img/icon/CancelItems.png" style="height: 35px; width: 35px"><br>CANCEL ITEM
+												<!-- <font
 													style="font-size: 14px; position: relative; bottom: -11px; left: -7%">CANCEL
-													ITEM </font>
+													ITEM </font> -->
 											</button>
 										</div>
 
 										<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
 											<button id="cancelCheckButton"
 												class="btn btn-block btn-danger shadowBox"
-												ng-click="cancelCheck()"
-												style="word-spacing: normal; width: 100%; height: 100%; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelCheck.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-												<br> <font
-													style="font-size: 14px; position: relative; bottom: -11px; left: -17%">CANCEL
-													CHECK</font>
+												ng-click="cancelCheck()" style="white-space: normal; padding: 5px">
+												<!-- <br> <font
+													style="font-size: 14px; position: relative; bottom: -11px; left: -17%; white-space: normal;">CANCEL
+													CHECK</font> -->
+												<img src="${pageContext.request.contextPath}/img/icon/CancelCheck.png" style="height: 35px; width: 35px"><br>CANCEL CHECK	
 											</button>
 										</div>
 
 										<div ng-if="orderType == 'table'">
 											<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
 												<button id="splitCheckButton"
-													class="btn btn-primary shadowBox" ng-click="splitCheck()"
-													style="word-spacing: normal; width: 100%; height: 100%; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/SplitCheck.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-													<font
+													class="btn btn-block btn-primary shadowBox" 
+													ng-click="splitCheck()" style="white-space: normal; padding: 5px">
+													<!-- <font
 														style="font-size: 14px; position: relative; bottom: -11px; left: -7%">
 														<br> SPLIT CHECK
-													</font>
+													</font> -->
+													<img src="${pageContext.request.contextPath}/img/icon/SplitCheck.png" style="height: 35px; width: 35px"><br>SPLIT CHECK
 												</button>
 											</div>
 										</div>
@@ -435,12 +433,12 @@ hr {
 											<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
 												<button id="closeCheckButton"
 													class="btn btn-block btn-danger shadowBox"
-													ng-click="closeCheck()"
-													style="word-spacing: normal; width: 100%; height: 100%; margin-right: 13px; background-image:url('${pageContext.request.contextPath}/img/icon/CancelItems.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-													<font
+													ng-click="closeCheck()" style="white-space: normal; padding: 5px">
+													<!-- <font
 														style="font-size: 14px; position: relative; bottom: -11px; left: -7%">
 														<br> CLOSE CHECK
-													</font>
+													</font> -->
+													<img src="${pageContext.request.contextPath}/img/icon/CancelItems.png" style="height: 35px; width: 35px"><br>CLOSE CHECK
 												</button>
 											</div>
 										</div>
@@ -451,11 +449,11 @@ hr {
 											%>
 											<button id="paymentButton"
 												class="btn btn-block btn-success shadowBox"
-												ng-click="redirectPayment()"
-												style="word-spacing: normal; width: 100%; height: 72px; margin-right: 15px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 32% 60.5%; background-position: top; border: 10px solid transparent;">
-												<font
+												ng-click="redirectPayment()" style="white-space: normal; padding: 5px">
+												<!-- <font
 													style="font-size: 14px; position: relative; bottom: -22px;">
-													PAY </font>
+													PAY </font> -->
+												<img src="${pageContext.request.contextPath}/img/icon/Pay.png" style="height: 35px; width: 35px"><br>PAY
 											</button>
 											<%
 												}
