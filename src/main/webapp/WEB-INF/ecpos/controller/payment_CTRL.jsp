@@ -417,7 +417,7 @@
 						"checkNo" : $scope.checkNo,
 						"qrContent" : qrContentHolder
 					});
-					console.log("QR payment: " + jsonData)
+					console.log("QR payment: " + qrContentHolder)
 		
 					$('#loading_modal').modal('show');
 					$scope.socketMessage = "Contacting Bank. Please wait.";
@@ -581,17 +581,21 @@
 		});
 
 		$('#scan_qr_modal').on('shown.bs.modal', function (e) {
+			var lengthcount = 0;
 			$scope.isQRExecuted = false;
 			$scope.qrContent = "";
 			$(document).off("keydown");
 			$(document).keydown(function(e){
-				//console.log(e.keyCode + ", " + e.which);
+				lengthcount++;
+				
 				if (!$scope.isQRExecuted) {
 					if (e.which == 16) {
 						return;
-					} else if (e.which == 13){
+					} else if (e.which == 13 &&lengthcount<125){
 						$scope.isQRExecuted = true;
 						console.log("Fire event");
+						/* console.log("lengthcount fire "+lengthcount); */
+						/* $scope.qrContent = $scope.qrContent.replace(/»/g, "+"); */
 						$scope.executePayment();
 						$(document).off("keydown");
 					} else if (e.which == 191) {
@@ -600,6 +604,10 @@
 						$scope.qrContent += ";";
 					} else if (e.which == 107) {
 						$scope.qrContent += "+";
+					} else if (e.shiftKey && e.which == 187) {
+						$scope.qrContent += "+";
+					} else if (e.which == 187) {
+						$scope.qrContent += "=";
 					} else {
 						if (e.shiftKey) {
 							$scope.qrContent += String.fromCharCode(e.keyCode || e.which).toUpperCase();
@@ -608,8 +616,13 @@
 						}
 					}
 				}
-
+				/* console.log("lengthcount "+lengthcount);
+				console.log("e char  "+e.which);
+				console.log("$scope.qrContent "+$scope.qrContent); */
+				if (lengthcount>=125)
+					lengthcount = 0;
 			});
+			
 		});
 		
 		$scope.informSecondDisplay = function (jsonData) {
