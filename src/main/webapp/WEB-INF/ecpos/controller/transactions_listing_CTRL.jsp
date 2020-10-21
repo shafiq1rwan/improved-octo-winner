@@ -104,7 +104,7 @@
 					"searching": false,
 					"pageLength": 8,
 					"bLengthChange": false,
-					"order" : [ [ 0, "desc" ] ],
+					"order" : [ [ 9, "desc" ] ],
 					destroy : true,
 					"columns" : [{"data" : "checkNoByday"},
 						{"data" : "staffName"},
