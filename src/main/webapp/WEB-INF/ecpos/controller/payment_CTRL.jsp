@@ -591,10 +591,10 @@
 				if (!$scope.isQRExecuted) {
 					if (e.which == 16) {
 						return;
-					} else if (e.which == 13 &&lengthcount<125){
+					} else if (e.which == 13 &&lengthcount<124){
 						$scope.isQRExecuted = true;
 						console.log("Fire event");
-						/* console.log("lengthcount fire "+lengthcount); */
+						 console.log("lengthcount fire "+lengthcount); 
 						/* $scope.qrContent = $scope.qrContent.replace(/»/g, "+"); */
 						$scope.executePayment();
 						$(document).off("keydown");
@@ -609,6 +609,9 @@
 					} else if (e.which == 187) {
 						$scope.qrContent += "=";
 					} else {
+					  if (e.which == 40) {
+						e.keyCode = 13;
+					  }
 						if (e.shiftKey) {
 							$scope.qrContent += String.fromCharCode(e.keyCode || e.which).toUpperCase();
 						} else {
@@ -616,9 +619,9 @@
 						}
 					}
 				}
-				/* console.log("lengthcount "+lengthcount);
+				 console.log("lengthcount "+lengthcount);
 				console.log("e char  "+e.which);
-				console.log("$scope.qrContent "+$scope.qrContent); */
+				console.log("$scope.qrContent "+$scope.qrContent); 
 				if (lengthcount>=125)
 					lengthcount = 0;
 			});

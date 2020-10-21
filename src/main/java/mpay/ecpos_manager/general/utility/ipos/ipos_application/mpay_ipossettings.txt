@@ -1,0 +1,2 @@
+http://mdex3.mpay.my/virtualmpos/api/vmcontroller/checkversion
+https://pcimanagepay.mpay.my/virtualmpos/api/iposcontroller/syncBackup

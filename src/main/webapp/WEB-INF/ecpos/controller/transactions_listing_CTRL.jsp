@@ -118,19 +118,20 @@
 					 	{"data" : "id", "visible": false, "searchable": false}
 						],
 					rowCallback: function(row, data, index){
-						var status = $(row).find('td:eq(6)').html();		
-			    		if(status !== 'Pending'){
+						var status = $(row).find('td:eq(7)').html();
+						console.log("status: "+status);
+			    		if(status !== 'Failed'){
 			    			$(row).find('td:eq(1)').css('color', 'blue');
 			    		}
 	
 				    	$(row).mouseenter (function() {
-				    		if(status !== 'Pending'){
+				    		if(status !== 'Failed'){
 					    		$(row).find('td:eq(1)').css('text-decoration', 'underline');
 				    		}
 			    		});
 				    	
 				    	$(row).mouseleave (function() {
-				    		if(status !== 'Pending'){
+				    		if(status !== 'Failed'){
 				    			$(row).find('td:eq(1)').css('text-decoration', 'none');
 				    		}
 			    		});
@@ -143,7 +144,7 @@
 				$('#datatable_transactions tbody').off('click', 'td');
 				$('#datatable_transactions tbody').on('click', 'td', function(){
 				    var status = table.row(this.closest('tr')).data().transactionStatus;
-				    if(status == 'Pending'){
+				    if(status == 'Failed'){
 				    } else {
 						if ($(this).index() == 1) {
 			 				$http({

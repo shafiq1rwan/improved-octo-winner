@@ -93,7 +93,7 @@ public class RestC_transaction {
 				if (!tsStatus.isEmpty())
 					sql.append("and t.transaction_status = "+tsStatus+" ");
 				
-				sql.append("order by t.transaction_date desc;");
+				sql.append("order by t.transaction_date, t.id desc;");
 				
 				stmt = connection.prepareStatement(sql.toString());
 				System.out.println("sql = " + sql);
@@ -114,9 +114,17 @@ public class RestC_transaction {
 					transaction.put("paymentType", rs.getString("payment_type"));
 					transaction.put("terminal", rs.getString("terminal"));
 					transaction.put("transactionAmount", String.format("%.2f", rs.getBigDecimal("transaction_amount")));
-					transaction.put("transactionStatus", rs.getString("transaction_status"));
-					transaction.put("transactionDate", rs.getString("transaction_date"));
-					transaction.put("receipt_number", rs.getString("receipt_number") == null ? "-" : rs.getString("receipt_number"));
+					
+					String transactionStatus = "";
+					if(rs.getString("transaction_status").equalsIgnoreCase("Pending")) {
+						transactionStatus = "Failed";
+					}else {
+						transactionStatus = rs.getString("transaction_status");
+					}
+					
+					transaction.put("transactionStatus", transactionStatus);
+					transaction.put("transactionDate", rs.getString("transaction_date").isEmpty() ? "-" : rs.getString("transaction_date"));
+					transaction.put("receipt_number", rs.getString("receipt_number") == null || transactionStatus.equalsIgnoreCase("Failed") ? "-" : rs.getString("receipt_number")); 
 
 					jary.put(transaction);
 				}
@@ -848,7 +856,9 @@ public class RestC_transaction {
 								} else if (paymentMethod == 3) {
 									terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
 									String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
-									String qrContent = jsonObj.getString("qrContent");
+									String qrContent = (String) jsonObj.get("qrContent");
+									
+									System.out.println("QR Content: "+qrContent);
 
 									if (!uniqueTranNumber.equals(null)) {
 										transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort);
