@@ -569,7 +569,11 @@ public class ReceiptPrinter {
 						qrData.put("authNo", rs6.getString("auth_number"));
 						qrData.put("amountMYR", rs6.getString("qr_amount_myr"));
 						qrData.put("amountRMB", rs6.getString("qr_amount_rmb"));
-						qrData.put("userID", rs6.getString("qr_user_id"));
+						if(rs6.getString("qr_issuer_type").equalsIgnoreCase("MPayVoucher")) {
+							qrData.put("userID", rs6.getString("qr_ref_id"));
+						}else {
+							qrData.put("userID", rs6.getString("qr_user_id"));	
+						}
 						qrData.put("refID", rs6.getString("qr_ref_id"));
 
 						jsonResult.put("qrData", qrData);
@@ -2220,7 +2224,11 @@ public class ReceiptPrinter {
 						qrData.put("authNo", rs6.getString("auth_number"));
 						qrData.put("amountMYR", rs6.getString("qr_amount_myr"));
 						qrData.put("amountRMB", rs6.getString("qr_amount_rmb"));
-						qrData.put("userID", rs6.getString("qr_user_id"));
+						if(rs6.getString("qr_issuer_type").equalsIgnoreCase("MPayVoucher")) {
+							qrData.put("userID", rs6.getString("qr_ref_id"));
+						}else {
+							qrData.put("userID", rs6.getString("qr_user_id"));	
+						}
 						qrData.put("refID", rs6.getString("qr_ref_id"));
 
 						jsonResult.put("qrData", qrData);
