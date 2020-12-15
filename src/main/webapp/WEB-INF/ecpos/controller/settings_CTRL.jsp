@@ -17,6 +17,7 @@
 				if (response.data.responseCode == "00") {
 					$scope.getCashDrawerList();
 					$scope.getPrinterList();
+					$scope.getQRPaymentList();
 					$scope.getTerminalList();
 					$scope.getStoreInfo();
 					$scope.getTransConfigList();
@@ -116,6 +117,32 @@
 			}, function(response) {
 				/* alert("Session TIME OUT"); */
 				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						},function(isConfirm){
+						    if (isConfirm) {
+								  window.location.href = "${pageContext.request.contextPath}/signout";
+							  }
+							});
+			});
+		}
+
+		$scope.getQRPaymentList = function() {
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_qr_payment_list/" + "all")
+			.then(function (response) {
+				$scope.qrPaymentData = response.data;
+				
+				if($scope.qrPaymentData.hasOwnProperty("selectedQRPayment")){
+					$scope.selectedQRPaymentMethod = response.data.selectedQRPayment;
+					$scope.disableEditDeleteButton();
+				}
+			}, function(response) {
 				Swal.fire({
 						  title: 'Oops...',
 						  text: "Session Timeout",
@@ -350,6 +377,54 @@
 				});
 			}
 		}
+
+		$scope.saveQRPaymentMethod = function(){
+			if($scope.selectedQRPaymentMethod == null || $scope.selectedQRPaymentMethod == ''){
+				console.log("Please Select QR Payment Method.")
+			} else {
+				Swal.fire({
+					title: 'Are you sure?',
+					text: "You can change this information again.",
+					icon: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Yes'
+				}).then((result) => {
+					if (result.value) {
+						var jsonData = JSON.stringify({
+							'qr_payment_method' : $scope.selectedQRPaymentMethod,
+						});
+						console.log("Saved Payment Method: " + jsonData);
+						
+						$http.post("${pageContext.request.contextPath}/rc/configuration/save_qr_payment_method", jsonData)
+						.then(function(response) {
+							Swal.fire(
+								'Success!',
+								'QR Payment Method Successfully Set.',
+								'success'
+							)
+							$scope.getPrinterList();
+						},
+						function(response) {
+							Swal.fire({
+								title: 'Oops...',
+								text: "Session Timeout",
+								icon: 'error',
+								showCancelButton: false,
+								confirmButtonColor: '#3085d6',
+								cancelButtonColor: '#d33',
+								confirmButtonText: 'OK'
+							},function(isConfirm){
+								if (isConfirm) {
+									window.location.href = "${pageContext.request.contextPath}/signout";
+								}
+							});
+						});
+					}
+				});
+			}
+		}
 		
 		$scope.showCashModal = function(action) {
 			$scope.action = action;
@@ -480,6 +555,42 @@
 			}
 			
 			$("#terminalModal").modal("show");
+		}
+
+		$scope.showQRPaymentModal = function(action, id) {
+			$scope.action = action;
+			$scope.qrPayment = {};
+			$scope.qrPaymentId = id;
+			
+			if ($scope.action == "update") {
+				$http.get("${pageContext.request.contextPath}/rc/configuration/get_qr_payment_list/" + $scope.qrPaymentId)
+				.then(function(response) {
+					$scope.qrPayment.id = response.data.qrPayments[0].id;
+					$scope.qrPayment.name = response.data.qrPayments[0].name;
+					$scope.qrPayment.tid = response.data.qrPayments[0].tid;
+					$scope.qrPayment.product_desc = response.data.qrPayments[0].product_desc;
+					$scope.qrPayment.url = response.data.qrPayments[0].url;
+					$scope.qrPayment.project_key = response.data.qrPayments[0].project_key;
+					$scope.qrPayment.uuid = response.data.qrPayments[0].uuid;
+				},
+				function(response) {
+					Swal.fire({
+						title: 'Oops...',
+						text: "Session Timeout",
+						icon: 'error',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'OK'
+					},function(isConfirm){
+						if (isConfirm) {
+							window.location.href = "${pageContext.request.contextPath}/signout";
+						}
+					});
+				});
+			}
+			
+			$("#qrPaymentModal").modal("show");
 		}
 		
 		$scope.showSettlementModal = function(serialNo) {
@@ -632,6 +743,66 @@
 						});
 			});
 		}
+
+		$scope.submitQRPaymentInfo = function() {
+			Swal.fire({
+				title: 'Are you sure?',
+				text: "You can change this information again.",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes'
+			}).then((result) => {
+				if (result.value) {
+					var jsonData = JSON.stringify({
+						"action" : $scope.action,
+						"id" : $scope.qrPayment.id,
+						"name" : $scope.qrPayment.name,
+						"tid" : $scope.qrPayment.tid,
+						"product_desc" : $scope.qrPayment.product_desc,
+						"url" : $scope.qrPayment.url,
+						"project_key" : $scope.qrPayment.project_key,
+						"uuid" : $scope.qrPayment.uuid
+					});
+					
+					$http.post("${pageContext.request.contextPath}/rc/configuration/save_qrPayment", jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							Swal.fire(
+								'Success!',
+								response.data.response_message,
+								'success'
+							)
+							$("#qrPaymentModal").modal("hide");
+							$scope.getQRPaymentList();
+						} else {
+							Swal.fire(
+								'Failed!',
+								response.data.response_message,
+								'failed'
+							)
+						}
+						
+					},
+					function(response) {
+						Swal.fire({
+							title: 'Oops...',
+							text: "Session Timeout",
+							icon: 'error',
+							showCancelButton: false,
+							confirmButtonColor: '#3085d6',
+							cancelButtonColor: '#d33',
+							confirmButtonText: 'OK'
+						},function(isConfirm){
+							if (isConfirm) {
+								window.location.href = "${pageContext.request.contextPath}/signout";
+							}
+						});
+					});
+				}
+			});
+		}
 		
 		$scope.removeTerminal = function(id) {
 			var jsonData = JSON.stringify({
@@ -680,6 +851,57 @@
 							  window.location.href = "${pageContext.request.contextPath}/signout";
 						  }
 						});
+			});
+		}
+
+		$scope.removeQRPayment = function(id) {
+			Swal.fire({
+				title: 'Are you sure?',
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes'
+			}).then((result) => {
+				if (result.value) {
+					var jsonData = JSON.stringify({
+						"id" : id
+					});
+
+					$http.post("${pageContext.request.contextPath}/rc/configuration/remove_qrPayment", jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							Swal.fire(
+								'Deleted!',
+								response.data.response_message,
+								'success'
+							)
+							$scope.getQRPaymentList();
+						} else {
+							Swal.fire(
+								'Failed Deleting!',
+								response.data.response_message,
+								'failed'
+							)
+						}
+					},
+					function(response) {
+						Swal.fire({
+							title: 'Oops...',
+							text: "Session Timeout",
+							icon: 'error',
+							showCancelButton: false,
+							confirmButtonColor: '#3085d6',
+							cancelButtonColor: '#d33',
+							confirmButtonText: 'OK'
+						},function(isConfirm){
+							if (isConfirm) {
+								window.location.href = "${pageContext.request.contextPath}/signout";
+							}
+						});
+					});
+				}
 			});
 		}
 		
@@ -1077,5 +1299,15 @@
 			});
 		}
 
+		$scope.disableEditDeleteButton = function() {
+			if ($scope.selectedQRPaymentMethod === 1) { //if IPOS selected
+				$('#editButton').prop('disabled',true);
+				$('#deleteButton').prop('disabled',true);
+			} else {
+				$('#editButton').prop('disabled',false);
+				$('#deleteButton').prop('disabled',false);
+			}
+		};
+		
 	});
 </script>

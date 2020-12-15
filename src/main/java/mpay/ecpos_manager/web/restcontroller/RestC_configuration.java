@@ -367,6 +367,13 @@ public class RestC_configuration {
 					JARY.put(jObject);
 				}
 				jsonResult.put("terminals", JARY);
+				
+				// get selected qr payment if available
+				JSONObject selectedQRPaymentObj = selectedQRPayment();
+				if (selectedQRPaymentObj.has("qr_payment_method")) {
+					jsonResult.put("selectedQRPayment",
+							selectedQRPaymentObj.getInt("qr_payment_method"));
+				}
 			} else {
 				response.setStatus(408);
 			}
@@ -449,6 +456,121 @@ public class RestC_configuration {
 
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/get_qr_payment_list/{qrPaymentId}" }, method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = "application/json")
+	public String getQRPaymentList(@PathVariable("qrPaymentId") String qrPaymentId, HttpServletRequest request,
+			HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray JARY = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				if (qrPaymentId.equals("all")) {
+					stmt = connection.prepareStatement("select * from qr_payment_method_lookup;");
+				} else {
+					stmt = connection.prepareStatement("select * from qr_payment_method_lookup where id = ?;");
+					stmt.setString(1, qrPaymentId);
+				}
+				rs = stmt.executeQuery();
+
+				while (rs.next()) {
+					JSONObject jObject = new JSONObject();
+					jObject.put("id", rs.getInt("id"));
+					jObject.put("name", rs.getString("name"));
+					jObject.put("product_desc", rs.getString("product_desc"));
+					jObject.put("tid", rs.getString("tid"));
+					jObject.put("url", rs.getString("url"));
+					jObject.put("project_key", rs.getString("project_key"));
+					jObject.put("uuid", rs.getString("uuid"));
+					JARY.put(jObject);
+				}
+				jsonResult.put("qrPayments", JARY);
+				
+				// get selected qr payment if available
+				JSONObject selectedQRPaymentObj = selectedQRPayment();
+				if (selectedQRPaymentObj.has("qr_payment_method")) {
+					jsonResult.put("selectedQRPayment",
+							selectedQRPaymentObj.getInt("qr_payment_method"));
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	/*@RequestMapping(value = { "/get_qr_payment_method" }, method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = "application/json")
+	public String getQRPaymentMethod(HttpServletRequest request,
+			HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				// get selected qr payment if available
+				JSONObject selectedQRPaymentObj = selectedQRPayment();
+				if (selectedQRPaymentObj.has("qr_payment_method")) {
+					jsonResult.put("selectedQRPayment",
+							selectedQRPaymentObj.getInt("qr_payment_method"));
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}*/
 
 	private JSONObject selectedReceiptPrinter() {
 		JSONObject jsonResult = new JSONObject();
@@ -463,6 +585,42 @@ public class RestC_configuration {
 
 			if (rs.next()) {
 				jsonResult.put("receipt_printer_manufacturer", rs.getInt("receipt_printer_manufacturer"));
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult;
+	}
+	
+	private JSONObject selectedQRPayment() {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement("select * from qr_payment_method;");
+			rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				jsonResult.put("qr_payment_method", rs.getInt("qr_payment_method_used"));
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
@@ -513,6 +671,61 @@ public class RestC_configuration {
 					stmt2 = connection
 							.prepareStatement("insert into receipt_printer (receipt_printer_manufacturer) values (?)");
 					stmt2.setInt(1, receiptPrinter.getInt("receipt_printer_manufacturer"));
+					stmt2.executeUpdate();
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@RequestMapping(value = { "/save_qr_payment_method" }, method = { RequestMethod.POST }, produces = "application/json")
+	public void saveQRPaymentMethod(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				JSONObject qrPaymentMethod = new JSONObject(data);
+
+				stmt = connection.prepareStatement("select * from qr_payment_method;");
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					stmt2 = connection.prepareStatement("update qr_payment_method set qr_payment_method_used = ?;");
+					stmt2.setInt(1, qrPaymentMethod.getInt("qr_payment_method"));
+					stmt2.executeUpdate();
+				} else {
+					stmt2 = connection
+							.prepareStatement("insert into qr_payment_method (qr_payment_method_used) values (?)");
+					stmt2.setInt(1, qrPaymentMethod.getInt("qr_payment_method"));
 					stmt2.executeUpdate();
 				}
 			} else {
@@ -852,7 +1065,118 @@ public class RestC_configuration {
 		}
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/save_qrPayment" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String saveQRPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
 
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+
+				JSONObject qrPayment = new JSONObject(data);
+				String action = qrPayment.getString("action");
+				String name = qrPayment.getString("name");
+				String tid = qrPayment.getString("tid");
+				String url = qrPayment.getString("url");
+				String project_key = qrPayment.getString("project_key");
+				String uuid = qrPayment.getString("uuid");
+
+				String product_desc = null;
+				if (qrPayment.has("product_desc")) {
+					product_desc = qrPayment.getString("product_desc");
+				}
+
+				String id = null;
+				if (action.equals("create")) {
+					stmt = connection.prepareStatement("select * from qr_payment_method_lookup where name = ?");
+					stmt.setString(1, name);
+				} else if (action.equals("update")) {
+					id = qrPayment.getString("id");
+
+					stmt = connection.prepareStatement(
+							"select * from qr_payment_method_lookup where name = ? and id != ?;");
+					stmt.setString(1, name);
+					stmt.setString(2, id);
+				}
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					jsonResult.put("response_code", "01");
+					jsonResult.put("response_message", "Duplicate QR Payment Information");
+					Logger.writeActivity("Duplicate QR Payment Information", ECPOS_FOLDER);
+				} else {
+					if (action.equals("create")) {
+						stmt2 = connection.prepareStatement(
+								"insert into qr_payment_method_lookup (name,tid,product_desc,url,project_key,uuid) values (?,?,?,?,?,?);");
+						stmt2.setString(1, name);
+						stmt2.setString(2, tid);
+						stmt2.setString(3, product_desc);
+						stmt2.setString(4, url);
+						stmt2.setString(5, project_key);
+						stmt2.setString(6, uuid);
+					} else if (action.equals("update")) {
+						stmt2 = connection.prepareStatement(
+								"update qr_payment_method_lookup set name = ?,tid = ?,product_desc = ?,url = ?,project_key = ?,uuid = ? where id = ?;");
+						stmt2.setString(1, name);
+						stmt2.setString(2, tid);
+						stmt2.setString(3, product_desc);
+						stmt2.setString(4, url);
+						stmt2.setString(5, project_key);
+						stmt2.setString(6, uuid);
+						stmt2.setString(7, id);
+					}
+					int rs2 = stmt2.executeUpdate();
+
+					if (rs2 > 0) {
+						connection.commit();
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "QR Payment Information has been saved");
+						Logger.writeActivity("QR Payment Information has been saved", ECPOS_FOLDER);
+					} else {
+						connection.rollback();
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "QR Payment Information failed to save");
+						Logger.writeActivity("QR Payment Information failed to save", ECPOS_FOLDER);
+					}
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/remove_terminal" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String removeTerminal(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
@@ -897,6 +1221,79 @@ public class RestC_configuration {
 					jsonResult.put("response_code", "01");
 					jsonResult.put("response_message", "Terminal Not Found");
 					Logger.writeActivity("Terminal NOT Found", ECPOS_FOLDER);
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/remove_qrPayment" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String removeQRPayment(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+
+				String id = new JSONObject(data).getString("id");
+
+				stmt = connection.prepareStatement("select * from qr_payment_method_lookup where id = ?;");
+				stmt.setString(1, id);
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					stmt2 = connection.prepareStatement("delete from qr_payment_method_lookup where id = ?;");
+					stmt2.setString(1, id);
+					int rs2 = stmt2.executeUpdate();
+
+					if (rs2 > 0) {
+						connection.commit();
+						jsonResult.put("response_code", "00");
+						jsonResult.put("response_message", "QR Payment has been removed");
+						Logger.writeActivity("QR Payment has been removed", ECPOS_FOLDER);
+					} else {
+						connection.rollback();
+						jsonResult.put("response_code", "01");
+						jsonResult.put("response_message", "QR Payment failed to remove");
+						Logger.writeActivity("QR Payment failed to remove", ECPOS_FOLDER);
+					}
+				} else {
+					connection.rollback();
+					jsonResult.put("response_code", "01");
+					jsonResult.put("response_message", "QR Payment Not Found");
+					Logger.writeActivity("QR Payment Not Found", ECPOS_FOLDER);
 				}
 				connection.setAutoCommit(true);
 			} else {

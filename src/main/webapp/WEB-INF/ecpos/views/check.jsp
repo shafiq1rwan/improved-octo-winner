@@ -453,7 +453,7 @@ hr {
 												<!-- <font
 													style="font-size: 14px; position: relative; bottom: -22px;">
 													PAY </font> -->
-												<img src="${pageContext.request.contextPath}/img/icon/Pay.png" style="height: 35px; width: 35px"><br>PAY
+												<img src="${pageContext.request.contextPath}/img/icon/Pay.png" style="height: 35px; width: 42px"><br>PAY
 											</button>
 											<%
 												}

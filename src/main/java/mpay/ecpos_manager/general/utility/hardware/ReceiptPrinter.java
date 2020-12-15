@@ -1375,12 +1375,16 @@ public class ReceiptPrinter {
 								receiptResultContents2.add(qrData.getString("traceNo"));
 								receiptResultContents2.add(qrData.getString("authNo"));
 								receiptResultContents2.add(qrData.getString("userID"));
-								receiptResultContents2.add(formatDecimalString(
+								receiptResultContents2.add(formatDecimalString(qrData.getString("amountMYR")));
+								if (qrData.has("amountRMB")) {
+									receiptResultContents2.add(formatDecimalString(qrData.getString("amountRMB")));
+								}
+								/*receiptResultContents2.add(formatDecimalString(
 										String.valueOf(new Double(qrData.getString("amountMYR")) / 100.0)));
 								if (qrData.has("amountRMB")) {
 									receiptResultContents2.add(formatDecimalString(
 											String.valueOf(new Double(qrData.getString("amountRMB")) / 100.0)));
-								}
+								}*/
 
 								for (int i = 0; i < receiptResultLabels2.size(); i++) {
 									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);

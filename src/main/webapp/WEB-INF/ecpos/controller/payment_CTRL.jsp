@@ -65,42 +65,48 @@
 	
 			$('#paymentMethodName').html($scope.paymentMethod.toUpperCase() + " PAYMENT");
 			$('#paymentCarousel').carousel(2);
-	
-			if ($scope.paymentMethod == "Card" || $scope.paymentMethod == "QR") {
-				$('#terminalList').show();
-				$('#terminal').val("");
-	
-				$http.get("${pageContext.request.contextPath}/rc/configuration/get_terminal_list/" + "all")
-				.then(function(response) {
-					$scope.terminalList = response.data;
+
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_terminal_list/" + "all")
+			.then(function(response) {
+				$scope.terminalList = response.data;
+
+				$scope.isIposQR = false;
+				if($scope.terminalList.hasOwnProperty("selectedQRPayment")){
+					$scope.isIposQR = response.data.selectedQRPayment == '1' && $scope.paymentMethod == "QR";
+				}
+				
+				if ($scope.paymentMethod == "Card" || $scope.isIposQR) {
+					$('#terminalList').show();
+					$('#terminal').val("");
 					if($scope.terminalList.terminals.length == 0){
 						$('#terminal').val("");
 					} 
 					else {
 						$scope.selectedTerminal = $scope.terminalList.terminals[0].serialNo;
 					}
-				},
-				function(response) {
-					/* alert("Session TIME OUT"); */
-					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
-					Swal.fire({
-						title: 'Oops...',
-						text: "Session Timeout",
-						icon: 'error',
-						showCancelButton: false,
-						confirmButtonColor: '#3085d6',
-						cancelButtonColor: '#d33',
-						confirmButtonText: 'OK'
-						},function(isConfirm){
-						if (isConfirm) {
-						window.location.href = "${pageContext.request.contextPath}/signout";
-						}
-					});
-
+					
+				} else {
+					$('#terminalList').hide();
+				}
+			},
+			function(response) {
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					title: 'Oops...',
+					text: "Session Timeout",
+					icon: 'error',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'OK'
+					},function(isConfirm){
+					if (isConfirm) {
+					window.location.href = "${pageContext.request.contextPath}/signout";
+					}
 				});
-			} else {
-				$('#terminalList').hide();
-			}
+
+			});
 		}
 	
 		$scope.enterCalculator = function(id, number) {
@@ -172,9 +178,9 @@
 				document.getElementById(id).innerHTML = temp;
 			}
 		}
-		
+
 		$scope.submitPayment = function() {
-			if (($scope.paymentMethod == "Card" || $scope.paymentMethod == "QR") && $('#terminal').val() == "") {
+			if (($scope.paymentMethod == "Card") && $('#terminal').val() == "") {
 				/* return alert("Kindly select terminal"); */
 				return Swal.fire("Warning","Kindly select terminal","warning");
 			} else if ($('#tenderAmount').text() == "0.00") {
@@ -187,7 +193,7 @@
 				} else if ($scope.paymentMethod == "Card") {
 					$scope.executePayment();
 				} else if ($scope.paymentMethod == "QR") {
-					$scope.qrContent = "";
+					//$scope.qrContent = "";
 					$('#scan_qr_modal').modal('show');
 	
 					$('#scan_qr_modal').on('shown.bs.modal',function() {
@@ -399,15 +405,17 @@
 					}
 				}
 			} else if($scope.paymentMethod == "QR") {
-				if ($scope.qrContent === null || $scope.qrContent === "") {
+				//$scope.qrContent = $('#qr_content').val();
+				
+				if($scope.qrContent === null || $scope.qrContent === ""){
 					$('#scan_qr_modal').modal('hide');
 					/* return alert("The QR content is empty."); */
 					return Swal.fire("Warning","The QR content is empty","warning");
 				} else {
 					$('#scan_qr_modal').modal('hide');
 					var qrContentHolder = $scope.qrContent;
-					$scope.qrContent = "";					
-
+					$scope.qrContent = "";
+					
 					var jsonData = JSON.stringify({
 						"terminalSerialNo" : $('#terminal').val(),
 						"paymentType" : $scope.paymentType,
@@ -415,13 +423,14 @@
 						"paymentAmount" : $('#tenderAmount').text(),
 						"tableNo" : $scope.tableNo,
 						"checkNo" : $scope.checkNo,
-						"qrContent" : qrContentHolder
+						"qrContent" : qrContentHolder,
+						"isIposQR" : $scope.isIposQR
 					});
+					
 					console.log("QR payment: " + qrContentHolder)
 		
 					$('#loading_modal').modal('show');
 					$scope.socketMessage = "Contacting Bank. Please wait.";
-		
 					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment",jsonData)
 					.then(function(response) {
 						if (response.data.response_code === "00") {
@@ -576,7 +585,7 @@
 		}
 
 		$('#scan_qr_modal').on('hidden.bs.modal', function() {
-			$scope.qrContent = "";
+			$scope.qrContent = $('#qr_content').val();
 			$(document).off("keydown");
 		});
 

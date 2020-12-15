@@ -378,6 +378,9 @@ create table `transaction` (
 	`qr_amount_myr` varchar(255) NULL,
 	`qr_amount_rmb` varchar(255) NULL,
 	`auth_number` varchar(255) NULL,
+	`qr_trans_id` varchar(255) NULL,
+	`mpay_trans_id` varchar(255) NULL,
+	`trans_ref_code` varchar(255) NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -504,6 +507,20 @@ CREATE TABLE `ecpos_manager`.`kds` (
   `time_warning` DECIMAL NULL,
   `time_late` DECIMAL NULL,
   PRIMARY KEY (`id`));
+  
+CREATE TABLE `ecpos_manager`.`qr_payment_method_lookup` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `tid` VARCHAR(45) NULL,
+  `product_desc` VARCHAR(255) NULL,
+  `url` VARCHAR(255) NULL,
+  `project_key` VARCHAR(45) NULL,
+  `uuid` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`));
+  
+CREATE TABLE qr_payment_method (
+	`qr_payment_method_used` INT(20) NULL
+);
 
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
@@ -622,3 +639,6 @@ INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is
 INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('4', '9', '1');
 
 INSERT INTO `ecpos_manager`.`kds` (`time_warning`, `time_late`) VALUES ('5', '10');
+
+INSERT INTO `ecpos_manager`.`qr_payment_method_lookup` (`name`, `tid`, `product_desc`, `url`, `project_key`, `uuid`) VALUES ('IPOS', '','','','','');
+INSERT INTO `ecpos_manager`.`qr_payment_method_lookup` (`name`, `tid`, `product_desc`, `url`, `project_key`, `uuid`) VALUES ('VMPOS', '016871-3-002','','https://mpaypayment.mpay.my/virtualmpos/api/qrcontroller/','CUFE','CUFE');

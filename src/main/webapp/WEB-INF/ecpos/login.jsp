@@ -314,7 +314,11 @@ $("#showQRLoginBtn").click(function() {
 			} else if (e.which == 109) {
 				loginQRContent += "-";
 			} else if (e.which == 189) {
-				loginQRContent += "_";
+				if(e.shiftKey){
+					loginQRContent += "_";
+				}else{
+					loginQRContent += "-";
+				}
 			} else {
 				if (e.shiftKey) {
 					loginQRContent += String.fromCharCode(e.keyCode || e.which).toUpperCase();

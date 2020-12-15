@@ -245,6 +245,46 @@ hr {
 													</div>
 												</div>
 											</div>
+											<div class="col-sm-6">
+												<div class="row" style="margin-bottom:5px;">
+													<div class="col-sm-12"> 
+														<font size="3"><b>QR Payment</b></font>
+														<button type="button" class="btn btn-sm pull-right" id="updateButton" 
+														ng-click="saveQRPaymentMethod()" style="background-color: #1F8CE8; color: white;">
+														Update
+														</button>
+														<button type="button" class="btn btn-sm pull-right" id="addNewButton" 
+														ng-click="showQRPaymentModal('create',selectedQRPaymentMethod)" style="margin: 0 4px 0 0; background-color: #1F8CE8; color: white;">
+														Add New
+														</button>
+														<button class="btn btn-sm btn-primary pull-right" id="editButton" 
+														ng-click="showQRPaymentModal('update',selectedQRPaymentMethod)" style="margin: 0 4px 0 0;">
+														<i class="fa fa-edit"></i>
+														</button>
+														<button class="btn btn-sm btn-danger  pull-right" id="deleteButton" 
+														ng-click="removeQRPayment(selectedQRPaymentMethod)" style="margin: 0 4px 0 0;">
+														<i class="fa fa-trash"></i>
+														</button>
+													</div>
+												</div>
+												<div class="info-box border-shadow" style="padding:8px;border:1px solid;border-color:rgba(0,0,0,0.2);">
+											    	<div class="row">
+														<div class="col-sm-12">
+															<font size="2">Payment Method</font>
+															<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+																<select id="qrPaymentMethod" class="form-control" ng-change="disableEditDeleteButton()" ng-model="selectedQRPaymentMethod"
+																	ng-options="qrPayment.id as qrPayment.name for qrPayment in qrPaymentData.qrPayments">
+																	<option value="" disabled>-- SELECT --</option>
+																</select>
+																<!-- <select id="qrPaymentMethod" class="form-control" ng-model="selectedQRPaymentMethod">
+																	<option value="" disabled>-- SELECT --</option>
+																	<option ng-repeat="qrPayment in qrPaymentData.qrPayments" value="{{qrPayment.id}}">{{qrPayment.name}}</option>
+																</select> -->
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
 											<!-- <div class="col-sm-6">
 												<div class="row" style="margin-bottom:5px;">
 													<div class="col-sm-12"> 
@@ -561,6 +601,76 @@ hr {
 									<div class="col-sm-4 form-group">
 										<label>WiFi Port</label> 
 										<input type="text" class="form-control" ng-model="terminal.wifiPort" />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<input ng-if="action=='create'" type="submit" class="btn btn-primary" value="Add" />  
+											<input ng-if="action=='update'" type="submit" class="btn btn-primary" value="Update" />  
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="qrPaymentModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<!-- <div class="modal-header"></div> -->
+						<div class="modal-body">
+							<form ng-submit="submitQRPaymentInfo()">
+								<div class="row" style="font-size: large">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+										<div style="text-align: center">
+											<label ng-if="action=='create'">Add QR Payment</label>
+											<label ng-if="action=='update'">Update QR Payment</label>
+										</div>
+									</div>
+									<div class="col-sm-1">
+										<button class="close" data-dismiss="modal">&times;</button>
+									</div>
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>QR Payment Name</label> 
+										<input type="text" class="form-control" ng-model="qrPayment.name" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>MPay TID</label> 
+										<input type="text" class="form-control" ng-model="qrPayment.tid" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-4 form-group">
+										<label>Product Description</label> 
+										<input type="text" class="form-control" ng-model="qrPayment.product_desc" />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-10 form-group">
+										<label>QR Payment URL</label> 
+										<input type="text" class="form-control" ng-model="qrPayment.url" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-4 form-group">
+										<label>Project Key</label> 
+										<input type="text" class="form-control" ng-model="qrPayment.project_key" required />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-4 form-group">
+										<label>QR Payment UUID</label> 
+										<input type="text" class="form-control" ng-model="qrPayment.uuid" required />
 									</div>
 								</div>
 								<div class="row">

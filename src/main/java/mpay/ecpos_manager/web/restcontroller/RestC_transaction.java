@@ -29,7 +29,9 @@ import mpay.ecpos_manager.general.constant.Constant;
 import mpay.ecpos_manager.general.logger.Logger;
 import mpay.ecpos_manager.general.property.Property;
 import mpay.ecpos_manager.general.utility.QRGenerate;
+import mpay.ecpos_manager.general.utility.SecureHash;
 import mpay.ecpos_manager.general.utility.UserAuthenticationModel;
+import mpay.ecpos_manager.general.utility.VirtualMPOSConnection;
 import mpay.ecpos_manager.general.utility.WebComponents;
 import mpay.ecpos_manager.general.utility.ipos.Card;
 import mpay.ecpos_manager.general.utility.ipos.QR;
@@ -690,15 +692,18 @@ public class RestC_transaction {
 					paymentMethod = 3;
 					receivedAmount = new BigDecimal(jsonObj.getString("paymentAmount"));
 
-					if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
-						Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
-						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
+					if (jsonObj.getBoolean("isIposQR")) {
+						if (!(jsonObj.has("terminalSerialNo") && !jsonObj.getString("terminalSerialNo").equals(null))) {
+							Logger.writeActivity("Terminal Serial Number Not Found", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Terminal Serial Number Not Found");
 
-						return jsonResult.toString();
-					} else {
-						terminalSerialNumber = jsonObj.getString("terminalSerialNo");
+							return jsonResult.toString();
+						} else {
+							terminalSerialNumber = jsonObj.getString("terminalSerialNo");
+						}
 					}
+					
 				} else {
 					Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -762,8 +767,12 @@ public class RestC_transaction {
 						BigDecimal tenderAmount = rs.getBigDecimal("tender_amount");
 
 						stmt.close();
-						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,check_number,transaction_type,payment_method,payment_type,terminal_serial_number,transaction_currency,transaction_amount,received_amount,change_amount,transaction_status,created_date,device_id) "
-										+ "values (?,?,?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
+						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,"
+								+ "check_number,transaction_type,payment_method,payment_type,"
+								+ "terminal_serial_number,transaction_currency,transaction_amount,"
+								+ "received_amount,change_amount,transaction_status,qr_content,"
+								+ "created_date,device_id) "
+										+ "values (?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
 						stmt.setLong(1, staffId);
 						stmt.setLong(2, checkId);
 						stmt.setString(3, checkNo);
@@ -776,7 +785,8 @@ public class RestC_transaction {
 						stmt.setBigDecimal(10, receivedAmount);
 						stmt.setBigDecimal(11, changeAmount);
 						stmt.setInt(12, transactionStatus);
-						stmt.setLong(13, user.getDeviceId());
+						stmt.setString(13,jsonObj.getString("qrContent"));
+						stmt.setLong(14, user.getDeviceId());
 						int insertTransaction = stmt.executeUpdate();
 
 						if (insertTransaction > 0) {
@@ -854,37 +864,88 @@ public class RestC_transaction {
 										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
 									}
 								} else if (paymentMethod == 3) {
-									terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
-									String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
-									String qrContent = (String) jsonObj.get("qrContent");
+									JSONObject qrPaymentDetails = new JSONObject();
 									
-									System.out.println("QR Content: "+qrContent);
-
-									if (!uniqueTranNumber.equals(null)) {
-										transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort);
-
-										if (transactionResult.has("responseCode")) {
-											if (transactionResult.getString("responseCode").equals("00")) {
-												paymentFlag = true;
-												updateTransactionResult = updateTransactionResult(transactionResult, "qr");
-											} else if (transactionResult.getString("responseCode").equals("01")) {
-												Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
-												jsonResult.put(Constant.RESPONSE_CODE, "01");
-												jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
+									stmt = connection.prepareStatement("select * from qr_payment_method_lookup where id = (select * from qr_payment_method);");
+									rs3 = stmt.executeQuery();
+									
+									if (rs3.next()) {
+										
+										boolean isIposQR = paymentMethod == 3 && rs3.getInt("id") == 1;
+										
+										String uniqueTranNumber = generateUniqueTranNumber(storeId, transactionId);
+										String qrContent = jsonObj.get("qrContent").toString();
+										
+										System.out.println("QR Content: "+qrContent);
+										
+										if (isIposQR) {//if IPOS
+											terminalWifiIPPort = getTerminalWifiIPPort(terminalSerialNumber);
+											
+											if (!uniqueTranNumber.equals(null)) {
+												transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort, isIposQR);
+												transactionResult.put("isIposQR", isIposQR);
+												
+												if (transactionResult.has("responseCode")) {
+													if (transactionResult.getString("responseCode").equals("00")) {
+														paymentFlag = true;
+														updateTransactionResult = updateTransactionResult(transactionResult, "qr");
+													} else if (transactionResult.getString("responseCode").equals("01")) {
+														Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
+														jsonResult.put(Constant.RESPONSE_CODE, "01");
+														jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
+													} else {
+														Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+														jsonResult.put(Constant.RESPONSE_CODE, "01");
+														jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
+													}
+												} else {
+													Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
+													jsonResult.put(Constant.RESPONSE_CODE, "01");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
+												}
 											} else {
-												Logger.writeActivity("Transaction Failed To Perform", ECPOS_FOLDER);
+												Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
 												jsonResult.put(Constant.RESPONSE_CODE, "01");
-												jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Failed To Perform");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
 											}
 										} else {
-											Logger.writeActivity("IPOS cannot be detected.", ECPOS_FOLDER);
-											jsonResult.put(Constant.RESPONSE_CODE, "01");
-											jsonResult.put(Constant.RESPONSE_MESSAGE, "IPOS cannot be detected. Please try again later.");
+											qrPaymentDetails.put("id", rs3.getInt("id"));
+											qrPaymentDetails.put("name", rs3.getString("name"));
+											qrPaymentDetails.put("tid", rs3.getString("tid"));
+											qrPaymentDetails.put("project_key", rs3.getString("project_key"));
+											qrPaymentDetails.put("uuid", rs3.getString("uuid"));
+											qrPaymentDetails.put("url", rs3.getString("url"));
+											qrPaymentDetails.put("product_desc", rs3.getString("product_desc"));
+											
+											if (!uniqueTranNumber.equals(null)) {
+												transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, qrPaymentDetails, jsonObj.getBoolean("isIposQR"));
+												transactionResult.put("isIposQR", isIposQR);
+												
+												if (transactionResult.has("transaction_response_code")) {
+													if (transactionResult.getString("transaction_response_code").equals("00")) {
+														Logger.writeActivity("VMPOS Response Message :"+transactionResult.getString("transaction_response_message"), ECPOS_FOLDER);
+														paymentFlag = true;
+														updateTransactionResult = updateTransactionResult(transactionResult, "qr");
+													} else {
+														Logger.writeActivity("VMPOS Response Message :"+transactionResult.getString("transaction_response_message"), ECPOS_FOLDER);
+														jsonResult.put(Constant.RESPONSE_CODE, "01");
+														jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("transaction_response_message"));
+													}
+												} else {
+													Logger.writeActivity("VMPOS cannot be detected.", ECPOS_FOLDER);
+													jsonResult.put(Constant.RESPONSE_CODE, "01");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "VMPOS cannot be detected. Please try again later.");
+												}
+											} else {
+												Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
+											}
 										}
-									} else {
-										Logger.writeActivity("Transaction Data Failed To Gather", ECPOS_FOLDER);
+									}else {
+										Logger.writeActivity("No QR Payment Method Selected", ECPOS_FOLDER);
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Data Failed To Gather");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "No QR Payment Method Selected");
 									}
 								}
 
@@ -971,6 +1032,7 @@ public class RestC_transaction {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
 		ResultSet rs = null;
+		ResultSet rs1 = null;
 
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -1048,34 +1110,91 @@ public class RestC_transaction {
 
 							// qr void
 							else if (rs.getLong("payment_method") == 3) {
-								if (rs.getString("unique_trans_number") != null && rs.getString("trace_number") != null) {
-									JSONObject qrVoidResponse = iposQR.qrVoid(storeDetail.getString("id"), "qr-void", rs.getString("unique_trans_number"), rs.getString("qr_ref_id"), terminalWifiIPPort);
-									System.out.println("QR Voiding Response: " + qrVoidResponse.toString());
-
-									if (qrVoidResponse.has("responseCode")) {
-										if (qrVoidResponse.getString("responseCode").equals("00")) {
-											// update transaction status
-											stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
-											stmt2.setLong(1, 2); // 2 for "void"
-											stmt2.setLong(2, jsonObj.getLong("transactionId"));
-											stmt2.executeUpdate();
-
-											jsonResult.put(Constant.RESPONSE_CODE, "00");
-											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+								JSONObject qrPaymentDetails = new JSONObject();
+								
+								stmt2 = connection.prepareStatement("select * from qr_payment_method_lookup where id = (select * from qr_payment_method);");
+								rs1 = stmt2.executeQuery();
+								
+								if(rs1.next()) {
+									boolean isIposQR = rs.getLong("payment_method") == 3 && rs1.getInt("id") == 1;
+									
+									if (isIposQR) {// if IPOS
+										if (rs.getString("unique_trans_number") != null && rs.getString("trace_number") != null) {
+											JSONObject qrVoidResponse = iposQR.qrVoid(storeDetail.getString("id"), "qr-void", rs.getString("unique_trans_number"), rs.getString("qr_ref_id"), terminalWifiIPPort, isIposQR);
+											System.out.println("QR Voiding Response: " + qrVoidResponse.toString());
+	
+											if (qrVoidResponse.has("responseCode")) {
+												if (qrVoidResponse.getString("responseCode").equals("00")) {
+													// update transaction status
+													stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
+													stmt2.setLong(1, 2); // 2 for "void"
+													stmt2.setLong(2, jsonObj.getLong("transactionId"));
+													stmt2.executeUpdate();
+	
+													jsonResult.put(Constant.RESPONSE_CODE, "00");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+												} else {
+													Logger.writeActivity(qrVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+													jsonResult.put(Constant.RESPONSE_CODE, "01");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("responseMessage"));
+												}
+											} else {
+												Logger.writeActivity(qrVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("responseMessage"));
+											}
 										} else {
-											Logger.writeActivity(qrVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
+											Logger.writeActivity("Transaction Number or Trace Number Not Found", ECPOS_FOLDER);
 											jsonResult.put(Constant.RESPONSE_CODE, "01");
-											jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("responseMessage"));
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Number or Trace Number Not Found");
 										}
 									} else {
-										Logger.writeActivity(qrVoidResponse.getString("responseMessage"), ECPOS_FOLDER);
-										jsonResult.put(Constant.RESPONSE_CODE, "01");
-										jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("responseMessage"));
+										qrPaymentDetails.put("tid", rs1.getString("tid"));
+										qrPaymentDetails.put("project_key", rs1.getString("project_key"));
+										qrPaymentDetails.put("uuid", rs1.getString("uuid"));
+										qrPaymentDetails.put("url", rs1.getString("url"));
+										
+										stmt2.close();
+										if (rs.getString("unique_trans_number") != null && rs.getString("trace_number") != null) {
+											qrPaymentDetails.put("mpay_transaction_id", rs.getString("mpay_trans_id"));
+											qrPaymentDetails.put("amount", rs.getString("qr_amount_myr"));
+											qrPaymentDetails.put("qr_transaction_id", rs.getString("qr_trans_id"));
+											qrPaymentDetails.put("transaction_reference_code", rs.getString("trans_ref_code"));
+											
+											JSONObject qrVoidResponse = iposQR.qrVoid(storeDetail.getString("id"), "qr-void", rs.getString("unique_trans_number"), rs.getString("qr_ref_id"), qrPaymentDetails, isIposQR);
+											System.out.println("QR Voiding Response: " + qrVoidResponse.toString());
+
+											if (qrVoidResponse.has("transaction_response_code")) {
+												if (qrVoidResponse.getString("transaction_response_code").equals("00")) {
+													Logger.writeActivity("VMPOS Response Message :"+qrVoidResponse.getString("transaction_response_message"), ECPOS_FOLDER);
+													// update transaction status
+													stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
+													stmt2.setLong(1, 2); // 2 for "void"
+													stmt2.setLong(2, jsonObj.getLong("transactionId"));
+													stmt2.executeUpdate();
+
+													jsonResult.put(Constant.RESPONSE_CODE, "00");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+												} else {
+													Logger.writeActivity("VMPOS Response Message :"+qrVoidResponse.getString("transaction_response_message"), ECPOS_FOLDER);
+													jsonResult.put(Constant.RESPONSE_CODE, "01");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, qrVoidResponse.getString("transaction_response_message"));
+												}
+											} else {
+												Logger.writeActivity("VMPOS cannot be detected.", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "VMPOS cannot be detected. Please try again later.");
+											}
+										} else {
+											Logger.writeActivity("Transaction Number or Trace Number Not Found", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Number or Trace Number Not Found");
+										}
 									}
 								} else {
-									Logger.writeActivity("Transaction Number or Trace Number Not Found", ECPOS_FOLDER);
+									Logger.writeActivity("No QR Payment Method Selected", ECPOS_FOLDER);
 									jsonResult.put(Constant.RESPONSE_CODE, "01");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Number or Trace Number Not Found");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "No QR Payment Method Selected");
 								}
 							}
 
@@ -1095,13 +1214,11 @@ public class RestC_transaction {
 			e.printStackTrace();
 		} finally {
 			try {
-				if (stmt != null)
-					stmt.close();
-				if (stmt2 != null)
-					stmt.close();
-				if (connection != null) {
-					connection.close();
-				}
+				if (rs != null) {rs.close();}
+				if (rs1 != null) {rs1.close();}
+				if (stmt != null){stmt.close();}
+				if (stmt2 != null){stmt.close();}
+				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
 				e.printStackTrace();
@@ -1626,61 +1743,152 @@ public class RestC_transaction {
 					}
 				}
 			} else if (transactionCategory.equals("qr")) {
-				if (transactionResult.getJSONObject("qrResponse").length() == 0) {
-					jsonResult.put(Constant.RESPONSE_CODE, "01");
-					jsonResult.put(Constant.RESPONSE_MESSAGE, "QR Sale Payment Response Not Found");
-					Logger.writeActivity("QR Sale Payment Response Not Found", ECPOS_FOLDER);
-				} else {
-					JSONObject qrResponse = transactionResult.getJSONObject("qrResponse");
-
-					int transactionStatus = 4;
-					if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
-						transactionStatus = 3;
-					}
-
-					int transactionType = -1;
-					if (transactionResult.getString("tranType").equals("qr-sale")) {
-						transactionType = 1;
-					} else if (transactionResult.getString("tranType").equals("qr-void")) {
-						transactionType = 2;
-					} else if (transactionResult.getString("tranType").equals("qr-refund")) {
-						transactionType = 3;
-					}
-
-					stmt = connection.prepareStatement("update transaction set response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
-									+ "bank_tid = ?,bank_mid = ?,mpay_mid = ?,mpay_tid = ?,transaction_date = ?,transaction_time = ?,trace_number = ?,qr_ref_id = ?,qr_user_id =?, "
-									+ "qr_amount_myr = ?,qr_amount_rmb = ?, auth_number = ?, transaction_status = ? where unique_trans_number = ? and transaction_type = ?;");
-					stmt.setString(1, transactionResult.getString("responseCode"));
-					stmt.setString(2, transactionResult.getString("responseMessage"));
-					stmt.setString(3, transactionResult.getString("wifiIP"));
-					stmt.setString(4, transactionResult.getString("wifiPort"));
-					stmt.setString(5, qrResponse.getString("qrIssuerType"));
-					stmt.setString(6, qrResponse.getString("bankTerminalID"));
-					stmt.setString(7, qrResponse.getString("bankMerchantID"));
-					stmt.setString(8, qrResponse.getString("mpayMerchantID"));
-					stmt.setString(9, qrResponse.getString("mpayTerminalID"));
-					stmt.setString(10, qrResponse.getString("transactionDate"));
-					stmt.setString(11, qrResponse.getString("transactionTime"));
-					stmt.setString(12, qrResponse.getString("traceNumber"));
-					stmt.setString(13, qrResponse.getString("qrRefID"));
-					stmt.setString(14, qrResponse.getString("qrUserID"));
-					stmt.setString(15, qrResponse.getString("amountMYR"));
-					stmt.setString(16, qrResponse.getString("amountRMB"));
-					stmt.setString(17, qrResponse.getString("authNo"));
-					stmt.setInt(18, transactionStatus);
-					stmt.setString(19, transactionResult.getString("uniqueTranNumber"));
-					stmt.setInt(20, transactionType);
-					int updateTransaction = stmt.executeUpdate();
-
-					if (updateTransaction > 0) {
-						jsonResult.put(Constant.RESPONSE_CODE, "00");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
-						Logger.writeActivity("QR Sale Payment Response Successfully Update Transaction Table",
-								ECPOS_FOLDER);
-					} else {
+				if (transactionResult.getBoolean("isIposQR")) {
+					if (transactionResult.getJSONObject("qrResponse").length() == 0) {
 						jsonResult.put(Constant.RESPONSE_CODE, "01");
-						jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
-						Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "QR Sale Payment Response Not Found");
+						Logger.writeActivity("QR Sale Payment Response Not Found", ECPOS_FOLDER);
+					} else {
+						JSONObject qrResponse = transactionResult.getJSONObject("qrResponse");
+	
+						int transactionStatus = 4;
+						if (transactionResult.getString("responseCode").equals("00") || transactionResult.getString("responseCode").equals("09")) {
+							transactionStatus = 3;
+						}
+	
+						int transactionType = -1;
+						if (transactionResult.getString("tranType").equals("qr-sale")) {
+							transactionType = 1;
+						} else if (transactionResult.getString("tranType").equals("qr-void")) {
+							transactionType = 2;
+						} else if (transactionResult.getString("tranType").equals("qr-refund")) {
+							transactionType = 3;
+						}
+	
+						stmt = connection.prepareStatement("update transaction set response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
+										+ "bank_tid = ?,bank_mid = ?,mpay_mid = ?,mpay_tid = ?,transaction_date = ?,transaction_time = ?,trace_number = ?,qr_ref_id = ?,qr_user_id =?, "
+										+ "qr_amount_myr = ?,qr_amount_rmb = ?, auth_number = ?, transaction_status = ? where unique_trans_number = ? and transaction_type = ?;");
+						stmt.setString(1, transactionResult.getString("responseCode"));
+						stmt.setString(2, transactionResult.getString("responseMessage"));
+						stmt.setString(3, transactionResult.getString("wifiIP"));
+						stmt.setString(4, transactionResult.getString("wifiPort"));
+						stmt.setString(5, qrResponse.getString("qrIssuerType"));
+						stmt.setString(6, qrResponse.getString("bankTerminalID"));
+						stmt.setString(7, qrResponse.getString("bankMerchantID"));
+						stmt.setString(8, qrResponse.getString("mpayMerchantID"));
+						stmt.setString(9, qrResponse.getString("mpayTerminalID"));
+						stmt.setString(10, qrResponse.getString("transactionDate"));
+						stmt.setString(11, qrResponse.getString("transactionTime"));
+						stmt.setString(12, qrResponse.getString("traceNumber"));
+						stmt.setString(13, qrResponse.getString("qrRefID"));
+						stmt.setString(14, qrResponse.getString("qrUserID"));
+						stmt.setString(15, qrResponse.getString("amountMYR"));
+						stmt.setString(16, qrResponse.getString("amountRMB"));
+						stmt.setString(17, qrResponse.getString("authNo"));
+						stmt.setInt(18, transactionStatus);
+						stmt.setString(19, transactionResult.getString("uniqueTranNumber"));
+						stmt.setInt(20, transactionType);
+						int updateTransaction = stmt.executeUpdate();
+	
+						if (updateTransaction > 0) {
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+							Logger.writeActivity("QR Sale Payment Response Successfully Update Transaction Table",
+									ECPOS_FOLDER);
+						} else {
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
+							Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
+						}
+					}
+				} else {
+					if (transactionResult.getString("transaction_response_code").length() == 0) {
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "QR Sale Payment Response Not Found");
+						Logger.writeActivity("QR Sale Payment Response Not Found", ECPOS_FOLDER);
+					} else {
+						//JSONObject qrResponse = transactionResult.getJSONObject("qrResponse");
+
+						int transactionStatus = 4;
+						if (transactionResult.getString("transaction_response_code").equals("00")) {
+							transactionStatus = 3;
+						}
+
+						int transactionType = -1;
+						if (transactionResult.getString("tranType").equals("qr-sale")) {
+							transactionType = 1;
+						} else if (transactionResult.getString("tranType").equals("qr-void")) {
+							transactionType = 2;
+						} else if (transactionResult.getString("tranType").equals("qr-refund")) {
+							transactionType = 3;
+						}
+
+						SimpleDateFormat parseDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						SimpleDateFormat formatDate = new SimpleDateFormat("yyMMdd");
+						SimpleDateFormat formatTime = new SimpleDateFormat("HHmmss");
+						
+						Date date = parseDate.parse(transactionResult.getString("transaction_date")+" "+
+						transactionResult.getString("transaction_time"));
+						
+						stmt = connection.prepareStatement("update transaction set "
+								+ "response_code = ?,"
+								+ "response_message = ?,"
+								+ "updated_date = now(),"
+								+ "wifi_ip = ?,"
+								+ "wifi_port = ?,"
+								+ "qr_issuer_type = ?,"
+								+ "bank_tid = ?,"
+								+ "bank_mid = ?,"
+								+ "mpay_mid = ?,"
+								+ "mpay_tid = ?,"
+								+ "transaction_date = ?,"
+								+ "transaction_time = ?,"
+								+ "trace_number = ?,"
+								+ "qr_ref_id = ?,"
+								+ "qr_user_id =?,"
+								+ "qr_amount_myr = ?,"
+								+ "qr_amount_rmb = ?,"
+								+ "auth_number = ?,"
+								+ "transaction_status = ?,"
+								+ "qr_trans_id = ?,"
+								+ "mpay_trans_id = ?,"
+								+ "trans_ref_code = ? "
+								+ "where unique_trans_number = ? and transaction_type = ?;");
+						stmt.setString(1, transactionResult.getString("transaction_response_code"));
+						stmt.setString(2, transactionResult.getString("transaction_response_message"));
+						stmt.setString(3, null);//wifi_ip
+						stmt.setString(4, null);//wifi_port
+						stmt.setString(5, transactionResult.getString("qr_transaction_type"));
+						stmt.setString(6, transactionResult.getString("mpay_mid"));//bank_mid
+						stmt.setString(7, transactionResult.getString("mpay_tid"));//bank_tid
+						stmt.setString(8, transactionResult.getString("mpay_mid"));//mpay_mid
+						stmt.setString(9, transactionResult.getString("mpay_tid"));//mpay_tid
+						stmt.setString(10, formatDate.format(date));
+						stmt.setString(11, formatTime.format(date));
+						stmt.setString(12, transactionResult.getString("transaction_reference_code"));//trace_number
+						stmt.setString(13, transactionResult.getString("qr_transaction_id"));//qr_ref_id
+						stmt.setString(14, transactionResult.getString("qr_user_id"));
+						stmt.setString(15, transactionResult.getString("transaction_amount"));
+						stmt.setString(16, null);//qr_amount_rmb
+						stmt.setString(17, transactionResult.getString("qr_transaction_id"));//auth_number
+						stmt.setInt(18, transactionStatus);
+						stmt.setString(19, transactionResult.getString("qr_transaction_id"));//qr_trans_id
+						stmt.setString(20, transactionResult.getString("mpay_transaction_id"));//mpay_trans_id
+						stmt.setString(21, transactionResult.getString("transaction_reference_code"));//trans_ref_code
+						stmt.setString(22, transactionResult.getString("uniqueTranNumber"));
+						stmt.setInt(23, transactionType);
+						int updateTransaction = stmt.executeUpdate();
+
+						if (updateTransaction > 0) {
+							jsonResult.put(Constant.RESPONSE_CODE, "00");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+							Logger.writeActivity("QR Sale Payment Response Successfully Update Transaction Table",
+									ECPOS_FOLDER);
+						} else {
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, transactionResult.getString("responseMessage"));
+							Logger.writeActivity(transactionResult.getString("responseMessage"), ECPOS_FOLDER);
+						}
 					}
 				}
 			}
