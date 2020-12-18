@@ -1764,6 +1764,16 @@ public class RestC_transaction {
 						} else if (transactionResult.getString("tranType").equals("qr-refund")) {
 							transactionType = 3;
 						}
+						
+						String qr_amount_myr = null;
+						String qr_amount_rmb = null;
+						if (qrResponse.getString("amountMYR") != null) {
+							qr_amount_myr = new BigDecimal(qrResponse.getString("amountMYR")).divide(new BigDecimal(100)).toString();
+						}
+						if (qrResponse.getString("amountRMB") != null) {
+							qr_amount_rmb = new BigDecimal(qrResponse.getString("amountRMB")).divide(new BigDecimal(100)).toString();
+						}
+						 
 	
 						stmt = connection.prepareStatement("update transaction set response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
 										+ "bank_tid = ?,bank_mid = ?,mpay_mid = ?,mpay_tid = ?,transaction_date = ?,transaction_time = ?,trace_number = ?,qr_ref_id = ?,qr_user_id =?, "
@@ -1782,8 +1792,8 @@ public class RestC_transaction {
 						stmt.setString(12, qrResponse.getString("traceNumber"));
 						stmt.setString(13, qrResponse.getString("qrRefID"));
 						stmt.setString(14, qrResponse.getString("qrUserID"));
-						stmt.setString(15, qrResponse.getString("amountMYR"));
-						stmt.setString(16, qrResponse.getString("amountRMB"));
+						stmt.setString(15, qr_amount_myr);
+						stmt.setString(16, qr_amount_rmb);
 						stmt.setString(17, qrResponse.getString("authNo"));
 						stmt.setInt(18, transactionStatus);
 						stmt.setString(19, transactionResult.getString("uniqueTranNumber"));
