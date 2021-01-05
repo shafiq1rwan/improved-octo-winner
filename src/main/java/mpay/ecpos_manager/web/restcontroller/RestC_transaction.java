@@ -770,9 +770,9 @@ public class RestC_transaction {
 						stmt = connection.prepareStatement("insert into transaction (staff_id,check_id,"
 								+ "check_number,transaction_type,payment_method,payment_type,"
 								+ "terminal_serial_number,transaction_currency,transaction_amount,"
-								+ "received_amount,change_amount,transaction_status,qr_content,"
+								+ "received_amount,change_amount,transaction_status,"
 								+ "created_date,device_id) "
-										+ "values (?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
+										+ "values (?,?,?,?,?,?,?,?,?,?,?,?,now(),?);", Statement.RETURN_GENERATED_KEYS);
 						stmt.setLong(1, staffId);
 						stmt.setLong(2, checkId);
 						stmt.setString(3, checkNo);
@@ -785,8 +785,7 @@ public class RestC_transaction {
 						stmt.setBigDecimal(10, receivedAmount);
 						stmt.setBigDecimal(11, changeAmount);
 						stmt.setInt(12, transactionStatus);
-						stmt.setString(13,jsonObj.getString("qrContent"));
-						stmt.setLong(14, user.getDeviceId());
+						stmt.setLong(13, user.getDeviceId());
 						int insertTransaction = stmt.executeUpdate();
 
 						if (insertTransaction > 0) {
@@ -884,6 +883,7 @@ public class RestC_transaction {
 											if (!uniqueTranNumber.equals(null)) {
 												transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, terminalWifiIPPort, isIposQR);
 												transactionResult.put("isIposQR", isIposQR);
+												transactionResult.put("qrContent", qrContent);
 												
 												if (transactionResult.has("responseCode")) {
 													if (transactionResult.getString("responseCode").equals("00")) {
@@ -920,6 +920,7 @@ public class RestC_transaction {
 											if (!uniqueTranNumber.equals(null)) {
 												transactionResult = iposQR.qrSalePayment(String.format("%04d", storeId), "qr-sale", paymentAmount, "0.00", uniqueTranNumber, qrContent, qrPaymentDetails, jsonObj.getBoolean("isIposQR"));
 												transactionResult.put("isIposQR", isIposQR);
+												transactionResult.put("qrContent", qrContent);
 												
 												if (transactionResult.has("transaction_response_code")) {
 													if (transactionResult.getString("transaction_response_code").equals("00")) {
@@ -1775,29 +1776,30 @@ public class RestC_transaction {
 						}
 						 
 	
-						stmt = connection.prepareStatement("update transaction set response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
+						stmt = connection.prepareStatement("update transaction set qr_content = ?, response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
 										+ "bank_tid = ?,bank_mid = ?,mpay_mid = ?,mpay_tid = ?,transaction_date = ?,transaction_time = ?,trace_number = ?,qr_ref_id = ?,qr_user_id =?, "
 										+ "qr_amount_myr = ?,qr_amount_rmb = ?, auth_number = ?, transaction_status = ? where unique_trans_number = ? and transaction_type = ?;");
-						stmt.setString(1, transactionResult.getString("responseCode"));
-						stmt.setString(2, transactionResult.getString("responseMessage"));
-						stmt.setString(3, transactionResult.getString("wifiIP"));
-						stmt.setString(4, transactionResult.getString("wifiPort"));
-						stmt.setString(5, qrResponse.getString("qrIssuerType"));
-						stmt.setString(6, qrResponse.getString("bankTerminalID"));
-						stmt.setString(7, qrResponse.getString("bankMerchantID"));
-						stmt.setString(8, qrResponse.getString("mpayMerchantID"));
-						stmt.setString(9, qrResponse.getString("mpayTerminalID"));
-						stmt.setString(10, qrResponse.getString("transactionDate"));
-						stmt.setString(11, qrResponse.getString("transactionTime"));
-						stmt.setString(12, qrResponse.getString("traceNumber"));
-						stmt.setString(13, qrResponse.getString("qrRefID"));
-						stmt.setString(14, qrResponse.getString("qrUserID"));
-						stmt.setString(15, qr_amount_myr);
-						stmt.setString(16, qr_amount_rmb);
-						stmt.setString(17, qrResponse.getString("authNo"));
-						stmt.setInt(18, transactionStatus);
-						stmt.setString(19, transactionResult.getString("uniqueTranNumber"));
-						stmt.setInt(20, transactionType);
+						stmt.setString(1, transactionResult.getString("qr_content"));
+						stmt.setString(2, transactionResult.getString("responseCode"));
+						stmt.setString(3, transactionResult.getString("responseMessage"));
+						stmt.setString(4, transactionResult.getString("wifiIP"));
+						stmt.setString(5, transactionResult.getString("wifiPort"));
+						stmt.setString(6, qrResponse.getString("qrIssuerType"));
+						stmt.setString(7, qrResponse.getString("bankTerminalID"));
+						stmt.setString(8, qrResponse.getString("bankMerchantID"));
+						stmt.setString(9, qrResponse.getString("mpayMerchantID"));
+						stmt.setString(10, qrResponse.getString("mpayTerminalID"));
+						stmt.setString(11, qrResponse.getString("transactionDate"));
+						stmt.setString(12, qrResponse.getString("transactionTime"));
+						stmt.setString(13, qrResponse.getString("traceNumber"));
+						stmt.setString(14, qrResponse.getString("qrRefID"));
+						stmt.setString(15, qrResponse.getString("qrUserID"));
+						stmt.setString(16, qr_amount_myr);
+						stmt.setString(17, qr_amount_rmb);
+						stmt.setString(18, qrResponse.getString("authNo"));
+						stmt.setInt(19, transactionStatus);
+						stmt.setString(20, transactionResult.getString("uniqueTranNumber"));
+						stmt.setInt(21, transactionType);
 						int updateTransaction = stmt.executeUpdate();
 	
 						if (updateTransaction > 0) {
@@ -1841,6 +1843,7 @@ public class RestC_transaction {
 						transactionResult.getString("transaction_time"));
 						
 						stmt = connection.prepareStatement("update transaction set "
+								+ "qr_content = ?,"
 								+ "response_code = ?,"
 								+ "response_message = ?,"
 								+ "updated_date = now(),"
@@ -1864,29 +1867,30 @@ public class RestC_transaction {
 								+ "mpay_trans_id = ?,"
 								+ "trans_ref_code = ? "
 								+ "where unique_trans_number = ? and transaction_type = ?;");
-						stmt.setString(1, transactionResult.getString("transaction_response_code"));
-						stmt.setString(2, transactionResult.getString("transaction_response_message"));
-						stmt.setString(3, null);//wifi_ip
-						stmt.setString(4, null);//wifi_port
-						stmt.setString(5, transactionResult.getString("qr_transaction_type"));
-						stmt.setString(6, transactionResult.getString("mpay_mid"));//bank_mid
-						stmt.setString(7, transactionResult.getString("mpay_tid"));//bank_tid
-						stmt.setString(8, transactionResult.getString("mpay_mid"));//mpay_mid
-						stmt.setString(9, transactionResult.getString("mpay_tid"));//mpay_tid
-						stmt.setString(10, formatDate.format(date));
-						stmt.setString(11, formatTime.format(date));
-						stmt.setString(12, transactionResult.getString("transaction_reference_code"));//trace_number
-						stmt.setString(13, transactionResult.getString("qr_transaction_id"));//qr_ref_id
-						stmt.setString(14, transactionResult.getString("qr_user_id"));
-						stmt.setString(15, transactionResult.getString("transaction_amount"));
-						stmt.setString(16, null);//qr_amount_rmb
-						stmt.setString(17, transactionResult.getString("qr_transaction_id"));//auth_number
-						stmt.setInt(18, transactionStatus);
-						stmt.setString(19, transactionResult.getString("qr_transaction_id"));//qr_trans_id
-						stmt.setString(20, transactionResult.getString("mpay_transaction_id"));//mpay_trans_id
-						stmt.setString(21, transactionResult.getString("transaction_reference_code"));//trans_ref_code
-						stmt.setString(22, transactionResult.getString("uniqueTranNumber"));
-						stmt.setInt(23, transactionType);
+						stmt.setString(1, transactionResult.getString("qr_content"));
+						stmt.setString(2, transactionResult.getString("transaction_response_code"));
+						stmt.setString(3, transactionResult.getString("transaction_response_message"));
+						stmt.setString(4, null);//wifi_ip
+						stmt.setString(5, null);//wifi_port
+						stmt.setString(6, transactionResult.getString("qr_transaction_type"));
+						stmt.setString(7, transactionResult.getString("mpay_mid"));//bank_mid
+						stmt.setString(8, transactionResult.getString("mpay_tid"));//bank_tid
+						stmt.setString(9, transactionResult.getString("mpay_mid"));//mpay_mid
+						stmt.setString(10, transactionResult.getString("mpay_tid"));//mpay_tid
+						stmt.setString(11, formatDate.format(date));
+						stmt.setString(12, formatTime.format(date));
+						stmt.setString(13, transactionResult.getString("transaction_reference_code"));//trace_number
+						stmt.setString(14, transactionResult.getString("qr_transaction_id"));//qr_ref_id
+						stmt.setString(15, transactionResult.getString("qr_user_id"));
+						stmt.setString(16, transactionResult.getString("transaction_amount"));
+						stmt.setString(17, null);//qr_amount_rmb
+						stmt.setString(18, transactionResult.getString("qr_transaction_id"));//auth_number
+						stmt.setInt(19, transactionStatus);
+						stmt.setString(20, transactionResult.getString("qr_transaction_id"));//qr_trans_id
+						stmt.setString(21, transactionResult.getString("mpay_transaction_id"));//mpay_trans_id
+						stmt.setString(22, transactionResult.getString("transaction_reference_code"));//trans_ref_code
+						stmt.setString(23, transactionResult.getString("uniqueTranNumber"));
+						stmt.setInt(24, transactionType);
 						int updateTransaction = stmt.executeUpdate();
 
 						if (updateTransaction > 0) {

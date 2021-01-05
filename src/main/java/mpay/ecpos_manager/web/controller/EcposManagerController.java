@@ -157,6 +157,7 @@ public class EcposManagerController {
 				user = (UserAuthenticationModel) webComponent.performEcposQRAuthentication(qrContent, dataSource, webComponent.getGeneralConfig(connection, "BYOD QR ENCRYPT KEY"));
 				JSONObject activationInfo = webComponent.getActivationInfo(connection);
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
+				Logger.writeActivity("qrContent", qrContent);
 				
 				if (user != null) {
 					session.setMaxInactiveInterval(0);
