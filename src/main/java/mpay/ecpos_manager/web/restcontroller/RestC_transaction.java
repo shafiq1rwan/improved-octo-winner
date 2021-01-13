@@ -1779,7 +1779,7 @@ public class RestC_transaction {
 						stmt = connection.prepareStatement("update transaction set qr_content = ?, response_code = ?,response_message = ?,updated_date = now(),wifi_ip = ?,wifi_port = ?, qr_issuer_type = ?, "
 										+ "bank_tid = ?,bank_mid = ?,mpay_mid = ?,mpay_tid = ?,transaction_date = ?,transaction_time = ?,trace_number = ?,qr_ref_id = ?,qr_user_id =?, "
 										+ "qr_amount_myr = ?,qr_amount_rmb = ?, auth_number = ?, transaction_status = ? where unique_trans_number = ? and transaction_type = ?;");
-						stmt.setString(1, transactionResult.getString("qr_content"));
+						stmt.setString(1, transactionResult.getString("qrContent"));
 						stmt.setString(2, transactionResult.getString("responseCode"));
 						stmt.setString(3, transactionResult.getString("responseMessage"));
 						stmt.setString(4, transactionResult.getString("wifiIP"));
@@ -1867,7 +1867,7 @@ public class RestC_transaction {
 								+ "mpay_trans_id = ?,"
 								+ "trans_ref_code = ? "
 								+ "where unique_trans_number = ? and transaction_type = ?;");
-						stmt.setString(1, transactionResult.getString("qr_content"));
+						stmt.setString(1, transactionResult.getString("qrContent"));
 						stmt.setString(2, transactionResult.getString("transaction_response_code"));
 						stmt.setString(3, transactionResult.getString("transaction_response_message"));
 						stmt.setString(4, null);//wifi_ip
