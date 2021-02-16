@@ -704,6 +704,10 @@ public class RestC_transaction {
 						}
 					}
 					
+				} else if (jsonObj.getString("paymentMethod").equals("Static QR")) {
+					paymentMethod = 4;
+					transactionStatus = 3;
+					receivedAmount = new BigDecimal(jsonObj.getString("receivedAmount"));
 				} else {
 					Logger.writeActivity("Invalid Payment Method", ECPOS_FOLDER);
 					jsonResult.put(Constant.RESPONSE_CODE, "01");
@@ -948,6 +952,41 @@ public class RestC_transaction {
 										jsonResult.put(Constant.RESPONSE_CODE, "01");
 										jsonResult.put(Constant.RESPONSE_MESSAGE, "No QR Payment Method Selected");
 									}
+								}else if (paymentMethod == 4) {
+									stmt = connection.prepareStatement("select cash_amount, cash_alert from cash_drawer;");
+									rs3 = stmt.executeQuery();
+
+									if (rs3.next()) {
+										long cashAlert = rs3.getLong("cash_alert");
+										double currentCash = rs3.getDouble("cash_amount");
+										double ammendCash = 0.00;
+										double newCash = 0.00;
+										if (receivedAmount.compareTo(paymentAmount) <= 0) {
+											ammendCash = receivedAmount.doubleValue();
+										} else {
+											ammendCash = paymentAmount.doubleValue();
+										}
+										newCash = currentCash + ammendCash;
+
+										if (cashAlert > 0 && newCash > cashAlert) {
+											isCashAlertTriggered = true;
+										}
+
+										stmt = connection.prepareStatement("update cash_drawer set cash_amount = ?;");
+										stmt.setDouble(1, newCash);
+										stmt.executeUpdate();
+
+										stmt = connection.prepareStatement("insert into cash_drawer_log(cash_amount,new_amount,reference,performed_by) VALUES (?,?,?,?);");
+										stmt.setDouble(1, ammendCash);
+										stmt.setDouble(2, newCash);
+										stmt.setString(3, "Static QR From Sale");
+										stmt.setLong(4, staffId);
+										stmt.executeUpdate();
+									}
+
+									paymentFlag = true;
+									updateTransactionResult.put(Constant.RESPONSE_CODE, "00");
+									updateTransactionResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 								}
 
 								if (paymentFlag) {
@@ -1065,7 +1104,7 @@ public class RestC_transaction {
 						} else {
 
 							// cash void
-							if (rs.getLong("payment_method") == 1) {
+							if (rs.getLong("payment_method") == 1 || rs.getLong("payment_method") == 4) {
 								stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
 								stmt2.setLong(1, 2); // 2 for "void"
 								stmt2.setLong(2, jsonObj.getLong("transactionId"));

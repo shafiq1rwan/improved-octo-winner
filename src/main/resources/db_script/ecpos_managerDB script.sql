@@ -287,6 +287,7 @@ create table `transaction_type` (
 create table `payment_method` (
 	`id` bigint(20) NOT NULL,
     `name` varchar(255) NOT NULL,
+    `enable` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -557,7 +558,7 @@ insert into `transaction_type` values
 (1, 'Sale'), (2, 'Void'), (3, 'Refund'), (4, 'Reversal');
 
 insert into `payment_method` values
-(1, 'Cash'), (2, 'Card'), (3, 'QR');
+(1, 'Cash', 'true'), (2, 'Card', 'false'), (3, 'QR', 'false'), (4, 'Static QR', 'false');
 
 insert into `payment_type` values
 (1, 'Full Payment'), (2, 'Partial Payment');

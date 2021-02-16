@@ -2824,4 +2824,131 @@ public class RestC_configuration {
 		}
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/getPaymentMethod" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getPaymentMethod(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		String cash = "";
+		String card = "";
+		String ewallet = "";
+		String staticqr = "";
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				String queryPaymentMethod = "select id, name, enable from payment_method";
+				stmt = connection.prepareStatement(queryPaymentMethod);
+				rs = stmt.executeQuery();
+				
+				while(rs.next()) {
+					if(rs.getString("id").equalsIgnoreCase("1")) {
+						cash = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("cash", cash);
+					}else if(rs.getString("id").equalsIgnoreCase("2")) {
+						card = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("card", card);
+					}else if(rs.getString("id").equalsIgnoreCase("3")) {
+						ewallet = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("ewallet", ewallet);
+					}else if(rs.getString("id").equalsIgnoreCase("4")) {
+						staticqr = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("staticqr", staticqr);
+					}
+				}
+
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		System.out.println("result: "+jsonResult);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/savePaymentMethod" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String savePaymentMethod(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		JSONObject result = new JSONObject();
+		String resultCode = "E01";
+		String resultMessage = "Server error. Please try again later.";
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				JSONObject paymentMethod = new JSONObject(data);
+				System.out.println("Value Cash: "+paymentMethod.getString("cash"));
+				System.out.println("Value Card: "+paymentMethod.getString("card"));
+				System.out.println("Value eWallet: "+paymentMethod.getString("ewallet"));
+				System.out.println("Value Static QR: "+paymentMethod.getString("staticqr"));
+				
+				if(paymentMethod.has("cash") && paymentMethod.has("card") && paymentMethod.has("ewallet") && paymentMethod.has("staticqr")) {
+					
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("cash"), "1");
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("card"), "2");
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("ewallet"), "3");
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("staticqr"), "4");
+
+					resultCode = "00";
+					resultMessage = "Success";
+
+				}else {
+					resultCode = "E02";
+					resultMessage = "System Data Corrupted.";
+				}
+				
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+
+			try {
+				Logger.writeActivity("resultCode: " + resultCode, ECPOS_FOLDER);
+				Logger.writeActivity("resultMessage: " + resultMessage, ECPOS_FOLDER);
+				result.put("resultCode", resultCode);
+				result.put("resultMessage", resultMessage);
+			} catch (Exception e) {
+			}
+		}
+		return result.toString();
+	}
 }

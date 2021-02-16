@@ -107,7 +107,7 @@ hr {
 								<div class="row">
 									<div class="col-sm-4"> 
 									    <div class="custom-card info-box border-shadow" ng-click="showTransConfigModal()">
-										  <!-- Apply any bg-* class to to the icon to color it -->
+ 
 										  <span class="info-box-icon bg-orange"><i class="fa fa-cogs"></i></span>
 										  <div class="info-box-content">
 										    <span class="info-box-text">Transaction Configuration</span>
@@ -122,6 +122,16 @@ hr {
 										  <div class="info-box-content">
 										    <span class="info-box-text">Reactivation</span>
 										    <span class="info-box-number">Reactivate</span>
+										  </div>
+										</div>
+									</div>
+									<div class="col-sm-4"> 
+									    <div class="custom-card info-box border-shadow" ng-click="showPaymentMethodModal()">
+										  <!-- Apply any bg-* class to to the icon to color it -->
+										  <span class="info-box-icon bg-navy"><i class="fa fa-money" aria-hidden="true"></i></span>
+										  <div class="info-box-content">
+										    <span class="info-box-text">Payment Method</span>
+										    <span class="info-box-number">Settings</span>
 										  </div>
 										</div>
 									</div>
@@ -903,6 +913,58 @@ hr {
 							<button type="button" class="btn btn-primary btn-main"
 								ng-click="dialogData.button2.fn()" ng-show="dialogData.isButton2">{{dialogData.button2.name}}</button>
 						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="paymentMethodModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title text-center">Payment Method</h4>
+						</div>
+						<form>
+							<div class="modal-body">						
+								<div class="row">
+									<div class="col-sm-6 form-group">
+										<label>Select Payment Method Available: </label>
+										<div>
+											<label>
+												<input type="checkbox"
+													id="paymentMethod.cash" style="margin: 2px 0 0;"
+													class="icheckbox_minimal-red" ng-model="paymentMethod.cash" checked> Cash
+											</label><br />
+											<label>
+											<input type="checkbox"
+													id="paymentMethod.card" style="margin: 2px 0 0;"
+													class="icheckbox_minimal-red" ng-model="paymentMethod.card"> Card
+											</label><br />
+											<label>
+											<input type="checkbox"
+													id="paymentMethod.ewallet" style="margin: 2px 0 0;"
+													class="icheckbox_minimal-red" ng-model="paymentMethod.ewallet"> e-Wallet
+											</label><br />
+											<label>
+											<input type="checkbox"
+													id="paymentMethod.staticqr" style="margin: 2px 0 0;"
+													class="icheckbox_minimal-red" ng-model="paymentMethod.staticqr"> Static QR
+											</label>
+										</div> 
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<div class="row">
+									<div class="col-sm-12" >
+										<div class="pull-right">
+											<button class="btn btn-danger" data-dismiss="modal">Cancel</button>
+											<input type="submit" ng-click="submitPaymentMethod()" class="btn btn-info" value="Update" />  
+										</div>
+									</div>
+								</div>					
+							</div>
+						</form>
+						<!-- <div class="modal-footer"></div> -->
 					</div>
 				</div>
 			</div>

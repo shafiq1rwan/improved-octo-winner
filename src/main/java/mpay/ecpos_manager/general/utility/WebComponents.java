@@ -258,4 +258,24 @@ public class WebComponents {
         }
         return dateTimeString;
 	}
+	
+	public boolean updatePaymentMethod(Connection connection, String value, String parameter) throws Exception {
+		boolean flag = false;
+		PreparedStatement stmt = null;
+		try {
+			stmt = connection.prepareStatement("UPDATE payment_method SET enable = ? WHERE id = ?");
+			stmt.setString(1, value==null?"":value);
+			stmt.setString(2, parameter);
+			int rowAffected = stmt.executeUpdate();
+	
+			if(rowAffected!=0) {
+				flag = true;	
+			}
+		} catch (Exception ex) {
+			Logger.writeError(ex, "SQLException :", ECPOS_FOLDER);
+			ex.printStackTrace();
+			throw ex;
+		} 
+		return flag;
+	}
 }

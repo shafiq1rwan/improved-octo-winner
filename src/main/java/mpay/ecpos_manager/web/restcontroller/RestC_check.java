@@ -459,12 +459,14 @@ public class RestC_check {
 		PreparedStatement stmt4 = null;
 		PreparedStatement stmt5 = null;
 		PreparedStatement stmtA = null;
+		PreparedStatement stmtP = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
 		ResultSet rs4 = null;
 		ResultSet rs5 = null;
 		ResultSet rsA = null;
+		ResultSet rsP = null;
 		
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -612,6 +614,25 @@ public class RestC_check {
 						grandParentItemArray.put(grandParentItem);
 					}
 					jsonResult.put("grandParentItemArray", grandParentItemArray);
+					
+					stmtP = connection.prepareStatement("select id, enable from payment_method");
+					rsP = stmtP.executeQuery();
+					
+					while(rsP.next()) {
+						if(rsP.getString("id").equalsIgnoreCase("1")) {
+							String cash = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("cash", cash);
+						}else if(rsP.getString("id").equalsIgnoreCase("2")) {
+							String card = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("card", card);
+						}else if(rsP.getString("id").equalsIgnoreCase("3")) {
+							String ewallet = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("ewallet", ewallet);
+						}else if(rsP.getString("id").equalsIgnoreCase("4")) {
+							String staticqr = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("staticqr", staticqr);
+						}
+					}
 					
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
