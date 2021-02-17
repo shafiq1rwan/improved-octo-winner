@@ -535,6 +535,7 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Devic
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Device ID', 'DEVICE_ID', '');
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'IS EXTERNAL IP REQUIERED', '0');
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'BYOD PUBLIC URL', 'localhost:8080/byod/');
+INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Void Password', 'VOID_PASSWORD', 'q1w2e3r4');
 
 insert into `master` values
 ('check', 0, now());
