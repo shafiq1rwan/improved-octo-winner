@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import mpay.ecpos_manager.general.logger.Logger;
@@ -140,5 +141,113 @@ public class RestC_report {
 			}
 		}
 		return jObjectResult.toString();
+	}
+	
+	@RequestMapping(value =  "/get_sales_summary_chart" , method = { RequestMethod.GET }, headers = "Accept=application/json")
+	private String getSalesSummaryChart(@RequestParam String startDate, @RequestParam String endDate, HttpServletRequest request, HttpServletResponse response) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		StringBuffer paymentMethod = new StringBuffer();
+		StringBuffer totalCount = new StringBuffer();
+		String jsonData = "";
+		
+		try {
+			if (user != null) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				Date newstartDate = dateFormat.parse(startDate.replaceAll("T", " ").replaceAll("Z", ""));
+				Date newendDate = dateFormat.parse(endDate.replaceAll("T", " ").replaceAll("Z", ""));
+	
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("select pm.name,t.count,t.amount from payment_method pm " + 
+						"left join (select payment_method,count(*) as count,sum(transaction_amount) as amount from transaction " + 
+						"where transaction_type = 1 and transaction_status = 3 and created_date >= ? and created_date <= ? " + 
+						"group by payment_method) t on t.payment_method = pm.id;");
+				stmt.setTimestamp(1, new java.sql.Timestamp(newstartDate.getTime()));
+				stmt.setTimestamp(2, new java.sql.Timestamp(newendDate.getTime()));
+				rs = stmt.executeQuery();
+				
+				while (rs.next()) {
+					paymentMethod.append(rs.getString("name") == null ? "-" : "\""+rs.getString("name")+"\",");
+					totalCount.append(rs.getInt("count") == 0 ? "0," : ""+rs.getInt("count")+",");
+				}
+				
+				String newPaymentMethod = paymentMethod.substring(0, paymentMethod.length() - 1);
+				String newTotalCount = totalCount.substring(0, totalCount.length() - 1);
+				jsonData = "{\"paymentMethod\":["+newPaymentMethod+"],\"totalCount\":["+newTotalCount+"]}";
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonData;
+	}
+	
+	@RequestMapping(value =  "/get_item_summary_charts" , method = { RequestMethod.GET }, headers = "Accept=application/json")
+	private String getItemSummaryCharts(@RequestParam String startDate, @RequestParam String endDate, HttpServletRequest request, HttpServletResponse response) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		String jsonData = "";
+		StringBuffer item_name = new StringBuffer();
+		StringBuffer item_total = new StringBuffer();
+		
+		try {
+			if (user != null) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				Date newstartDate = dateFormat.parse(startDate.replaceAll("T", " ").replaceAll("Z", ""));
+				Date newendDate = dateFormat.parse(endDate.replaceAll("T", " ").replaceAll("Z", ""));
+	
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement("SELECT menu_item_name, COUNT(menu_item_code) as totalitem FROM check_detail " + 
+						"WHERE check_detail_status = 3 AND created_date >= ? " + 
+						"AND created_date <= ? and parent_check_detail_id is null " + 
+						"GROUP BY menu_item_name;");
+				stmt.setTimestamp(1, new java.sql.Timestamp(newstartDate.getTime()));
+				stmt.setTimestamp(2, new java.sql.Timestamp(newendDate.getTime()));
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					item_name.append(rs.getString("menu_item_name") == null ? "-" : "\""+rs.getString("menu_item_name")+"\",");
+					item_total.append(rs.getInt("totalitem") == 0 ? "0," : rs.getInt("totalitem") +",");
+				}
+				
+				String itemNameSubStr = item_name.substring(0, item_name.length() - 1);
+				String itemTotalSubStr = item_total.substring(0, item_total.length() - 1);
+				jsonData = "{\"item_name\":["+itemNameSubStr+"],\"item_total\":["+itemTotalSubStr+"]}";
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonData;
 	}
 }

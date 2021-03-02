@@ -151,6 +151,72 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 				"columns" : [{"data" : "items", "width": "33%"}, 
 					{"data" : "totalItems", "width": "33%"}]
 			});
+
+			var ctx = document.getElementById('myChart').getContext('2d');
+			var ctx2 = document.getElementById('myChart2').getContext('2d');
+			var json_url="${pageContext.request.contextPath}/rc/report/get_sales_summary_chart?startDate="+$scope.date.start.toISOString()
+			+"&endDate="+$scope.date.end.toISOString();
+			var json_url1="${pageContext.request.contextPath}/rc/report/get_item_summary_charts?startDate="+$scope.date.startItem.toISOString()
+			+"&endDate="+$scope.date.endItem.toISOString();
+
+			$.ajax({
+			    url: json_url,
+			    dataType: "json",
+			    success: function(response)
+			    {
+			        var myBarChart = new Chart(ctx, {
+			            type: 'doughnut',
+			            data: {
+			                labels: response.paymentMethod,
+			                datasets: [{
+			                    label: 'Payment Method',
+			                    data: response.totalCount,
+			                    backgroundColor: ["#90be6d", "#43aa8b", "#4d908e"],
+			                    borderColor: ['white'],
+			                    borderWidth: 1
+			                }]
+			            },
+			            options: {
+			            	responsive: true,
+			                maintainAspectRatio: false
+			             }
+			        });
+			    }
+			});
+
+			$.ajax({
+			    url: json_url1,
+			    dataType: "json",
+			    success: function(response)
+			    {
+			    	var myBarChart = new Chart(ctx2, {
+			    	    type: 'bar',
+			    	    data: {
+			    	        labels: response.item_name,
+			    	        datasets: [{
+			    	        	beginAtZero: true,
+			    	            label: 'Best Selling Item', 
+			    	            backgroundColor: ["#f94144", "#f3722c", "#f8961e"], 
+			    	            borderColor: 'white',
+			    	            data: response.item_total,
+			    	        }]
+			    	    },
+			    	    options: {
+			    	    	responsive: true,
+			    	        maintainAspectRatio: false,
+			    	        scales: {
+			    	            yAxes: [{
+			    	            	display: true,
+			    	                ticks: {
+			    	                    beginAtZero: true,
+			    	                    precision: 0
+			    	                }
+			    	            }]
+			    	        }
+			    	    }
+			    	});
+			    }
+			});
 		}
 	}
 });

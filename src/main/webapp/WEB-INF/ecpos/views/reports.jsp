@@ -30,6 +30,26 @@
 										<font size="4">REPORTS</font>
 									</div>
 								</div>
+								</br>
+								<div class="row">
+       							<div class="col-md-6">
+								<div class="box box-success">
+									<div class="box-header with-border">
+										<h3 class="box-title">Sales Report</h3>
+									</div>
+									<div class="box-body" style="height: 280px">
+										<canvas id="myChart"></canvas>
+									</div>
+								</div></div>
+								<div class="col-md-6">
+								<div class="box box-success">
+									<div class="box-header with-border">
+										<h3 class="box-title">Best Selling Item</h3>
+									</div>
+									<div class="box-body" style="height: 280px">
+										<canvas id="myChart2"></canvas>
+									</div>
+								</div></div></div>
 								<br>
 								<div class="row">
 									<div class="col-sm-4 col-lg-3 form-group">
