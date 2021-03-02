@@ -287,6 +287,7 @@ create table `transaction_type` (
 create table `payment_method` (
 	`id` bigint(20) NOT NULL,
     `name` varchar(255) NOT NULL,
+    `enable` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -534,6 +535,7 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Devic
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Device ID', 'DEVICE_ID', '');
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'IS EXTERNAL IP REQUIERED', '0');
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'BYOD PUBLIC URL', 'localhost:8080/byod/');
+INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Void Password', 'VOID_PASSWORD', 'q1w2e3r4');
 
 insert into `master` values
 ('check', 0, now());
@@ -557,7 +559,7 @@ insert into `transaction_type` values
 (1, 'Sale'), (2, 'Void'), (3, 'Refund'), (4, 'Reversal');
 
 insert into `payment_method` values
-(1, 'Cash'), (2, 'Card'), (3, 'QR');
+(1, 'Cash', 'true'), (2, 'Card', 'false'), (3, 'QR', 'false'), (4, 'Static QR', 'false');
 
 insert into `payment_type` values
 (1, 'Full Payment'), (2, 'Partial Payment');

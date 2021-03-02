@@ -199,6 +199,10 @@
 					$('#scan_qr_modal').on('shown.bs.modal',function() {
 						$('#qr_content').focus();
 					})
+				} else if($scope.paymentMethod == "Static QR"){
+					$('#receivedAmount').html(parseFloat($('#tenderAmount').text()).toFixed(2)); 
+					// $('#tenderAmount').html(parseFloat($scope.fullPaymentAmount).toFixed(2)); 
+					$('#receivedAmountModal').modal('show');
 				}
 			}
 		};
@@ -273,7 +277,7 @@
 
 						} else {
 							/* alert(response.data.response_message); */
-							Swal.fire("Warning","response.data.response_message","warning");
+							Swal.fire("Warning",response.data.response_message,"warning");
 						}
 					},
 					function(response) {
@@ -476,6 +480,97 @@
 					},
 					function(response) {
 						$('#loading_modal').modal('hide');
+						/* alert("Session TIME OUT"); */
+						/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+						Swal.fire({
+							title: 'Oops...',
+							text: "Session Timeout",
+							icon: 'error',
+							showCancelButton: false,
+							confirmButtonColor: '#3085d6',
+							cancelButtonColor: '#d33',
+							confirmButtonText: 'OK'
+							},function(isConfirm){
+							if (isConfirm) {
+							window.location.href = "${pageContext.request.contextPath}/signout";
+							}
+						});
+
+					});
+				}
+			} else if($scope.paymentMethod == "Static QR") {
+				if (parseFloat(document.getElementById('tenderAmount').innerHTML) > parseFloat(document.getElementById('receivedAmount').innerHTML)) {
+					/* return alert("received amount should be greater than or equal to tender amount"); */
+					return Swal.fire("Warning","Received amount should be greater than or equal to Tender Amount","warning");
+				} else {
+					var jsonData = JSON.stringify({
+						"paymentType" : $scope.paymentType,
+						"paymentMethod" : $scope.paymentMethod,
+						"paymentAmount" : $('#tenderAmount').text(),
+						"tableNo" : $scope.tableNo,
+						"checkNo" : $scope.checkNo,
+						"receivedAmount" : $('#receivedAmount').text()
+					});
+					console.log("Send data: " + jsonData)
+
+					$http.post("${pageContext.request.contextPath}/rc/transaction/submit_payment", jsonData)
+					.then(function(response) {
+						if (response.data.response_code === "00") {
+							$scope.alertMessage = $sce.trustAsHtml(response.data.response_message + " " + "Change: RM" + parseFloat(response.data.change_amount).toFixed(2));
+							$scope.isCashAlert = response.data.is_cash_alert;
+							if ($scope.isCashAlert) {
+								$scope.alertMessage = $sce.trustAsHtml($scope.alertMessage + "<br>" + "Cash amount exceed. Please perform cash collection.");
+							}
+							
+							var jsonData2ndDisplay = JSON.stringify({
+								"deviceType" : 1,
+								"orderType" : $scope.orderType,
+								"tableNo" : $scope.tableNo,
+								"checkNo" : $scope.checkNo,
+							});
+							$scope.informSecondDisplay(jsonData2ndDisplay);
+							
+							$scope.paymentButtonFn = function() {
+								$('#receivedAmountModal').modal('hide');
+								$('.modal-backdrop').remove();
+								$('#receivedAmount').html(parseFloat(0).toFixed(2)); 
+								
+								$('#paymentAlertModal').modal('hide'); 
+								$('.modal-backdrop').remove();
+								
+								if ($scope.orderType == "table") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/table_order");
+									} else {
+										location.reload();
+									}
+								} else if ($scope.orderType == "take_away") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/take_away_order");
+									} else {
+										location.reload();
+									}
+								} else if ($scope.orderType == "deposit") {
+									if ($scope.paymentType == "full" || response.data.check_status == "closed") {
+										$location.path("/deposit_order");
+									} else {
+										location.reload();
+									}
+								}
+							}
+							$('#paymentAlertModal').modal('show'); 
+							
+							// openDrawer();
+							
+							//Print Receipt here
+							printReceipt($scope.checkNo);
+
+						} else {
+							/* alert(response.data.response_message); */
+							Swal.fire("Warning",response.data.response_message,"warning");
+						}
+					},
+					function(response) {
 						/* alert("Session TIME OUT"); */
 						/* window.location.href = "${pageContext.request.contextPath}/signout"; */
 						Swal.fire({

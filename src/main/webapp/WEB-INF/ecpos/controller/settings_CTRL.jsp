@@ -22,6 +22,7 @@
 					$scope.getStoreInfo();
 					$scope.getTransConfigList();
 					$scope.getTransConfigIntervalList();
+					$scope.getPaymentMethod();
 				} else {
 					/* alert("Session TIME OUT"); */
 					Swal.fire({
@@ -213,6 +214,33 @@
 								  window.location.href = "${pageContext.request.contextPath}/signout";
 							  }
 							});
+			});
+		}
+
+		$scope.getPaymentMethod = function(){
+			$http.get("${pageContext.request.contextPath}/rc/configuration/getPaymentMethod")
+			.then(function(response) {
+				var result = response.data;
+				$scope.paymentMethod = {
+					       cash : result.cash === 'true',
+					       card : result.card === 'true',
+					       ewallet : result.ewallet === 'true',
+					       staticqr : result.staticqr === 'true'};
+			},
+			function(response) {
+				Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						},function(isConfirm){
+						    if (isConfirm) {
+								  window.location.href = "${pageContext.request.contextPath}/signout";
+							}
+					});
 			});
 		}
 		
@@ -606,6 +634,10 @@
 		
 		$scope.showTransConfigModal = function() {
 			$("#transConfigModal").modal("show");
+		}
+
+		$scope.showPaymentMethodModal = function() {
+			$("#paymentMethodModal").modal("show");
 		}
 		
 		$scope.submitReactivation = function() {
@@ -1308,6 +1340,39 @@
 				$('#deleteButton').prop('disabled',false);
 			}
 		};
+
+		$scope.submitPaymentMethod = function() {
+			$('#loading_modal').modal('show');
+			var postdata = {
+				cash : $scope.paymentMethod.cash,
+				card : $scope.paymentMethod.card,
+				ewallet : $scope.paymentMethod.ewallet,
+				staticqr : $scope.paymentMethod.staticqr
+			}
+			console.log(postdata);
+			$http({
+				method : 'POST',
+				headers : {
+					'Content-Type' : 'application/json'
+				},
+				data : postdata,
+				url : '${pageContext.request.contextPath}/rc/configuration/savePaymentMethod'
+			}).then(function(response) {
+				if (response != null && response.data != null
+						&& response.data.resultCode != null) {
+					if (response.data.resultCode == "00") {						
+						$scope.syncSuccess(response.data.resultMessage);
+						$("#paymentMethodModal").modal("hide");
+					} else {
+						$scope.syncFailed(response.data.resultMessage);
+					}
+				} else {
+					$scope.syncFailed("Invalid server response!");
+				}
+			}, function(error) {
+				$scope.syncFailed("Unable to connect to server!");
+			});
+		}
 		
 	});
 </script>
