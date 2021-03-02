@@ -1,5 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"
+	import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+<%
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
+%>
 <html>
 <head>
 <link rel="stylesheet"
@@ -102,6 +106,22 @@ ul.select2-results__options li {
 										</button>
 									</div>
 								</div>
+								<%if (user.getStoreType() == 3) { %>
+								<div ng-if="checkDetail.orderType != '3'">
+									<div class="row">
+										<div class="col-sm-12"
+											style="margin-top: 15px; margin-bottom: 15px;">
+											<button class="btn btn-block btn-success shadowBox"
+												style="margin: auto; width: 200px; height: 125px; border: 1px solid grey; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/Pay.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: top; border: 10px solid transparent"
+												ng-click="proceedPaymentMethod('partial')">
+												<font size="4"
+													style="bottom: 5%; width: 100%; left: 0%; position: absolute;">Advance
+													Payment</font>
+											</button>
+										</div>
+									</div>
+								</div>
+								<%} else { %>
 								<div ng-if="checkDetail.orderType != '3'">
 									<div class="row">
 										<div class="col-sm-12"
@@ -130,6 +150,7 @@ ul.select2-results__options li {
 										</div>
 									</div>
 								</div>
+								<%} %>
 							</div>
 						</div>
 
@@ -146,6 +167,7 @@ ul.select2-results__options li {
 									</div>
 									<div class="col-sm-2"></div>
 								</div>
+								<div ng-if="checkDetail.cash == 'true'">
 								<div class="row">
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
@@ -158,6 +180,8 @@ ul.select2-results__options li {
 										</button>
 									</div>
 								</div>
+								</div>
+								<div ng-if="checkDetail.card == 'true'">
 								<div class="row">
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
@@ -170,6 +194,22 @@ ul.select2-results__options li {
 										</button>
 									</div>
 								</div>
+								</div>
+								<div ng-if="checkDetail.staticqr == 'true'">
+								<div class="row">
+									<div class="col-sm-12"
+										style="margin-top: 15px; margin-bottom: 15px;">
+										<%-- <button class="btn btn-block btn-success" style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/qr-code.png'); background-repeat: no-repeat; background-size: 50% 75%; background-position: center;" ng-click="proceedPayment('QR')"></button> --%>
+										<button class="btn btn-block btn-success shadowBox"
+											style="margin: auto; width: 200px; height: 125px; border: 1px solid #ccc; border-radius: 5px; background-image:url('${pageContext.request.contextPath}/img/icon/eWallet.png'); background-repeat: no-repeat; background-size: 48% 75%; background-position: top; border: 10px solid transparent"
+											ng-click="proceedPayment('Static QR')">
+											<font size="4"
+												style="bottom: 5%; width: 100%; left: 0%; position: absolute;">Static QR</font>
+										</button>
+									</div>
+								</div>
+								</div>
+								<div ng-if="checkDetail.ewallet == 'true'">
 								<div class="row">
 									<div class="col-sm-12"
 										style="margin-top: 15px; margin-bottom: 15px;">
@@ -181,6 +221,7 @@ ul.select2-results__options li {
 												style="bottom: 5%; width: 100%; left: 0%; position: absolute;">eWallet</font>
 										</button>
 									</div>
+								</div>
 								</div>
 							</div>
 						</div>

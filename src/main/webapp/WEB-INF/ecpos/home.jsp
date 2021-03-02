@@ -170,7 +170,7 @@
 		
 		.when("/",
 			{
-			<%if (user.getStoreType() == 2) {%>
+			<%if (user.getStoreType() == 2 || user.getStoreType() == 3) {%>
 				templateUrl : "${pageContext.request.contextPath}/views/table_order",
 				controller : "table_order_CTRL"
 			<%} else {%>
@@ -190,6 +190,11 @@
 			})
 		.when("/check/:orderType/:checkNo/:tableNo",
 			{
+				templateUrl : "${pageContext.request.contextPath}/views/check",
+				controller : "check_CTRL"
+			})
+		.when("/check/:orderType/:checkNo/:tableNo/:roomStatus",
+				{
 				templateUrl : "${pageContext.request.contextPath}/views/check",
 				controller : "check_CTRL"
 			})

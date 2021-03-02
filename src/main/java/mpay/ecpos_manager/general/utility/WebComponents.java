@@ -59,7 +59,8 @@ public class WebComponents {
 					rs2 = stmt2.executeQuery();
 
 					if (rs2.next()) {
-						domainContainer.setStoreType(rs2.getInt("store_type_id"));
+						/* domainContainer.setStoreType(rs2.getInt("store_type_id")); */
+						domainContainer.setStoreType(3);//STORE TYPE HOTEL
 						domainContainer.setTakeAwayFlag(rs2.getBoolean("ecpos_takeaway_detail_flag"));
 					}
 					
@@ -257,5 +258,25 @@ public class WebComponents {
             e.printStackTrace();
         }
         return dateTimeString;
+	}
+	
+	public boolean updatePaymentMethod(Connection connection, String value, String parameter) throws Exception {
+		boolean flag = false;
+		PreparedStatement stmt = null;
+		try {
+			stmt = connection.prepareStatement("UPDATE payment_method SET enable = ? WHERE id = ?");
+			stmt.setString(1, value==null?"":value);
+			stmt.setString(2, parameter);
+			int rowAffected = stmt.executeUpdate();
+	
+			if(rowAffected!=0) {
+				flag = true;	
+			}
+		} catch (Exception ex) {
+			Logger.writeError(ex, "SQLException :", ECPOS_FOLDER);
+			ex.printStackTrace();
+			throw ex;
+		} 
+		return flag;
 	}
 }

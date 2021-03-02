@@ -3,6 +3,7 @@
 		$scope.orderType = $routeParams.orderType;
 		$scope.checkNo = $routeParams.checkNo;
 		$scope.tableNo = $routeParams.tableNo;
+		$scope.roomStatus = $routeParams.roomStatus;
 
 		$scope.checkDetail = {};
 		
@@ -1205,5 +1206,59 @@
 		}
 		
 		$scope.wsOrderListener();
+
+		//start vernpos hotel part
+		$scope.roomCheckInOut = function(action) {
+			var notimsg;
+			//if (action == "in") {
+				notimsg = "You wont be able to revert this!";
+			//} else {
+			//	notimsg = "The check will be closed. Please complete all payment.";
+			//}
+			Swal.fire({
+				title: 'Are you sure?',
+				text: notimsg,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes'
+			}).then((result) => {
+				if (result.value) {
+					var jsonData = JSON.stringify({
+						"roomId" : $scope.tableNo
+					});
+					$http.post("${pageContext.request.contextPath}/rc/configuration/update_room_status", jsonData)
+					.then(function(response) {
+						if (response.data.response_code == "00") {
+							//Swal.fire("Success",response.data.response_message,"success");
+							//$scope.roomStatus = response.data.room_status_id;
+							if (response.data.roomstatus_id != null && response.data.roomstatus_id == 1) {
+								Swal.fire("Success",response.data.response_message,"success");
+								$scope.roomStatus = response.data.room_status_id;
+								$("#checkInButton").hide();
+							}
+						} else {
+							Swal.fire("Oops...",response.data.response_message,"error");
+						}
+					},
+					function(response) {
+						Swal.fire({
+							title: 'Oops...',
+							text: "Session Timeout",
+							icon: 'error',
+							showCancelButton: false,
+							confirmButtonColor: '#3085d6',
+							cancelButtonColor: '#d33',
+							confirmButtonText: 'OK'
+						},function(isConfirm){
+					    	if (isConfirm) {
+								window.location.href = "${pageContext.request.contextPath}/signout";
+							}
+						});
+					});
+				}
+			});
+		}
 	});
 </script>

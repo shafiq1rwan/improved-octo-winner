@@ -8,8 +8,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.print.Doc;
 import javax.print.DocFlavor;
@@ -86,6 +89,9 @@ public class RestC_configuration {
 
 	@Value("${receipt-path}")
 	private String receiptPath;
+	
+	@Value("${menu_image_path}")
+	private String menuImagePath;
 
 	@RequestMapping(value = { "/session_checking" }, method = { RequestMethod.GET, RequestMethod.POST })
 	public String ecposSessionChecking(HttpServletRequest request) {
@@ -2817,6 +2823,499 @@ public class RestC_configuration {
 				if (connection != null) {
 					connection.close();
 				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/getPaymentMethod" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getPaymentMethod(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		String cash = "";
+		String card = "";
+		String ewallet = "";
+		String staticqr = "";
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				String queryPaymentMethod = "select id, name, enable from payment_method";
+				stmt = connection.prepareStatement(queryPaymentMethod);
+				rs = stmt.executeQuery();
+				
+				while(rs.next()) {
+					if(rs.getString("id").equalsIgnoreCase("1")) {
+						cash = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("cash", cash);
+					}else if(rs.getString("id").equalsIgnoreCase("2")) {
+						card = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("card", card);
+					}else if(rs.getString("id").equalsIgnoreCase("3")) {
+						ewallet = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("ewallet", ewallet);
+					}else if(rs.getString("id").equalsIgnoreCase("4")) {
+						staticqr = rs.getString("enable").equalsIgnoreCase("") ? "" : rs.getString("enable");
+						jsonResult.put("staticqr", staticqr);
+					}
+				}
+
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		System.out.println("result: "+jsonResult);
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/savePaymentMethod" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String savePaymentMethod(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("data: " + data, ECPOS_FOLDER);
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		JSONObject result = new JSONObject();
+		String resultCode = "E01";
+		String resultMessage = "Server error. Please try again later.";
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				JSONObject paymentMethod = new JSONObject(data);
+				
+				if(paymentMethod.has("cash") && paymentMethod.has("card") && paymentMethod.has("ewallet") && paymentMethod.has("staticqr")) {
+					
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("cash"), "1");
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("card"), "2");
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("ewallet"), "3");
+					webComponent.updatePaymentMethod(connection, paymentMethod.getString("staticqr"), "4");
+
+					resultCode = "00";
+					resultMessage = "Success";
+
+				}else {
+					resultCode = "E02";
+					resultMessage = "System Data Corrupted.";
+				}
+				
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+
+			try {
+				Logger.writeActivity("resultCode: " + resultCode, ECPOS_FOLDER);
+				Logger.writeActivity("resultMessage: " + resultMessage, ECPOS_FOLDER);
+				result.put("resultCode", resultCode);
+				result.put("resultMessage", resultMessage);
+			} catch (Exception e) {
+			}
+		}
+		return result.toString();
+	}
+	
+	@RequestMapping(value = { "/checkVoidPassword" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String checkVoidPassword(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) { 
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		String password = "";
+		
+		try {
+			JSONObject jsonObj = new JSONObject(data);
+			
+			if (user != null) {
+				connection = dataSource.getConnection();
+				String queryPaymentMethod = "select value from general_configuration where parameter = 'VOID_PASSWORD'";
+				stmt = connection.prepareStatement(queryPaymentMethod);
+				rs = stmt.executeQuery();
+				
+				while(rs.next()) {
+					password = rs.getString("value");
+				}
+				
+				if(jsonObj.getString("data").equalsIgnoreCase(password)) {
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Password Match");
+				}else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Password Not Match");
+				}
+
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	//VernPOS Hotel part
+	@RequestMapping(value = { "/get_roomtype_list" }, method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = "application/json")
+	public String getRoomTypelist(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				stmt = connection.prepareStatement("SELECT * FROM hotel_room_type order by id;");
+				rs = stmt.executeQuery();
+
+				boolean isEmpty = true;
+				JSONArray roomTypeList = new JSONArray();
+				JSONObject obj = null;
+				while (rs.next()) {
+					isEmpty = false;
+					obj = new JSONObject();
+					if(menuImagePath.length() == 12) {
+						obj.put("image_path", menuImagePath + rs.getString("image_path"));
+					}else {
+						obj.put("image_path", menuImagePath.substring(55) + rs.getString("image_path"));
+					}
+					obj.put("id", rs.getLong("id"));
+					obj.put("name", rs.getString("name"));
+					
+					roomTypeList.put(obj);
+				}
+
+				if (isEmpty) {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Room type info not found");
+				} else {
+					jsonResult.put(Constant.ROOMTYPE_LIST, roomTypeList);
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_room_list" }, method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = "application/json")
+	public String getRoomlist(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				boolean noStatus = true;
+				String status_id = null;
+				String type_id = null;
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT a.*,b.name as 'room_status',b.bg_color as 'status_bg_color', "
+						+ "c.name as 'room_category_name',d.check_number "
+						+ "FROM table_setting a "
+						+ "left join hotel_status_lookup b on a.status_lookup_id = b.id "
+						+ "left join hotel_room_category_lookup c on a.hotel_room_category = c.id "
+						+ "left join `check` d on a.id = d.table_number and d.check_status = 2 "
+						+ "where store_id = 3 ");
+				if (data.contains(",")) {
+					String[] params = data.split(",");
+					type_id = params[0];
+					status_id = params[1];
+					if (status_id != null && !status_id.equals("")) {
+						noStatus = false;
+						sb.append("and a.status_lookup_id = ? and a.hotel_room_type = ? ");
+					} else {
+						sb.append("and a.hotel_room_type = ? ");
+					}
+				} else {
+					type_id = data;
+					sb.append("and a.hotel_room_type = ? ");
+				}
+				sb.append("order by a.hotel_floor_no;");
+				
+				stmt = connection.prepareStatement(sb.toString());
+				if (noStatus) {
+					stmt.setString(1, type_id);
+				} else {
+					stmt.setString(1, status_id);
+					stmt.setString(2, type_id);
+				}
+				rs = stmt.executeQuery();
+
+				boolean isEmpty = true;
+				String firstFloor = null;
+				JSONArray roomList = new JSONArray();
+				JSONObject obj = null;
+				ArrayList<String> floorList = new ArrayList<String>();
+				while (rs.next()) {
+					if (isEmpty) {
+						isEmpty = false;
+						firstFloor = rs.getString("hotel_floor_no");
+					}
+					
+					obj = new JSONObject();
+					obj.put("id", Long.toString(rs.getLong("id")));
+					obj.put("room_name", rs.getString("table_name"));
+					obj.put("floor_no", rs.getString("hotel_floor_no"));
+					obj.put("room_status_id", rs.getString("status_lookup_id"));
+					obj.put("room_status", rs.getString("room_status"));
+					obj.put("room_category_name", rs.getString("room_category_name"));
+					obj.put("status_bg_color", rs.getString("status_bg_color"));
+					obj.put("check_no", rs.getString("check_number"));
+
+					floorList.add(rs.getString("hotel_floor_no"));
+					roomList.put(obj);
+				}
+				Set<String> uniqueFloor = new HashSet<String>(floorList);
+
+				if (isEmpty) {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Room info not found");
+				} else {
+					jsonResult.put(Constant.FLOOR_LIST, uniqueFloor);
+					jsonResult.put(Constant.ROOM_LIST, roomList);
+					jsonResult.put("first_floor_no", firstFloor);
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_room_status" }, method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = "application/json")
+	public String getRoomStatus(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("select * from hotel_status_lookup "
+						+ "order by id;");
+				rs = stmt.executeQuery();
+				
+				JSONArray roomStatusList = new JSONArray();
+				JSONObject obj = null;
+				while (rs.next()) {
+					obj = new JSONObject();
+					obj.put("id", rs.getInt("id"));
+					obj.put("room_status", rs.getString("name"));
+					
+					roomStatusList.put(obj);
+				}
+				jsonResult.put(Constant.ROOM_STATUS_LIST, roomStatusList);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				if (rs != null) {
+					rs.close();
+					rs = null;
+				}
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/update_room_status" }, method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = "application/json")
+	public String updateRoomStatus(@RequestBody String jsonData, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		ResultSet rs = null;
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				JSONObject jsonObj = new JSONObject(jsonData);
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+				
+				String room_id = jsonObj.getString("roomId");
+				//String action = jsonObj.getString("action");
+	
+				stmt = connection.prepareStatement("select * from table_setting where id = ?;");
+				stmt.setString(1, room_id);
+				rs = stmt.executeQuery();
+				
+				int roomNewStatus = 0;
+				//if (action.equalsIgnoreCase("in")) {
+					roomNewStatus = 1;
+				//} else {
+				//	roomNewStatus = 4;
+				//}
+				if (rs.next()) {
+					stmt2 = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?;");
+					stmt2.setInt(1, roomNewStatus);
+					stmt2.setString(2, room_id);
+					int rs2 = stmt2.executeUpdate();
+					
+					if (rs2 > 0) {
+						connection.commit();
+						Logger.writeActivity("Room Status Successfully Updated", ECPOS_FOLDER);
+						jsonResult.put(Constant.ROOM_STATUS_ID, roomNewStatus);
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Room Status Successfully Updated");
+					} else {
+						connection.rollback();
+						Logger.writeActivity("Room Status Failed To Update", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Room Status Failed To Update");
+					}
+				} else {
+					connection.rollback();
+					Logger.writeActivity("Room ID Not Found", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Room ID Not Found");
+				}
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)stmt.close();
+				if (stmt2 != null)stmt2.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
 				e.printStackTrace();

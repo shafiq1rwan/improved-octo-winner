@@ -459,12 +459,14 @@ public class RestC_check {
 		PreparedStatement stmt4 = null;
 		PreparedStatement stmt5 = null;
 		PreparedStatement stmtA = null;
+		PreparedStatement stmtP = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet rs3 = null;
 		ResultSet rs4 = null;
 		ResultSet rs5 = null;
 		ResultSet rsA = null;
+		ResultSet rsP = null;
 		
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -613,6 +615,25 @@ public class RestC_check {
 					}
 					jsonResult.put("grandParentItemArray", grandParentItemArray);
 					
+					stmtP = connection.prepareStatement("select id, enable from payment_method");
+					rsP = stmtP.executeQuery();
+					
+					while(rsP.next()) {
+						if(rsP.getString("id").equalsIgnoreCase("1")) {
+							String cash = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("cash", cash);
+						}else if(rsP.getString("id").equalsIgnoreCase("2")) {
+							String card = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("card", card);
+						}else if(rsP.getString("id").equalsIgnoreCase("3")) {
+							String ewallet = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("ewallet", ewallet);
+						}else if(rsP.getString("id").equalsIgnoreCase("4")) {
+							String staticqr = rsP.getString("enable").equalsIgnoreCase("") ? "" : rsP.getString("enable");
+							jsonResult.put("staticqr", staticqr);
+						}
+					}
+					
 					jsonResult.put(Constant.RESPONSE_CODE, "00");
 					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
 				} else {
@@ -662,10 +683,16 @@ public class RestC_check {
 		PreparedStatement stmt6 = null;
 		PreparedStatement stmt7 = null;
 		PreparedStatement stmt8 = null;
+		PreparedStatement hstmt1 = null;
+		PreparedStatement hstmt2 = null;
+		PreparedStatement hstmt3 = null;
+		PreparedStatement hstmt4 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		ResultSet res = null;
 		ResultSet res2 = null;
+		ResultSet hrs1 = null;
+		ResultSet hrs2 = null;
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
 		boolean isProceed = true;
@@ -678,6 +705,8 @@ public class RestC_check {
 				
 				if (jsonObj.has("table_no")) {
 					String tableNo = jsonObj.getString("table_no");
+					String customerName = jsonObj.getString("name");
+					String customerPhone = jsonObj.getString("phone");
 				
 					connection = dataSource.getConnection();
 					connection.setAutoCommit(false);
@@ -747,23 +776,123 @@ public class RestC_check {
 						    String receiptNumber = receiptDate+"-"+newCheckNo;
 		
 							if (rs3 > 0) {
-								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,receipt_number) " + 
-										"values (?,?,?,1,?,0,0,0,0,0,0,0,1,now(),?,?);");
+								stmt4 = connection.prepareStatement("insert into `check` (check_number,check_ref_no,staff_id,order_type,customer_name,customer_phone_no,table_number,total_item_quantity,total_amount,total_amount_with_tax,total_amount_with_tax_rounding_adjustment,grand_total_amount,tender_amount,overdue_amount,check_status,created_date,device_id,receipt_number) " + 
+										"values (?,?,?,1,?,?,?,0,0,0,0,0,0,0,1,now(),?,?);");
 								stmt4.setString(1, Integer.toString(newCheckNo));
 								stmt4.setString(2, checkRef);
 								stmt4.setLong(3, staffId);
-								stmt4.setString(4, tableNo);
-								stmt4.setLong(5, user.getDeviceId());
-								stmt4.setString(6, receiptNumber);
+								stmt4.setString(4, customerName);
+								stmt4.setString(5, customerPhone);
+								stmt4.setString(6, tableNo);
+								stmt4.setLong(7, user.getDeviceId());
+								stmt4.setString(8, receiptNumber);
 								int rs4 = stmt4.executeUpdate();
 								
 								if (rs4 > 0) {
-									connection.commit();
-									Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
-									jsonResult.put(Constant.CHECK_REF_NO, checkRef);
-									jsonResult.put(Constant.CHECK_NO, newCheckNo);
-									jsonResult.put(Constant.RESPONSE_CODE, "00");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+									
+									if (user.getStoreType() == 3) {
+										hstmt1 = connection.prepareStatement("select a.*,b.hotel_room_base_price from `check` a left join table_setting b "
+												+ "on a.table_number = b.id where check_number = ?");
+										hstmt1.setInt(1, newCheckNo);
+										hrs1 = hstmt1.executeQuery();
+										
+										long checkId = 0;
+										BigDecimal roomPrice = null;
+										while (hrs1.next()) {
+											checkId = hrs1.getLong("id");
+											roomPrice = hrs1.getBigDecimal("hotel_room_base_price");
+										}
+										
+										JSONObject charges = new JSONObject();
+										JSONArray totalTaxes = new JSONArray();
+										JSONArray overallTaxes = new JSONArray();
+
+										hstmt2 = connection.prepareStatement("select tc.* from tax_charge tc " + 
+												"inner join charge_type_lookup ctlu on ctlu.charge_type_number = tc.charge_type " + 
+												"where tc.is_active = 1;");
+										hrs2 = hstmt2.executeQuery();
+
+										while (hrs2.next()) {
+											JSONObject taxInfo = new JSONObject();
+											
+											if (hrs2.getInt("charge_type") == 1) {
+												taxInfo.put("id", hrs2.getString("id"));
+												taxInfo.put("rate", hrs2.getString("rate"));
+												
+												totalTaxes.put(taxInfo);
+											} else if (hrs2.getInt("charge_type") == 2) {
+												taxInfo.put("id", hrs2.getString("id"));
+												taxInfo.put("rate", hrs2.getString("rate"));
+												
+												overallTaxes.put(taxInfo);
+											}
+										}
+										charges.put("totalTaxes", totalTaxes);
+										charges.put("overallTaxes", overallTaxes);
+										
+										Logger.writeActivity("charges: " + charges, ECPOS_FOLDER);
+										
+										hstmt3 = connection.prepareStatement("insert into check_detail (check_id,check_number,device_type,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,total_amount,check_detail_status,created_date) "
+														+ "values (?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
+										hstmt3.setLong(1, checkId);								//id
+										hstmt3.setInt(2, newCheckNo);							//check_number
+										hstmt3.setInt(3, 1);										//device_type = ecpos
+										hstmt3.setLong(4, 100);									//menu_item_id
+										hstmt3.setString(5, "RR1");								//backend_id
+										hstmt3.setString(6, "Room Charge");						//menu_item_name
+										hstmt3.setBigDecimal(7, roomPrice);						//room_base_price
+										hstmt3.setInt(8, 1);
+										hstmt3.setBigDecimal(9, roomPrice);						//total_amount
+										int insert1stCheckDetail = hstmt3.executeUpdate();
+
+										if (insert1stCheckDetail > 0) {
+											
+											boolean updateCheck = updateCheck(connection, checkId, String.valueOf(newCheckNo), 1, roomPrice, true, charges);
+
+											if (updateCheck) {
+												
+												// update room status in table_setting table
+												String newRoomStatus = "3";
+												hstmt4 = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
+												hstmt4.setString(1, newRoomStatus);
+												hstmt4.setString(2, tableNo);
+												int updateHotelRoom = hstmt4.executeUpdate();
+												
+												if (updateHotelRoom > 0) {
+													connection.commit();
+													Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+													//jsonResult.put(Constant.CHECK_REF_NO, checkRef);
+													jsonResult.put(Constant.CHECK_NO, newCheckNo);
+													jsonResult.put(Constant.TABLE_NO, tableNo);
+													jsonResult.put(Constant.ROOM_STATUS_ID, newRoomStatus);
+													jsonResult.put(Constant.RESPONSE_CODE, "00");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+												} else {
+													connection.rollback();
+													Logger.writeActivity("Failed to update room status", ECPOS_FOLDER);
+													jsonResult.put(Constant.RESPONSE_CODE, "01");
+													jsonResult.put(Constant.RESPONSE_MESSAGE, "Failed to room status");
+												}
+											} else {
+												connection.rollback();
+												Logger.writeActivity("Failed to update check", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Failed to update check");
+											}
+										} else {
+											connection.rollback();
+											Logger.writeActivity("Check Detail Failed To Insert", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Insert");
+										}
+									} else {
+										connection.commit();
+										Logger.writeActivity("Check Number: " + newCheckNo, ECPOS_FOLDER);
+										jsonResult.put(Constant.CHECK_REF_NO, checkRef);
+										jsonResult.put(Constant.CHECK_NO, newCheckNo);
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Success");
+									}
 								} else {
 									connection.rollback();
 									Logger.writeActivity("Check Master Failed To Insert", ECPOS_FOLDER);
@@ -810,10 +939,16 @@ public class RestC_check {
 				if (stmt6 != null) stmt6.close();
 				if (stmt7 != null) stmt7.close();
 				if (stmt8 != null) stmt8.close();
+				if (hstmt1 != null) hstmt1.close();
+				if (hstmt2 != null) hstmt2.close();
+				if (hstmt3 != null) hstmt3.close();
+				if (hstmt4 != null) hstmt4.close();
 				if (rs != null) {rs.close();rs = null;}
 				if (rs2 != null) {rs2.close();rs2 = null;}
 				if (res != null) {res.close();res = null;}
 				if (res2 != null) {res2.close();res2 = null;}
+				if (hrs1 != null) {hrs1.close();hrs1 = null;}
+				if (hrs2 != null) {hrs2.close();hrs2 = null;}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
@@ -2470,6 +2605,7 @@ public class RestC_check {
 		PreparedStatement stmt2 = null;
 		PreparedStatement stmt3 = null;
 		PreparedStatement stmt4 = null;
+		PreparedStatement hstmt1 = null;
 		ResultSet rs = null;
 		ResultSet rs3 = null;
 
@@ -2492,6 +2628,7 @@ public class RestC_check {
 					
 					if (rs.next()) {
 						long checkId = rs.getLong("id");
+						String tableNo = rs.getString("table_number");
 						
 						stmt2 = connection.prepareStatement("update `check` set check_status = 4, updated_date = now() where id = ? and check_number = ?;");
 						stmt2.setLong(1, checkId);
@@ -2511,10 +2648,31 @@ public class RestC_check {
 								int rs4 = stmt4.executeUpdate();
 								
 								if (rs4 > 0) {
-									connection.commit();
-									Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
-									jsonResult.put(Constant.RESPONSE_CODE, "00");
-									jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+									if (user.getStoreType() == 3) {
+										// update room status in hotel_room table
+										String newRoomStatus = "4";
+										hstmt1 = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
+										hstmt1.setString(1, newRoomStatus);
+										hstmt1.setString(2, tableNo);
+										int updateHotelRoom = hstmt1.executeUpdate();
+										
+										if (updateHotelRoom > 0) {
+											connection.commit();
+											Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "00");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+										} else {
+											connection.rollback();
+											Logger.writeActivity("Failed to update room status", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Failed to room status");
+										}
+									} else {
+										connection.commit();
+										Logger.writeActivity("Check Detail Successfully Updated", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Successfully Updated");
+									}
 								} else {
 									connection.rollback();
 									Logger.writeActivity("Check Detail Failed To Update", ECPOS_FOLDER);

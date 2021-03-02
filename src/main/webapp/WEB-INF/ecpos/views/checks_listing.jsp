@@ -1,3 +1,9 @@
+<%@ page 
+	import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+<%
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
+%>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,13 +50,15 @@ hr {
 										<label>End Date</label> 
 										<input type="datetime-local" class="form-control" ng-model="dateEnd" ng-model-options="{timezone: 'UTC'}" ng-change="getChecksList()" required />
 									</div>
+									<%if (user.getStoreType() != 3) { %>
 									<div class="col-sm-4 col-lg-3 form-group">
 										<label>Order Type</label> 
 										<select id="orderTypeDropDown" class="form-control" ng-model="selectedOrderTypeDropDown" ng-change="getChecksList()"
 																ng-options="obj1.id as obj1.name for obj1 in dropdownData.order_types_drop">
 												<option value="" >all</option>
 										</select>
-									</div>
+									</div>									
+									<%} %>
 									<div class="col-sm-4 col-lg-3 form-group">
 										<label>Status</label>
 										<select id="checkStatusDropDown" class="form-control" ng-model="selectedCheckStatusDropDown" ng-change="getChecksList()"
@@ -66,7 +74,11 @@ hr {
 											<th>Check No</th>
 											<th>By</th>
 											<th>Order Type</th>
+											<% if (user.getStoreType() == 3) { %>
+											<th>Room No</th>
+											<%} else { %>
 											<th>Table Name</th>
+											<%} %>
 											<th>Grand Total Amount</th>
 											<th>Overdue Amount</th>
 											<th>Status</th>

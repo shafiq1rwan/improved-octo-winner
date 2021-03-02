@@ -49,8 +49,12 @@ public class RestC_menu {
 		try {
 			if (user != null) {
 				connection = dataSource.getConnection();
+				int store_type = user.getStoreType();
 	
-				stmt = connection.prepareStatement("select * from category where is_active = 1 order by category_sequence asc;");
+				stmt = connection.prepareStatement("select b.* from category_store_type a "
+						+ "left join category b on a.category_id = b.id "
+						+ "where is_active = 1 and store_type_id = ? order by a.category_store_type_sequence asc;");
+				stmt.setInt(1, store_type);
 				rs = stmt.executeQuery();
 				
 				while (rs.next()) {
