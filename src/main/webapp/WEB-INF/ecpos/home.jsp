@@ -136,6 +136,7 @@
 <script src="${pageContext.request.contextPath}/qrcode/qrcode.min.js"></script>
 <script src="${pageContext.request.contextPath}/ui-cropper/js/ui-cropper.js"></script>
 <script src="${pageContext.request.contextPath}/sweetAlert/sweetalert2.js"></script>
+<script src="${pageContext.request.contextPath}/js/chartjs.js"></script>
 </head>
 
 <!-- Body -->
