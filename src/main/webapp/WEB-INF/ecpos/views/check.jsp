@@ -73,7 +73,7 @@ hr {
 												<!-- <font><b>Check : {{checkDetail.checkNoToday}}</b> / <b>Table : {{checkDetail.tableName}}</b></font> -->
 												<font><b>Check:</b> {{checkDetail.checkNoToday}} /
 													<%if (user.getStoreType() == 3) {%>
-													Room : {{checkDetail.tableName}}</font>
+													Room : {{checkDetail.tableName}} / {{checkDetail.roomType}} / {{checkDetail.roomCategory}}</font>
 													<%} else {%>
 													Table : {{checkDetail.tableName}}</font>
 													<%} %>
@@ -178,9 +178,9 @@ hr {
 											ng-keydown="$event.keyCode === 13 && barcodeOrder()"
 											id="barcode_input" required placeholder="Barcode" />
 									</div> -->
-									<div>
+									<div >
 										<div class="row"
-											style="padding-top: 8px; padding-right: 15px;">
+											style="background-color: purple; color: white; padding-top: 8px; padding-right: 15px;">
 											<div class='col-xs-1 col-sm-1 text-center'>
 												<input type="checkbox"
 													ng-click="allGrandParentItemCheckbox()"

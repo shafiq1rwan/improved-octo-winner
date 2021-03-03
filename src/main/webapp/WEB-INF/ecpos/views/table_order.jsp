@@ -55,6 +55,10 @@
   /* outline: 2px solid #ababab; */
   /* border: 2px solid #696969; */
 }
+
+.modal-lg {
+    width: 1000px;
+}
 </style>
 </head>
 
@@ -81,7 +85,7 @@
 						<div ng-repeat="roomType in roomTypeList" class="col-xs-6 col-sm-2 sectioncalibrator2" style="padding-left: 12px; padding-right: 12px;">
 							<div ng-click="get_room_list(roomType.id,roomType.name)" ng-model="roomType.id">
 								<div class="panel text-center shadowBox test" ng-style="{'border-color':display_table_check_no(2)}">
-									<div class="panel-heading" ng-style="{'background-color':display_table_check_no(2)}">
+									<div class="panel-heading" ng-style="{'background-color':'purple'}">
 										<h3 class="panel-title" ng-style="{'color':display_table_check_no_title_color(2)}">{{roomType.name}}</h3>
 									</div>
 									<div class="panel-body" style="color: grey; font-weight: bold; font-size: small;">
@@ -154,7 +158,7 @@
 							</h4>
 						</div> -->
 						<div class="modal-body text-center">
-							<div id="roomListModalTitle" style="color: black; font-weight: bold; font-size: large;"></div>
+							<div id="roomListModalTitle" style="background-color: purple; color: white; font-weight: bold; font-size: large;"></div>
 						</div>
 						<div class="modal-footer" style="padding: 30px;">
 							<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
@@ -176,13 +180,13 @@
 				                </div>
 				                </br>
 				                <div class="tab-content">
-									<div ng-repeat="room in roomList" ng-if="room.floor_no == floorNo" class="col-xs-6 col-sm-4 col-md-3 sectioncalibrator2" style="padding-left: 12px; padding-right: 12px;">
+									<div ng-repeat="room in roomList" ng-if="room.floor_no == floorNo" class="col-xs-6 col-sm-4 col-md-2 sectioncalibrator2" style="padding-left: 12px; padding-right: 12px;">
 										<div ng-click="proceed_to_roomCheck(room.id,room.room_status_id,room.check_no)" ng-model="room.id">
 											<div class="panel text-center shadowBox test" ng-style="{'border-color':display_table_check_no(2)}">
 												<div class="panel-heading" ng-style="{'background-color':'{{room.status_bg_color}}'}">
 													<h3 class="panel-title" ng-style="{'color':'#FFFFFF'}">{{room.room_status}}<span ng-if="room.check_no != null && room.room_status_id == 3">&nbsp;({{room.check_no}})</span></h3>
 												</div>
-												<div class="panel-body" style="font-weight: bold; font-size: small;">
+												<div class="panel-body" style="font-weight: bold; font-size: 14px; height: 60px; ">
 													{{room.room_name}}&nbsp;|&nbsp;<span style="color: grey;">{{room.room_category_name}}</span>
 												</div>
 											</div>

@@ -347,6 +347,7 @@ public class RestC_transaction {
 					// Receipt data - Info
 					stmt3 = connection.prepareStatement("select * from `check` c " 
 									+ "inner join check_status cs on cs.id = c.check_status "
+									+ "left join table_setting ts on ts.id = c.table_number "
 									+ "where check_number = ? and check_status in (2,3);");
 					stmt3.setString(1, rs.getString("check_number"));
 					rs3 = stmt3.executeQuery();
@@ -358,6 +359,7 @@ public class RestC_transaction {
 						receiptData.put("checkNo", rs3.getString("check_number"));
 						receiptData.put("checkNoByDay", WebComponents.trimCheckRef(rs3.getString("check_ref_no")));
 						receiptData.put("tableNo", rs3.getString("table_number") == null ? "-" : rs3.getString("table_number"));
+						receiptData.put("tableName", rs3.getString("table_name") == null ? "-" : rs3.getString("table_name"));
 						receiptData.put("createdDate", sdf.format(rs3.getTimestamp("created_date")));
 						receiptData.put("totalAmount", new BigDecimal(rs3.getString("total_amount") == null ? "0.00" : rs3.getString("total_amount")));
 						receiptData.put("totalAmountWithTax", new BigDecimal(rs3.getString("total_amount_with_tax") == null ? "0.00" : rs3.getString("total_amount_with_tax")));

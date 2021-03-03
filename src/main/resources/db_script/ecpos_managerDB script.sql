@@ -131,7 +131,12 @@ CREATE TABLE table_setting
 		table_name NVARCHAR(150) NOT NULL,
 		status_lookup_id BIGINT,
 		created_date DATETIME NOT NULL,
-		last_update_date DATETIME
+		last_update_date DATETIME,
+		hotel_floor_no int NULL,
+		hotel_room_type int NULL,
+		hotel_room_category int NULL,
+		hotel_room_base_price decimal(10,2) NULL,
+		store_id int NOT NULL DEFAULT 0
 );
 
 CREATE TABLE status_lookup
@@ -249,6 +254,7 @@ create table `check` (
     `staff_id` bigint (20) NULL,
 	`order_type` bigint (20) NOT NULL,
 	`customer_name` text NULL,
+	`customer_phone_no` VARCHAR(50) NULL,
     `table_number` int(20) NULL,
 	`total_item_quantity` int(20) NOT NULL,
 	`total_amount` decimal(25, 4) NOT NULL,
@@ -523,6 +529,30 @@ CREATE TABLE qr_payment_method (
 	`qr_payment_method_used` INT(20) NULL
 );
 
+CREATE TABLE `hotel_room_category_lookup` (
+  `id` int NOT NULL,
+  `name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`));
+
+CREATE TABLE `hotel_room_type` (
+  `id` int NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `image_path` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`));
+  
+CREATE TABLE `hotel_status_lookup` (
+  `id` int NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `bg_color` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`));
+  
+CREATE TABLE `category_store_type` (
+  `category_id` bigint NOT NULL,
+  `store_type_id` bigint NOT NULL,
+  `category_store_type_sequence` int NOT NULL
+);
+
+
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Mac Address', 'MAC_ADDRESS', '');
@@ -574,6 +604,15 @@ insert into device_manufacturer_lookup values (1, 'No Cash Drawer'), (2, 'Posifl
 
 insert into port_name_lookup values 
 (1, 'COM1'), (2, 'COM2'), (3, 'COM3'), (4, 'COM4'), (5, 'COM5'), (6, 'COM6'), (7, 'COM7'), (8, 'COM8');
+
+insert into `hotel_room_category_lookup` values
+(1, 'ECONOMY'), (2, 'BUSINESS'), (3, 'LUXURY');
+
+insert into `hotel_room_type` values
+(1, 'SINGLE', 'room_small.png'), (2, 'DOUBLE', 'room_medium.png'), (3, 'TRIPLE', 'room_large.png'), (4, 'QUAD', 'room_family.png');
+
+insert into `hotel_status_lookup` values
+(1, 'CHECKED IN', 'blue'), (2, 'OUT OF SERVICE', 'black'), (3, 'RESERVED', 'red'), (4, 'AVAILABLE', 'green');
 
 insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, 'Posiflex'), (3,'EPSON'), (4,'IBM'), (5,'Printer1400 (Copy 1)');
 

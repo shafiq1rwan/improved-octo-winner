@@ -165,6 +165,7 @@ public class RestC_check {
 		
 		try {
 			if (user != null) {
+				int store_type = user.getStoreType();
 				JSONObject jsonObj = new JSONObject(dataObj);
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 				Date startDate = dateFormat.parse(jsonObj.getString("startDate").replaceAll("T", " ").replaceAll("Z", ""));
@@ -210,7 +211,11 @@ public class RestC_check {
 					check.put("checkNumber", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
 					check.put("checkReference", (rs.getString("check_ref_no")));
 					check.put("staffName", rs.getString("staff_name"));
-					check.put("orderType", rs.getString("order_type"));
+					if (store_type == 3) {
+						check.put("orderType", "-");
+					} else {
+						check.put("orderType", rs.getString("order_type"));
+					}
 					check.put("tableNumber", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
 					check.put("tableName", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
 					check.put("totalItemQuantity", rs.getInt("total_item_quantity"));
@@ -474,27 +479,38 @@ public class RestC_check {
 		try {
 			if (user != null) {
 				connection = dataSource.getConnection();
+				int store_type = user.getStoreType();
 				
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				
 				String tableNoCondition = null;
-				if (orderType.equals("table")) {
+				if (user.getStoreType() == 3) {
 					tableNoCondition = "table_number = " + tableNo;
-				} else if (orderType.equals("take_away") || orderType.equals("deposit")) {
-					tableNoCondition = "table_number is null";
+				} else {
+					if (orderType.equals("table")) {
+						tableNoCondition = "table_number = " + tableNo;
+					} else if (orderType.equals("take_away") || orderType.equals("deposit")) {
+						tableNoCondition = "table_number is null";
+					}
 				}
 				
-				stmt = connection.prepareStatement("select * from `check` c " + 
-						"inner join check_status cs on cs.id = c.check_status " + 
-						"left join table_setting ts on ts.id = c.table_number "
-						+ "where " + tableNoCondition + " and check_number = ?;");
+				stmt = connection.prepareStatement("select c.*,cs.*,ts.*,rt.name as 'room_type',rc.name as 'room_category' from `check` c " 
+						+ "inner join check_status cs on cs.id = c.check_status " 
+						+ "left join table_setting ts on ts.id = c.table_number "
+						+ "left join hotel_room_type rt on rt.id = ts.hotel_room_type "
+						+ "left join hotel_room_category_lookup rc on rc.id = ts.hotel_room_category "
+						+ "where " + tableNoCondition + " and c.check_number = ?;");
 				stmt.setString(1, checkNo);
 				rs = stmt.executeQuery();
 				
 				if (rs.next()) {
 					long id = rs.getLong("id");
 					
-					jsonResult.put("orderType", rs.getString("order_type"));
+					if (store_type == 3) {
+						jsonResult.put("orderType", "-");
+					} else {
+						jsonResult.put("orderType", rs.getString("order_type"));
+					}
 					jsonResult.put("checkNo", rs.getString("check_number"));
 					jsonResult.put("checkNoToday", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
 					jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
@@ -508,6 +524,8 @@ public class RestC_check {
 					jsonResult.put("status", rs.getString("name"));
 					jsonResult.put("tenderAmount", rs.getString("tender_amount") == null ? "0.00" : rs.getString("tender_amount"));
 					jsonResult.put("overdueAmount", rs.getString("overdue_amount") == null ? "0.00" : rs.getString("overdue_amount"));
+					jsonResult.put("roomType", rs.getString("room_type"));
+					jsonResult.put("roomCategory", rs.getString("room_category"));
 					
 					stmt2 = connection.prepareStatement("select * from tax_charge tc " + 
 							"inner join check_tax_charge ctc on ctc.tax_charge_id = tc.id " + 

@@ -1,3 +1,10 @@
+<%@ page
+	import="mpay.ecpos_manager.general.utility.UserAuthenticationModel"%>
+
+<%
+	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
+%>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -89,17 +96,17 @@
 									</div>
 								</div>
 								<table id="datatable_transactions"
-									class="table table-bordered table-striped">
+									class="table table-bordered table-striped" style="width:100%;">
 									<thead>
-										<tr>
-											<th>Check No</th>
-											<th>By</th>
+										<tr style="background-color: purple; color: white; ">
 											<th>Receipt No</th>
+											<th>Check No</th>
 											<th>Transaction Type</th>
 											<th>Payment Method</th>
 											<th>Payment Type</th>
 											<th>Amount</th>
 											<th>Status</th>
+											<th>By</th>
 											<th>Date</th>
 											<th></th>
 										</tr>
@@ -183,10 +190,17 @@
 													<td>Check No</td>
 													<td>{{receiptData.checkNoByDay}}</td>
 												</tr>
+												<%if (user.getStoreType() == 3) { %>
+												<tr>
+													<td>Room No</td>
+													<td>{{receiptData.tableName}}</td>
+												</tr>
+												<%} else { %>
 												<tr>
 													<td>Table No</td>
 													<td>{{receiptData.tableNo}}</td>
 												</tr>
+												<%} %>
 												<tr>
 													<td>Order At</td>
 													<td>{{receiptData.createdDate}}</td>

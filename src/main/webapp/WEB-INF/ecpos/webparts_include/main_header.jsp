@@ -34,9 +34,9 @@ div.containerkds p {
 	<header class="main-header">
 		<!-- Logo -->
 		<a href="${pageContext.request.contextPath}/" class="logo"> <span
-			class="text-center"> <img style="height: 22px; width: 20px;"
-				src="${pageContext.request.contextPath}/meta/img/ecpos_logo.png" />
-				<b style='color: white; font-size: 1.3em;'>VERNPOS</b>
+			class="text-center"> <img style="height: 30px; width: 28px;"
+				src="${pageContext.request.contextPath}/meta/img/ecpos_logo.png" />&nbsp;&nbsp;&nbsp;
+				<b style='color: white; font-size: 0.8em;'>VERNPOS</b>
 		</span>
 		</a>
 
@@ -61,7 +61,13 @@ div.containerkds p {
 				<p>&nbsp;Order Display System</p>
 			</div>
 			<%
-				}
+				} else if (user.getStoreType() == 3) {
+			%>
+			<div class="containerkds">
+				<p>&nbsp;Hotel System</p>
+			</div>
+			<%
+				} 
 			%>
 			<div class="navbar-custom-menu">
 				<ul class="nav navbar-nav">

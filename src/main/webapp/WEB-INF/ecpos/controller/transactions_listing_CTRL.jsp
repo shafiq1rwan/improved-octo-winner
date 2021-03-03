@@ -106,14 +106,14 @@
 					"bLengthChange": false,
 					"order" : [ [ 9, "desc" ] ],
 					destroy : true,
-					"columns" : [{"data" : "checkNoByday"},
-						{"data" : "staffName"},
-						{"data" : "receipt_number"},
+					"columns" : [{"data" : "receipt_number"},
+						{"data" : "checkNoByday"},
 						{"data" : "transactionType"},
 						{"data" : "paymentMethod"},
 						{"data" : "paymentType"},
 						{"data" : "transactionAmount"},
 						{"data" : "transactionStatus"},
+						{"data" : "staffName"},
 						{"data" : "transactionDate"},
 					 	{"data" : "id", "visible": false, "searchable": false}
 						],
@@ -121,18 +121,18 @@
 						var status = $(row).find('td:eq(7)').html();
 						console.log("status: "+status);
 			    		if(status !== 'Failed'){
-			    			$(row).find('td:eq(1)').css('color', 'blue');
+			    			$(row).find('td:eq(0)').css('color', 'blue');
 			    		}
 	
 				    	$(row).mouseenter (function() {
 				    		if(status !== 'Failed'){
-					    		$(row).find('td:eq(1)').css('text-decoration', 'underline');
+					    		$(row).find('td:eq(0)').css('text-decoration', 'underline');
 				    		}
 			    		});
 				    	
 				    	$(row).mouseleave (function() {
 				    		if(status !== 'Failed'){
-				    			$(row).find('td:eq(1)').css('text-decoration', 'none');
+				    			$(row).find('td:eq(0)').css('text-decoration', 'none');
 				    		}
 			    		});
 					},
@@ -146,7 +146,7 @@
 				    var status = table.row(this.closest('tr')).data().transactionStatus;
 				    if(status == 'Failed'){
 				    } else {
-						if ($(this).index() == 1) {
+						if ($(this).index() == 0) {
 			 				$http({
 								method : 'GET',
 								headers : {'Content-Type' : 'application/json'},
