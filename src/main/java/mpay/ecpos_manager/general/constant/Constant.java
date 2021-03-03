@@ -19,6 +19,11 @@ public class Constant {
 	public static String IMAGE_PATH = "image_path";
 	public static String TABLE_LIST = "table_list";
 	public static String TABLE_NO = "table_no";
+	public static String ROOMTYPE_LIST = "room_type_list";
+	public static String FLOOR_LIST = "floor_list";
+	public static String ROOM_LIST = "room_list";
+	public static String ROOM_STATUS_LIST = "roomstatus_list";
+	public static String ROOM_STATUS_ID = "roomstatus_id";
 	public static String CHECK_LIST = "check_list";
 	public static String CHECK_NO = "check_no";
 	public static String CHECK_DETAIL_ID = "check_detail_id";

@@ -13,6 +13,7 @@
 			.then(function(response) {
 				if (response.data.responseCode == "00") {
 					$scope.getTableList();
+					$scope.getRoomTypeList();
 				} else {
 					/* alert("Session TIME OUT"); */
 					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
@@ -94,14 +95,28 @@
 			});
 		}
 
-		$scope.create_new_check = function() {
+		$scope.create_new_check = function(customerName,customerPhone) {
+			var isHotel = false;
+			var tableNo;
+			
+			if (customerName != null && customerName != "" && customerPhone != null && customerPhone != "") {
+				tableNo = $scope.room_id;
+				isHotel = true;
+			} else {
+				tableNo = $scope.table_no;
+			}
 			var jsonData = JSON.stringify({
-				"table_no" :  $scope.table_no,
+				"table_no" : tableNo,
+				"name" : customerName,
+				"phone" : customerPhone
 			});
 			
 			$http.post("${pageContext.request.contextPath}/rc/check/create/table", jsonData)
 			.then(function(response) {
 				if (response.data.response_code === "00") {
+					if (response.data.roomstatus_id != null) {
+						$scope.status_id = response.data.roomstatus_id;
+					}
 					$scope.redirect_to_check_detail(response.data.check_no);
 				} else {
 					if (response.data.response_message != null) {
@@ -122,8 +137,119 @@
 			$("#modal_table_check_list").modal('hide');
 			$('.modal-backdrop').remove();
 
-			var data = "/check/" + "table" + "/" + chk_no + "/" + $scope.table_no;
+			var data;
+			if ($scope.table_no != null && $scope.table_no != '') {
+				data = "/check/" + "table" + "/" + chk_no + "/" + $scope.table_no;
+			} else {
+				data = "/check/" + "table" + "/" + chk_no + "/" + $scope.room_id + "/" + $scope.status_id;
+			}
 			$location.path(data);
+		}
+
+		//VernPOS Hotel part
+		$scope.getRoomTypeList = function() {
+			$http.get("${pageContext.request.contextPath}/rc/configuration/get_roomtype_list")
+			.then(function(response) {
+				$scope.roomTypeList = response.data.room_type_list;
+				
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
+		$scope.get_room_list = function(roomType_id,roomType_name) {
+			$scope.roomType_id = roomType_id;
+
+			document.getElementById("roomListModalTitle").innerHTML = "ROOM TYPE : " + roomType_name;
+			
+			$http.post("${pageContext.request.contextPath}/rc/configuration/get_room_list", roomType_id)
+			.then(function(response) {
+				$scope.roomList = response.data.room_list;
+				$scope.floorList = response.data.floor_list;
+				$scope.floorNo = response.data.first_floor_no;
+				$scope.get_room_status();
+				$("#modal_room_list").modal('show');
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
+		$scope.get_room_status = function() {
+			$http.post("${pageContext.request.contextPath}/rc/configuration/get_room_status")
+			.then(function(response) {
+				$scope.roomStatusList = response.data.roomstatus_list;
+				
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
+		$scope.get_room_list_by_status = function(status_id) {
+			var data;
+			if(status_id != null && status_id != "") {
+				data = $scope.roomType_id + "," + status_id;
+			} else {
+				data = $scope.roomType_id;
+			}
+			$http.post("${pageContext.request.contextPath}/rc/configuration/get_room_list", data)
+			.then(function(response) {
+				$scope.roomList = response.data.room_list;
+				$scope.floorList = response.data.floor_list;
+				
+				//$scope.get_room_status();
+				//$("#modal_room_list").modal('show');
+			},
+			function(response) {
+				alert("Session TIME OUT");
+				window.location.href = "${pageContext.request.contextPath}/signout";
+			});
+		}
+
+		$scope.proceed_to_roomCheck = function(room_id,status_id,check_no) {
+			$scope.room_id = room_id;
+			
+			if (status_id == 4) {//available
+				$("#modal_user_details").modal('show');
+			} else if (status_id == 2) {//out of service
+				alert("This room is out of service");
+			} else if (status_id == 1 || status_id == 3) {//reserved or checked-in
+				$scope.status_id = status_id;
+				$scope.redirect_to_check_detail(check_no);
+			} else {
+				alert("Status ID invalid");
+			}
+			
+		}
+
+		$scope.showKeyboard = function(name,value) {
+			$scope.targetField = name;
+			$scope.targetValue = value;
+			$("#modal_keyboard").modal('show');
+		}
+
+		$('#keyboard').click(function() {
+	    	$('#editField').focus();
+	    });
+
+	    $scope.retrieveData = function() {
+		    if($scope.targetField == "Customer Name") {
+		    	$scope.customerName = $("#editField").val();
+			} else if($scope.targetField == "Customer Phone Number") {
+				$scope.customerPhone = $("#editField").val();
+			}
+		    $scope.targetField = null;
+		    $scope.targetValue = null;
+		    $("#modal_keyboard").modal('hide');
+		}
+
+	    $scope.setFloorNo = function(floor_no) {
+			$scope.floorNo = floor_no;
 		}
 	});
 </script>

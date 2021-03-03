@@ -112,10 +112,10 @@ public class DataSync {
 		ps1.executeUpdate();
 		ps1.close();
 		
-		sqlStatement = "DELETE FROM table_setting;";
+		/*sqlStatement = "DELETE FROM table_setting;";
 		ps1 = connection.prepareStatement(sqlStatement);
 		ps1.executeUpdate();
-		ps1.close();
+		ps1.close();*/
 	}
 	
 	public static boolean insertStoreInfo(Connection connection, JSONObject storeInfo, String imagePath) throws Exception {
@@ -287,7 +287,7 @@ public class DataSync {
 		boolean flag = false;
 		PreparedStatement ps1 = null;
 		try {
-			String sqlStatement = "INSERT INTO table_setting (id, table_name, status_lookup_id, created_date, last_update_date) VALUES ";
+			/*String sqlStatement = "INSERT INTO table_setting (id, table_name, status_lookup_id, created_date, last_update_date) VALUES ";
 			for(int a=0; a < tableSetting.length(); a++) {
 				if(a!=0)
 					sqlStatement += ", ";
@@ -308,7 +308,8 @@ public class DataSync {
 			int rowAffected = ps1.executeUpdate();
 			if(rowAffected != 0) {
 				flag = true;
-			}	
+			}*/
+			flag = true;
 		} catch (Exception ex) {
 			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
 			throw ex;

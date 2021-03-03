@@ -72,7 +72,12 @@ hr {
 											<div style="margin-bottom: 10px;">
 												<!-- <font><b>Check : {{checkDetail.checkNoToday}}</b> / <b>Table : {{checkDetail.tableName}}</b></font> -->
 												<font><b>Check:</b> {{checkDetail.checkNoToday}} /
+													<%if (user.getStoreType() == 3) {%>
+													Room : {{checkDetail.tableName}}</font>
+													<%} else {%>
 													Table : {{checkDetail.tableName}}</font>
+													<%} %>
+													
 											</div>
 											<div style="margin-bottom: 10px;">
 												<!-- <font><b>Created Date : {{checkDetail.createdDate}}</b></font> -->
@@ -83,12 +88,20 @@ hr {
 												<!-- <font><b>Status : {{checkDetail.status}}</b></font> -->
 												<font><b>Status:</b> {{checkDetail.status}}</font>
 											</div>
+											<%if (user.getStoreType() == 3) { %>
+											<div style="margin-bottom: 10px;">
+												<!-- <font><b>Customer Name: : {{checkDetail.customerName}}</b></font> -->
+												<font><b>Customer Name:</b>
+													{{checkDetail.customerName}}</font>
+											</div>
+											<%} else { %>
 											<div ng-if="checkDetail.orderType != '1'"
 												style="margin-bottom: 10px;">
 												<!-- <font><b>Customer Name: : {{checkDetail.customerName}}</b></font> -->
 												<font><b>Customer Name:</b>
 													{{checkDetail.customerName}}</font>
 											</div>
+											<%} %>
 										</div>
 										<div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
 											<div ng-if="mode == 1">
@@ -131,6 +144,22 @@ hr {
 													ng-click="sendOrdertoKds()">
 													<i class="fa fa-location-arrow"></i> Send Order
 												</button>
+												<%
+													}
+												%>
+												<%
+													if (user.getStoreType() == 3) {
+												%>
+												<button class="btn pull-right btn-primary shadowBox" id="checkInButton" style="width: 150px; margin-bottom: 10px"
+													ng-click="roomCheckInOut('in')" ng-if="roomStatus == 3">
+													<!-- <i class="fa fa-utensil-fork"></i> -->
+													<span >Check-in</span>
+												</button>
+												<!-- <button class="btn pull-right btn-primary shadowBox" style="width: 150px; margin-bottom: 10px"
+													ng-click="roomCheckInOut('out')" ng-if="roomStatus == 1">
+													<i class="fa fa-utensil-fork"></i>
+													<span >Check-out</span>
+												</button> -->
 												<%
 													}
 												%>
@@ -186,7 +215,8 @@ hr {
 																ng-click="grandParentItemCheckbox()"
 																name="grandParentItemCheckbox"
 																value={{grandParentItem.checkDetailId}}
-																style="margin: 2px 0 0;" class="icheckbox_minimal-red">
+																style="margin: 2px 0 0;" class="icheckbox_minimal-red"
+																ng-if="grandParentItem.itemCode != 'RR1'">
 														</div>
 														<div class='col-xs-2 col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
 														<div class='col-xs-4 col-sm-5 text-left'
@@ -414,7 +444,8 @@ hr {
 												<img src="${pageContext.request.contextPath}/img/icon/CancelCheck.png" style="height: 35px; width: 35px"><br>CANCEL CHECK	
 											</button>
 										</div>
-
+										
+										<%if (user.getStoreType() != 3) {%>
 										<div ng-if="orderType == 'table'">
 											<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
 												<button id="splitCheckButton"
@@ -428,7 +459,7 @@ hr {
 												</button>
 											</div>
 										</div>
-
+										<%} %>
 										<div ng-if="orderType == 'deposit'">
 											<div class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
 												<button id="closeCheckButton"

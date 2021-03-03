@@ -651,6 +651,7 @@ public class RestC_transaction {
 		try {
 			if (user != null) {
 				connection = dataSource.getConnection();
+				int storeType = user.getStoreType();
 
 				JSONObject jsonObj = new JSONObject(data);
 
@@ -995,9 +996,9 @@ public class RestC_transaction {
 											JSONObject updateCheckResult = new JSONObject();
 
 											if (paymentType == 1) {
-												updateCheckResult = updateCheck1(orderType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount);
+												updateCheckResult = updateCheck1(orderType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount,storeType);
 											} else {
-												updateCheckResult = updateCheck2(orderType, paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount);
+												updateCheckResult = updateCheck2(orderType, paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount,storeType);
 											}
 
 											if (updateCheckResult.getString("status").equals("success")) {
@@ -1592,9 +1593,10 @@ public class RestC_transaction {
 		return null;
 	}
 
-	public JSONObject updateCheck1(int orderType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount) {
+	public JSONObject updateCheck1(int orderType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount, int storeType) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement hstmt = null;
 		JSONObject result = new JSONObject();
 
 		try {
@@ -1630,8 +1632,25 @@ public class RestC_transaction {
 				int updateCheckDetail = stmt.executeUpdate();
 
 				if (updateCheckDetail > 0) {
-					result.put("status", "success");
-					result.put("checkStatus", "closed");
+					if(storeType == 3) {
+						// update room status in table_setting table
+						String newRoomStatus = "4";
+						hstmt = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
+						hstmt.setString(1, newRoomStatus);
+						hstmt.setInt(2, tableNo);
+						int updateHotelRoom = hstmt.executeUpdate();
+						
+						if (updateHotelRoom > 0) {
+							result.put("status", "success");
+							result.put("checkStatus", "closed");
+						} else {
+							result.put("status", "fail");
+						}
+						
+					} else {
+						result.put("status", "success");
+						result.put("checkStatus", "closed");
+					}
 				} else {
 					result.put("status", "fail");
 				}
@@ -1651,9 +1670,10 @@ public class RestC_transaction {
 		return result;
 	}
 
-	public JSONObject updateCheck2(int orderType, int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount) {
+	public JSONObject updateCheck2(int orderType, int paymentType, BigDecimal paymentAmount, String checkNo, int tableNo, long transactionId, BigDecimal grandTotalAmount, BigDecimal tenderAmount, int storeType) {
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		PreparedStatement hstmt = null;
 		JSONObject result = new JSONObject();
 
 		try {
@@ -1689,8 +1709,25 @@ public class RestC_transaction {
 			int updateCheck = stmt.executeUpdate();
 
 			if (updateCheck > 0) {
-				result.put("status", "success");
-				result.put("checkStatus", checkStatus);
+				if(storeType == 3) {
+					// update room status in table_setting table
+					String newRoomStatus = "4";
+					hstmt = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
+					hstmt.setString(1, newRoomStatus);
+					hstmt.setInt(2, tableNo);
+					int updateHotelRoom = hstmt.executeUpdate();
+					
+					if (updateHotelRoom > 0) {
+						result.put("status", "success");
+						result.put("checkStatus", checkStatus);
+					} else {
+						result.put("status", "fail");
+					}
+					
+				} else {
+					result.put("status", "success");
+					result.put("checkStatus", checkStatus);
+				}
 			} else {
 				result.put("status", "fail");
 			}

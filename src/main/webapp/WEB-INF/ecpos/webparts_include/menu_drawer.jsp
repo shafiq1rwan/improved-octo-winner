@@ -21,6 +21,16 @@
 					</a>
 				</li>
 				<%}%>
+				<%if (user.getStoreType() == 3) {%>
+				<li>
+					<a href="${pageContext.request.contextPath}/#!table_order">
+						<i class="fa fa-desktop"></i> 
+						<span>Room Order</span> 
+						<span class="pull-right-container"></span>
+					</a>
+				</li>
+				<%}%>
+				<%if (user.getStoreType() != 3) {%>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!take_away_order">
 						<i class="fa fa-shopping-bag"></i> 
@@ -39,9 +49,10 @@
 						<span class="pull-right-container"></span>
 					</a>
 				</li>
-				
+				<%} %>
 				<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {%>
 				<li class="header" style="font-size: 1em; color: grey; /* font-weight: bold; */">Record Management</li>
+				<%if (user.getStoreType() != 3) {%>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!items_listing">
 						<i class="fa fa-object-group"></i> 
@@ -49,6 +60,7 @@
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>
+				<%} %>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!checks_listing">
 						<i class="fa fa-list"></i> 
