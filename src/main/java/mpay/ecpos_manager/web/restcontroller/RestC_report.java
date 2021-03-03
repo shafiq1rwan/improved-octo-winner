@@ -111,6 +111,7 @@ public class RestC_report {
 				stmt = connection.prepareStatement("SELECT menu_item_name, COUNT(menu_item_code) as totalitem FROM check_detail " + 
 						"WHERE check_detail_status = 3 AND created_date >= ? " + 
 						"AND created_date <= ? and parent_check_detail_id is null " + 
+						"and menu_item_name <> 'Room Charge' " + 
 						"GROUP BY menu_item_name;");
 				stmt.setTimestamp(1, new java.sql.Timestamp(startDate.getTime()));
 				stmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));

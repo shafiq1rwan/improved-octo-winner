@@ -215,11 +215,11 @@
 						<div class="modal-footer" style="padding: 30px; text-align: left;">
 							<form id="customerDetailForm" ng-submit="create_new_check(customerName,customerPhone)">
 								<div class="form-group">
-									<label for="customerName" class="col-form-label">Customer Name:</label> 
+									<label for="customerName" class="col-form-label"><span style="color: red;">*</span>Customer Name:</label> 
 									<input type="text" class="form-control" ng-model="customerName" ng-required="true" ng-click="showKeyboard('Customer Name',customerName)" />
 								</div>
 								<div class="form-group">
-									<label for="customerPhone" class="col-form-label">Customer Phone Number:</label> 
+									<label for="customerPhone" class="col-form-label"><span style="color: red;">*</span>Customer Phone Number:</label> 
 									<input type="text" class="form-control" ng-model="customerPhone" ng-required="true" ng-click="showKeyboard('Customer Phone Number',customerPhone)" />
 								</div>
 								<div class="row">
