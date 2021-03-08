@@ -190,8 +190,8 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 	</button>
 	
 	<!-- Loading Modal [END] -->
-	<%-- <script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
-	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.js"></script> --%>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.js"></script>
 </body>
 <script type="text/javascript">
 	$(function() {

@@ -62,6 +62,8 @@ public class WebComponents {
 						domainContainer.setStoreType(rs2.getInt("store_type_id"));
 						//domainContainer.setStoreType(3);//STORE TYPE HOTEL
 						domainContainer.setTakeAwayFlag(rs2.getBoolean("ecpos_takeaway_detail_flag"));
+						//2021-03-08 - Add Store Name (Shafiq)
+						domainContainer.setStoreName(rs2.getString("store_name"));
 					}
 					
 					domainContainer.setDeviceId(Long.parseLong(getGeneralConfig(connection, "DEVICE_ID")));
@@ -99,7 +101,7 @@ public class WebComponents {
 			if (decryptedDataPart.length == 3) {
 				connection = dataSource.getConnection();
 
-				String query = "SELECT id, store_type_id FROM store;";
+				String query = "SELECT id, store_type_id, store_name FROM store;";
 				stmt = connection.prepareStatement(query);
 				rs = stmt.executeQuery();
 
@@ -117,6 +119,8 @@ public class WebComponents {
 								domainContainer.setName(rs2.getString("staff_name"));
 								domainContainer.setUsername(rs2.getString("staff_username"));
 								domainContainer.setRoleType(Integer.parseInt(rs2.getString("staff_role")));
+								// Get Store Name - 2020-03-08 (Shafiq)
+								domainContainer.setStoreName(rs.getString("store_name"));
 							} else {
 								domainContainer = null;
 							}

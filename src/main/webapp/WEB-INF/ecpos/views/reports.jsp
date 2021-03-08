@@ -65,7 +65,7 @@
 					              <h3 class="box-title">Sales Report</h3>
 								<div>
 									<table id="datatable_salesSummary" class="table table-bordered table-striped">
-										<thead>
+										<thead style="background-color: purple; color: white;">
 											<tr>
 												<th>Payment Method</th>
 												<th>Total Sales</th>
@@ -92,7 +92,7 @@
 					              <h3 class="box-title">Best Selling Item</h3>
 								<div>
 									<table id="datatable_itemSummary" class="table table-bordered table-striped">
-										<thead>
+										<thead style="background-color: purple; color: white;">
 											<tr>
 												<th>Name of Item</th>
 												<th>Total Item</th>

@@ -880,6 +880,7 @@
 			$('#checkActionButtons').hide();
 			$("#allGrandParentItemCheckbox").hide();
 			$("input[name=grandParentItemCheckbox]").hide();
+			$("#rowBarrrruuuu").css({"padding-bottom": "8px"});
 			
 			$('#tenderAmount').html(parseFloat($scope.checkDetail.overdueAmount).toFixed(2));
 			$scope.fullPaymentAmount = $('#tenderAmount').text();
@@ -905,6 +906,7 @@
 			$('#checkActionButtons').show();
 			$('#allGrandParentItemCheckbox').show();
 			$('input[name=grandParentItemCheckbox]').show();
+			$("#rowBarrrruuuu").css({"padding-bottom": "0px"});
 			
 			allGrandParentItemCheckbox.checked = false;
 			

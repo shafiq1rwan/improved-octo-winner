@@ -97,8 +97,8 @@
 								</div>
 								<table id="datatable_transactions"
 									class="table table-bordered table-striped" style="width:100%;">
-									<thead>
-										<tr style="background-color: #008B8B; color: white; ">
+									<thead style="background-color: purple; color: white;">
+										<tr>
 											<th>Receipt No</th>
 											<th>Check No</th>
 											<th>Transaction Type</th>

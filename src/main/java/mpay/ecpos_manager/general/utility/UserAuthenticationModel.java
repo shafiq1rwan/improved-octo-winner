@@ -10,6 +10,7 @@ public class UserAuthenticationModel {
 	public int storeType;
 	public boolean takeAwayFlag;
 	public long deviceId;
+	public String storeName;
 
 	public int getUserLoginId() {
 		return userLoginId;
@@ -65,5 +66,13 @@ public class UserAuthenticationModel {
 
 	public void setDeviceId(long deviceId) {
 		this.deviceId = deviceId;
+	}
+
+	public String getStoreName() {
+		return storeName;
+	}
+
+	public void setStoreName(String storeName) {
+		this.storeName = storeName;
 	}
 }

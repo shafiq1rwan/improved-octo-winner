@@ -75,7 +75,7 @@
 								</div>
 								<div ng-show="itemType == '0' || itemType == '1'">
 									<table id="datatable_items" class="table table-bordered table-striped" width="100%">
-										<thead>
+										<thead style="background-color: purple; color: white;">
 											<tr>
 												<th>No</th>
 												<th>Item Code</th>
@@ -89,7 +89,7 @@
 								</div>
 								<div ng-show="itemType == '2'">
 									<table id="datatable_modifierGroups" class="table table-bordered table-striped" width="100%">
-										<thead>
+										<thead style="background-color: purple; color: white;">
 											<tr>
 												<th>No</th>
 												<th>Item Name</th>

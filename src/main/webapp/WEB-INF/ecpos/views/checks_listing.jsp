@@ -69,7 +69,7 @@ hr {
 								</div>
 								<table id="datatable_checks" class="table table-bordered table-striped" style="width:100%;">
 									<thead>
-										<tr style="background-color: darkgreen; color: white; ">
+										<tr style="background-color: purple; color: white;">
 											<th>ID</th>
 											<th>Check No</th>
 											<th>By</th>

@@ -5,6 +5,7 @@
 <%
 	UserAuthenticationModel user = (UserAuthenticationModel) session.getAttribute("session_user");
 	System.out.println("user kds hdr = " + user.getName());
+	System.out.println("user storename hdr = " + user.getStoreName());
 %>
 <html>
 <head>
@@ -53,13 +54,13 @@ div.containerkds p {
 				if (user.getStoreType() == 1 || user.getStoreType() == 2) {
 			%>
 			<div class="containerkds">
-				<p style="text-align: center;">Welcome to MPay Cafe</p>
+				<p style="text-align: center;">Welcome to <%=user.getStoreName() %></p>
 			</div>
 			<%
 				} else if (user.getStoreType() == 3) {
 			%>
 			<div class="containerkds">
-				<p style="text-align: center;">Welcome to Harbour Malaysia Hotel</p>
+				<p style="text-align: center;">Welcome to <%=user.getStoreName() %></p>
 			</div>
 			<%
 				} 
