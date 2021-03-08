@@ -997,9 +997,9 @@ public class RestC_transaction {
 										if (updateTransactionResult.getString(Constant.RESPONSE_CODE).equals("00")) {
 											JSONObject updateCheckResult = new JSONObject();
 
-											if (paymentType == 1) {
+											if (paymentType == 1) {//full payment
 												updateCheckResult = updateCheck1(orderType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount,storeType);
-											} else {
+											} else {//partial payment
 												updateCheckResult = updateCheck2(orderType, paymentType, paymentAmount, checkNo, jsonObj.getInt("tableNo"), transactionId, grandTotalAmount, tenderAmount,storeType);
 											}
 
@@ -1711,7 +1711,7 @@ public class RestC_transaction {
 			int updateCheck = stmt.executeUpdate();
 
 			if (updateCheck > 0) {
-				if(storeType == 3) {
+				/*if(storeType == 3) {
 					// update room status in table_setting table
 					String newRoomStatus = "4";
 					hstmt = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
@@ -1726,10 +1726,10 @@ public class RestC_transaction {
 						result.put("status", "fail");
 					}
 					
-				} else {
+				} else {*/
 					result.put("status", "success");
 					result.put("checkStatus", checkStatus);
-				}
+				/*}*/
 			} else {
 				result.put("status", "fail");
 			}

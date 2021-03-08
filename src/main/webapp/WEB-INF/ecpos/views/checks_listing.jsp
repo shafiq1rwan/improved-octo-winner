@@ -69,7 +69,7 @@ hr {
 								</div>
 								<table id="datatable_checks" class="table table-bordered table-striped" style="width:100%;">
 									<thead>
-										<tr style="background-color: purple; color: white; ">
+										<tr style="background-color: darkgreen; color: white; ">
 											<th>ID</th>
 											<th>Check No</th>
 											<th>By</th>
@@ -103,7 +103,14 @@ hr {
 							<div class="row">
 								<div class="col-sm-7">
 									<div>
-										<font><b>Check : {{checkDetail.checkNoToday}}</b> / <b>Table : {{checkDetail.tableName}}</b></font>
+										<font><b>Check : {{checkDetail.checkNoToday}}</b> / 
+										<%if (user.getStoreType() == 3) {%>
+										<span ng-if="checkDetail.roomType != null"><b>Room : {{checkDetail.tableName}} / {{checkDetail.roomType}} / {{checkDetail.roomCategory}}</b></span>
+										<span ng-if="checkDetail.roomType == null"><b>Table : {{checkDetail.tableName}}</b></span>
+										<%} else {%>
+										<b>Table : {{checkDetail.tableName}}</b>
+										<%} %>
+										</font>
 									</div>
 									<div>
 										<font><b>Created Date : {{checkDetail.createdDate}}</b></font>
@@ -112,7 +119,7 @@ hr {
 										<font><b>Status : {{checkDetail.status}}</b></font>
 									</div>
 									<div ng-if="checkDetail.orderType != '1'">
-										<font><b>Customer Name: : {{checkDetail.customerName}}</b></font>
+										<font><b>Customer Name : {{checkDetail.customerName}}</b></font>
 									</div>
 								</div>
 								<div class="col-sm-4">

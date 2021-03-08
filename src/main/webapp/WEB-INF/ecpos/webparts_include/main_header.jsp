@@ -49,26 +49,22 @@ div.containerkds p {
 				<span class="sr-only">Toggle navigation</span>
 			</a>
 			<%
-				} else if (user.getStoreType() == 2) {
+				}
+				if (user.getStoreType() == 1 || user.getStoreType() == 2) {
 			%>
 			<div class="containerkds">
-				<p>&nbsp;Kitchen Display System</p>
-			</div>
-			<%
-				} else if (user.getStoreType() == 1) {
-			%>
-			<div class="containerkds">
-				<p>&nbsp;Order Display System</p>
+				<p style="text-align: center;">Welcome to MPay Cafe</p>
 			</div>
 			<%
 				} else if (user.getStoreType() == 3) {
 			%>
 			<div class="containerkds">
-				<p>&nbsp;Hotel System</p>
+				<p style="text-align: center;">Welcome to Harbour Malaysia Hotel</p>
 			</div>
 			<%
 				} 
 			%>
+			
 			<div class="navbar-custom-menu">
 				<ul class="nav navbar-nav">
 				<li style="float: left;"><span id='date-part' style="word-spacing: 1px; color: white; padding-top: 10px"></span></li>

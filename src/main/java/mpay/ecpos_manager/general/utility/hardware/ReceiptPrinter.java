@@ -335,7 +335,7 @@ public class ReceiptPrinter {
 
 		try {
 			JSONObject receiptHeader = getReceiptHeader();
-			JSONObject receiptContent = getReceiptContent(checkNo);
+			JSONObject receiptContent = getReceiptContent(checkNo, storeType);
 			// JSONObject receiptFooter
 			JSONObject printReceiptResponse = printReceiptData(staffName, storeType, receiptHeader, receiptContent, null, isDisplayPdf);
 
@@ -355,7 +355,7 @@ public class ReceiptPrinter {
 	}
 
 	// receipt content
-	private JSONObject getReceiptContent(String checkNo) {
+	private JSONObject getReceiptContent(String checkNo, int storeType) {
 		JSONObject jsonResult = new JSONObject();
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -379,10 +379,14 @@ public class ReceiptPrinter {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 			stmt = connection.prepareStatement(
-					"select *,ot.name as 'order_type_name' from `check` c " 
-							+ "inner join check_status cs on cs.id = c.check_status "
-							+ "inner join order_type ot on ot.id = c.order_type "
-							+ "where check_number = ? and check_status in (2,3);");
+					"select c.*,cs.*,ot.name as 'order_type_name',ts.table_name as 'table_name', "
+					+ "rt.name as 'room_type',rc.name as 'room_category' from `check` c "
+					+ "inner join check_status cs on cs.id = c.check_status "
+					+ "inner join order_type ot on ot.id = c.order_type "
+					+ "left join table_setting ts on ts.id = c.table_number "
+					+ "left join hotel_room_type rt on rt.id = ts.hotel_room_type "
+					+ "left join hotel_room_category_lookup rc on rc.id = ts.hotel_room_category "
+					+ "where check_number = ? and check_status in (2,3);");
 			stmt.setString(1, checkNo);
 			rs = stmt.executeQuery();
 
@@ -391,8 +395,13 @@ public class ReceiptPrinter {
 
 				jsonResult.put("checkNo", rs.getString("check_number"));
 				jsonResult.put("checkNoByDay", WebComponents.trimCheckRef(rs.getString("check_ref_no")));
-				jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
-				jsonResult.put("orderType", rs.getString("order_type_name"));
+				if (storeType == 3) {
+					jsonResult.put("tableNo", rs.getString("table_name") == null ? "-" : rs.getString("table_name"));
+					jsonResult.put("orderType", rs.getString("room_type")+"/"+rs.getString("room_category"));
+				} else {
+					jsonResult.put("tableNo", rs.getString("table_number") == null ? "-" : rs.getString("table_number"));
+					jsonResult.put("orderType", rs.getString("order_type_name"));
+				}
 				jsonResult.put("customerName", rs.getString("customer_name") == null ? "-" : rs.getString("customer_name"));
 				jsonResult.put("createdDate", sdf.format(rs.getTimestamp("created_date")));
 				jsonResult.put("totalAmount",
@@ -859,7 +868,13 @@ public class ReceiptPrinter {
 
 							// Receipt Info Table
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type","Table No", "Order At", "Printed At",
+							String tableNoStr = "Table No";
+							String orderAtStr = "Order At";
+							if (storeType == 3) {
+								tableNoStr = "Room No";
+								orderAtStr = "Booked At";
+							}
+							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type", tableNoStr, orderAtStr, "Printed At",
 									"Cust Name", "Staff"));
 								
 							if(receiptContentJson.getString("customerName").equals("-")) {
@@ -898,6 +913,9 @@ public class ReceiptPrinter {
 									orderTypeName = "Deposit";
 								}
 								receiptInfoContents.add(2,orderTypeName);
+							} else if (storeType == 3) {
+								String orderTypeName = receiptContentJson.getString("orderType");
+								receiptInfoContents.add(2,orderTypeName);
 							}
 
 							receiptInfoLabels.add("Trans Type");
@@ -918,6 +936,8 @@ public class ReceiptPrinter {
 							receiptInfoTableType.setType(STTblLayoutType.FIXED);
 							receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
 
+							System.out.println("receiptInfoLabels = "+receiptInfoLabels.size());
+							System.out.println("receiptInfoContents = "+receiptInfoContents.size());
 							for (int i = 0; i < receiptInfoLabels.size(); i++) {
 								XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
 								createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,

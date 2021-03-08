@@ -68,7 +68,7 @@ hr {
 								<div class="box box-success"
 									style="background-color: white; margin-bottom: 0px; padding: 10px; height: 90vh; max-height: 90vh; overflow-x: hidden; overflow-y: auto;">
 									<div class="row">
-										<div class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+										<div class="col-lg-7 col-md-7 col-sm-7 col-xs-7" style="font-size: 14px;">
 											<div style="margin-bottom: 10px;">
 												<!-- <font><b>Check : {{checkDetail.checkNoToday}}</b> / <b>Table : {{checkDetail.tableName}}</b></font> -->
 												<font><b>Check:</b> {{checkDetail.checkNoToday}} /
@@ -184,7 +184,7 @@ hr {
 											<div class='col-xs-1 col-sm-1 text-center'>
 												<input type="checkbox"
 													ng-click="allGrandParentItemCheckbox()"
-													id="allGrandParentItemCheckbox" style="margin: 2px 0 0;"
+													id="allGrandParentItemCheckbox" style="margin: 2px 0 8px;"
 													class="icheckbox_minimal-red">
 											</div>
 											<div class='col-xs-2 col-sm-2 text-left'>
