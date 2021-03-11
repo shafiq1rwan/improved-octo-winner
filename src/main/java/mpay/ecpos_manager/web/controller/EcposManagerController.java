@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -115,6 +117,7 @@ public class EcposManagerController {
 				Logger.writeActivity("activationInfo: " + activationInfo, ECPOS_FOLDER);
 				
 				if (user != null) {
+					staffWorkingHourLog(String.valueOf(user.getUserLoginId()), "1");
 					session.setMaxInactiveInterval(0);
 					session.setAttribute("session_user", user);
 					model.setViewName("redirect:" + "/#");
@@ -160,6 +163,7 @@ public class EcposManagerController {
 				Logger.writeActivity("qrContent", qrContent);
 				
 				if (user != null) {
+					staffWorkingHourLog(String.valueOf(user.getUserLoginId()), "1");
 					session.setMaxInactiveInterval(0);
 					session.setAttribute("session_user", user);
 					model.setViewName("redirect:" + "/#");
@@ -193,6 +197,12 @@ public class EcposManagerController {
 		Connection connection = null;
 		ModelAndView model = new ModelAndView();
 		WebComponents webComponent = new WebComponents();
+		
+		if(webComponent.getEcposSession(request) != null) {
+			UserAuthenticationModel user = webComponent.getEcposSession(request);
+			staffWorkingHourLog(String.valueOf(user.getUserLoginId()), "2");
+		}
+		
 		webComponent.clearEcposSession(request);
 		
 		// check for activation info
@@ -330,5 +340,76 @@ public class EcposManagerController {
 		ModelAndView model = new ModelAndView();
 		model.setViewName("ecpos/views/secondDisplay");
 		return model;
+	}
+	
+	@RequestMapping(value = {"/views/trackinghour"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView trackinghour() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/trackinghour");
+		return model;
+	}
+	
+	public int staffWorkingHourLog(String staff_id, String staff_status) {
+
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmtFind = null;
+		PreparedStatement stmtUpdate = null;
+		ResultSet rs = null;
+		int result = 0;
+		int workingHourId = 0;
+		
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+		DateTimeFormatter dtfTime = DateTimeFormatter.ofPattern("hh:mm a");
+		DateTimeFormatter dtfCurrentDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		LocalDateTime now = LocalDateTime.now();
+		String created_date = dtf.format(now);
+		String currentTime = dtfTime.format(now);
+		String currentDate = dtfCurrentDate.format(now);
+		
+		System.out.println("currentDate: "+currentDate);
+		
+		StringBuffer strInsert = new StringBuffer("insert into staff_workinghour (staff_id, staff_status, clock_in, clock_out, created_date) values (?,?,?,?,?)");
+		StringBuffer strSelect = new StringBuffer("select id from staff_workinghour where staff_id = ? and created_date like ? order by id desc limit 1");
+		StringBuffer strUpdate = new StringBuffer("update staff_workinghour set clock_out = ? where id = ?");
+
+		try {
+			connection = dataSource.getConnection();
+			
+			if(staff_status.equalsIgnoreCase("2")) {
+				stmtFind = connection.prepareStatement(strSelect.toString());
+				stmtFind.setString(1, staff_id);
+				stmtFind.setString(2, "%"+currentDate+"%");
+				rs = stmtFind.executeQuery();
+				
+				if(rs.next()) {
+					workingHourId = rs.getInt("id");
+				}
+				
+				stmtUpdate = connection.prepareStatement(strUpdate.toString());
+				stmtUpdate.setString(1, currentTime);
+				stmtUpdate.setInt(2, workingHourId);
+				result = stmtUpdate.executeUpdate();
+				
+			}else {
+				stmt = connection.prepareStatement(strInsert.toString());
+				stmt.setString(1, staff_id);
+				stmt.setString(2, staff_status);
+				
+				if(staff_status.equalsIgnoreCase("1")) {
+					stmt.setString(3, currentTime);
+					stmt.setString(4, "-");
+				}
+				
+				stmt.setString(5, created_date);
+				result = stmt.executeUpdate();
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return result;
 	}
 }

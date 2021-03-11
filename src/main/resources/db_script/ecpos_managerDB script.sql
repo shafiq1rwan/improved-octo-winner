@@ -552,6 +552,13 @@ CREATE TABLE `category_store_type` (
   `category_store_type_sequence` int NOT NULL
 );
 
+CREATE TABLE `ecpos_manager`.`staff_workinghour` (
+  `staff_id` VARCHAR(45) NOT NULL,
+  `staff_status` VARCHAR(45) NOT NULL,
+  `clock_in` VARCHAR(45) NOT NULL,
+  `clock_out` VARCHAR(45) NOT NULL,
+  `created_date` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`));
 
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
