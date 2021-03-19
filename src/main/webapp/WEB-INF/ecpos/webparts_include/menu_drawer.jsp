@@ -103,7 +103,13 @@
 					</a>
 				</li>
 				<%}%>
-					
+				<li>
+					<a href="${pageContext.request.contextPath}/#!trackinghour"> 
+						<i class="fa fa-user-clock"></i> 
+						<span>Tracking Hour</span> 
+						<span class="pull-right-container"> </span>
+					</a>
+				</li>	
 				<li>
 					<a href="${pageContext.request.contextPath}/#!settings"> 
 						<i class="fa fa-cog"></i>

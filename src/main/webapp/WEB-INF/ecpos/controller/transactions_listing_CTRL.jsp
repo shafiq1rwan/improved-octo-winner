@@ -177,17 +177,10 @@
 		$scope.voidTransaction = function(transactionId, isVoid){
 			Swal.fire({
 				  title: 'Enter your password',
-				  input: 'password',
-				  inputLabel: 'Password',
-				  inputPlaceholder: 'Enter your password',
-				  inputAttributes: {
-				    maxlength: 10,
-				    autocapitalize: 'off',
-				    autocorrect: 'off'
-				  },
-				  preConfirm: (password) => {
+				  html: '<input id="password" class="swal2-input" type="password" placeholder="Password">',
+				  preConfirm: () => {
 					  var jsonData = JSON.stringify({
-							"data" : password
+							"data" : document.getElementById('password').value,
 					  });
 					  $http.post("${pageContext.request.contextPath}/rc/configuration/checkVoidPassword", jsonData)
 						.then(function(response) {
