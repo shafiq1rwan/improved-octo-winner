@@ -276,7 +276,6 @@ public class RestC_report {
 		
 		if(!staff.equalsIgnoreCase("")) {
 			strSelect.append("and swh.staff_id = ?");
-			System.out.println("staff: " + staff);
 		}
 		
 		strSelect.append("order by swh.id desc");

@@ -229,6 +229,11 @@
 			{
 				templateUrl : "${pageContext.request.contextPath}/views/settings",
 				controller : "settings_CTRL"
+			})
+		.when("/trackinghour",
+			{
+				templateUrl : "${pageContext.request.contextPath}/views/trackinghour",
+				controller : "trackinghour_CTRL"
 			});
 	}]);
 </script>
@@ -245,5 +250,6 @@
 <jsp:include page="/WEB-INF/ecpos/controller/transactions_listing_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/reports_CTRL.jsp" />
 <jsp:include page="/WEB-INF/ecpos/controller/settings_CTRL.jsp" />
+<jsp:include page="/WEB-INF/ecpos/controller/trackinghour_CTRL.jsp" />
 
 </html>
