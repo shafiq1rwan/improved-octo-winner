@@ -180,7 +180,7 @@ hr {
 									</div> -->
 									<div >
 										<div class="row"
-											style="background-color: purple; color: white; padding-top: 8px; padding-right: 15px;" id="rowBarrrruuuu">
+											style="background-color: purple; color: white; padding-top: 7px; padding-right: 15px; font-size: 14px;" id="rowBarrrruuuu">
 											<div class='col-xs-1 col-sm-1 text-center'>
 												<input type="checkbox"
 													ng-click="allGrandParentItemCheckbox()"

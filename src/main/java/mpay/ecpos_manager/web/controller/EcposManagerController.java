@@ -360,7 +360,7 @@ public class EcposManagerController {
 		int workingHourId = 0;
 		
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-		DateTimeFormatter dtfTime = DateTimeFormatter.ofPattern("hh:mm a");
+		DateTimeFormatter dtfTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 		DateTimeFormatter dtfCurrentDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		LocalDateTime now = LocalDateTime.now();
 		String created_date = dtf.format(now);

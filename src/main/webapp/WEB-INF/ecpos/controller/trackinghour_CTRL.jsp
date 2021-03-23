@@ -115,10 +115,11 @@ app.controller('trackinghour_CTRL', function($scope, $http, $window, $routeParam
 				"info" : false,
 				"paging": true,
 				"destroy" : true,
-				"columns" : [{"data" : "staff_name", "width": "25%"}, 
-					{"data" : "clock_in", "width": "25%"},
-					{"data" : "clock_out", "width": "25%"},
-					{"data" : "date_working", "width": "25%"}]
+				"columns" : [{"data" : "staff_name", "width": "30%"}, 
+					{"data" : "clock_in", "width": "20%"},
+					{"data" : "clock_out", "width": "20%"},
+					{"data" : "total_hour", "width": "10%"},
+					{"data" : "date_working", "width": "10%"}]
 			});
 			
 			var table1 = $('#datatable_itemSummary').DataTable({

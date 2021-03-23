@@ -27,20 +27,11 @@
 							<div class="box box-success" style="height: 89vh; overflow-y: auto; background-color: white; margin-bottom: 0px; padding: 15px;">
 								<div class="row" style="text-align: center">
 									<div class="col-sm-12">
-										<font size="4">TRACK WORKING HOUR</font>
+										<font size="4">EMPLOYEE PERFORMANCE</font>
 									</div>
 								</div>
 								<br/>
 								<div class="row">
-       							<!-- <div class="col-md-6">
-								<div class="box box-success">
-									<div class="box-header with-border">
-										<h3 class="box-title">Staff Attendance</h3>
-									</div>
-									<div class="box-body" style="height: 280px">
-										<canvas id="myChart"></canvas> 
-									</div>
-								</div></div> -->
 								<div class="col-md-12">
 								<div class="box box-success">
 									<div class="box-header with-border">
@@ -67,8 +58,8 @@
 										<thead style="background-color: purple; color: white;">
 											<tr>
 												<th>Name of Staff</th>
-												<th>Total Sales</th>
-												<th>Total Amount</th>
+												<th>Total Transactions</th>
+												<th>Total Sales (RM)</th>
 											</tr>
 										</thead>
 										<tbody></tbody>
@@ -90,7 +81,7 @@
 									</div>
 								</div>
 								<div class="box-header with-border" style="border:1px grey solid;">
-					              <h3 class="box-title">Working Time Report</h3>
+					              <h3 class="box-title">Timesheets</h3>
 								<div>
 									<table id="datatable_salesSummary" class="table table-bordered table-striped">
 										<thead style="background-color: purple; color: white;">
@@ -98,6 +89,7 @@
 												<th>Staff</th>
 												<th>Clock In</th>
 												<th>Clock Out</th>
+												<th>Total Hour</th>
 												<th>Created Date</th>
 											</tr>
 										</thead>

@@ -6,6 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -298,9 +302,22 @@ public class RestC_report {
 					String timeClockIn = rs.getString("clock_in");
 					String timeClockOut = rs.getString("clock_out");
 					
+					
 					jObject.put("staff_name", rs.getString("staff_name") == null ? "-" : rs.getString("staff_name"));
 					jObject.put("clock_in", timeClockIn);
 					jObject.put("clock_out", timeClockOut);
+					
+					if(!timeClockOut.equalsIgnoreCase("-")) {
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+						LocalDateTime dateTimeIn = LocalDateTime.parse(timeClockIn, formatter);
+						LocalDateTime dateTimeout = LocalDateTime.parse(timeClockOut, formatter);
+						Duration ns = Duration.between(dateTimeIn, dateTimeout);
+						System.out.println("duration: "+ns.toHours());
+						jObject.put("total_hour", ns.toHours()+" Hour");
+					}else {
+						jObject.put("total_hour", "0 Hour");
+					}
+					
 					jObject.put("date_working", rs.getString("created_date"));
 					
 					JARY.put(jObject);

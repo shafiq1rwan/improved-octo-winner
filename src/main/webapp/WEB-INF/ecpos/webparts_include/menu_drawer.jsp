@@ -106,7 +106,7 @@
 				<li>
 					<a href="${pageContext.request.contextPath}/#!trackinghour"> 
 						<i class="fa fa-user-clock"></i> 
-						<span>Tracking Hour</span> 
+						<span>Employee Performance</span> 
 						<span class="pull-right-container"> </span>
 					</a>
 				</li>	
