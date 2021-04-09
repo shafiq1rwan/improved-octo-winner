@@ -4,6 +4,7 @@
 		$scope.checkNo = $routeParams.checkNo;
 		$scope.tableNo = $routeParams.tableNo;
 		$scope.roomStatus = $routeParams.roomStatus;
+		$scope.customer = {};
 
 		$scope.checkDetail = {};
 		
@@ -1259,6 +1260,149 @@
 							}
 						});
 					});
+				}
+			});
+		}
+
+		$scope.searchCustomerInfo = function () {
+			Swal.fire({
+				  title: 'Enter Customer Phone Number',
+				  html: '<input id="phone_no" class="swal2-input" type="text" placeholder="Customer Phone No">',
+				  preConfirm: () => {
+					  var jsonData = JSON.stringify({
+							"phone_no" : document.getElementById('phone_no').value,
+					  });
+					  
+					  $http.post("${pageContext.request.contextPath}/rc/customer/get_customer_info", jsonData)
+						.then(function(response) {
+							if(response.data.response_code == '00'){
+								Swal.fire({
+									 	title: 'Customer Record Found!',
+									 	html: 'Do you want to use it?',
+										showCancelButton: true,
+										confirmButtonColor: '#3085d6',
+										cancelButtonColor: '#d33',
+										confirmButtonText: 'Yes, Add it!'
+									}).then((result) => {
+									  /* Read more about isConfirmed, isDenied below */
+									  if (result.isConfirmed) {
+										$scope.checkDetail.customerName = $scope.customer.name;
+									    Swal.fire('Saved!', '', 'success');
+									  } else if (result.isDenied) {
+									    Swal.fire('Changes are not saved', '', 'info')
+									  }
+									});
+							}else if(response.data.response_code == '02'){
+								$('#CustomerInfoModal').modal('show');
+							}else{
+								Swal.fire('Error',response.data.response_message,'error');
+							}
+						});
+				  }
+			});
+		}
+
+		$scope.submitCustomerInfo = function() {
+			var jsonData = JSON.stringify({
+				"name" : $scope.customer.name,
+				"phoneno" : $scope.customer.phoneno,
+			});
+			
+			$http.post("${pageContext.request.contextPath}/rc/customer/save_customerinfo", jsonData)
+			.then(function(response) {
+				Swal.fire({
+					  title: 'Are you sure?',
+					  text: "You can change this information again.",
+					  icon: 'warning',
+					  toast: true,
+					  showCancelButton: true,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'Yes'
+					}).then((result) => {
+					  if (result.value) {
+						Swal.fire('Success!', response.data.response_message, 'success');
+						$("#CustomerInfoModal").modal("hide");
+						$scope.checkDetail.customerName = $scope.customer.name;
+					  }
+					});
+			},
+			function(response) {
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+							window.location.href = "${pageContext.request.contextPath}/signout";
+					}
+				});
+			});
+		}
+
+		$scope.enterCalculator3 = function(id, number) {
+			var amount = document.getElementById(id).innerHTML;
+			
+			if (amount < 0.00) {
+				/* alert("Tender Amount should not be less than 0.00"); */
+				Swal.fire("Warning","Tender Amount should not be less than 0.00","warning");
+			} else if (number != -10) {
+				if (amount.length < 12) {
+					if (number != 100 && number != 10) {
+						amount = amount + number;
+					}
+					
+					var floatAmount = parseFloat(amount);
+					
+					if (number == 100) {
+						floatAmount = floatAmount * 100;
+					} else {
+						floatAmount = floatAmount * 10;
+					}
+					
+					var temp = floatAmount.toFixed(3);
+					temp = temp.substring(0, temp.length - 1);
+					document.getElementById(id).innerHTML = temp;
+				}
+			} else if (number == -10) {
+				var floatAmount = parseFloat(amount);
+				
+				floatAmount = floatAmount / 10;
+				
+				var temp = floatAmount.toFixed(3);
+				temp = temp.substring(0, temp.length - 1);
+				document.getElementById(id).innerHTML = temp;
+			}
+		}
+		
+		$scope.openItem = function() {
+			$('#OpenItemModal').modal('show');
+			document.getElementById('tenderAmount3').innerHTML = '0.00';
+		}
+
+		$scope.submitOpenItem = function() {
+			var jsonData = JSON.stringify({
+				"productNameOpenItem" : "",
+				"totalAmountOpenItem" : document.getElementById('tenderAmount3').innerHTML,
+				"deviceType" : 1,
+				"orderType" : $scope.orderType,
+				"checkNo" : $scope.checkNo,
+		  });
+		  
+		  $http.post("${pageContext.request.contextPath}/rc/check/saveOrderOpenItem", jsonData)
+			.then(function(response) {
+				if(response.data.response_code == '00'){
+					$('#OpenItemModal').modal('hide');
+					Swal.fire('Success',response.data.response_message,'success');
+					$scope.getCheckDetails();
+					allGrandParentItemCheckbox.checked = false;
+				}else{
+					$('#OpenItemModal').modal('hide');
+					Swal.fire('Error',response.data.response_message,'error');
 				}
 			});
 		}

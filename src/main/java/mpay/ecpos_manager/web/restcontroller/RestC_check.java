@@ -2547,12 +2547,37 @@ public class RestC_check {
 									break loop;
 								}
 							} else {
-								proceed = false;
-								connection.rollback();
-								Logger.writeActivity("Menu Item Not Found", ECPOS_FOLDER);
-								jsonResult.put(Constant.RESPONSE_CODE, "01");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Menu Item Not Found");
-								break loop;
+								
+								// For Barang Timbang, Not Fixed Price
+								// Menu Item Code must use 00 <--
+								if(rs.getString("menu_item_code").equalsIgnoreCase("00")) {
+									System.out.println("Masuk sini tak?");
+									stmt4 = connection.prepareStatement("update check_detail set check_detail_status = 4, updated_date = now() where id = ?;");
+									stmt4.setLong(1, checkDetailId);
+									int updateGrandParentCheckDetail = stmt4.executeUpdate();
+									
+									if (updateGrandParentCheckDetail > 0) {
+//										boolean updateCheck = updateCancelledItemCheck(connection, checkId, checkNo, orderQuantity, totalAmount, isItemTaxable, charges);
+										Long updateCheck = cancelCheckItemForOpenItem(connection, i, checkId, checkNo, updateGrandParentCheckDetail, jsonResult, totalAmount, proceed, jsonData, checkNo);
+										if(updateCheck > 0) {
+											proceed = true;
+										}
+									}
+								}else {
+									proceed = false;
+									connection.rollback();
+									Logger.writeActivity("Menu Item Not Found", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Menu Item Not Found");
+									break loop;
+								}
+								
+//								proceed = false;
+//								connection.rollback();
+//								Logger.writeActivity("Menu Item Not Found", ECPOS_FOLDER);
+//								jsonResult.put(Constant.RESPONSE_CODE, "01");
+//								jsonResult.put(Constant.RESPONSE_MESSAGE, "Menu Item Not Found");
+//								break loop;
 							}
 						} else {
 							proceed = false;
@@ -4651,4 +4676,219 @@ public class RestC_check {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/saveOrderOpenItem" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String saveOrderOpenItem(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) throws JSONException {
+		Logger.writeActivity("----------- CREATE ORDER START ---------", ECPOS_FOLDER);
+		Logger.writeActivity("request: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				JSONObject order = new JSONObject(data);
+				String orderType = "";
+				
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+				
+				System.out.println("checkNo: "+order.getString("checkNo"));
+				System.out.println("orderType: "+order.getString("orderType"));
+				
+				if(order.getString("orderType").equalsIgnoreCase("1") || order.getString("orderType").equalsIgnoreCase("table")) {
+					orderType = "1";
+				}else if(order.getString("orderType").equalsIgnoreCase("2") || order.getString("orderType").equalsIgnoreCase("take_away")) {
+					orderType = "2";
+				}else {
+					orderType = "3";
+				}
+
+				String tableNoCondition = "table_number is null";
+				if (order.getString("orderType").equalsIgnoreCase("1")) {
+					tableNoCondition = "table_number = " + order.getInt("tableNo");
+				}
+				
+				stmt = connection.prepareStatement("select * from `check` where check_number = ? and " + tableNoCondition + " and order_type = ? and check_status in (1, 2);");
+				stmt.setString(1, order.getString("checkNo"));
+				stmt.setString(2, orderType);
+				rs = stmt.executeQuery();
+
+				if (rs.next()) {
+					long checkId = rs.getLong("id");
+					String checkNo = rs.getString("check_number");
+					String totalAmount = order.getString("totalAmountOpenItem");
+					String productName = order.getString("productNameOpenItem");
+					BigDecimal totalAmountFormatted = new BigDecimal(totalAmount);
+					
+					insertChildCheckDetailForOpenItem(connection, 1, checkId, checkNo, checkId, jsonResult, totalAmountFormatted, false, order, productName);
+					jsonResult.put("response_code", "00");
+					jsonResult.put("response_message", "Open Item has been saved.");
+					Logger.writeActivity("Open Item has been saved.", ECPOS_FOLDER);
+				}else {
+					jsonResult.put("response_code", "02");
+					jsonResult.put("response_message", "Record not found. Please try again.");
+				}
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			jsonResult.put("response_code", "03");
+			jsonResult.put("response_message", "Error occured during saved. Please try again.");
+		}
+		return jsonResult.toString();
+	}
+	
+	public long insertChildCheckDetailForOpenItem(Connection connection, int deviceType, long checkId, String checkNo,
+			long parentCheckDetailId, JSONObject childItem, BigDecimal totalAmountFormatted, boolean isItemTaxable,
+			JSONObject charges, String productName) {
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		long checkDetailId = 0;
+
+		try {
+			stmt2 = connection.prepareStatement(
+					"insert into check_detail (check_id,check_number,device_type,parent_check_detail_id,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,total_amount,check_detail_status,created_date) "
+							+ "values (?,?,?,?,?,?,?,?,?,?,1,now());",
+					Statement.RETURN_GENERATED_KEYS);
+			stmt2.setLong(1, checkId);
+			stmt2.setString(2, checkNo);
+			stmt2.setInt(3, deviceType);
+			stmt2.setString(4, null);
+			stmt2.setString(5, "00");
+			stmt2.setString(6, "00");
+			stmt2.setString(7, productName.equalsIgnoreCase("") ? "Item" : productName);
+			stmt2.setString(8, totalAmountFormatted.toString());
+			stmt2.setInt(9, 1);
+			stmt2.setBigDecimal(10, totalAmountFormatted);
+			int insertCheckDetail = stmt2.executeUpdate();
+
+			if (insertCheckDetail > 0) {
+				rs2 = stmt2.getGeneratedKeys();
+
+				if (rs2.next()) {
+
+					stmt3 = connection.prepareStatement("select * from `check` where id = ? and check_number = ?;");
+					stmt3.setLong(1, checkId);
+					stmt3.setString(2, checkNo);
+					rs3 = stmt3.executeQuery();
+
+					if (rs3.next()) {
+						int totalQuantity = rs3.getInt("total_item_quantity");
+						BigDecimal totalAmount = rs3.getBigDecimal("total_amount");
+						BigDecimal totalAmountWithTax = rs3.getBigDecimal("total_amount_with_tax");
+						BigDecimal tenderAmount = rs3.getBigDecimal("tender_amount");
+
+						BigDecimal newTotalAmount = totalAmount.add(totalAmountFormatted);
+						BigDecimal newTotalAmountWithTax = totalAmountWithTax.add(totalAmountFormatted);
+
+						BigDecimal newGrandTotalAmount = roundToNearest(newTotalAmountWithTax);
+						BigDecimal newTotalAmountWithTaxRoundingAdjustment = newGrandTotalAmount
+								.subtract(newTotalAmountWithTax);
+						BigDecimal newOverdueAmount = newGrandTotalAmount.subtract(tenderAmount);
+
+						stmt4 = connection.prepareStatement(
+								"update `check` set total_item_quantity = ?,total_amount = ?,total_amount_with_tax = ?,total_amount_with_tax_rounding_adjustment = ?,grand_total_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
+						stmt4.setInt(1, totalQuantity + 1);
+						stmt4.setBigDecimal(2, newTotalAmount);
+						stmt4.setBigDecimal(3, newTotalAmountWithTax);
+						stmt4.setBigDecimal(4, newTotalAmountWithTaxRoundingAdjustment);
+						stmt4.setBigDecimal(5, newGrandTotalAmount);
+						stmt4.setBigDecimal(6, newOverdueAmount);
+						stmt4.setLong(7, checkId);
+						stmt4.setString(8, checkNo);
+						checkDetailId = stmt4.executeUpdate();
+
+					}
+				}
+			}
+
+			connection.setAutoCommit(true);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return checkDetailId;
+	}
+	
+	public long cancelCheckItemForOpenItem(Connection connection, int deviceType, long checkId, String checkNo,
+			long parentCheckDetailId, JSONObject childItem, BigDecimal totalAmountFormatted, boolean isItemTaxable,
+			JSONObject charges, String productName) {
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		long checkDetailId = 0;
+		int updateCheck = 0;
+
+		try {
+			stmt2 = connection.prepareStatement("select * from `check` where id = ? and check_number = ?;");
+			stmt2.setLong(1, checkId);
+			stmt2.setString(2, checkNo);
+			rs2 = stmt2.executeQuery();
+			
+			if (rs2.next()) {
+				int totalQuantity = rs2.getInt("total_item_quantity");
+				BigDecimal totalAmount = rs2.getBigDecimal("total_amount");
+				BigDecimal totalAmountWithTax = rs2.getBigDecimal("total_amount_with_tax");
+				BigDecimal tenderAmount = rs2.getBigDecimal("tender_amount");
+				
+				BigDecimal newTotalAmount = totalAmount.subtract(totalAmountFormatted);
+				BigDecimal newTotalAmountWithTax = totalAmountWithTax.subtract(totalAmountFormatted);
+			
+				BigDecimal newGrandTotalAmount = roundToNearest(newTotalAmountWithTax);
+				BigDecimal newTotalAmountWithTaxRoundingAdjustment = newGrandTotalAmount.subtract(newTotalAmountWithTax);
+				BigDecimal newOverdueAmount = newGrandTotalAmount.subtract(tenderAmount);
+				
+				stmt3 = connection.prepareStatement("update `check` set total_item_quantity = ?,total_amount = ?,total_amount_with_tax = ?,total_amount_with_tax_rounding_adjustment = ?,grand_total_amount = ?,overdue_amount = ?,check_status = 2,updated_date = now() where id = ? and check_number = ?;");
+				stmt3.setInt(1, totalQuantity - 1);
+				stmt3.setBigDecimal(2, newTotalAmount);
+				stmt3.setBigDecimal(3, newTotalAmountWithTax);
+				stmt3.setBigDecimal(4, newTotalAmountWithTaxRoundingAdjustment);
+				stmt3.setBigDecimal(5, newGrandTotalAmount);
+				stmt3.setBigDecimal(6, newOverdueAmount);
+				stmt3.setLong(7, checkId);
+				stmt3.setString(8, checkNo);
+				updateCheck = stmt3.executeUpdate();
+				
+			}
+
+			connection.setAutoCommit(true);
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt2 != null)
+					stmt2.close();
+				if (rs2 != null) {
+					rs2.close();
+					rs2 = null;
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return updateCheck;
+	}
 }

@@ -52,7 +52,7 @@
 									</div>
 								</div>
 								<div class="box-header with-border" style="border:1px grey solid;">
-					              <h3 class="box-title">Staff Performance</h3>
+					              <h3 class="box-title">Employee Performance</h3>
 								<div>
 									<table id="datatable_itemSummary" class="table table-bordered table-striped">
 										<thead style="background-color: purple; color: white;">

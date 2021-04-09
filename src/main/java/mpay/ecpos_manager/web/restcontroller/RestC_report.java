@@ -302,7 +302,6 @@ public class RestC_report {
 					String timeClockIn = rs.getString("clock_in");
 					String timeClockOut = rs.getString("clock_out");
 					
-					
 					jObject.put("staff_name", rs.getString("staff_name") == null ? "-" : rs.getString("staff_name"));
 					jObject.put("clock_in", timeClockIn);
 					jObject.put("clock_out", timeClockOut);

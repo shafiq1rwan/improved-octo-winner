@@ -91,14 +91,14 @@ hr {
 											<%if (user.getStoreType() == 3) { %>
 											<div style="margin-bottom: 10px;">
 												<!-- <font><b>Customer Name: : {{checkDetail.customerName}}</b></font> -->
-												<font><b>Customer Name:</b>
+												<font><b>Customer Name:</b><label id="customerNameee"></label>
 													{{checkDetail.customerName}}</font>
 											</div>
 											<%} else { %>
 											<div ng-if="checkDetail.orderType != '1'"
 												style="margin-bottom: 10px;">
 												<!-- <font><b>Customer Name: : {{checkDetail.customerName}}</b></font> -->
-												<font><b>Customer Name:</b>
+												<font><b>Customer Name:</b><label id="customerNameee"></label>
 													{{checkDetail.customerName}}</font>
 											</div>
 											<%} %>
@@ -116,6 +116,20 @@ hr {
 													Generate QR
 												</button>
 												<br> <br>
+												<button id="openItemButton"
+													class="btn bg-navy pull-right shadowBox"
+													style="width: 150px; margin-bottom: 10px"
+													ng-click="openItem()">
+													Open Item
+												</button>
+												<br> <br>
+												<!-- <button id="CustomerInfoButton"
+													class="btn bg-navy pull-right shadowBox"
+													style="width: 150px; margin-bottom: 10px"
+													ng-click="searchCustomerInfo()">
+													Customer Info
+												</button>
+												<br> <br> -->
 												<%
 													}
 												%>
@@ -138,12 +152,25 @@ hr {
 												<%
 													if (user.getStoreType() == 1) {
 												%>
-												<button id="sendOrderButton"
+												<button id="openItemButton"
+													class="btn bg-navy pull-right shadowBox"
+													style="width: 150px; margin-bottom: 10px"
+													ng-click="openItem()">
+													Open Item
+												</button>
+												<!-- <button id="CustomerInfoButton"
+													class="btn bg-navy pull-right shadowBox"
+													style="width: 150px; margin-bottom: 10px"
+													ng-click="generateQR()">
+													Customer Info
+												</button>
+												<br> <br> -->
+												<!-- <button id="sendOrderButton"
 													class="btn pull-right btn-primary shadowBox"
 													style="width: 150px; margin-bottom: 10px"
 													ng-click="sendOrdertoKds()">
 													<i class="fa fa-location-arrow"></i> Send Order
-												</button>
+												</button> -->
 												<%
 													}
 												%>
@@ -407,7 +434,7 @@ hr {
 											</div>
 											<div class='col-xs-1 col-sm-1 text-center'></div>
 											<div class='col-xs-2 col-sm-2 text-right'>
-												<b>{{checkDetail.tenderAmount| number:2}}</b>
+												<b>{{checkDetail.tenderAmount3| number:2}}</b>
 											</div>
 										</div>
 										<div class="row"
@@ -567,6 +594,173 @@ hr {
 							</div>
 						</div>
 						<!-- <div class="modal-footer"></div> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="CustomerInfoModal"
+				role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+			                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			                  <span aria-hidden="true">×</span></button>
+			                <h4 class="modal-title">Customer Information</h4><small style="color: red;">No Record Found. Please Enter New Customer Info.</small>
+			            </div>
+			            <form ng-submit="submitCustomerInfo()">
+						<div class="modal-body">
+								<div class="form-group">
+				                  <label for="exampleInputEmail1">Customer Name</label>
+				                  <input type="text" class="form-control" id="customerName" ng-model="customer.name" placeholder="Name">
+				                </div>
+								<div class="form-group">
+				                  <label for="exampleInputEmail1">Customer Phone Number</label>
+				                  <input type="text" class="form-control" id="customerPhoneNo" ng-model="customer.phoneno" placeholder="Phone Number"
+				                  onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))">
+				                </div>
+						</div>
+						<div class="modal-footer">
+			                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+			                <button type="submit" class="btn btn-primary">Save changes</button>
+		              	</div>
+		              	</form>
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="OpenItemModal"
+				role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+			                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			                  <span aria-hidden="true">×</span></button>
+			                <h4 class="modal-title">Enter the Item Price</h4>
+			            </div>
+						<!-- <form ng-submit="submitOpenItem()"> -->
+							<div class="modal-body">
+								<div
+									style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
+									<div
+										style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
+										<hr
+											style="border: none; height: 2px; color: black; background-color: black;">
+										<div class="row">
+											<div class="col-xs-3 col-sm-3"
+												style="text-align: center; font-size: 25px; color: black;">
+												<label>RM</label>
+											</div>
+											<div class="col-xs-9 col-sm-9"
+												style="text-align: right; padding-right: 25px; font-size: 25px; color: black;">
+												<label id="tenderAmount3">0.00</label>
+											</div>
+										</div>
+										<hr
+											style="border: none; height: 2px; color: black; background-color: black;">
+										<div class="row">
+											<div class="col-xs-9 col-sm-9">
+												<div class="row" style="padding-left: 15px;">
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="seven" type="button" value="7" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',7)" />
+													</div>
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="eight" type="button" value="8" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',8)" />
+													</div>
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="nine" type="button" value="9" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',9)" />
+													</div>
+												</div>
+												<div class="row" style="padding-left: 15px;">
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="four" type="button" value="4" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',4)" />
+													</div>
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="five" type="button" value="5" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',5)" />
+													</div>
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="six" type="button" value="6" class="calculator" style="border-color: lightgrey;"
+															ng-click="enterCalculator3('tenderAmount3',6)" />
+													</div>
+												</div>
+												<div class="row" style="padding-left: 15px;">
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="one" type="button" value="1" class="calculator" style="border-color: lightgrey;"
+															ng-click="enterCalculator3('tenderAmount3',1)" />
+													</div>
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="two" type="button" value="2" class="calculator" style="border-color: lightgrey;"
+															ng-click="enterCalculator3('tenderAmount3',2)" />
+													</div>
+													<div class="col-xs-4 col-sm-4"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="three" type="button" value="3" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',3)" />
+													</div>
+												</div>
+												<div class="row" style="padding-left: 15px;">
+													<div class="col-xs-6 col-sm-6"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="zero" type="button" value="0" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',10)" />
+													</div>
+													<div class="col-xs-6 col-sm-6"
+														style="padding: 0px; padding-right: 5px; padding-bottom: 5px;">
+														<input id="zerozero" value="00" type="button" style="border-color: lightgrey;"
+															class="calculator"
+															ng-click="enterCalculator3('tenderAmount3',100)" />
+													</div>
+												</div>
+											</div>
+											<div class="col-xs-3 col-sm-3">
+												<div class="row" style="padding-right: 15px;">
+													<div class="col-xs-3 col-sm-3"
+														style="padding: 0px; padding-bottom: 5px;">
+														<button id="remove" value="removeButton" style="border-color: lightgrey;"
+															class="calculatoraction"
+															ng-click="enterCalculator3('tenderAmount3',-10)">
+															<i class="fa fa-arrow-left" aria-hidden="true"></i>
+														</button>
+													</div>
+												</div>
+												<div class="row" style="padding-right: 15px;">
+													<div class="col-xs-3 col-sm-3"
+														style="padding: 0px; padding-bottom: 5px;">
+														<button value="confirmButton" class="calculatoraction btn-primary" style="background: #1F8CE8; color: white;"
+															ng-click="submitOpenItem()">
+															<i class="fa fa-check-square" aria-hidden="true"></i>
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						<!-- <div class="modal-footer">
+			                <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+			                <button type="submit" class="btn btn-primary">Save changes</button>
+		              	</div> -->
+						<!-- </form> -->
 					</div>
 				</div>
 			</div>

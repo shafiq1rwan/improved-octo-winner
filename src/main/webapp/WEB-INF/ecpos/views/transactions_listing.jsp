@@ -507,5 +507,32 @@
 
 		</div>
 	</div>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.min.js"></script>
 </body>
+<script type="text/javascript">
+	$(function() {
+		var userAgent = window.navigator.userAgent,
+	      platform = window.navigator.platform,
+	      macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+	      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+	      iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+	      os = null;
+	  
+	  var osDetect = document.getElementsByName("osDetect");
+
+	  if (macosPlatforms.indexOf(platform) !== -1) {
+	    os = 'Mac OS';
+	  } else if (iosPlatforms.indexOf(platform) !== -1) {
+	    os = 'iOS';
+	  } else if (windowsPlatforms.indexOf(platform) !== -1) {
+	    os = 'Windows';
+		$('#passwordVoid').keyboard();
+	  } else if (/Android/.test(userAgent)) {
+	    os = 'Android';
+	  } else if (!os && /Linux/.test(platform)) {
+	    os = 'Linux';
+	  }
+	});
+</script>
 </html>

@@ -553,12 +553,24 @@ CREATE TABLE `category_store_type` (
 );
 
 CREATE TABLE `ecpos_manager`.`staff_workinghour` (
+  `id` INT NOT NULL AUTO_INCREMENT,
   `staff_id` VARCHAR(45) NOT NULL,
   `staff_status` VARCHAR(45) NOT NULL,
   `clock_in` VARCHAR(45) NOT NULL,
   `clock_out` VARCHAR(45) NOT NULL,
   `created_date` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`id`));
+  
+  CREATE TABLE `ecpos_manager`.`customer_info` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `phone_no` VARCHAR(50) NOT NULL,
+  `created_by` VARCHAR(100) NOT NULL,
+  `created_date` VARCHAR(100) NOT NULL,
+  `updated_by` VARCHAR(100),
+  `updated_date` VARCHAR(100),
+  PRIMARY KEY (`id`));
+
 
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
@@ -621,7 +633,7 @@ insert into `hotel_room_type` values
 insert into `hotel_status_lookup` values
 (1, 'CHECKED IN', 'blue'), (2, 'OUT OF SERVICE', 'black'), (3, 'RESERVED', 'red'), (4, 'AVAILABLE', 'green');
 
-insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, 'Posiflex'), (3,'EPSON'), (4,'IBM'), (5,'Printer1400 (Copy 1)');
+insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, 'Posiflex'), (3,'EPSON'), (4,'IBM'), (5,'Printer1400 (Copy 1)'), (6, 'POS80');
 
 INSERT INTO status_lookup (id, name) VALUES (1, 'PENDING');
 INSERT INTO status_lookup (id, name) VALUES (2, 'ACTIVE');
