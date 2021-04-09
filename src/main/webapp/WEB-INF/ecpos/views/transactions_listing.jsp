@@ -44,6 +44,20 @@
 	margin: 0px;
 }
 </style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/keyboard/css/jkeyboard.css">
+<script src="${pageContext.request.contextPath}/keyboard/js/jkeyboard.js"></script>
+<script>
+	$('#keyboard').hide();
+	
+    $('#keyboard').jkeyboard({
+        layout: "english",
+        input: $('#voidPassword')
+    });
+    
+    setTimeout(function() { 
+    	$('#keyboard').show();
+    }, 100);
+</script>
 </head>
 
 <body>
@@ -150,7 +164,7 @@
 									<tbody>
 										<tr>
 											<td><button class="btn btn-danger"
-													ng-click="voidTransaction(transaction.id, transaction.isVoid)" style="width: 150px; float: right; margin-right: 20px; box-shadow: 1px 1px 3px grey">
+													ng-click="voidTransactionModal(transaction.id, transaction.isVoid)" style="width: 150px; float: right; margin-right: 20px; box-shadow: 1px 1px 3px grey">
 													<!-- <i class="fa fa-remove" aria-hidden="true"></i> --> Void
 												</button></td>
 											<td><button
@@ -504,6 +518,43 @@
 				</div>
 			</div>
 			<!-- Loading Modal [END] -->
+
+			<div class="modal fade" data-backdrop="static" id="voidPasswordModal"
+				role="dialog">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal"
+								aria-label="Close">
+								<span aria-hidden="true">×</span>
+							</button>
+							<h4 class="modal-title">Enter Void Password</h4>
+						</div>
+						<!-- <form ng-submit="submitOpenItem()"> -->
+						<div class="modal-body">
+							<div class="row">
+								<div class="col-sm-1 form-group"></div>
+								<div class="col-sm-10 form-group">
+									<label style="font-size: medium;">Void Password</label> <input
+										type="password" class="form-control" id="voidPassword" required
+										onfocus="blur();" /> <br>
+									<div id="keyboard"></div>
+									<br>
+									<div style="text-align: center;">
+										<button class="btn btn-primary" ng-click="doVoidTransaction(transaction.id, transaction.isVoid)">Submit</button>
+									</div>
+								</div>
+								<div class="col-sm-1 form-group"></div>
+							</div>
+						</div>
+						<!-- <div class="modal-footer">
+			                <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+			                <button type="submit" class="btn btn-primary">Save changes</button>
+		              	</div> -->
+						<!-- </form> -->
+					</div>
+				</div>
+			</div>
 
 		</div>
 	</div>

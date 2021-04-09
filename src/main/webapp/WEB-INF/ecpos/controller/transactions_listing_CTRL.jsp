@@ -173,11 +173,15 @@
 				});
 			}
 		}
+
+		$scope.voidTransactionModal = function(transactionId, isVoid){
+			$('#voidPasswordModal').modal('show');
+		}
 		
-		$scope.voidTransaction = function(transactionId, isVoid){
+		$scope.voidTransactionSweetAlert = function(transactionId, isVoid){
 			Swal.fire({
 				  title: 'Enter your password',
-				  html: '<input id="passwordVoid" name="passwordVoid" class="swal2-input" type="password" placeholder="Password">',
+				  html: '<input id="passwordVoid" name="passwordVoid" class="swal2-input" type="password" placeholder="Password"><br><div id="keyboard"></div>',
 				  preConfirm: () => {
 					  var jsonData = JSON.stringify({
 							"data" : document.getElementById('passwordVoid').value,
@@ -357,6 +361,99 @@
 				});
 
 			});
+		}
+
+		$scope.doVoidTransaction = function(transactionId, isVoid){
+
+			if ($('#voidPassword').val() == null || $('#voidPassword').val() == "") {
+				// alert("Kindly key in customer name.");
+				Swal.fire("Warning","Kindly key in void password.","warning");
+			} else {
+
+				var jsonData = JSON.stringify({
+					"data" : $('#voidPassword').val()
+			  });
+
+			  $http.post("${pageContext.request.contextPath}/rc/configuration/checkVoidPassword", jsonData)
+				.then(function(response) {
+					if(response.data.response_code == '00'){
+						let timerInterval
+						Swal.fire({
+						  title: 'Success!',
+						  text: response.data.response_message,
+						  icon: 'success',
+						  timer: 1000,
+						  timerProgressBar: true,
+						  didOpen: () => {
+						    Swal.showLoading()
+						    timerInterval = setInterval(() => {
+						      const content = Swal.getContent()
+						      if (content) {
+						        const b = content.querySelector('b')
+						        if (b) {
+						          b.textContent = Swal.getTimerLeft()
+						        }
+						      }
+						    }, 100)
+						  },
+						  willClose: () => {
+						    clearInterval(timerInterval)
+						  }
+						}).then((result) => {
+						  /* Read more about handling dismissals below */
+						  $('#voidPasswordModal').modal('hide');
+						  if (result.dismiss === Swal.DismissReason.timer) {
+						    console.log('I was closed by the timer')
+						  }
+
+						  if(isVoid){
+								$scope.printTransactionReceipt(transactionId); //print receipt
+							} else {
+								var jsonData = JSON.stringify({
+									"transactionId" : transactionId
+								});
+								
+								$scope.voidMessage = "Void In Progress";
+								$('#transactionDetailsModal').modal('hide');
+								
+								$('#loading_modal').modal('show');
+								
+					 			$http.post("${pageContext.request.contextPath}/rc/transaction/void_transaction", jsonData)
+								.then(function(response) {
+									if(response.data.response_code == '00'){
+										Swal.fire('Success',response.data.response_message,'success');
+										$('#loading_modal').modal('hide');
+										$scope.printTransactionReceipt(transactionId); //print receipt
+										$scope.getTransactionsList();
+									} else {
+										Swal.fire('Error',response.data.response_message,'error');
+										$('#loading_modal').modal('hide');
+									}
+									$scope.voidMessage = "";
+								},
+								function(response) {
+									Swal.fire({
+										  title: 'Oops...',
+										  text: "Session Timeout",
+										  icon: 'error',
+										  showCancelButton: false,
+										  confirmButtonColor: '#3085d6',
+										  cancelButtonColor: '#d33',
+										  confirmButtonText: 'OK'
+										},function(isConfirm){
+										    if (isConfirm) {
+											  window.location.href = "${pageContext.request.contextPath}/signout";
+										  }
+										});
+								});
+							}
+						});
+					}else{
+						Swal.fire('Error',response.data.response_message,'error');
+					}
+				});
+			}
+		  
 		}
 	});
 </script>
