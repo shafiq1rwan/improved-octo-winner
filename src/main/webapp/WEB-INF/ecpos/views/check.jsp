@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" charset="ISO-8859-1">
 <link rel="stylesheet"
 	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
 <style>
@@ -39,6 +39,26 @@ hr {
 
 .shadowBox {
 	box-shadow: 1px 1px 4px grey;
+}
+
+/* HIDE RADIO */
+[type=radio] { 
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* IMAGE STYLES */
+[type=radio] + img {
+  cursor: pointer;
+  border: gray;
+}
+
+/* CHECKED STYLES */
+[type=radio]:checked + img {
+  outline: 2px solid #1F8CE8;
+  border-radius: 5px;
 }
 </style>
 </head>
@@ -116,13 +136,6 @@ hr {
 													Generate QR
 												</button>
 												<br> <br>
-												<button id="openItemButton"
-													class="btn bg-navy pull-right shadowBox"
-													style="width: 150px; margin-bottom: 10px"
-													ng-click="openItem()">
-													Open Item
-												</button>
-												<br> <br>
 												<!-- <button id="CustomerInfoButton"
 													class="btn bg-navy pull-right shadowBox"
 													style="width: 150px; margin-bottom: 10px"
@@ -156,7 +169,7 @@ hr {
 													class="btn bg-navy pull-right shadowBox"
 													style="width: 150px; margin-bottom: 10px"
 													ng-click="openItem()">
-													Open Item
+													Open SKU
 												</button>
 												<!-- <button id="CustomerInfoButton"
 													class="btn bg-navy pull-right shadowBox"
@@ -604,7 +617,7 @@ hr {
 					<div class="modal-content">
 						<div class="modal-header">
 			                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			                  <span aria-hidden="true">×</span></button>
+			                  <span aria-hidden="true">ï¿½</span></button>
 			                <h4 class="modal-title">Customer Information</h4><small style="color: red;">No Record Found. Please Enter New Customer Info.</small>
 			            </div>
 			            <form ng-submit="submitCustomerInfo()">
@@ -634,11 +647,24 @@ hr {
 					<div class="modal-content">
 						<div class="modal-header">
 			                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			                  <span aria-hidden="true">×</span></button>
+			                  <span aria-hidden="true">&times;</span></button>
 			                <h4 class="modal-title">Enter the Item Price</h4>
 			            </div>
-						<!-- <form ng-submit="submitOpenItem()"> -->
 							<div class="modal-body">
+								<div class="row">
+								<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px; margin-bottom: 15px; margin-left: 15px; margin-right: 15px;">
+								<label>Category</label>
+								<hr style="border: none; height: 2px; color: black; background-color: black;">
+								<div class="row">
+									<div ng-repeat="category in categories.data" style="display: inline-block; margin-left: 15px; margin-right: 5px; margin-top: 10px;">
+										<label><center>
+										  <input type="radio" name="openCategoryItemName" value={{category.name}} checked>
+										  <img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="margin: auto; width: 100px; height: 100px; border-radius: 5px; display: flex;" class="shadowBox">
+										  {{category.name}}</center>
+										</label>
+									</div>
+								</div>
+								</div></div>
 								<div
 									style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
 									<div
@@ -745,7 +771,7 @@ hr {
 												<div class="row" style="padding-right: 15px;">
 													<div class="col-xs-3 col-sm-3"
 														style="padding: 0px; padding-bottom: 5px;">
-														<button value="confirmButton" class="calculatoraction btn-primary" style="background: #1F8CE8; color: white;"
+														<button value="confirmButton" class="calculatoraction" style="background: #1F8CE8; color: white;"
 															ng-click="submitOpenItem()">
 															<i class="fa fa-check-square" aria-hidden="true"></i>
 														</button>
@@ -756,11 +782,6 @@ hr {
 									</div>
 								</div>
 							</div>
-						<!-- <div class="modal-footer">
-			                <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
-			                <button type="submit" class="btn btn-primary">Save changes</button>
-		              	</div> -->
-						<!-- </form> -->
 					</div>
 				</div>
 			</div>

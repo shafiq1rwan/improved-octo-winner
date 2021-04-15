@@ -5,6 +5,7 @@
 		$scope.tableNo = $routeParams.tableNo;
 		$scope.roomStatus = $routeParams.roomStatus;
 		$scope.customer = {};
+		$scope.categories = {};
 
 		$scope.checkDetail = {};
 		
@@ -29,6 +30,7 @@
 			$http.get("${pageContext.request.contextPath}/rc/configuration/session_checking")
 			.then(function(response) {
 				if (response.data.responseCode == "00") {
+					$scope.getCategories();
 					
 					var jsonData2ndDisplay = JSON.stringify({
 						"deviceType" : 1,
@@ -1385,25 +1387,57 @@
 		}
 
 		$scope.submitOpenItem = function() {
-			var jsonData = JSON.stringify({
-				"productNameOpenItem" : "",
-				"totalAmountOpenItem" : document.getElementById('tenderAmount3').innerHTML,
-				"deviceType" : 1,
-				"orderType" : $scope.orderType,
-				"checkNo" : $scope.checkNo,
-		  });
-		  
-		  $http.post("${pageContext.request.contextPath}/rc/check/saveOrderOpenItem", jsonData)
+
+			console.log($("input[name='openCategoryItemName']:checked").val());
+			
+			if(document.getElementById('tenderAmount3').innerHTML != '0.00'){
+				var jsonData = JSON.stringify({
+					"productNameOpenItem" : $("input[name='openCategoryItemName']:checked").val(),
+					"totalAmountOpenItem" : document.getElementById('tenderAmount3').innerHTML,
+					"deviceType" : 1,
+					"orderType" : $scope.orderType,
+					"checkNo" : $scope.checkNo,
+			  });
+			  
+			  $http.post("${pageContext.request.contextPath}/rc/check/saveOrderOpenItem", jsonData)
+				.then(function(response) {
+					if(response.data.response_code == '00'){
+						$('#OpenItemModal').modal('hide');
+						Swal.fire('Success',response.data.response_message,'success');
+						$scope.getCheckDetails();
+						allGrandParentItemCheckbox.checked = false;
+					}else{
+						$('#OpenItemModal').modal('hide');
+						Swal.fire('Error',response.data.response_message,'error');
+					}
+				});
+			}else{
+				Swal.fire('Warning','Tender Amount should not be less than 0.00','warning');
+			}
+			
+		}
+
+		$scope.getCategories = function() {	
+			$http.get("${pageContext.request.contextPath}/rc/menu/get_categories/")
 			.then(function(response) {
-				if(response.data.response_code == '00'){
-					$('#OpenItemModal').modal('hide');
-					Swal.fire('Success',response.data.response_message,'success');
-					$scope.getCheckDetails();
-					allGrandParentItemCheckbox.checked = false;
-				}else{
-					$('#OpenItemModal').modal('hide');
-					Swal.fire('Error',response.data.response_message,'error');
-				}
+				$scope.categories = response.data;
+			},
+			function(response) {
+				/* alert("Session TIME OUT"); */
+				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
 			});
 		}
 	});
