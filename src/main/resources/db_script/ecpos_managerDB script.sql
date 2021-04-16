@@ -570,6 +570,21 @@ CREATE TABLE `ecpos_manager`.`staff_workinghour` (
   `updated_by` VARCHAR(100),
   `updated_date` VARCHAR(100),
   PRIMARY KEY (`id`));
+  
+  CREATE TABLE `ecpos_manager`.`menu_item_stock_update` (
+  `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `new_value` INT NOT NULL,
+  `menu_item_id` BIGINT,
+  `created_date` DATETIME NOT NULL
+);
+
+  CREATE TABLE `ecpos_manager`.`menu_item_update_log` (
+  `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `event` NVARCHAR(250) NOT NULL,
+  `staff_id` BIGINT,
+  `event_date` DATETIME NOT NULL,
+  `created_date` DATETIME NOT NULL
+);
 
 
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
@@ -585,6 +600,7 @@ INSERT INTO general_configuration (description, parameter, value) VALUES ('Devic
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'IS EXTERNAL IP REQUIERED', '0');
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Option to Use External Ip BYOD', 'BYOD PUBLIC URL', 'localhost:8080/byod/');
 INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Void Password', 'VOID_PASSWORD', 'q1w2e3r4');
+INSERT INTO general_configuration (`description`, `parameter`, `value`) VALUES ('Stock Password', 'STOCK_PASSWORD', 'q1w2e3r4');
 
 insert into `master` values
 ('check', 0, now());

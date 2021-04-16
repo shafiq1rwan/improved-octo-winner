@@ -109,7 +109,14 @@
 						<span>Employee Performance</span> 
 						<span class="pull-right-container"> </span>
 					</a>
-				</li>	
+				</li>
+				<li>
+					<a href="${pageContext.request.contextPath}/#!stock"> 
+						<i class="fa fa-fax"></i> 
+						<span>e-Commerce Sales</span> 
+						<span class="pull-right-container"> </span>
+					</a>
+				</li>
 				<li>
 					<a href="${pageContext.request.contextPath}/#!settings"> 
 						<i class="fa fa-cog"></i>

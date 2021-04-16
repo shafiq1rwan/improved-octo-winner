@@ -412,4 +412,11 @@ public class EcposManagerController {
 
 		return result;
 	}
+	
+	@RequestMapping(value = {"/views/stock"}, method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView ecpos_stock() {
+		ModelAndView model = new ModelAndView();
+		model.setViewName("ecpos/views/stock");
+		return model;
+	}
 }

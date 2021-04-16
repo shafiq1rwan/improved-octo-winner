@@ -3004,6 +3004,56 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/checkStockPassword" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String checkStockPassword(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) { 
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		String password = "";
+		
+		try {
+			JSONObject jsonObj = new JSONObject(data);
+			
+			if (user != null) {
+				connection = dataSource.getConnection();
+				String queryPaymentMethod = "select value from general_configuration where parameter = 'STOCK_PASSWORD'";
+				stmt = connection.prepareStatement(queryPaymentMethod);
+				rs = stmt.executeQuery();
+				
+				while(rs.next()) {
+					password = rs.getString("value");
+				}
+				
+				if(jsonObj.getString("data").equalsIgnoreCase(password)) {
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Password Match");
+				}else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Password Not Match");
+				}
+
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
 	//VernPOS Hotel part
 	@RequestMapping(value = { "/get_roomtype_list" }, method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = "application/json")
