@@ -50,7 +50,7 @@
 					</a>
 				</li>
 				<%} %>
-				<%if (user.getRoleType() == 1 || user.getRoleType() == 3) {%>
+				<%if (user.getRoleType() == 1 || user.getRoleType() == 3 || user.getRoleType() == 4) {%>
 				<li class="header" style="font-size: 1em; background-color: #008B8B; color: white; /* font-weight: bold; */">Record Management</li>
 				<%if (user.getStoreType() != 3) {%>
 				<li>

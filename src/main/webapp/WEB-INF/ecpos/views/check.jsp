@@ -52,13 +52,11 @@ hr {
 /* IMAGE STYLES */
 [type=radio] + img {
   cursor: pointer;
-  border: gray;
 }
 
 /* CHECKED STYLES */
 [type=radio]:checked + img {
-  outline: 2px solid #1F8CE8;
-  border-radius: 5px;
+  box-shadow: 0 0 3pt 2pt #1f8ce8;
 }
 </style>
 </head>
@@ -516,7 +514,7 @@ hr {
 
 										<div class="col-lg-3 col-md-3 col-sm-3 col-xs-4">
 											<%
-												if (user.getRoleType() == 1 || user.getRoleType() == 3) {
+												if (user.getRoleType() == 1 || user.getRoleType() == 3 || user.getRoleType() == 4) {
 											%>
 											<button id="paymentButton"
 												class="btn btn-block btn-success shadowBox"

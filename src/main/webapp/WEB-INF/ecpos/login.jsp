@@ -183,11 +183,16 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:f
 			</div>
 		</div>
 	</div>
-	
-	<button title="Shutdown" id="shutdownBtn" type="button" style="display: inline-block; border-radius: 50px; box-shadow: 0px 0px 2px #888;
-  	padding: 0.5em 0.6em;position: absolute; bottom: 10%; left: 10%; margin-left: -50px;">
-		<i class="fa fa-power-off" style="font-size:18px"></i>
-	</button>
+	<div class="row" style="display: inline-block;">
+		<button title="Shutdown" id="shutdownBtn" type="button" style="display: inline-block; border-radius: 50px; box-shadow: 0px 0px 2px #888;
+	  	padding: 0.5em 0.6em;position: absolute; bottom: 10%; left: 10%; margin-left: -50px;">
+			<i class="fa fa-power-off" style="font-size:18px"></i>
+		</button><br/>
+		<button title="Refresh" id="refreshBtn" type="button" style="display: inline-block; border-radius: 50px; box-shadow: 0px 0px 2px #888;
+	  	padding: 0.5em 0.6em;position: absolute; bottom: 10%; left: 14%; margin-left: -50px;" onClick="window.location.reload();">
+			<i class="fa fa-refresh" style="font-size:18px"></i>
+		</button>
+	</div>
 	
 	<!-- Loading Modal [END] -->
 	<script type="text/javascript" src="${pageContext.request.contextPath}/jqKeyboard/jqbtk.js"></script>
