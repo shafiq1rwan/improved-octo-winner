@@ -641,35 +641,36 @@ hr {
 			
 			<div class="modal fade" data-backdrop="static" id="OpenItemModal"
 				role="dialog">
-				<div class="modal-dialog">
+				<div class="modal-dialog modal-lg">
 					<div class="modal-content">
-						<div class="modal-header">
-			                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			                  <span aria-hidden="true">&times;</span></button>
-			                <h4 class="modal-title">Enter the Item Price</h4>
+						<div class="modal-header" style="padding-top: 5px; padding-bottom: 5px;">
+			                <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			                  <span aria-hidden="true">&times;</span></button> -->
+			                  <button type="button" class="btn btn-danger pull-right" data-dismiss="modal">&times;</button> 
+			                <h4 class="modal-title" style="padding-top: 5px;">Enter the Item Price</h4>
 			            </div>
-							<div class="modal-body">
-								<div class="row">
-								<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px; margin-bottom: 15px; margin-left: 15px; margin-right: 15px;">
-								<label>Category</label>
+							<div class="modal-body" style="display: inline-flex;">
+								<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px; width: 60%">
+								<label>Choose Category</label>
 								<hr style="border: none; height: 2px; color: black; background-color: black;">
 								<div class="row">
-									<div ng-repeat="category in categories.data" style="display: inline-block; margin-left: 15px; margin-right: 5px; margin-top: 10px;">
-										<label><center>
+									<div ng-repeat="category in categories.data" style="display: inline-block; margin-left: 20px; margin-top: 10px;">
+										<center><label>
 										  <input type="radio" name="openCategoryItemName" value={{category.name}} checked>
-										  <img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="margin: auto; width: 100px; height: 100px; border-radius: 5px; display: flex;" class="shadowBox">
-										  {{category.name}}</center>
-										</label>
+										  <img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="margin: auto; width: 100px; height: 100px; border-radius: 5px; display: flex; margin-bottom: 5px;" class="shadowBox">
+										  {{category.name}}
+										</label></center>
 									</div>
 								</div>
-								</div></div>
+								</div>&nbsp;&nbsp;
 								<div
-									style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;">
-									<div
-										style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
+									style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;width: 40%">
+									<div>
+										<label>Price</label>
 										<hr
 											style="border: none; height: 2px; color: black; background-color: black;">
 										<div class="row">
+										<label></label>
 											<div class="col-xs-3 col-sm-3"
 												style="text-align: center; font-size: 25px; color: black;">
 												<label>RM</label>
