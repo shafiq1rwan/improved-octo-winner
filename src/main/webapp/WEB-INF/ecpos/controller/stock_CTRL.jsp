@@ -372,6 +372,7 @@
 						cancelButtonColor: '#d33',
 						confirmButtonText: 'OK'
 					}).then((result) => {
+						$(".modal-backdrop.in").hide();
 						window.location.href = "${pageContext.request.contextPath}/#!take_away_order";
 					})
 				}
