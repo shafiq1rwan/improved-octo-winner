@@ -35,6 +35,7 @@ CREATE TABLE menu_item (
 	menu_quantity_stock INT DEFAULT 0,
 	is_taxable BIT DEFAULT 0,
 	is_discountable BIT DEFAULT 0,
+    is_weighable BIT DEFAULT 0,
 	is_active BIT DEFAULT 1,
 	created_date DATETIME NOT NULL
 );
