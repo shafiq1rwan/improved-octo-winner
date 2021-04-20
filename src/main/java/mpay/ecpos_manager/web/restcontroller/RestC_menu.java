@@ -719,7 +719,7 @@ public class RestC_menu {
 				if(stmt != null) {stmt.close();}
 				stmt= connection.prepareStatement("select b.id,b.menu_item_name,a.new_value,a.id as sale_id "
 						+ "from menu_item_stock_update a left join menu_item b on a.menu_item_id = b.id "
-						+ "where a.created_date > ? and a.created_date < DATE_ADD(?, INTERVAL 1 DAY);");
+						+ "where a.created_date > ? and a.created_date < DATE_ADD(?, INTERVAL 1 DAY) order by b.id;");
 				stmt.setString(1, jsonObj.get("startDate").toString().substring(0, 10));
 				stmt.setString(2, jsonObj.get("startDate").toString().substring(0, 10));
 				rs = stmt.executeQuery();

@@ -39,19 +39,17 @@ hr {
     	$('#keyboard').show();
     }, 100);
     
-    /*var dtToday = new Date();
-
-    var month = dtToday.getMonth() + 1;
-    var day = dtToday.getDate();
-    var year = dtToday.getFullYear();
-
-    if(month < 10)
-        month = '0' + month.toString();
-    if(day < 10)
-        day = '0' + day.toString();
-
-    var maxDate = year + '-' + month + '-' + day;  
-    $('#showDate').attr('max', maxDate);*/
+    $('#keyboard_1').hide();
+	
+    $('#keyboard_1').jkeyboard({
+        layout: "numeric_2",
+        input: $('#newValue')
+    });
+    
+    setTimeout(function() { 
+    	$('#keyboard_1').show();
+    }, 100);
+    
 </script>
 </head>
 
@@ -100,56 +98,46 @@ hr {
 			</div>
 			
 			<div class="modal fade" data-backdrop="static" id="itemStockModal" role="dialog">
-				<div class="modal-dialog modal-sm">
+				<div class="modal-dialog">
 					<div class="modal-content">
-						<div class="modal-header text-center">
-							<button type="button" class="close" data-dismiss="modal"
-								ng-click="resetItemStockModal()" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-							<h4 class="modal-title">Update Sales</h4>
-						</div>
-						<div class="modal-body" style="padding: 30px;">
-							<form id="updateStock" ng-submit="updateItemStock(newValue)">
-								<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
-									<div class="row">
-										<div class="col-sm-12">
-											<font><b>Date : </b><span ng-bind="dateStart | date:'dd/MM/yyyy'"></span></font>
-											
+						<form id="updateStock" ng-submit="updateItemStock(newValue)">
+							<div class="modal-header text-center">
+								<button type="button" class="close" data-dismiss="modal"
+									ng-click="resetItemStockModal()" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+								<h4 class="modal-title">Update Sales</h4>
+							</div>
+							<div class="modal-body" style="padding: 30px;">
+								
+									<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
+										<div class="col-sm-6">
+											<p><font><b>Date : </b><span ng-bind="dateStart | date:'dd/MM/yyyy'"></span></font></p>
+											<p><font><b>Name : </b>{{itemsDetail.name}}</font></p>
+											<p><font><b>Current Stock : </b>{{itemsDetail.new_value}}</font></p>
+											<p><label>New Value : </label>
+												<input type="text" class="form-control" id="newValue" required></p>
+										</div>
+										<div class="col-sm-6" id="keyboard_1">
 										</div>
 									</div>
-									<div class="row">
-										<div class="col-sm-12">
-											<font><b>Name : </b>{{itemsDetail.name}}</font>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-sm-12">
-											<font><b>Current Stock : </b>{{itemsDetail.new_value}}</font>
-										</div>
-									</div>
-									<div class="row" style="padding-top: 20px;">
-										<div class="col-sm-12">
-											<label>New Value : </label>
-											<input type="text" class="form-control" ng-model="newValue" id="newValue" required>
-										</div>
-									</div>
-									<div class="row" style="padding-top: 20px;">
-										<div class="col-sm-12 text-right">
-											<button class="btn btn-primary" type="submit" style="background-color: #1F8CE8; color: white;">UPDATE</button>
-											<button class="btn btn-danger" data-dismiss="modal" ng-click="resetItemStockModal()" aria-label="Cancel">Cancel</button>
-										</div>
+								
+							</div>
+							<div class="modal-footer">
+								<div class="row" style="padding-top: 20px;">
+									<div class="col-sm-12 text-center">
+										<button class="btn btn-primary" type="submit" style="background-color: #1F8CE8; color: white;">UPDATE</button>
+										<button class="btn btn-danger" data-dismiss="modal" ng-click="resetItemStockModal()" aria-label="Cancel">Cancel</button>
 									</div>
 								</div>
-							</form>
-						</div>
-						<!-- <div class="modal-footer"></div> -->
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
 			
-			<div class="modal fade" data-backdrop="static" id="updateLogModal" role="dialog">
-				<div class="modal-dialog">
+			<div class="modal fade" id="updateLogModal" role="dialog">
+				<div class="modal-dialog modal-lg" style="overflow-y: initial;">
 					<div class="modal-content">
 						<div class="modal-header text-center">
 							<button type="button" class="close" data-dismiss="modal"
@@ -158,7 +146,7 @@ hr {
 							</button>
 							<h4 class="modal-title">Sales Update Log</h4>
 						</div>
-						<div class="modal-body" style="padding: 30px;">
+						<div class="modal-body" style="padding: 30px; height: 400px; overflow-y: auto;">
 							<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
 								<div class="row" ng-repeat="log in logList">
 									<div class="col-sm-12">
@@ -166,15 +154,16 @@ hr {
 									</div>
 								</div>
 								<div ng-show="!logList.length">There is no log to be found</div>
-								<div class="row" style="padding-top: 20px;">
-									<div class="col-sm-12 text-right">
-										<button class="btn btn-danger" data-dismiss="modal" ng-click="resetUpdateLogModal()" aria-label="Cancel">Close</button>
-									</div>
-								</div>
 							</div>
 							
 						</div>
-						<!-- <div class="modal-footer"></div> -->
+						<div class="modal-footer">
+							<div class="row" style="padding-top: 20px;">
+								<div class="col-sm-12 text-center">
+									<button class="btn btn-danger" data-dismiss="modal" ng-click="resetUpdateLogModal()" aria-label="Cancel">Close</button>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -209,8 +198,12 @@ hr {
 						</div>
 	
 						<div class="modal-footer">
-							<button class="btn btn-primary" type="submit" ng-click="addNewMenuItem()">Add Item</button>
-							<button class="btn btn-danger" data-dismiss="modal" ng-click="resetAddMenuItemModal()" aria-label="Cancel">Cancel</button>
+							<div class="row" style="padding-top: 20px;">
+								<div class="col-sm-12 text-center">
+									<button class="btn btn-primary" type="submit" ng-click="addNewMenuItem()">Add Item</button>
+									<button class="btn btn-danger" data-dismiss="modal" ng-click="resetAddMenuItemModal()" aria-label="Cancel">Cancel</button>
+								</div>
+							</div>
 						</div>
 	
 					</div>

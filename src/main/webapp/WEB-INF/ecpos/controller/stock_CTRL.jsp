@@ -267,7 +267,7 @@
 			}
 		}
 		
-		$scope.updateItemStock = function(newValue) {
+		$scope.updateItemStock = function() {
 			Swal.fire({
 				title: 'Are you sure?',
 				text: "You can change this information again.",
@@ -280,7 +280,7 @@
 				if (result.value) {
 					var jsonData = JSON.stringify({
 						"saleItem_id" : $scope.saleItemId,
-						"newValue" : newValue,
+						"newValue" : $('#newValue').val(),
 						"startDate" : $scope.dateStart
 					});
 				
