@@ -13,6 +13,9 @@
 			.then(function(response) {
 				if (response.data.responseCode == "00") {
 					$('#customerName').focus();
+					// To let user do transaction continuosly without clicking button
+					// - Shafiq (20/04/2021)
+					$scope.create_new_check();
 				} else {
 					// alert("Session TIME OUT");
 					// window.location.href = "${pageContext.request.contextPath}/signout";

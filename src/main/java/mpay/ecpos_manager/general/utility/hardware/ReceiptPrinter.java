@@ -172,6 +172,8 @@ public class ReceiptPrinter {
 							templateName = "ReceiptStyleTemplate_Posiflex";
 						else if(printerResult.getString("receipt_printer").equals("IBM"))
 							templateName = "ReceiptStyleTemplate_EPSON";
+						else if (printerResult.getString("receipt_printer").equals("POS80"))
+							templateName = "ReceiptStyleTemplate_EPSON";
 						else {
 							templateName = "ReceiptStyleTemplate_EPSON";
 						}
@@ -777,6 +779,8 @@ public class ReceiptPrinter {
 								templateName = "ReceiptStyleTemplate_EPSON";
 							else if(printerResult.getString("receipt_printer").equals("TP8"))
 								templateName = "ReceiptStyleTemplate_Posiflex";
+							else if (printerResult.getString("receipt_printer").equals("POS80"))
+								templateName = "ReceiptStyleTemplate_EPSON";
 							else {
 								templateName = "ReceiptStyleTemplate_Posiflex";
 							}
@@ -882,7 +886,7 @@ public class ReceiptPrinter {
 							}
 							
 							if(storeType == 1) {
-								receiptInfoLabels.remove(2); //remove table number if it is retail business
+								receiptInfoLabels.remove(1); //remove table number if it is retail business
 							}
 								
 							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
@@ -897,11 +901,11 @@ public class ReceiptPrinter {
 							if(storeType == 1) { //if it is retail
 								//only deposit and sales appereaed in reatail
 								if(!receiptContentJson.getString("orderType").equals("deposit")) {
-									receiptInfoContents.add(1,"Purchase");
+									receiptInfoContents.add(2,"Purchase");
 								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
-									receiptInfoContents.add(1,"Deposit");
+									receiptInfoContents.add(2,"Deposit");
 								}
-								receiptInfoContents.remove(2); //remove table since it is retail
+								receiptInfoContents.remove(1); //remove table since it is retail
 							} else if(storeType == 2) { //if it is f&b
 								String orderTypeName = null; 
 								
@@ -1438,7 +1442,12 @@ public class ReceiptPrinter {
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
 							emptyParagraph.setSpacingAfter(0);
-							emptyParagraph.createRun().setText("Please Come Again");
+							emptyParagraph.createRun().setText("Please Come Again. Thank You");
+							
+							emptyParagraph = doc.createParagraph();
+							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.createRun().addBreak();
+							emptyParagraph.removeRun(0);
 
 							// output the result as doc file
 							try (FileOutputStream out = new FileOutputStream(
@@ -1655,6 +1664,8 @@ public class ReceiptPrinter {
 							templateName = "ReceiptStyleTemplate_EPSON";
 						else if (printerResult.getString("receipt_printer").equals("TP8"))
 							templateName = "ReceiptStyleTemplate_Posiflex";
+						else if (printerResult.getString("receipt_printer").equals("POS80"))
+							templateName = "ReceiptStyleTemplate_EPSON";
 						else {
 							templateName = "ReceiptStyleTemplate_Posiflex";
 						}
@@ -2416,6 +2427,8 @@ public class ReceiptPrinter {
 							templateName = "ReceiptStyleTemplate_EPSON";
 						else if (printerResult.getString("receipt_printer").equals("TP8"))
 							templateName = "ReceiptStyleTemplate_Posiflex";
+						else if (printerResult.getString("receipt_printer").equals("POS80"))
+							templateName = "ReceiptStyleTemplate_EPSON";
 						else {
 							templateName = "ReceiptStyleTemplate_Posiflex";
 						}
@@ -2455,7 +2468,7 @@ public class ReceiptPrinter {
 						headerStoreAddressParagraph.setSpacingAfter(0);
 
 						XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
-						runHeaderStoreAddressParagraph.setFontSize(9);
+						runHeaderStoreAddressParagraph.setFontSize(8);
 						runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
 						runHeaderStoreAddressParagraph.addBreak();
 						runHeaderStoreAddressParagraph

@@ -6,6 +6,7 @@
 		$scope.roomStatus = $routeParams.roomStatus;
 		$scope.customer = {};
 		$scope.categories = {};
+		$scope.menuItems = {};
 
 		$scope.checkDetail = {};
 		
@@ -1383,6 +1384,8 @@
 		
 		$scope.openItem = function() {
 			$('#OpenItemModal').modal('show');
+			document.getElementById("mainItem").style.display = "none";
+			document.getElementById("mainCategory").style.display = "block";
 			document.getElementById('tenderAmount3').innerHTML = '0.00';
 		}
 
@@ -1418,13 +1421,11 @@
 		}
 
 		$scope.getCategories = function() {	
-			$http.get("${pageContext.request.contextPath}/rc/menu/get_categories/")
+			$http.get("${pageContext.request.contextPath}/rc/menu/get_opencategories/")
 			.then(function(response) {
 				$scope.categories = response.data;
 			},
 			function(response) {
-				/* alert("Session TIME OUT"); */
-				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
 				Swal.fire({
 					  title: 'Oops...',
 					  text: "Session Timeout",
@@ -1440,5 +1441,38 @@
 					});
 			});
 		}
+
+		$scope.getMenuItems2 = function(category) {
+			$scope.category = category;
+			
+			$http.get("${pageContext.request.contextPath}/rc/menu/get_menu_openitems/"+$scope.category.id)
+			.then(function(response) {
+				$scope.menuItems = response.data;
+				document.getElementById("mainItem").style.display = "block";
+				document.getElementById("mainCategory").style.display = "none";
+			},
+			function(response) {
+				Swal.fire({
+					  title: 'Oops...',
+					  text: "Session Timeout",
+					  icon: 'error',
+					  showCancelButton: false,
+					  confirmButtonColor: '#3085d6',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: 'OK'
+					},function(isConfirm){
+					    if (isConfirm) {
+						  window.location.href = "${pageContext.request.contextPath}/signout";
+					  }
+					});
+			});
+		}
+
+		$scope.backToMainMenu = function() {
+			document.getElementById("mainItem").style.display = "none";
+			document.getElementById("mainCategory").style.display = "block";
+			document.getElementById("openCategoryList").style.boxShadow = "1px 1px 4px grey";
+		}
+		
 	});
 </script>

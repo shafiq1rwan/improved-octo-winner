@@ -47,11 +47,13 @@ hr {
   opacity: 0;
   width: 0;
   height: 0;
+  box-shadow: 1px 1px 4px grey;
 }
 
 /* IMAGE STYLES */
 [type=radio] + img {
   cursor: pointer;
+  box-shadow: 1px 1px 4px grey;
 }
 
 /* CHECKED STYLES */
@@ -166,8 +168,8 @@ hr {
 												<button id="openItemButton"
 													class="btn bg-navy pull-right shadowBox"
 													style="width: 150px; margin-bottom: 10px"
-													ng-click="openItem()">
-													Open SKU
+													ng-click="openItem()"><i class="fa fa-shopping-basket" aria-hidden="true"></i>&nbsp;
+													Weighable Item
 												</button>
 												<!-- <button id="CustomerInfoButton"
 													class="btn bg-navy pull-right shadowBox"
@@ -644,27 +646,36 @@ hr {
 				<div class="modal-dialog modal-lg">
 					<div class="modal-content">
 						<div class="modal-header" style="padding-top: 5px; padding-bottom: 5px;">
-			                <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			                  <span aria-hidden="true">&times;</span></button> -->
 			                  <button type="button" class="btn btn-danger pull-right" data-dismiss="modal">&times;</button> 
 			                <h4 class="modal-title" style="padding-top: 5px;">Enter the Item Price</h4>
 			            </div>
 							<div class="modal-body" style="display: inline-flex;">
-								<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px; width: 60%">
-								<label>Choose Category</label>
+								<div style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px; width: 55vw;">
+								<label>
+								<a data-target="#menuBack" ng-click="backToMainMenu()"><i class="fa fa-arrow-left" style="color: black;"></i></a>&nbsp;
+								Choose Item</label>
 								<hr style="border: none; height: 2px; color: black; background-color: black;">
-								<div class="row">
-									<div ng-repeat="category in categories.data" style="display: inline-block; margin-left: 20px; margin-top: 10px;">
-										<center><label>
-										  <input type="radio" name="openCategoryItemName" value={{category.name}} checked>
-										  <img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="margin: auto; width: 100px; height: 100px; border-radius: 5px; display: flex; margin-bottom: 5px;" class="shadowBox">
-										  {{category.name}}
+								<div class="row" id="mainCategory">
+									<div ng-repeat="category in categories.data" style="display: inline-block; margin-left: 20px; margin-top: 10px; float: left;">
+										<center><label ng-click="getMenuItems2(category)" style="width: min-content;">
+										  <input type="radio" id="openCategoryList" name="openCategoryList" value={{category.name}}>
+										  <img ng-src="${pageContext.request.contextPath}/{{category.imagePath}}" alt={{category.name}} style="width: 110px; height: 110px; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
+										  <b>{{category.name}}</b>
+										</label></center> 
+									</div>
+								</div>
+								<div class="row" id="mainItem" style="display: none;">
+									<div ng-repeat="item in menuItems.data" style="display: inline-block; margin-left: 20px; margin-top: 10px; float: left;">
+										<center><label style="width: min-content;">
+										  <input type="radio" name="openCategoryItemName" value={{item.name}} checked>
+										  <img ng-src="${pageContext.request.contextPath}/{{item.imagePath}}" alt={{item.name}} style="width: 110px; height: 110px; border-radius: 5px; align-items: center; display: flex;" class="shadowBox">
+										  <b style="text-align: center; font-weight: 700">{{item.name}}</b>
 										</label></center>
 									</div>
 								</div>
 								</div>&nbsp;&nbsp;
 								<div
-									style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px;width: 40%">
+									style="border: 1px solid #d2d6de; padding: 10px; border-radius: 5px; width: 45%">
 									<div>
 										<label>Price</label>
 										<hr

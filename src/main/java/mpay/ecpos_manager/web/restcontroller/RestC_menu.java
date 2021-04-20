@@ -1083,4 +1083,144 @@ public class RestC_menu {
 		}
 		return jsonResult.toString();
 	}
+	
+
+	@RequestMapping(value = { "/get_menu_openitems/{categoryId}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getMenuOpenItems(@PathVariable("categoryId") long categoryId, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+				
+				stmt = connection.prepareStatement("select cmi.category_menu_item_sequence, mi.* from category c " + 
+						"inner join category_menu_item cmi on cmi.category_id = c.id " + 
+						"inner join menu_item mi on mi.id = cmi.menu_item_id " + 
+						"where c.id = ? and c.is_active = 1 and mi.menu_item_type in (0, 1) and mi.is_active = 1 " + 
+						"and mi.is_weighable = 1 " +
+						"order by cmi.category_menu_item_sequence asc;");
+				stmt.setLong(1, categoryId);
+				rs = stmt.executeQuery();
+	
+				while (rs.next()) {
+					JSONObject menuItems = new JSONObject();
+					menuItems.put("id", rs.getString("id"));
+					menuItems.put("backendId", rs.getString("backend_id"));
+					menuItems.put("name", rs.getString("menu_item_name"));
+					menuItems.put("alternativeName", rs.getString("menu_item_alt_name"));
+					menuItems.put("barcode", rs.getString("menu_item_barcode"));
+					menuItems.put("type", rs.getString("menu_item_type"));
+					menuItems.put("description", rs.getString("menu_item_description"));
+					menuItems.put("price", String.format("%.2f", rs.getBigDecimal("menu_item_base_price")));
+					menuItems.put("taxable", rs.getBoolean("is_taxable"));
+					menuItems.put("discountable", rs.getBoolean("is_discountable"));
+//					menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					if(menuImagePath.length() == 12) {
+						menuItems.put("imagePath", menuImagePath + rs.getString("menu_item_image_path"));
+					}else {
+						menuItems.put("imagePath", menuImagePath.substring(55) + rs.getString("menu_item_image_path"));
+					}
+					
+					if (menuItems.getString("type").equals("0")) {
+						stmt = connection.prepareStatement("select count(mg.id) as count from menu_item mi " + 
+								"inner join menu_item_modifier_group mimg on mimg.menu_item_id = mi.id " + 
+								"inner join modifier_group mg on mg.id = mimg.modifier_group_id " + 
+								"where mi.id = ? and mi.backend_id = ? and mg.is_active = 1;");
+						stmt.setString(1, menuItems.getString("id"));
+						stmt.setString(2, menuItems.getString("backendId"));
+						rs2 = stmt.executeQuery();
+						
+						if (rs2.next()) {
+							if (rs2.getInt("count") > 0) {
+								menuItems.put("hasModifier", true);
+							} else {
+								menuItems.put("hasModifier", false);
+							}
+						}
+					}
+					
+					jary.put(menuItems);
+				}
+				jsonResult.put("data", jary);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	@RequestMapping(value = { "/get_opencategories" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getOpenCategories(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("select c.* from category c "
+						+ "inner join category_menu_item cmi on cmi.category_id = c.id "
+						+ "inner join menu_item mi on mi.id = cmi.menu_item_id "
+						+ "where c.is_active = 1 and mi.menu_item_type in (0, 1) and mi.is_active = 1 and mi.is_weighable = 1 "
+						+ "group by c.id order by cmi.category_menu_item_sequence asc");
+				rs = stmt.executeQuery();
+				
+				while (rs.next()) {
+					JSONObject category = new JSONObject();
+					category.put("id", rs.getString("id"));
+					category.put("name", rs.getString("category_name"));
+					if(menuImagePath.length() == 12) {
+						category.put("imagePath", menuImagePath + rs.getString("category_image_path"));
+					}else {
+						category.put("imagePath", menuImagePath.substring(55) + rs.getString("category_image_path"));
+					}
+					
+					jary.put(category);
+				}
+				jsonResult.put("data", jary);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
 }
