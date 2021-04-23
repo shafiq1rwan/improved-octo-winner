@@ -2108,9 +2108,12 @@ public class RestC_configuration {
 								//for cash drawer connected to HRPT Printer 
 								stmt4 = connection.prepareStatement("select rp.receipt_printer_manufacturer from receipt_printer rp\r\n" + 
 										"inner join receipt_printer_manufacturer_lookup rpl on rpl.id = rp.receipt_printer_manufacturer\r\n" + 
-										"where rpl.name like '%POS%'");
+										"where rpl.name like '%POS%'"); // Change the printer to POS80
 								rs4 = stmt4	.executeQuery();
 								if (rs4.next()) {
+									// For model MK410 - 23/04/2021
+									// Set to any model in the setting
+									// Cash drawer cable must be connected to Thermal Printer
 									cashDrawerMK410();
 //									jsonResult = cashdrawerOpen();
 								}
