@@ -2108,10 +2108,11 @@ public class RestC_configuration {
 								//for cash drawer connected to HRPT Printer 
 								stmt4 = connection.prepareStatement("select rp.receipt_printer_manufacturer from receipt_printer rp\r\n" + 
 										"inner join receipt_printer_manufacturer_lookup rpl on rpl.id = rp.receipt_printer_manufacturer\r\n" + 
-										"where rpl.name like '%TP%'");
+										"where rpl.name like '%POS%'");
 								rs4 = stmt4	.executeQuery();
 								if (rs4.next()) {
-									jsonResult = cashdrawerOpen();
+									cashDrawerMK410();
+//									jsonResult = cashdrawerOpen();
 								}
 								else
 									jsonResult = drawer.openDrawer(rs2.getString("name"), rs3.getString("name"));
@@ -2211,7 +2212,7 @@ public class RestC_configuration {
 		JSONObject jsonResult = new JSONObject();
         byte[] open = {27, 112, 48, 55, 121};
 //        byte[] cutter = {29, 86,49};
-        String printer = "TP806L";
+        String printer = "POS80";
         
         PrintServiceAttributeSet printserviceattributeset = new HashPrintServiceAttributeSet();
         printserviceattributeset.add(new PrinterName(printer,null));
@@ -3372,5 +3373,23 @@ public class RestC_configuration {
 			}
 		}
 		return jsonResult.toString();
+	}
+	
+	public void cashDrawerMK410() {
+		System.out.println("Keluar lah wahai MK410!!");
+		byte[] open = {27,112,0,25,(byte) 250};
+//      byte[] cutter = {29, 86,49};
+        PrintService pservice = 
+        PrintServiceLookup.lookupDefaultPrintService(); 
+        DocPrintJob job = pservice.createPrintJob();
+        DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+        Doc doc = new SimpleDoc(open,flavor,null);
+        PrintRequestAttributeSet aset = new 
+        HashPrintRequestAttributeSet();
+        try {
+            job.print(doc, aset);
+        } catch (PrintException ex) {
+            System.out.println(ex.getMessage());
+        }
 	}
 }
