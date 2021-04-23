@@ -53,7 +53,7 @@
         character_switch: {
             text: 'ABC',
             command: function () {
-                this.createKeyboard(layout);
+                this.createKeyboard('english');
                 this.events();
             }
         },
@@ -86,11 +86,11 @@
             ['.', ',', '?', '!', "'", 'backspace'],
             ['numeric_switch', 'space', 'character_switch'],
         ],
-		numeric_2: [
-            ['1', '2', '3'],
-			['4', '5', '6'],
-			['7', '8', '9'],
-			['.', '0', '00']
+		numbers_only: [
+            ['1', '2', '3',],
+            ['4', '5', '6',],
+            ['7', '8', '9',],
+            ['0', '00', 'backspace'],
         ]
     }
 

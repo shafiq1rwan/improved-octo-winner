@@ -42,7 +42,7 @@ hr {
     $('#keyboard_1').hide();
 	
     $('#keyboard_1').jkeyboard({
-        layout: "numeric_2",
+        layout: "numbers_only",
         input: $('#newValue')
     });
     

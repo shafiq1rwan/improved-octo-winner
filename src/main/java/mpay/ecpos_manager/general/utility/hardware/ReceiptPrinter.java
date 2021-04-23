@@ -1127,12 +1127,12 @@ public class ReceiptPrinter {
 							borderBottom3.addNewTop().setVal(STBorder.SINGLE);
 
 							// 121x20, 28x20, 50x20
-							long columnWidths[] = { 560, 2420, 1200 };
+							long columnWidths[] = { 560, 2420, 1000 };
 
 							CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
 							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
 							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2220"));
-							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1200"));
+							cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1000"));
 
 							for (int x = 0; x < table.getNumberOfRows(); x++) {
 								XWPFTableRow row = table.getRow(x);
@@ -1267,11 +1267,11 @@ public class ReceiptPrinter {
 										ParagraphAlignment.RIGHT);
 							}
 							
-							long receiptResultTableWidths[] = { 2980, 1200 };
+							long receiptResultTableWidths[] = { 2980, 1000 };
 
 							CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
 							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2780"));
-							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1200"));
+							cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
 
 							for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
 								XWPFTableRow row = receiptResultTable.getRow(x);
@@ -1338,7 +1338,7 @@ public class ReceiptPrinter {
 
 								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
-								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2280"));
 
 								emptyParagraph = doc.createParagraph();
 								emptyParagraph.setSpacingAfter(0);
@@ -1421,7 +1421,7 @@ public class ReceiptPrinter {
 
 								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
 								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("1500"));
-								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2480"));
+								cttblgridReceiptResult2.addNewGridCol().setW(new BigInteger("2280"));
 
 								emptyParagraph = doc.createParagraph();
 								emptyParagraph.setSpacingAfter(0);
@@ -1441,14 +1441,9 @@ public class ReceiptPrinter {
 
 							emptyParagraph = doc.createParagraph();
 							emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
-							emptyParagraph.setSpacingAfter(0);
+							emptyParagraph.setSpacingAfter(1440);
 							emptyParagraph.createRun().setText("Please Come Again. Thank You");
 							
-							emptyParagraph = doc.createParagraph();
-							emptyParagraph.setSpacingAfter(0);
-							emptyParagraph.createRun().addBreak();
-							emptyParagraph.removeRun(0);
-
 							// output the result as doc file
 							try (FileOutputStream out = new FileOutputStream(
 									Paths.get(receiptPath, "receipt.docx").toString())) {
@@ -2732,12 +2727,12 @@ public class ReceiptPrinter {
 						borderBottom3.addNewTop().setVal(STBorder.SINGLE);
 
 						// 121x20, 28x20, 50x20
-						long columnWidths[] = { 560, 2420, 1200 };
+						long columnWidths[] = { 560, 2420, 1000 };
 
 						CTTblGrid cttblgridReceiptContent = table.getCTTbl().addNewTblGrid();
 						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("560"));
 						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("2220"));
-						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1200"));
+						cttblgridReceiptContent.addNewGridCol().setW(new BigInteger("1000"));
 
 						for (int x = 0; x < table.getNumberOfRows(); x++) {
 							XWPFTableRow row = table.getRow(x);
@@ -2838,11 +2833,11 @@ public class ReceiptPrinter {
 							}
 						}
 
-						long receiptResultTableWidths[] = { 2980, 1200 };
+						long receiptResultTableWidths[] = { 2980, 1000 };
 
 						CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
 						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2780"));
-						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1200"));
+						cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
 
 						for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
 							XWPFTableRow row = receiptResultTable.getRow(x);
