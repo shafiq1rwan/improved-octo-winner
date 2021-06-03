@@ -394,6 +394,7 @@ public class RestC_syncmenu {
 								JSONArray tableSetting = responseData.getJSONArray("tableSetting");
 								JSONArray staffInfo = responseData.getJSONArray("staffInfo");
 								JSONObject ecposSetting = responseData.getJSONObject("ecposSetting");
+								JSONObject hotelDetails = responseData.getJSONObject("ecposHotelDetails");
 								
 								if(staffRole.length()!=0) {
 									// insert staff role
@@ -408,6 +409,11 @@ public class RestC_syncmenu {
 								if(staffInfo.length()!=0) {
 									// insert staff info
 									DataSync.insertStaffInfo(connection, staffInfo);
+								}
+								
+								if(hotelDetails.length()!=0) {
+									// insert staff info
+									DataSync.insertHotelDetails(connection, hotelDetails);
 								}
 								
 								webComponent.updateGeneralConfig(connection, "DEVICE_NAME", ecposSetting.getString("deviceName"));

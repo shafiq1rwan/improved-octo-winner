@@ -59,6 +59,7 @@ public class WebComponents {
 					rs2 = stmt2.executeQuery();
 
 					if (rs2.next()) {
+						domainContainer.setStoreId(rs2.getLong("id"));
 						domainContainer.setStoreType(rs2.getInt("store_type_id"));
 						//domainContainer.setStoreType(3);//STORE TYPE HOTEL
 						domainContainer.setTakeAwayFlag(rs2.getBoolean("ecpos_takeaway_detail_flag"));

@@ -809,16 +809,20 @@ public class RestC_check {
 								if (rs4 > 0) {
 									
 									if (user.getStoreType() == 3) {
-										hstmt1 = connection.prepareStatement("select a.*,b.hotel_room_base_price from `check` a left join table_setting b "
-												+ "on a.table_number = b.id where check_number = ?");
+										hstmt1 = connection.prepareStatement("select c.hotel_room_base_price,a.*,b.table_name from `check` a "
+												+ "inner join table_setting b on a.table_number = b.id "
+												+ "left join hotel_room_type c on b.hotel_room_type = c.id "
+												+ " where check_number = ?");
 										hstmt1.setInt(1, newCheckNo);
 										hrs1 = hstmt1.executeQuery();
 										
 										long checkId = 0;
+										String tableName = null;
 										BigDecimal roomPrice = null;
 										while (hrs1.next()) {
 											checkId = hrs1.getLong("id");
 											roomPrice = hrs1.getBigDecimal("hotel_room_base_price");
+											tableName = hrs1.getString("table_name");
 										}
 										
 										JSONObject charges = new JSONObject();
@@ -869,11 +873,12 @@ public class RestC_check {
 
 											if (updateCheck) {
 												
-												// update room status in table_setting table
+												// update room status in hotel_room_status_log table
 												String newRoomStatus = "3";
-												hstmt4 = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
-												hstmt4.setString(1, newRoomStatus);
-												hstmt4.setString(2, tableNo);
+												hstmt4 = connection.prepareStatement("insert into hotel_room_status_log (room_no,status_id,created_date) "
+														+ "values (?,?,now())");
+												hstmt4.setString(1, tableName);
+												hstmt4.setString(2, newRoomStatus);
 												int updateHotelRoom = hstmt4.executeUpdate();
 												
 												if (updateHotelRoom > 0) {
@@ -2692,11 +2697,13 @@ public class RestC_check {
 								
 								if (rs4 > 0) {
 									if (user.getStoreType() == 3) {
-										// update room status in hotel_room table
+										// update room status in hotel_room_status_log table
 										String newRoomStatus = "4";
-										hstmt1 = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
-										hstmt1.setString(1, newRoomStatus);
-										hstmt1.setString(2, tableNo);
+										hstmt1 = connection.prepareStatement("insert into "
+												+ "hotel_room_status_log (room_no,status_id,created_date) "
+												+ "values ((select table_name from table_setting where id = ?),?,now())");
+										hstmt1.setString(1, tableNo);
+										hstmt1.setString(2, newRoomStatus);
 										int updateHotelRoom = hstmt1.executeUpdate();
 										
 										if (updateHotelRoom > 0) {

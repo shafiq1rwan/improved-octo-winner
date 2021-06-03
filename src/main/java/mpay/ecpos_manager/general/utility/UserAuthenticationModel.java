@@ -7,6 +7,15 @@ public class UserAuthenticationModel {
 	public String username;
 	public String name;
 	public int roleType;
+	public long storeId;
+	public long getStoreId() {
+		return storeId;
+	}
+
+	public void setStoreId(long storeId) {
+		this.storeId = storeId;
+	}
+
 	public int storeType;
 	public boolean takeAwayFlag;
 	public long deviceId;

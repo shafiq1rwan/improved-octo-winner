@@ -136,7 +136,6 @@ CREATE TABLE table_setting
 		hotel_floor_no int NULL,
 		hotel_room_type int NULL,
 		hotel_room_category int NULL,
-		hotel_room_base_price decimal(10,2) NULL,
 		store_id int NOT NULL DEFAULT 0
 );
 
@@ -539,6 +538,7 @@ CREATE TABLE `hotel_room_type` (
   `id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `image_path` varchar(50) NOT NULL,
+  `hotel_room_base_price` DECIMAL(10,2) NULL,
   PRIMARY KEY (`id`));
   
 CREATE TABLE `hotel_status_lookup` (
@@ -587,6 +587,12 @@ CREATE TABLE `ecpos_manager`.`staff_workinghour` (
   `created_date` DATETIME NOT NULL
 );
 
+  CREATE TABLE `ecpos_manager`.`hotel_room_status_log` (
+  `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `room_no` NVARCHAR(250) NOT NULL,
+  `status_id` BIGINT,
+  `created_date` DATETIME NOT NULL
+);
 
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation ID', 'ACTIVATION_ID', '');
 INSERT INTO general_configuration (description, parameter, value) VALUES ('Activation Key', 'ACTIVATION_KEY', '');
@@ -641,15 +647,6 @@ insert into device_manufacturer_lookup values (1, 'No Cash Drawer'), (2, 'Posifl
 insert into port_name_lookup values 
 (1, 'COM1'), (2, 'COM2'), (3, 'COM3'), (4, 'COM4'), (5, 'COM5'), (6, 'COM6'), (7, 'COM7'), (8, 'COM8');
 
-insert into `hotel_room_category_lookup` values
-(1, 'ECONOMY'), (2, 'BUSINESS'), (3, 'LUXURY');
-
-insert into `hotel_room_type` values
-(1, 'SINGLE', 'room_small.png'), (2, 'DOUBLE', 'room_medium.png'), (3, 'TRIPLE', 'room_large.png'), (4, 'QUAD', 'room_family.png');
-
-insert into `hotel_status_lookup` values
-(1, 'CHECKED IN', 'blue'), (2, 'OUT OF SERVICE', 'black'), (3, 'RESERVED', 'red'), (4, 'AVAILABLE', 'green');
-
 insert into receipt_printer_manufacturer_lookup values (1, 'No Printing'), (2, 'Posiflex'), (3,'EPSON'), (4,'IBM'), (5,'Printer1400 (Copy 1)'), (6, 'POS80');
 
 INSERT INTO status_lookup (id, name) VALUES (1, 'PENDING');
@@ -670,6 +667,11 @@ INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Transa
 INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Reports', '1');
 INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Settings', '1');
 INSERT INTO `ecpos_manager`.`menu` (`menu_caption`, `is_active`) VALUES ('Logout', '1');
+
+INSERT INTO `ecpos_manager`.`hotel_status_lookup` (`id`, `name`, `bg_color`) VALUES(1, 'Checked In', 'blue');
+INSERT INTO `ecpos_manager`.`hotel_status_lookup` (`id`, `name`, `bg_color`) VALUES(2, 'Out Of Service', 'black');
+INSERT INTO `ecpos_manager`.`hotel_status_lookup` (`id`, `name`, `bg_color`) VALUES(3, 'Reserved', 'red');
+INSERT INTO `ecpos_manager`.`hotel_status_lookup` (`id`, `name`, `bg_color`) VALUES(4, 'Available', 'green');
 
 -- admin
 INSERT INTO `ecpos_manager`.`menu_access_role` (`role_lookup_id`, `menu_id`, `is_enabled`) VALUES ('1', '1', '1');

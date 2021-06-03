@@ -3139,7 +3139,7 @@ public class RestC_configuration {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		ResultSet rs2 = null;
+		//ResultSet rs2 = null;
 
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -3148,25 +3148,60 @@ public class RestC_configuration {
 			if (user != null) {
 				connection = dataSource.getConnection();
 				
+				long storeId = user.getStoreId();
 				boolean noStatus = true;
 				String status_id = null;
 				String type_id = null;
 				StringBuilder sb = new StringBuilder();
 				
-				sb.append("SELECT a.*,b.name as 'room_status',b.bg_color as 'status_bg_color', "
-						+ "c.name as 'room_category_name',d.check_number "
+				//check room status exist
+				stmt = connection.prepareStatement("SELECT * FROM table_setting a "
+						+ "LEFT OUTER JOIN hotel_room_status_log b "
+						+ "ON a.table_name = b.room_no WHERE b.room_no IS NULL;");
+				rs = stmt.executeQuery();
+				
+				ArrayList<String> arr = new ArrayList<String>();
+				while(rs.next()) {
+					arr.add(rs.getString("table_name"));
+				}
+				
+				if(arr.size() > 0) {
+					StringBuilder alias = new StringBuilder();
+					for(int i = 0; i < arr.size(); i++) {
+						if(i != 0)
+							alias.append(",");
+						alias.append("?");
+					}
+					
+					if(stmt != null) {stmt.close();}
+					stmt = connection.prepareStatement("insert into "
+							+ "hotel_room_status_log (room_no,status_id,created_date) "
+							+ "select table_name,'4',now() from table_setting "
+							+ "where table_name in ("+alias+");");
+					for(int j = 0; j < arr.size(); j++) {
+						stmt.setString(j+1, arr.get(j));
+					}
+					stmt.executeUpdate();
+				}
+				
+				sb.append("WITH ranked_messages AS ("
+						+ "SELECT m.*, ROW_NUMBER() OVER (PARTITION BY room_no ORDER BY created_date DESC) AS rn "
+						+ "FROM hotel_room_status_log AS m)"
+						+ "SELECT a.*,b.name as 'room_status',b.bg_color as 'status_bg_color', "
+						+ "c.name as 'room_category_name',d.check_number,ab.status_id "
 						+ "FROM table_setting a "
-						+ "left join hotel_status_lookup b on a.status_lookup_id = b.id "
+						+ "left join ranked_messages ab on a.table_name = ab.room_no "
+						+ "left join hotel_status_lookup b on ab.status_id = b.id "
 						+ "left join hotel_room_category_lookup c on a.hotel_room_category = c.id "
 						+ "left join `check` d on a.id = d.table_number and d.check_status = 2 "
-						+ "where store_id = 3 ");
+						+ "where store_id = ? and ab.rn = 1 ");
 				if (data.contains(",")) {
 					String[] params = data.split(",");
 					type_id = params[0];
 					status_id = params[1];
 					if (status_id != null && !status_id.equals("")) {
 						noStatus = false;
-						sb.append("and a.status_lookup_id = ? and a.hotel_room_type = ? ");
+						sb.append("and ab.status_id = ? and a.hotel_room_type = ? ");
 					} else {
 						sb.append("and a.hotel_room_type = ? ");
 					}
@@ -3176,12 +3211,16 @@ public class RestC_configuration {
 				}
 				sb.append("order by a.hotel_floor_no;");
 				
+				int count = 1;
+				if(rs != null) {rs.close();}
+				if(stmt != null) {stmt.close();}
 				stmt = connection.prepareStatement(sb.toString());
+				stmt.setLong(count++, storeId);
 				if (noStatus) {
-					stmt.setString(1, type_id);
+					stmt.setString(count++, type_id);
 				} else {
-					stmt.setString(1, status_id);
-					stmt.setString(2, type_id);
+					stmt.setString(count++, status_id);
+					stmt.setString(count++, type_id);
 				}
 				rs = stmt.executeQuery();
 
@@ -3200,7 +3239,7 @@ public class RestC_configuration {
 					obj.put("id", Long.toString(rs.getLong("id")));
 					obj.put("room_name", rs.getString("table_name"));
 					obj.put("floor_no", rs.getString("hotel_floor_no"));
-					obj.put("room_status_id", rs.getString("status_lookup_id"));
+					obj.put("room_status_id", rs.getString("status_id"));
 					obj.put("room_status", rs.getString("room_status"));
 					obj.put("room_category_name", rs.getString("room_category_name"));
 					obj.put("status_bg_color", rs.getString("status_bg_color"));
@@ -3234,10 +3273,6 @@ public class RestC_configuration {
 				if (rs != null) {
 					rs.close();
 					rs = null;
-				}
-				if (rs2 != null) {
-					rs2.close();
-					rs2 = null;
 				}
 				if (connection != null) {
 					connection.close();
@@ -3322,22 +3357,18 @@ public class RestC_configuration {
 				connection.setAutoCommit(false);
 				
 				String room_id = jsonObj.getString("roomId");
-				//String action = jsonObj.getString("action");
 	
 				stmt = connection.prepareStatement("select * from table_setting where id = ?;");
 				stmt.setString(1, room_id);
 				rs = stmt.executeQuery();
 				
-				int roomNewStatus = 0;
-				//if (action.equalsIgnoreCase("in")) {
-					roomNewStatus = 1;
-				//} else {
-				//	roomNewStatus = 4;
-				//}
+				String roomNewStatus = "1";
 				if (rs.next()) {
-					stmt2 = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?;");
-					stmt2.setInt(1, roomNewStatus);
-					stmt2.setString(2, room_id);
+					stmt2 = connection.prepareStatement("insert into "
+							+ "hotel_room_status_log (room_no,status_id,created_date) "
+							+ "values (?,?,now())");
+					stmt2.setString(1, rs.getString("table_name"));
+					stmt2.setString(2, roomNewStatus);
 					int rs2 = stmt2.executeUpdate();
 					
 					if (rs2 > 0) {

@@ -116,6 +116,16 @@ public class DataSync {
 		ps1 = connection.prepareStatement(sqlStatement);
 		ps1.executeUpdate();
 		ps1.close();
+		
+		sqlStatement = "DELETE FROM hotel_room_type;";
+		ps1 = connection.prepareStatement(sqlStatement);
+		ps1.executeUpdate();
+		ps1.close();
+		
+		sqlStatement = "DELETE FROM hotel_room_category_lookup;";
+		ps1 = connection.prepareStatement(sqlStatement);
+		ps1.executeUpdate();
+		ps1.close();
 	}
 	
 	public static boolean insertStoreInfo(Connection connection, JSONObject storeInfo, String imagePath) throws Exception {
@@ -287,11 +297,13 @@ public class DataSync {
 		boolean flag = false;
 		PreparedStatement ps1 = null;
 		try {
-			String sqlStatement = "INSERT INTO table_setting (id, table_name, status_lookup_id, created_date, last_update_date) VALUES ";
+			String sqlStatement = "INSERT INTO table_setting (id, table_name, "
+					+ "status_lookup_id, created_date, last_update_date, hotel_floor_no, "
+					+ "hotel_room_type, hotel_room_category, store_id) VALUES ";
 			for(int a=0; a < tableSetting.length(); a++) {
 				if(a!=0)
 					sqlStatement += ", ";
-				sqlStatement += "(?, ?, ?, ?, ?)";	
+				sqlStatement += "(?, ?, ?, ?, ?, ?, ?, ?, ?)";	
 			}
 			
 			ps1 = connection.prepareStatement(sqlStatement);		
@@ -303,10 +315,74 @@ public class DataSync {
 				ps1.setLong(count++, obj.getLong("statusLookupId"));
 				ps1.setString(count++, obj.getString("createdDate"));
 				ps1.setString(count++, obj.getString("lastUpdateDate").equals("")?null:obj.getString("lastUpdateDate"));
+				ps1.setString(count++, obj.isNull("floorNo")?null:obj.getString("floorNo"));
+				ps1.setString(count++, obj.isNull("roomType")?null:obj.getString("roomType"));
+				ps1.setString(count++, obj.isNull("roomCategory")?null:obj.getString("roomCategory"));
+				ps1.setLong(count++, obj.getLong("storeId"));
 			}
 			
 			int rowAffected = ps1.executeUpdate();
 			if(rowAffected != 0) {
+				flag = true;
+			}
+		} catch (Exception ex) {
+			Logger.writeError(ex, "Exception: ", SYNC_FOLDER);
+			throw ex;
+		} finally {
+			if (ps1 != null) {
+				ps1.close();
+			}
+		}
+		return flag;
+	}
+	
+	public static boolean insertHotelDetails(Connection connection, JSONObject hotelDetails) throws Exception {
+		boolean flag = false;
+		PreparedStatement ps1 = null;
+		
+		JSONArray roomTypeArr = hotelDetails.getJSONArray("roomTypeArr");
+		JSONArray roomCategoryArr = hotelDetails.getJSONArray("roomCategoryArr");
+		
+		try {
+			String sqlStatement = "INSERT INTO hotel_room_type (id, name, image_path, hotel_room_base_price) "
+					+ "VALUES ";
+			for(int a=0; a < roomTypeArr.length(); a++) {
+				if(a!=0)
+					sqlStatement += ", ";
+				sqlStatement += "(?, ?, ?, ?)";	
+			}
+			
+			ps1 = connection.prepareStatement(sqlStatement);		
+			int count = 1;
+			for(int a=0; a < roomTypeArr.length(); a++) {
+				JSONObject obj = roomTypeArr.getJSONObject(a);
+				ps1.setLong(count++, obj.getLong("id"));
+				ps1.setString(count++, obj.getString("name"));
+				ps1.setString(count++, obj.getString("imagePath"));
+				ps1.setString(count++, obj.getString("basePrice"));
+			}
+			
+			int rowAffectedRT = ps1.executeUpdate();
+			
+			sqlStatement = "INSERT INTO hotel_room_category_lookup (id, name) "
+					+ "VALUES ";
+			for(int a=0; a < roomCategoryArr.length(); a++) {
+				if(a!=0)
+					sqlStatement += ", ";
+				sqlStatement += "(?, ?)";	
+			}
+			if(ps1 != null) {ps1.close();}
+			ps1 = connection.prepareStatement(sqlStatement);		
+			count = 1;
+			for(int a=0; a < roomCategoryArr.length(); a++) {
+				JSONObject obj = roomCategoryArr.getJSONObject(a);
+				ps1.setLong(count++, obj.getLong("id"));
+				ps1.setString(count++, obj.getString("name"));
+			}
+			
+			int rowAffectedRC = ps1.executeUpdate();
+			
+			if(rowAffectedRT != 0 && rowAffectedRC != 0) {
 				flag = true;
 			}
 		} catch (Exception ex) {

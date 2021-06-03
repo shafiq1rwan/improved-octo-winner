@@ -1635,11 +1635,13 @@ public class RestC_transaction {
 
 				if (updateCheckDetail > 0) {
 					if(storeType == 3) {
-						// update room status in table_setting table
+						// update room status in hotel_room_status_log table
 						String newRoomStatus = "4";
-						hstmt = connection.prepareStatement("update table_setting set status_lookup_id = ? where id = ?");
-						hstmt.setString(1, newRoomStatus);
-						hstmt.setInt(2, tableNo);
+						hstmt = connection.prepareStatement("insert into "
+								+ "hotel_room_status_log (room_no,status_id,created_date) "
+								+ "values ((select table_name from table_setting where id = ?),?,now())");
+						hstmt.setInt(1, tableNo);
+						hstmt.setString(2, newRoomStatus);
 						int updateHotelRoom = hstmt.executeUpdate();
 						
 						if (updateHotelRoom > 0) {
