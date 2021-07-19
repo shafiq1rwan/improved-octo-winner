@@ -873,32 +873,48 @@ public class ReceiptPrinter {
 							// Receipt Info Table
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 							
-							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type", "Table No", "Order At", "Printed At",
-									"Cust Name", "Staff"));
+							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList(
+									"Receipt No", 
+									"Check No",
+									"Table No",
+									"Cust Name",
+									"Staff"));
 								
+							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(
+									receiptContentJson.getString("receiptNumber"),
+									receiptContentJson.getString("checkNoByDay"),
+									receiptContentJson.getString("tableNo"),
+									receiptContentJson.getString("customerName"),
+									staffName));
+							
+							if(storeType == 1) { //if it is retail
+								receiptInfoLabels.remove(2);//remove table label
+								receiptInfoContents.remove(2); //remove table content
+							}
 							if(receiptContentJson.getString("customerName").equals("-")) {
-								receiptInfoLabels.remove(6);
+								receiptInfoLabels.remove(3);
+								receiptInfoContents.remove(3);
 							}
 							
-							/*if(storeType == 1) {
-								receiptInfoLabels.remove(1); //remove table number if it is retail business
-							}*/
+							String printedAt = null;
+							if(!receiptContentJson.isNull("transactionType")) {
+								if(receiptContentJson.getString("transactionType").equals("Void")) {
+									printedAt = "Void At";
+								} else if (receiptContentJson.getString("transactionType").equals("Sale")) {
+									printedAt = "Sale At";
+								} else {
+									printedAt = "Printed At";
+								}
+								receiptInfoLabels.add(2, printedAt);
+								receiptInfoContents.add(2, sdf.format(new Date()));
 								
-							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
-									receiptContentJson.getString("checkNoByDay"),
-									receiptContentJson.getString("tableNo"), receiptContentJson.getString("createdDate"),
-									sdf.format(new Date()), staffName));
-													
-							if(!receiptContentJson.getString("customerName").equals("-")) {
-								receiptInfoContents.add(receiptInfoContents.size()-1, receiptContentJson.getString("customerName"));
+								receiptInfoLabels.add("Trans Type");
+								receiptInfoContents.add(receiptContentJson.getString("transactionType"));
 							}
-
+							
 							String orderTypeName = null;
 							if(storeType == 1) { //if it is retail
 								//only deposit and sales appeared in retail
-								receiptInfoLabels.remove(3);//remove table label
-								receiptInfoContents.remove(2); //remove table content
-								
 								if(!receiptContentJson.getString("orderType").equals("deposit")) {
 									orderTypeName = "Purchase";
 								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
@@ -914,22 +930,12 @@ public class ReceiptPrinter {
 									orderTypeName = "Deposit";
 								}
 							} else if (storeType == 3) {
-								receiptInfoLabels.set(3, "Room No");
-								receiptInfoLabels.set(4, "Booked At");
+								//receiptInfoLabels.set(3, "Room No");
+								//receiptInfoLabels.set(4, "Booked At");
 								orderTypeName = receiptContentJson.getString("orderType");
 							}
-							receiptInfoContents.add(2,orderTypeName);
-
-							receiptInfoLabels.add("Trans Type");
-							
-							if(!receiptContentJson.isNull("transactionType")) {
-								if(receiptContentJson.getString("transactionType").equals("Void")) {
-									//change order at to void at
-									receiptInfoLabels.set(4, "Void At");
-									
-								}
-								receiptInfoContents.add(receiptContentJson.getString("transactionType"));
-							}
+							receiptInfoLabels.add(2, "Order Type");
+							receiptInfoContents.add(2, orderTypeName);
 
 							XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
 							CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
@@ -2474,47 +2480,70 @@ public class ReceiptPrinter {
 						// Receipt Info Table
 						
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type",
-								"Table No", "Order At", "Printed At", "Cust Name", "Staff"));
-
-						if (receiptContentJson.getString("customerName").equals("-")) {
-							receiptInfoLabels.remove(6);
-						}
-
-						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
-								receiptContentJson.getString("checkNoByDay"), receiptContentJson.getString("tableNo"),
-								receiptContentJson.getString("createdDate"), sdf.format(new Date()), staffName));
-
-						if (!receiptContentJson.getString("customerName").equals("-")) {
-							receiptInfoContents.add(receiptInfoContents.size() - 1,
-									receiptContentJson.getString("customerName"));
-						}
-
-						String orderTypeName = null;
-						if (storeType == 1) { // if it is retail
-							// only deposit and sales appeared in retail
-							receiptInfoLabels.remove(3);// remove table label
-							receiptInfoContents.remove(2); // remove table content
+						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList(
+								"Receipt No", 
+								"Check No",
+								"Table No",
+								"Cust Name",
+								"Staff"));
 							
-							if (!receiptContentJson.getString("orderType").equals("deposit")) {
+						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(
+								receiptContentJson.getString("receiptNumber"),
+								receiptContentJson.getString("checkNoByDay"),
+								receiptContentJson.getString("tableNo"),
+								receiptContentJson.getString("customerName"),
+								staffName));
+						
+						if(storeType == 1) { //if it is retail
+							receiptInfoLabels.remove(2);//remove table label
+							receiptInfoContents.remove(2); //remove table content
+						}
+						if(receiptContentJson.getString("customerName").equals("-")) {
+							receiptInfoLabels.remove(3);
+							receiptInfoContents.remove(3);
+						}
+						
+						String printedAt = "Printed At";
+						receiptInfoLabels.add(2, printedAt);
+						receiptInfoContents.add(2, sdf.format(new Date()));
+						/*if(!receiptContentJson.isNull("transactionType")) {
+							if(receiptContentJson.getString("transactionType").equals("Void")) {
+								printedAt = "Void At";
+							} else if (receiptContentJson.getString("transactionType").equals("Sale")) {
+								printedAt = "Sale At";
+							} else {
+								printedAt = "Printed At";
+							}
+							receiptInfoLabels.add(2, printedAt);
+							receiptInfoContents.add(2, sdf.format(new Date()));
+							
+							receiptInfoLabels.add("Trans Type");
+							receiptInfoContents.add(receiptContentJson.getString("transactionType"));
+						}*/
+						
+						String orderTypeName = null;
+						if(storeType == 1) { //if it is retail
+							//only deposit and sales appeared in retail
+							if(!receiptContentJson.getString("orderType").equals("deposit")) {
 								orderTypeName = "Purchase";
-							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
+							} else if(receiptContentJson.getString("orderType").equals("deposit")) {
 								orderTypeName = "Deposit";
 							}
-						} else if (storeType == 2) { // if it is f&b
-
-							if (receiptContentJson.getString("orderType").equals("table")) {
+						} else if(storeType == 2) { //if it is f&b
+							
+							if(receiptContentJson.getString("orderType").equals("table")) {
 								orderTypeName = "Dine In";
-							} else if (receiptContentJson.getString("orderType").equals("take away")) {
+							} else if(receiptContentJson.getString("orderType").equals("take away")) {
 								orderTypeName = "Take Away";
-							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
+							} else if(receiptContentJson.getString("orderType").equals("deposit")) {
 								orderTypeName = "Deposit";
 							}
-						} else if (storeType == 3) { // if it is hotel							
-							receiptInfoLabels.set(3, "Room No");
-							receiptInfoLabels.set(4, "Booked At");
+						} else if (storeType == 3) {
+							//receiptInfoLabels.set(3, "Room No");
+							//receiptInfoLabels.set(4, "Booked At");
 							orderTypeName = receiptContentJson.getString("orderType");
 						}
+						receiptInfoLabels.add(2, "Order Type");
 						receiptInfoContents.add(2, orderTypeName);
 
 						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);

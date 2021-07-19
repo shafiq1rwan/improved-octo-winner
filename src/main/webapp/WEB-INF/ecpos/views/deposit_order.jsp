@@ -65,11 +65,11 @@
 										<div data-dismiss='modal' ng-click="redirect_to_check_detail(check.check_number)">
 											<div class="panel panel-default text-center shadowBox test" style="border-color: #1EC676;">
 												<div class="panel-heading" style="color: #333333; background-color: #1EC676">
-													<h3 class="panel-title" style="color: white;">CHECK NO</h3>
+													<h3 class="panel-title" style="color: white;">CHECK NO {{check.check_ref_no}}</h3>
 												</div>
 												<div class="panel-body">
 													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
-														 CHECK NO {{check.check_ref_no}} ({{check.status}})</br>{{check.customer_name}}
+														 {{check.customer_name}}</br>Status {{check.status}}
 													</div>
 												</div>
 											</div>
