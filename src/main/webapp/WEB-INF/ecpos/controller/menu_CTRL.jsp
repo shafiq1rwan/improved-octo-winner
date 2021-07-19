@@ -57,15 +57,170 @@
 		$scope.getMenuItems = function(category) {
 			$scope.category = category;
 			
-			$http.get("${pageContext.request.contextPath}/rc/menu/get_menu_items/"+$scope.category.id)
+			if($scope.category.id == 0){// if item group
+				$http.get("${pageContext.request.contextPath}/rc/menu/get_all_item_group/")
+				.then(function(response) {
+					$scope.menuItems = response.data;
+					$('#categoryName').html($scope.category.name);
+					$('#menuCarousel').carousel(1);
+				},
+				function(response) {
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						},function(isConfirm){
+						    if (isConfirm) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
+				});
+			}else{// if normal category
+				$http.get("${pageContext.request.contextPath}/rc/menu/get_menu_items/"+$scope.category.id)
+				.then(function(response) {
+					$scope.menuItems = response.data;
+					$('#categoryName').html($scope.category.name);
+					$('#menuCarousel').carousel(1);
+				},
+				function(response) {
+					/* alert("Session TIME OUT"); */
+					/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+					Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						},function(isConfirm){
+						    if (isConfirm) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
+				});
+			}
+		}
+		
+		$scope.action = function(item){
+			$scope.temporary = {};
+			$scope.temporary = item;
+			
+			if($scope.category.id == 0){// if item group menu item
+				if ($scope.orderType == "table") {
+					orderType = 1;
+				} else if ($scope.orderType == "take_away") {
+					orderType = 2;
+				} else if ($scope.orderType == "deposit") {
+					orderType = 3;
+				}				
+
+				var jsonData = JSON.stringify({
+					"deviceType" : 1,
+					"orderType" : orderType,
+					"tableNo" : $scope.tableNo,
+					"checkNo" : $scope.checkNo,
+					"itemGroup" : $scope.temporary
+				});
+				$http.post("${pageContext.request.contextPath}/rc/check/item_group_order", jsonData)
+				.then(function(response) {
+					if (response.data.response_code === "00") {
+						allGrandParentItemCheckbox.checked = false;
+						$scope.getCheckDetails();
+						
+						$('#itemQuantity').val(1);
+						$('#alaCarteItemQuantity').val(1);
+						
+	 					$('#menuCarousel').carousel(0);
+	 					$('#itemCarousel').carousel(0);
+						$scope.temporary = {};
+						$scope.temporaryTiers = [];
+						$scope.temporaryTierItems = [];
+						$scope.temporaryModifiers = [];
+						
+						$scope.sequence = "";
+						
+						$("#alaCarteModifier").show();
+						$("#back").show();
+						$scope.informSecondDisplay(jsonData);
+					} else {
+						if (response.data.response_message != null) {
+							Swal.fire("Oops...",response.data.response_message,"error");
+						} else {
+							Swal.fire("Oops...","Error Occured While Submit Order","error");
+						}
+					}
+				},
+				function(response) {
+					Swal.fire({
+						  title: 'Oops...',
+						  text: "Session Timeout",
+						  icon: 'error',
+						  showCancelButton: false,
+						  confirmButtonColor: '#3085d6',
+						  cancelButtonColor: '#d33',
+						  confirmButtonText: 'OK'
+						},function(isConfirm){
+						    if (isConfirm) {
+							  window.location.href = "${pageContext.request.contextPath}/signout";
+						  }
+						});
+				});
+			}else{// if normal menu item
+				if ($scope.temporary.type == 0) {// if menu item type = ala carte
+					$scope.alaCarte = $scope.temporary;
+					$('#alaCarteItemName').html($scope.alaCarte.name);
+					$('#menuCarousel').carousel(3);
+					
+					if ($scope.temporary.hasModifier == false) {
+						$("#alaCarteModifier").hide();
+					} else {
+						$("#alaCarteModifier").show();
+					}
+				} else if ($scope.temporary.type == 1) {// if menu item type = combo
+					$scope.getTiers($scope.temporary);
+				}
+			}
+		}
+		
+		/*$scope.submitItemGroupOrder = function(jsonData) {
+
+			$http.post("${pageContext.request.contextPath}/rc/check/item_group_order", jsonData)
 			.then(function(response) {
-				$scope.menuItems = response.data;
-				$('#categoryName').html($scope.category.name);
-				$('#menuCarousel').carousel(1);
+				if (response.data.response_code === "00") {
+					allGrandParentItemCheckbox.checked = false;
+					$scope.getCheckDetails();
+					
+					$('#itemQuantity').val(1);
+					$('#alaCarteItemQuantity').val(1);
+					
+ 					$('#menuCarousel').carousel(0);
+ 					$('#itemCarousel').carousel(0);
+					$scope.temporary = {};
+					$scope.temporaryTiers = [];
+					$scope.temporaryTierItems = [];
+					$scope.temporaryModifiers = [];
+					
+					$scope.sequence = "";
+					
+					$("#alaCarteModifier").show();
+					$("#back").show();
+					$scope.informSecondDisplay(jsonData);
+				} else {
+					if (response.data.response_message != null) {
+						Swal.fire("Oops...",response.data.response_message,"error");
+					} else {
+						Swal.fire("Oops...","Error Occured While Submit Order","error");
+					}
+				}
 			},
 			function(response) {
-				/* alert("Session TIME OUT"); */
-				/* window.location.href = "${pageContext.request.contextPath}/signout"; */
 				Swal.fire({
 					  title: 'Oops...',
 					  text: "Session Timeout",
@@ -80,26 +235,8 @@
 					  }
 					});
 			});
-		}
+		}*/
 		
-		$scope.action = function(item){
-			$scope.temporary = {};
-			$scope.temporary = item;
-			
-			if ($scope.temporary.type == 0) {
-				$scope.alaCarte = $scope.temporary;
-				$('#alaCarteItemName').html($scope.alaCarte.name);
-				$('#menuCarousel').carousel(3);
-				
-				if ($scope.temporary.hasModifier == false) {
-					$("#alaCarteModifier").hide();
-				} else {
-					$("#alaCarteModifier").show();
-				}
-			} else if ($scope.temporary.type == 1) {
-				$scope.getTiers($scope.temporary);
-			}
-		}
 		
 		$scope.getTiers = function(item) {
 			$scope.item = item;
@@ -480,8 +617,10 @@
 					orderType = 1;
 				} else if ($scope.orderType == "take_away") {
 					orderType = 2;
+				} else if ($scope.orderType == "deposit") {
+					orderType = 3;
 				}
-			
+				
 				var jsonData = JSON.stringify({
 					"deviceType" : 1,
 					"orderType" : orderType,
@@ -489,7 +628,7 @@
 					"checkNo" : $scope.checkNo,
 					"barcode" : $scope.barcode
 				});
-	
+				
 				$http.post("${pageContext.request.contextPath}/rc/check/barcode_order", jsonData)
 				.then(function(response) {
 					if (response.data.response_code === "00") {
@@ -497,6 +636,7 @@
 						
 						$scope.barcode = null;
 					} else {
+						$scope.barcode = null;
 						if (response.data.response_message != null) {
 							/* alert(response.data.response_message); */
 							Swal.fire("Oops...",response.data.response_message,"error");

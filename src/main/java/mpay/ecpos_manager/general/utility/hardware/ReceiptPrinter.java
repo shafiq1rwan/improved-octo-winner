@@ -237,9 +237,9 @@ public class ReceiptPrinter {
 						for (int i = 0; i < receiptInfoLabels.size(); i++) {
 							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
 							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 						}
 
 						long receiptInfoTableWidths[] = { 1400, 2000 };
@@ -858,7 +858,7 @@ public class ReceiptPrinter {
 							headerStoreAddressParagraph.setSpacingAfter(0);
 
 							XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
-							runHeaderStoreAddressParagraph.setFontSize(9);
+							runHeaderStoreAddressParagraph.setFontSize(8);
 							runHeaderStoreAddressParagraph.setText(receiptHeaderJson.getString("storeAddress"));
 							runHeaderStoreAddressParagraph.addBreak();
 							runHeaderStoreAddressParagraph
@@ -872,22 +872,17 @@ public class ReceiptPrinter {
 
 							// Receipt Info Table
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							String tableNoStr = "Table No";
-							String orderAtStr = "Order At";
-							if (storeType == 3) {
-								tableNoStr = "Room No";
-								orderAtStr = "Booked At";
-							}
-							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type", tableNoStr, orderAtStr, "Printed At",
+							
+							List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type", "Table No", "Order At", "Printed At",
 									"Cust Name", "Staff"));
 								
 							if(receiptContentJson.getString("customerName").equals("-")) {
 								receiptInfoLabels.remove(6);
 							}
 							
-							if(storeType == 1) {
+							/*if(storeType == 1) {
 								receiptInfoLabels.remove(1); //remove table number if it is retail business
-							}
+							}*/
 								
 							List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
 									receiptContentJson.getString("checkNoByDay"),
@@ -898,16 +893,18 @@ public class ReceiptPrinter {
 								receiptInfoContents.add(receiptInfoContents.size()-1, receiptContentJson.getString("customerName"));
 							}
 
+							String orderTypeName = null;
 							if(storeType == 1) { //if it is retail
-								//only deposit and sales appereaed in reatail
+								//only deposit and sales appeared in retail
+								receiptInfoLabels.remove(3);//remove table label
+								receiptInfoContents.remove(2); //remove table content
+								
 								if(!receiptContentJson.getString("orderType").equals("deposit")) {
-									receiptInfoContents.add(2,"Purchase");
+									orderTypeName = "Purchase";
 								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
-									receiptInfoContents.add(2,"Deposit");
+									orderTypeName = "Deposit";
 								}
-								receiptInfoContents.remove(1); //remove table since it is retail
 							} else if(storeType == 2) { //if it is f&b
-								String orderTypeName = null; 
 								
 								if(receiptContentJson.getString("orderType").equals("table")) {
 									orderTypeName = "Dine In";
@@ -916,18 +913,19 @@ public class ReceiptPrinter {
 								} else if(receiptContentJson.getString("orderType").equals("deposit")) {
 									orderTypeName = "Deposit";
 								}
-								receiptInfoContents.add(2,orderTypeName);
 							} else if (storeType == 3) {
-								String orderTypeName = receiptContentJson.getString("orderType");
-								receiptInfoContents.add(2,orderTypeName);
+								receiptInfoLabels.set(3, "Room No");
+								receiptInfoLabels.set(4, "Booked At");
+								orderTypeName = receiptContentJson.getString("orderType");
 							}
+							receiptInfoContents.add(2,orderTypeName);
 
 							receiptInfoLabels.add("Trans Type");
 							
 							if(!receiptContentJson.isNull("transactionType")) {
 								if(receiptContentJson.getString("transactionType").equals("Void")) {
 									//change order at to void at
-									receiptInfoLabels.set(3, "Void At");
+									receiptInfoLabels.set(4, "Void At");
 									
 								}
 								receiptInfoContents.add(receiptContentJson.getString("transactionType"));
@@ -940,14 +938,12 @@ public class ReceiptPrinter {
 							receiptInfoTableType.setType(STTblLayoutType.FIXED);
 							receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
 
-							System.out.println("receiptInfoLabels = "+receiptInfoLabels.size());
-							System.out.println("receiptInfoContents = "+receiptInfoContents.size());
 							for (int i = 0; i < receiptInfoLabels.size(); i++) {
 								XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
 								createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
-										ParagraphAlignment.LEFT);
+										ParagraphAlignment.LEFT, 9);
 								createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
-										ParagraphAlignment.LEFT);
+										ParagraphAlignment.LEFT, 9);
 							}
 
 							long receiptInfoTableWidths[] = { 1400, 2000 };
@@ -1050,15 +1046,15 @@ public class ReceiptPrinter {
 								XWPFTableRow grandParentTableRow = table.createRow();
 
 								createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
-										false, ParagraphAlignment.LEFT);
+										false, ParagraphAlignment.LEFT, 9);
 
 								createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
-										ParagraphAlignment.LEFT);
+										ParagraphAlignment.LEFT, 9);
 
 								createCellText(grandParentTableRow.getCell(2),
 										grandParentItem.getString("totalAmount").substring(0,
 												grandParentItem.getString("totalAmount").length() - 2),
-										false, ParagraphAlignment.RIGHT);
+										false, ParagraphAlignment.RIGHT, 9);
 
 								if (grandParentItem.has("parentItemArray")) {
 									JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
@@ -1073,13 +1069,13 @@ public class ReceiptPrinter {
 
 										XWPFTableRow parentTableRow = table.createRow();
 
-										createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
+										createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT, 9);
 
 										createCellText(parentTableRow.getCell(1), "  " + parentItem.getString("itemName"),
-												false, ParagraphAlignment.LEFT);
+												false, ParagraphAlignment.LEFT, 9);
 
 										createCellText(parentTableRow.getCell(2), parentItemPrice, false,
-												ParagraphAlignment.RIGHT);
+												ParagraphAlignment.RIGHT, 9);
 
 										// Child loop
 										if (parentItem.has("childItemArray")) {
@@ -1095,14 +1091,14 @@ public class ReceiptPrinter {
 												XWPFTableRow childTableRow = table.createRow();
 
 												createCellText(childTableRow.getCell(0), "", false,
-														ParagraphAlignment.LEFT);
+														ParagraphAlignment.LEFT, 9);
 
 												createCellText(childTableRow.getCell(1),
 														"    " + childItem.getString("itemName"), false,
-														ParagraphAlignment.LEFT);
+														ParagraphAlignment.LEFT, 9);
 
 												createCellText(childTableRow.getCell(2), childItemPrice, false,
-														ParagraphAlignment.RIGHT);
+														ParagraphAlignment.RIGHT, 9);
 											}
 										}
 
@@ -1200,10 +1196,10 @@ public class ReceiptPrinter {
 									border4.addNewBottom().setVal(STBorder.SINGLE);
 
 									createCellText(receiptResultTable.getRow(i+1).getCell(0), receiptResultLabels.get(i), true,
-											ParagraphAlignment.LEFT);
+											ParagraphAlignment.LEFT, 9);
 
 									createCellText(receiptResultTable.getRow(i+1).getCell(1), receiptResultContents.get(i), true,
-											ParagraphAlignment.RIGHT);
+											ParagraphAlignment.RIGHT, 9);
 									
 									XWPFParagraph netTotalBottomBlankCellOne = receiptResultTable.getRow(i+2).getCell(0).getParagraphs().get(0);
 									netTotalBottomBlankCellOne.setSpacingBefore(0);
@@ -1239,10 +1235,10 @@ public class ReceiptPrinter {
 
 								} else {
 									createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
-											ParagraphAlignment.LEFT);
+											ParagraphAlignment.LEFT, 9);
 
 									createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
-											ParagraphAlignment.RIGHT);
+											ParagraphAlignment.RIGHT, 9);
 								}
 							}
 							
@@ -1253,18 +1249,18 @@ public class ReceiptPrinter {
 								JSONObject cashData = receiptContentJson.getJSONObject("cashData");
 
 								createCellText(receiptCashRow.getCell(0), "Cash", false,
-										ParagraphAlignment.LEFT);
+										ParagraphAlignment.LEFT, 9);
 
 								createCellText(receiptCashRow.getCell(1), formatDecimalString(cashData.getString("cashReceivedAmount")), false,
-										ParagraphAlignment.RIGHT);
+										ParagraphAlignment.RIGHT, 9);
 					
 								XWPFTableRow receiptChangeRow = receiptResultTable.createRow();
 								
 								createCellText(receiptChangeRow.getCell(0), "Change", false,
-										ParagraphAlignment.LEFT);
+										ParagraphAlignment.LEFT, 9);
 
 								createCellText(receiptChangeRow.getCell(1), formatDecimalString(cashData.getString("cashChangeAmount")), false,
-										ParagraphAlignment.RIGHT);
+										ParagraphAlignment.RIGHT, 9);
 							}
 							
 							long receiptResultTableWidths[] = { 2980, 1000 };
@@ -1330,10 +1326,10 @@ public class ReceiptPrinter {
 								for (int i = 0; i < receiptResultLabels2.size(); i++) {
 									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
 									createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
-											ParagraphAlignment.LEFT);
+											ParagraphAlignment.LEFT, 8);
 
 									createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
-											ParagraphAlignment.RIGHT);
+											ParagraphAlignment.RIGHT, 8);
 								}
 
 								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
@@ -1413,10 +1409,10 @@ public class ReceiptPrinter {
 								for (int i = 0; i < receiptResultLabels2.size(); i++) {
 									XWPFTableRow receiptResultRow2 = receiptResultTable2.getRow(i);
 									createCellText(receiptResultRow2.getCell(0), receiptResultLabels2.get(i), false,
-											ParagraphAlignment.LEFT);
+											ParagraphAlignment.LEFT, 8);
 
 									createCellText(receiptResultRow2.getCell(1), receiptResultContents2.get(i), false,
-											ParagraphAlignment.RIGHT);
+											ParagraphAlignment.RIGHT, 8);
 								}
 
 								CTTblGrid cttblgridReceiptResult2 = receiptResultTable2.getCTTbl().addNewTblGrid();
@@ -1436,7 +1432,7 @@ public class ReceiptPrinter {
 								qrParagraph.setSpacingBefore(0);
 								XWPFRun runQrParagraph = qrParagraph.createRun();
 								runQrParagraph.addPicture(new ByteArrayInputStream(qrByteData),
-										XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(125), Units.toEMU(125));
+										XWPFDocument.PICTURE_TYPE_JPEG, "Generated", Units.toEMU(100), Units.toEMU(100));
 							}
 
 							emptyParagraph = doc.createParagraph();
@@ -1533,7 +1529,7 @@ public class ReceiptPrinter {
 		return allSectPr;
 	}
 
-	private void createCellText(XWPFTableCell cell, String content, boolean isBold, ParagraphAlignment alignment) {
+	private void createCellText(XWPFTableCell cell, String content, boolean isBold, ParagraphAlignment alignment, int fontSize) {
 		XWPFParagraph paragraph;
 		// If no header is set, use the cell's default paragraph.
 		if (cell.getParagraphs().get(0).getRuns().size() == 0) {
@@ -1548,7 +1544,7 @@ public class ReceiptPrinter {
 		XWPFRun run = paragraph.createRun();
 		run.setBold(isBold);
 		run.setText(content);
-		run.setFontSize(9);
+		run.setFontSize(fontSize);
 	}
 
 	private String formatDecimalString(String amountText) {
@@ -1779,9 +1775,9 @@ public class ReceiptPrinter {
 							
 							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
 							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 						}
 
 						long receiptInfoTableWidths[] = { 1400, 2000 };
@@ -1879,12 +1875,12 @@ public class ReceiptPrinter {
 							XWPFTableRow grandParentTableRow = table.createRow();
 
 							createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
-									false, ParagraphAlignment.LEFT);
+									false, ParagraphAlignment.LEFT, 9);
 
 							createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 
-							createCellText(grandParentTableRow.getCell(2), "", false, ParagraphAlignment.RIGHT);
+							createCellText(grandParentTableRow.getCell(2), "", false, ParagraphAlignment.RIGHT, 9);
 
 							if (grandParentItem.has("parentItemArray")) {
 								JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
@@ -1894,13 +1890,13 @@ public class ReceiptPrinter {
 									JSONObject parentItem = jsonParentArray.optJSONObject(p);
 									XWPFTableRow parentTableRow = table.createRow();
 
-									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
+									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT, 9);
 
 									createCellText(parentTableRow.getCell(1), "  - " + parentItem.getString("itemName"),
-											false, ParagraphAlignment.LEFT);
+											false, ParagraphAlignment.LEFT, 9);
 
 									createCellText(parentTableRow.getCell(2), "", false,
-											ParagraphAlignment.RIGHT);
+											ParagraphAlignment.RIGHT, 9);
 
 									// Child loop
 									if (parentItem.has("childItemArray")) {
@@ -1911,14 +1907,14 @@ public class ReceiptPrinter {
 											XWPFTableRow childTableRow = table.createRow();
 
 											createCellText(childTableRow.getCell(0), "", false,
-													ParagraphAlignment.LEFT);
+													ParagraphAlignment.LEFT, 9);
 
 											createCellText(childTableRow.getCell(1),
 													"    * " + childItem.getString("itemName"), false,
-													ParagraphAlignment.LEFT);
+													ParagraphAlignment.LEFT, 9);
 
 											createCellText(childTableRow.getCell(2), "", false,
-													ParagraphAlignment.RIGHT);
+													ParagraphAlignment.RIGHT, 9);
 										}
 									}
 								}
@@ -2476,16 +2472,13 @@ public class ReceiptPrinter {
 						emptyParagraph.removeRun(0);
 
 						// Receipt Info Table
+						
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 						List<String> receiptInfoLabels = new ArrayList<String>(Arrays.asList("Receipt No", "Check No", "Order Type",
 								"Table No", "Order At", "Printed At", "Cust Name", "Staff"));
 
 						if (receiptContentJson.getString("customerName").equals("-")) {
 							receiptInfoLabels.remove(6);
-						}
-
-						if (storeType == 1) {
-							receiptInfoLabels.remove(2); // remove table number if it is retail business
 						}
 
 						List<String> receiptInfoContents = new ArrayList<String>(Arrays.asList(receiptContentJson.getString("receiptNumber"),
@@ -2497,16 +2490,18 @@ public class ReceiptPrinter {
 									receiptContentJson.getString("customerName"));
 						}
 
+						String orderTypeName = null;
 						if (storeType == 1) { // if it is retail
-							// only deposit and sales appereaed in reatail
+							// only deposit and sales appeared in retail
+							receiptInfoLabels.remove(3);// remove table label
+							receiptInfoContents.remove(2); // remove table content
+							
 							if (!receiptContentJson.getString("orderType").equals("deposit")) {
-								receiptInfoContents.add(1, "Purchase");
+								orderTypeName = "Purchase";
 							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
-								receiptInfoContents.add(1, "Deposit");
+								orderTypeName = "Deposit";
 							}
-							receiptInfoContents.remove(2); // remove table since it is retail
 						} else if (storeType == 2) { // if it is f&b
-							String orderTypeName = null;
 
 							if (receiptContentJson.getString("orderType").equals("table")) {
 								orderTypeName = "Dine In";
@@ -2515,19 +2510,12 @@ public class ReceiptPrinter {
 							} else if (receiptContentJson.getString("orderType").equals("deposit")) {
 								orderTypeName = "Deposit";
 							}
-							receiptInfoContents.add(2, orderTypeName);
+						} else if (storeType == 3) { // if it is hotel							
+							receiptInfoLabels.set(3, "Room No");
+							receiptInfoLabels.set(4, "Booked At");
+							orderTypeName = receiptContentJson.getString("orderType");
 						}
-
-						receiptInfoLabels.add("Trans Type");
-
-						if (!receiptContentJson.isNull("transactionType")) {
-							if (receiptContentJson.getString("transactionType").equals("Void")) {
-								// change order at to void at
-								receiptInfoLabels.set(3, "Void At");
-
-							}
-							receiptInfoContents.add(receiptContentJson.getString("transactionType"));
-						}
+						receiptInfoContents.add(2, orderTypeName);
 
 						XWPFTable receiptInfoTable = doc.createTable(receiptInfoLabels.size(), 2);
 						CTTblLayoutType receiptInfoTableType = receiptInfoTable.getCTTbl().getTblPr().addNewTblLayout(); // set
@@ -2535,18 +2523,17 @@ public class ReceiptPrinter {
 																															// Layout
 						receiptInfoTableType.setType(STTblLayoutType.FIXED);
 						receiptInfoTable.getCTTbl().getTblPr().unsetTblBorders();
-
+						
 						for (int i = 0; i < receiptInfoLabels.size(); i++) {
-							
-							if(i == 5) {
+							/*if(i == 5) {
 								break;
-							}
+							}*/
 							
 							XWPFTableRow receiptInfoRow = receiptInfoTable.getRow(i);
 							createCellText(receiptInfoRow.getCell(0), receiptInfoLabels.get(i), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 							createCellText(receiptInfoRow.getCell(1), receiptInfoContents.get(i), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 						}
 
 						long receiptInfoTableWidths[] = { 1400, 2000 };
@@ -2565,10 +2552,10 @@ public class ReceiptPrinter {
 							}
 						}
 
-//						XWPFParagraph receiptInfoBreak = doc.createParagraph();
-//						receiptInfoBreak.setSpacingAfter(0);
-//						receiptInfoBreak.createRun().addBreak();
-//						receiptInfoBreak.removeRun(0);
+						XWPFParagraph receiptInfoBreak = doc.createParagraph();
+						receiptInfoBreak.setSpacingAfter(0);
+						receiptInfoBreak.createRun().addBreak();
+						receiptInfoBreak.removeRun(0);
 
 						// Receipt Content
 						XWPFTable table = doc.createTable();
@@ -2650,15 +2637,15 @@ public class ReceiptPrinter {
 							XWPFTableRow grandParentTableRow = table.createRow();
 
 							createCellText(grandParentTableRow.getCell(0), grandParentItem.getString("itemQuantity"),
-									false, ParagraphAlignment.LEFT);
+									false, ParagraphAlignment.LEFT, 9);
 
 							createCellText(grandParentTableRow.getCell(1), grandParentItem.getString("itemName"), false,
-									ParagraphAlignment.LEFT);
+									ParagraphAlignment.LEFT, 9);
 
 							createCellText(grandParentTableRow.getCell(2),
 									grandParentItem.getString("totalAmount").substring(0,
 											grandParentItem.getString("totalAmount").length() - 2),
-									false, ParagraphAlignment.RIGHT);
+									false, ParagraphAlignment.RIGHT, 9);
 
 							if (grandParentItem.has("parentItemArray")) {
 								JSONArray jsonParentArray = grandParentItem.getJSONArray("parentItemArray");
@@ -2673,13 +2660,13 @@ public class ReceiptPrinter {
 
 									XWPFTableRow parentTableRow = table.createRow();
 
-									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT);
+									createCellText(parentTableRow.getCell(0), "", false, ParagraphAlignment.LEFT, 9);
 
 									createCellText(parentTableRow.getCell(1), "  - " + parentItem.getString("itemName"),
-											false, ParagraphAlignment.LEFT);
+											false, ParagraphAlignment.LEFT, 9);
 
 									createCellText(parentTableRow.getCell(2), parentItemPrice, false,
-											ParagraphAlignment.RIGHT);
+											ParagraphAlignment.RIGHT, 9);
 
 									// Child loop
 									if (parentItem.has("childItemArray")) {
@@ -2695,14 +2682,14 @@ public class ReceiptPrinter {
 											XWPFTableRow childTableRow = table.createRow();
 
 											createCellText(childTableRow.getCell(0), "", false,
-													ParagraphAlignment.LEFT);
+													ParagraphAlignment.LEFT, 9);
 
 											createCellText(childTableRow.getCell(1),
 													"    * " + childItem.getString("itemName"), false,
-													ParagraphAlignment.LEFT);
+													ParagraphAlignment.LEFT, 9);
 
 											createCellText(childTableRow.getCell(2), childItemPrice, false,
-													ParagraphAlignment.RIGHT);
+													ParagraphAlignment.RIGHT, 9);
 										}
 									}
 
@@ -2798,10 +2785,10 @@ public class ReceiptPrinter {
 								border4.addNewBottom().setVal(STBorder.SINGLE);
 
 								createCellText(receiptResultTable.getRow(i + 1).getCell(0), receiptResultLabels.get(i),
-										true, ParagraphAlignment.LEFT);
+										true, ParagraphAlignment.LEFT, 9);
 
 								createCellText(receiptResultTable.getRow(i + 1).getCell(1),
-										receiptResultContents.get(i), true, ParagraphAlignment.RIGHT);
+										receiptResultContents.get(i), true, ParagraphAlignment.RIGHT, 9);
 
 								XWPFParagraph netTotalBottomBlankCellOne = receiptResultTable.getRow(i + 2).getCell(0)
 										.getParagraphs().get(0);
@@ -2826,10 +2813,10 @@ public class ReceiptPrinter {
 
 							} else {
 								createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
-										ParagraphAlignment.LEFT);
+										ParagraphAlignment.LEFT, 9);
 
 								createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
-										ParagraphAlignment.RIGHT);
+										ParagraphAlignment.RIGHT, 9);
 							}
 						}
 
@@ -2856,7 +2843,7 @@ public class ReceiptPrinter {
 
 						emptyParagraph = doc.createParagraph();
 						emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
-						emptyParagraph.setSpacingAfter(0);
+						emptyParagraph.setSpacingAfter(1440);
 						emptyParagraph.createRun().setText("Please Come Again");
 
 						// output the result as doc file

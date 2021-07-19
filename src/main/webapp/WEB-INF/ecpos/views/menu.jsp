@@ -3,6 +3,13 @@
 <head>
 <link rel="stylesheet"
 	href="${pageContext.request.contextPath}/adminLTE-2.4.5/plugins/iCheck/minimal/_all.css">
+<script>
+document.addEventListener("keydown", myFunction);
+
+function myFunction() {
+	document.getElementById("barcode_input").focus();
+}
+</script>
 <style>
 <style>
 .nav-pills li.active a, .nav-pills li.active a:focus, .nav-pills li.active a:hover

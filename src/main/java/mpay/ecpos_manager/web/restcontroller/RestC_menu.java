@@ -54,12 +54,23 @@ public class RestC_menu {
 		try {
 			if (user != null) {
 				connection = dataSource.getConnection();
-	
+				
+				JSONObject category = new JSONObject();
+				category.put("id", "0");
+				category.put("name", "Items Group");
+				if(menuImagePath.length() == 12) {
+					category.put("imagePath", menuImagePath + "imgC_120720211.png");
+				}else {
+					category.put("imagePath", menuImagePath.substring(55) + "imgC_120720211.png");
+				}
+				
+				jary.put(category);
+				
 				stmt = connection.prepareStatement("select * from category where is_active = 1 order by category_sequence asc;");
 				rs = stmt.executeQuery();
 				
 				while (rs.next()) {
-					JSONObject category = new JSONObject();
+					category = new JSONObject();
 					category.put("id", rs.getString("id"));
 					category.put("name", rs.getString("category_name"));
 					if(menuImagePath.length() == 12) {
@@ -89,6 +100,104 @@ public class RestC_menu {
 		}
 		return jsonResult.toString();
 	}
+	
+	@RequestMapping(value = { "/get_all_item_group" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getAllItemGroup(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("select * from menu_item_group where is_active = 1;");
+				rs = stmt.executeQuery();
+				
+				while (rs.next()) {
+					JSONObject itemGroup = new JSONObject();
+					itemGroup.put("id", rs.getString("id"));
+					itemGroup.put("name", rs.getString("menu_item_group_name"));
+					if(menuImagePath.length() == 12) {
+						itemGroup.put("imagePath", menuImagePath + "imgC_120720211.png");
+					}else {
+						itemGroup.put("imagePath", menuImagePath.substring(55) + "imgC_120720211.png");
+					}
+					
+					jary.put(itemGroup);
+				}
+				jsonResult.put("data", jary);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}
+	
+	/*@RequestMapping(value = { "/get_item_group_by_id/{itemGroupId}" }, method = { RequestMethod.GET }, produces = "application/json")
+	public String getItemGroupById(@PathVariable("itemGroupId") long itemGroupId, HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+		JSONArray jary = new JSONArray();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				connection = dataSource.getConnection();
+	
+				stmt = connection.prepareStatement("select * from menu_item_group_sequence a "
+						+ "left join menu_item b on b.id = a.menu_item_id "
+						+ "where a.menu_item_group_id = ?;");
+				stmt.setLong(1, itemGroupId);
+				rs = stmt.executeQuery();
+				
+				while (rs.next()) {
+					JSONObject itemGroup = new JSONObject();
+					itemGroup.put("id", rs.getString("id"));
+					itemGroup.put("name", rs.getString("menu_item_name"));
+					
+					jary.put(itemGroup);
+				}
+				jsonResult.put("data", jary);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		return jsonResult.toString();
+	}*/
 	
 	@RequestMapping(value = { "/get_menu_items/{categoryId}" }, method = { RequestMethod.GET }, produces = "application/json")
 	public String getMenuItems(@PathVariable("categoryId") long categoryId, HttpServletRequest request, HttpServletResponse response) {

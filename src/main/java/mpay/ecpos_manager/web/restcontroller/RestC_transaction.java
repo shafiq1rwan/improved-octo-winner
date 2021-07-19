@@ -1612,9 +1612,10 @@ public class RestC_transaction {
 			}
 			
 			String checkStatusCondition = "check_status = check_status";
-			if (orderType != 3) {
+			/*if (orderType != 3) {
 				checkStatusCondition = "check_status = 3";
-			}
+			}*/
+			checkStatusCondition = "check_status = 3";
 
 			stmt = connection.prepareStatement("update `check` set tender_amount = ?, overdue_amount = ?, " + checkStatusCondition + ", updated_date = now() where check_number = ? and "
 							+ tableNoCondition + " and check_status in (1, 2);");
@@ -1699,7 +1700,11 @@ public class RestC_transaction {
 
 			String checkStatusCondition = "";
 			String checkStatus = "open";
-			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0 && orderType != 3) {
+			/*if (overdueAmount.compareTo(BigDecimal.ZERO) == 0 && orderType != 3) {
+				checkStatusCondition = "check_status = 3, ";
+				checkStatus = "closed";
+			}*/
+			if (overdueAmount.compareTo(BigDecimal.ZERO) == 0) {
 				checkStatusCondition = "check_status = 3, ";
 				checkStatus = "closed";
 			}

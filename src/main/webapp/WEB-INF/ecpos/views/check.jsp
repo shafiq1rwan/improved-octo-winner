@@ -230,11 +230,11 @@ hr {
 											<div class='col-xs-2 col-sm-2 text-left'>
 												<b>Code</b>
 											</div>
-											<div class='col-xs-4 col-sm-5 text-left'
+											<div class='col-xs-4 col-sm-4 text-left'
 												style="padding: 0px;">
 												<b>Item</b>
 											</div>
-											<div class='col-xs-2 col-sm-2 text-center'>
+											<div class='col-xs-2 col-sm-3 text-center'>
 												<b>Quantity</b>
 											</div>
 											<div class='col-xs-2 col-sm-2 text-right'>
@@ -259,34 +259,36 @@ hr {
 																ng-if="grandParentItem.itemCode != 'RR1'">
 														</div>
 														<div class='col-xs-2 col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
-														<div class='col-xs-4 col-sm-5 text-left'
+														<div class='col-xs-4 col-sm-4 text-left'
 															style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice
 															| number:2}}</div>
 														<%
 															if (user.getStoreType() == 1) {
 														%>
-														<div class='col-xs-2 col-sm-2 text-left'
+														<div class='col-xs-2 col-sm-3 text-left'
 															style="padding-left: 0px; padding-right: 0px;"
 															ng-if="grandParentItem.isAlaCarte && !grandParentItem.hasModified">
-															<div class="input-group">
-																<input type="number"
-																	id="{{grandParentItem.checkDetailId}}"
-																	name="itemQuantity"
-																	style="width: 100%; padding-left: 6px;"
-																	value={{grandParentItem.itemQuantity}} min="1" max="99"
-																	size="1" /> <span class="input-group-btn">
-																	<button class="btn btn-flat btn-info"
-																		style="height: 23px; width: 23px; padding: 0px;"
-																		ng-click="submitUpdateItemQuantity(grandParentItem.checkDetailId)">&#10004;</button>
+															<div class="input-group input-group-sm">
+																<span class="input-group-btn" ng-click="minusItemQuantity(grandParentItem.checkDetailId)">
+																	<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
+																		<span class="glyphicon glyphicon-minus"></span>
+																	</button>
+																</span>
+																<input id="{{grandParentItem.checkDetailId}}" type="text" style="text-align: center;" 
+																class="form-control input-number" value={{grandParentItem.itemQuantity}}> 
+																<span class="input-group-btn" ng-click="addItemQuantity(grandParentItem.checkDetailId)">
+																	<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
+																		<span class="glyphicon glyphicon-plus"></span>
+																	</button>
 																</span>
 															</div>
 														</div>
-														<div class='col-xs-2 col-sm-2 text-center'
+														<div class='col-xs-2 col-sm-3 text-center'
 															ng-if="!(grandParentItem.isAlaCarte && !grandParentItem.hasModified)">{{grandParentItem.itemQuantity}}</div>
 														<%
 															} else {
 														%>
-														<div class='col-xs-2 col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
+														<div class='col-xs-2 col-sm-3 text-center'>{{grandParentItem.itemQuantity}}</div>
 														<%
 															}
 														%>
@@ -298,10 +300,10 @@ hr {
 														<div class="row">
 															<div class='col-xs-1 col-sm-1 text-center'></div>
 															<div class='col-xs-2 col-sm-2 text-left'>{{parentItem.itemCode}}</div>
-															<div class='col-xs-4 col-sm-5 text-left'
+															<div class='col-xs-4 col-sm-4 text-left'
 																style="padding: 0px;">:{{parentItem.itemName}}@{{parentItem.itemPrice|
 																number:2}}</div>
-															<div class='col-xs-2 col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
+															<div class='col-xs-2 col-sm-3 text-center'>{{parentItem.itemQuantity}}</div>
 															<div class='col-xs-2 col-sm-2 text-right'>{{parentItem.totalAmount|
 																number:2}}</div>
 														</div>
@@ -309,10 +311,10 @@ hr {
 															<div class="row">
 																<div class='col-xs-1 col-sm-1 text-center'></div>
 																<div class='col-xs-2 col-sm-2 text-left'>{{childItem.itemCode}}</div>
-																<div class='col-xs-4 col-sm-5 text-left'
+																<div class='col-xs-4 col-sm-4 text-left'
 																	style="padding: 0px;">&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice|
 																	number:2}}</div>
-																<div class='col-xs-2 col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
+																<div class='col-xs-2 col-sm-3 text-center'>{{childItem.itemQuantity}}</div>
 																<div class='col-xs-2 col-sm-2 text-right'>{{childItem.totalAmount|
 																	number:2}}</div>
 															</div>
@@ -325,34 +327,36 @@ hr {
 													<div class="row">
 														<div class='col-xs-1 col-sm-1 text-center'></div>
 														<div class='col-xs-2 col-sm-2 text-left'>{{grandParentItem.itemCode}}</div>
-														<div class='col-xs-4 col-sm-5 text-left'
+														<div class='col-xs-4 col-sm-4 text-left'
 															style="padding: 0px;">{{grandParentItem.itemName}}@{{grandParentItem.itemPrice
 															| number:2}}</div>
 														<%
 															if (user.getStoreType() == 1) {
 														%>
-														<div class='col-xs-2 col-sm-2 text-left'
+														<div class='col-xs-2 col-sm-3 text-left'
 															style="padding-left: 0px; padding-right: 0px;"
 															ng-if="grandParentItem.isAlaCarte && !grandParentItem.hasModified">
-															<div class="input-group">
-																<input type="number"
-																	id="{{grandParentItem.checkDetailId}}"
-																	name="itemQuantity"
-																	style="width: 100%; padding-left: 6px;"
-																	value={{grandParentItem.itemQuantity}} min="1" max="99"
-																	size="1" /> <span class="input-group-btn">
-																	<button class="btn btn-flat btn-info"
-																		style="height: 23px; width: 23px; padding: 0px;"
-																		ng-click="submitUpdateItemQuantity(grandParentItem.checkDetailId)">&#10004;</button>
+															<div class="input-group input-group-sm">
+																<span class="input-group-btn" ng-click="minusItemQuantity(grandParentItem.checkDetailId)">
+																	<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
+																		<span class="glyphicon glyphicon-minus"></span>
+																	</button>
+																</span>
+																<input id="{{grandParentItem.checkDetailId}}" type="text" style="text-align: center;" 
+																class="form-control input-number" value={{grandParentItem.itemQuantity}}> 
+																<span class="input-group-btn" ng-click="addItemQuantity(grandParentItem.checkDetailId)">
+																	<button type="button" class="btn btn-number" style="background-color: #1F8CE8; color: white;">
+																		<span class="glyphicon glyphicon-plus"></span>
+																	</button>
 																</span>
 															</div>
 														</div>
-														<div class='col-xs-2 col-sm-2 text-center'
+														<div class='col-xs-2 col-sm-3 text-center'
 															ng-if="!(grandParentItem.isAlaCarte && !grandParentItem.hasModified)">{{grandParentItem.itemQuantity}}</div>
 														<%
 															} else {
 														%>
-														<div class='col-xs-2 col-sm-2 text-center'>{{grandParentItem.itemQuantity}}</div>
+														<div class='col-xs-2 col-sm-3 text-center'>{{grandParentItem.itemQuantity}}</div>
 														<%
 															}
 														%>
@@ -364,10 +368,10 @@ hr {
 														<div class="row">
 															<div class='col-xs-1 col-sm-1 text-center'></div>
 															<div class='col-xs-2 col-sm-2 text-left'>{{parentItem.itemCode}}</div>
-															<div class='col-xs-4 col-sm-5 text-left'
+															<div class='col-xs-4 col-sm-4 text-left'
 																style="padding: 0px;">:{{parentItem.itemName}}@{{parentItem.itemPrice|
 																number:2}}</div>
-															<div class='col-xs-2 col-sm-2 text-center'>{{parentItem.itemQuantity}}</div>
+															<div class='col-xs-2 col-sm-3 text-center'>{{parentItem.itemQuantity}}</div>
 															<div class='col-xs-2 col-sm-2 text-right'>{{parentItem.totalAmount|
 																number:2}}</div>
 														</div>
@@ -375,10 +379,10 @@ hr {
 															<div class="row">
 																<div class='col-xs-1 col-sm-1 text-center'></div>
 																<div class='col-xs-2 col-sm-2 text-left'>{{childItem.itemCode}}</div>
-																<div class='col-xs-4 col-sm-5 text-left'
+																<div class='col-xs-4 col-sm-4 text-left'
 																	style="padding: 0px;">&nbsp;&nbsp;&nbsp;&nbsp;*{{childItem.itemName}}@{{childItem.itemPrice|
 																	number:2}}</div>
-																<div class='col-xs-2 col-sm-2 text-center'>{{childItem.itemQuantity}}</div>
+																<div class='col-xs-2 col-sm-3 text-center'>{{childItem.itemQuantity}}</div>
 																<div class='col-xs-2 col-sm-2 text-right'>{{childItem.totalAmount|
 																	number:2}}</div>
 															</div>
@@ -509,7 +513,7 @@ hr {
 														style="font-size: 14px; position: relative; bottom: -11px; left: -7%">
 														<br> CLOSE CHECK
 													</font> -->
-													<img src="${pageContext.request.contextPath}/img/icon/CancelItems.png" style="height: 35px; width: 35px"><br>CLOSE CHECK
+													<img src="${pageContext.request.contextPath}/img/icon/leftArrow.png" style="height: 35px; width: 35px"><br>BACK
 												</button>
 											</div>
 										</div>
@@ -792,6 +796,45 @@ hr {
 									</div>
 								</div>
 							</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="modal fade" data-backdrop="static" id="itemCountModal" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<form id="updateStock" ng-submit="updateItemStock(newValue)">
+							<div class="modal-header text-center">
+								<button type="button" class="close" data-dismiss="modal"
+									ng-click="resetItemCountModal()" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+								<h4 class="modal-title">Update Item Count</h4>
+							</div>
+							<div class="modal-body" style="padding: 30px;">
+								
+									<div class="row container-fluid" style="padding-right: 2px; padding-left: 2px;">
+										<div class="col-sm-6">
+											<p><font><b>Date : </b><span ng-bind="dateStart | date:'dd/MM/yyyy'"></span></font></p>
+											<p><font><b>Name : </b>{{itemsDetail.name}}</font></p>
+											<p><font><b>Current Stock : </b>{{itemsDetail.new_value}}</font></p>
+											<p><label>New Value : </label>
+												<input type="text" class="form-control" id="newValue" required></p>
+										</div>
+										<div class="col-sm-6" id="keyboard_1">
+										</div>
+									</div>
+								
+							</div>
+							<div class="modal-footer">
+								<div class="row" style="padding-top: 20px;">
+									<div class="col-sm-12 text-center">
+										<button class="btn btn-primary" type="submit" style="background-color: #1F8CE8; color: white;">UPDATE</button>
+										<button class="btn btn-danger" data-dismiss="modal" ng-click="resetItemStockModal()" aria-label="Cancel">Cancel</button>
+									</div>
+								</div>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>

@@ -116,7 +116,9 @@ public class RestC_check {
 			if (user != null) {
 				connection = dataSource.getConnection();
 	
-				stmt = connection.prepareStatement("SELECT * FROM `check` WHERE order_type = 3 AND check_status IN (1,2) order by check_number asc;");
+				stmt = connection.prepareStatement("SELECT a.*, b.name as 'status_name' "
+						+ "FROM `check` a left join check_status b on b.id = a.check_status "
+						+ "WHERE order_type = 3 AND check_status IN (1,2) order by check_number asc;");
 				rs = stmt.executeQuery();
 				
 				JSONArray checks = new JSONArray();
@@ -126,6 +128,8 @@ public class RestC_check {
 					int checkDay = WebComponents.trimCheckRef(rs.getString("check_ref_no"));
 					obj.put("check_number", rs.getString("check_number"));
 					obj.put("check_ref_no", checkDay);
+					obj.put("customer_name", rs.getString("customer_name"));
+					obj.put("status", rs.getString("status_name"));
 					checks.put(obj);
 //					checks.put(rs.getString("check_number"));
 				}
@@ -1970,6 +1974,214 @@ public class RestC_check {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/item_group_order" }, method = { RequestMethod.POST }, produces = "application/json")
+	public String saveItemGroupOrder(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
+		Logger.writeActivity("----------- CREATE ITEM GROUP ORDER START ---------", ECPOS_FOLDER);
+		Logger.writeActivity("request: " + data, ECPOS_FOLDER);
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
+		PreparedStatement stmt7 = null;
+		PreparedStatement stmt8 = null;
+		PreparedStatement stmt9 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
+		ResultSet rs6 = null;
+		ResultSet rs7 = null;
+		ResultSet rs8 = null;
+		ResultSet rs9 = null;
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+		
+		try {
+			if (user != null) {
+				JSONObject order = new JSONObject(data);
+				
+				connection = dataSource.getConnection();
+				connection.setAutoCommit(false);
+	
+				DecimalFormat df = new DecimalFormat("#0.00");
+				
+				// check necessary data exist
+				if ((order.has("deviceType") && !order.isNull("deviceType"))
+						&& (order.has("orderType") && !order.isNull("orderType"))
+						&& (order.has("checkNo") && !order.isNull("checkNo") && !order.getString("checkNo").isEmpty())) {
+					
+					// check item group exist
+					if (order.has("itemGroup") && !order.isNull("itemGroup") && order.getJSONObject("itemGroup").length() > 0) {
+						JSONObject itemGroup = order.getJSONObject("itemGroup");
+						//int orderQuantity = itemGroup.getInt("orderQuantity");
+	
+						String tableNoCondition = "table_number is null";
+						if (order.getInt("orderType") == 1) {// order type = table
+							tableNoCondition = "table_number = " + order.getInt("tableNo");
+						}
+	
+						stmt = connection.prepareStatement("select * from `check` where check_number = ? and " + tableNoCondition + " and order_type = ? and check_status in (1, 2);");
+						stmt.setString(1, order.getString("checkNo"));
+						stmt.setInt(2, order.getInt("orderType"));
+						rs = stmt.executeQuery();
+	
+						if (rs.next()) {
+							long checkId = rs.getLong("id");
+							String checkNo = rs.getString("check_number");
+	
+							stmt2 = connection.prepareStatement("select * from menu_item_group_sequence a "
+									+ "left join menu_item b on b.id = a.menu_item_id "
+									+ "where a.menu_item_group_id = ?;");
+							stmt2.setLong(1, itemGroup.getLong("id"));
+							rs2 = stmt2.executeQuery();
+
+							while (rs2.next()) {
+								if (rs2.getBoolean("is_active") == true) {
+									
+									BigDecimal totalAmount = rs2.getBigDecimal("menu_item_base_price");
+									boolean isItemTaxable = rs2.getBoolean("is_taxable");
+
+									JSONObject charges = new JSONObject();
+									JSONArray totalTaxes = new JSONArray();
+									JSONArray overallTaxes = new JSONArray();
+
+									if (isItemTaxable) {
+										stmt3 = connection.prepareStatement("select tc.* from tax_charge tc " + 
+												"inner join charge_type_lookup ctlu on ctlu.charge_type_number = tc.charge_type " + 
+												"where tc.is_active = 1;");
+										rs3 = stmt3.executeQuery();
+
+										while (rs3.next()) {
+											JSONObject taxInfo = new JSONObject();
+											
+											if (rs3.getInt("charge_type") == 1) {
+												taxInfo.put("id", rs3.getString("id"));
+												taxInfo.put("rate", rs3.getString("rate"));
+												
+												totalTaxes.put(taxInfo);
+											} else if (rs3.getInt("charge_type") == 2) {
+												taxInfo.put("id", rs3.getString("id"));
+												taxInfo.put("rate", rs3.getString("rate"));
+												
+												overallTaxes.put(taxInfo);
+											}
+										}
+										charges.put("totalTaxes", totalTaxes);
+										charges.put("overallTaxes", overallTaxes);
+									}
+									Logger.writeActivity("isItemTaxable: " + isItemTaxable, ECPOS_FOLDER);
+									Logger.writeActivity("charges: " + charges, ECPOS_FOLDER);
+
+									stmt4 = connection.prepareStatement("insert into check_detail (check_id,check_number,device_type,menu_item_id,menu_item_code,menu_item_name,menu_item_price,quantity,total_amount,check_detail_status,created_date) "
+													+ "values (?,?,?,?,?,?,?,?,?,1,now());", Statement.RETURN_GENERATED_KEYS);
+									stmt4.setLong(1, checkId);
+									stmt4.setString(2, checkNo);
+									stmt4.setInt(3, order.getInt("deviceType"));  
+									stmt4.setLong(4, rs2.getLong("id"));
+									stmt4.setString(5, rs2.getString("backend_id"));
+									stmt4.setString(6, rs2.getString("menu_item_name"));
+									stmt4.setString(7, rs2.getString("menu_item_base_price"));
+									stmt4.setInt(8, 1);
+									stmt4.setBigDecimal(9, totalAmount);
+									int insert1stCheckDetail = stmt4.executeUpdate();
+
+									if (insert1stCheckDetail > 0) {
+										rs4 = stmt4.getGeneratedKeys();
+
+										if (rs4.next()) {
+											long parentCheckDetailId = rs4.getLong(1);
+											
+											boolean updateCheck = updateCheck(connection, checkId, checkNo, 1, totalAmount, isItemTaxable, charges);
+
+											if (updateCheck) {
+												connection.commit();
+												Logger.writeActivity("Item Successfully Ordered", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "00");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Successfully Ordered");
+											} else {
+												connection.rollback();
+												Logger.writeActivity("Failed to update check", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Failed to update check");
+											}
+										} else {
+											connection.rollback();
+											Logger.writeActivity("Check Detail ID Failed To Return", ECPOS_FOLDER);
+											jsonResult.put(Constant.RESPONSE_CODE, "01");
+											jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail ID Failed To Return");
+										}
+									} else {
+										connection.rollback();
+										Logger.writeActivity("Check Detail Failed To Insert", ECPOS_FOLDER);
+										jsonResult.put(Constant.RESPONSE_CODE, "01");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Detail Failed To Insert");
+									}
+								} else {
+									connection.rollback();
+									Logger.writeActivity("Item Not Active", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Item Not Active");
+								}
+							}
+						} else {
+							connection.rollback();
+							Logger.writeActivity("Check Not Found", ECPOS_FOLDER);
+							jsonResult.put(Constant.RESPONSE_CODE, "01");
+							jsonResult.put(Constant.RESPONSE_MESSAGE, "Check Not Found");
+						}
+					} else {
+						Logger.writeActivity("Order Item Not Found", ECPOS_FOLDER);
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "Order Item Not Found");
+					}
+				} else {
+					Logger.writeActivity("Request Not Complete", ECPOS_FOLDER);
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Request Not Complete");
+				}
+				connection.setAutoCommit(true);
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+				if (stmt2 != null) stmt2.close();
+				if (stmt3 != null) stmt3.close();
+				if (stmt4 != null) stmt4.close();
+				if (stmt5 != null) stmt5.close();
+				if (stmt6 != null) stmt6.close();
+				if (stmt7 != null) stmt7.close();
+				if (stmt8 != null) stmt8.close();
+				if (stmt9 != null) stmt9.close();
+				if (rs != null) {rs.close();rs = null;}
+				if (rs2 != null) {rs2.close();rs2 = null;}
+				if (rs3 != null) {rs3.close();rs3 = null;}
+				if (rs4 != null) {rs4.close();rs4 = null;}
+				if (rs5 != null) {rs5.close();rs5 = null;}
+				if (rs6 != null) {rs6.close();rs6 = null;}
+				if (rs7 != null) {rs7.close();rs7 = null;}
+				if (rs8 != null) {rs8.close();rs8 = null;}
+				if (rs9 != null) {rs9.close();rs9 = null;}
+				if (connection != null) {connection.close();}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		Logger.writeActivity("----------- CREATE ITEM GROUP ORDER END ---------", ECPOS_FOLDER);
+		return jsonResult.toString();
+	}
+	
 	@RequestMapping(value = { "/barcode_order" }, method = { RequestMethod.POST }, produces = "application/json")
 	public String saveBarcodeOrder(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
 		Logger.writeActivity("----------- CREATE BARCODE ORDER START ---------", ECPOS_FOLDER);
@@ -1996,7 +2208,7 @@ public class RestC_check {
 				
 				connection = dataSource.getConnection();
 				connection.setAutoCommit(false);
-	
+				
 				if ((order.has("deviceType") && !order.isNull("deviceType"))
 						&& (order.has("orderType") && !order.isNull("orderType"))
 						&& (order.has("checkNo") && !order.isNull("checkNo") && !order.getString("checkNo").isEmpty())) {

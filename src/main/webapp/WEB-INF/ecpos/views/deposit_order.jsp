@@ -69,7 +69,7 @@
 												</div>
 												<div class="panel-body">
 													<div class="panel-body center-block" style="color: grey; font-weight: bold; font-size: small;">
-														{{check.check_ref_no}}
+														 CHECK NO {{check.check_ref_no}} ({{check.status}})</br>{{check.customer_name}}
 													</div>
 												</div>
 											</div>

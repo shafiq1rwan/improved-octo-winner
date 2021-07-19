@@ -22,7 +22,7 @@
 		$('#cancelItemButton').prop('disabled', true);
 		$('#paymentButton').prop('disabled', true);
 		$('#splitCheckButton').prop('disabled', true);
-		$('#closeCheckButton').prop('disabled', true);
+		//$('#closeCheckButton').prop('disabled', true);
 		$('#allGrandParentItemCheckbox').show();
 		$('input[name=grandParentItemCheckbox]').show();
 		$('#terminalList').hide();
@@ -108,12 +108,12 @@
 						$('#cancelItemButton').prop('disabled', true);
 						$('#paymentButton').prop('disabled', true);
 						$('#splitCheckButton').prop('disabled', true);
-						$('#closeCheckButton').prop('disabled', true);
+						//$('#closeCheckButton').prop('disabled', true);
 					} else {
 						$('#cancelItemButton').prop('disabled', false);
 						$('#paymentButton').prop('disabled', false);
 						$('#splitCheckButton').prop('disabled', false);
-						$('#closeCheckButton').prop('disabled', false);
+						//$('#closeCheckButton').prop('disabled', false);
 					}
 					
 					setTimeout(function() {
@@ -776,8 +776,14 @@
 		}
 		
 		$scope.closeCheck = function() {
-
-			Swal.fire({
+			var data = "/deposit_order";
+			/*if ($scope.table_no != null && $scope.table_no != '') {
+				data = "/check/" + "table" + "/" + chk_no + "/" + $scope.table_no;
+			} else {
+				data = "/check/" + "table" + "/" + chk_no + "/" + $scope.room_id + "/" + $scope.status_id;
+			}*/
+			$location.path(data);
+			/*Swal.fire({
 				title: 'Are you sure to close check?',
 				text: "You won't be able to revert this!",
 				icon: 'warning',
@@ -826,7 +832,7 @@
 								});
 						});
 					}
-			}});
+			}});*/
 
 			// var confirmation = confirm("Confirm to close check?");
 			// if (confirmation == true) {
@@ -1474,5 +1480,20 @@
 			document.getElementById("openCategoryList").style.boxShadow = "1px 1px 4px grey";
 		}
 		
+		$scope.minusItemQuantity = function(checkId) {
+			var num = +$("#"+checkId).val();
+			if(num > 1){
+				$("#"+checkId).val(num - 1);
+				$scope.submitUpdateItemQuantity(checkId);
+			}
+		}
+		
+		$scope.addItemQuantity = function(checkId) {
+			var num = +$("#"+checkId).val();
+			if(num < 99){
+				$("#"+checkId).val(num + 1);
+				$scope.submitUpdateItemQuantity(checkId);
+			}
+		}
 	});
 </script>
