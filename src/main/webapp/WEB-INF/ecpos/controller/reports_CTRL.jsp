@@ -224,5 +224,32 @@ app.controller('reports_CTRL', function($scope, $http, $window, $routeParams, $l
 			});
 		}
 	}
+	
+	$scope.printEODReport = function() {
+		
+		$http.post("${pageContext.request.contextPath}/rc/configuration/print_eod")
+		.then(function(response) {
+			if (response.data.response_code === "00") {
+				console.log("Success Printable");
+			}
+		},
+		function(response) {
+			/* alert("Session TIME OUT"); */
+			/* window.location.href = "${pageContext.request.contextPath}/signout"; */
+			Swal.fire({
+				title: 'Oops...',
+				text: "Session Timeout",
+				icon: 'error',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'OK'
+				},function(isConfirm){
+				if (isConfirm) {
+				window.location.href = "${pageContext.request.contextPath}/signout";
+				}
+			});
+		});
+	}
 });
 </script>

@@ -3409,6 +3409,57 @@ public class RestC_configuration {
 		return jsonResult.toString();
 	}
 	
+	@RequestMapping(value = { "/print_eod" }, method = RequestMethod.POST, produces = "application/json")
+	public String printEndOfDayReport(HttpServletRequest request, HttpServletResponse response) {
+		JSONObject jsonResult = new JSONObject();
+
+		WebComponents webComponent = new WebComponents();
+		UserAuthenticationModel user = webComponent.getEcposSession(request);
+
+		try {
+			if (user != null) {
+				System.out.println("user = "+user.name);
+				//JSONObject jsonData = new JSONObject(data);
+
+				JSONObject printableJson = receiptPrinter.printEndOfDayReport(user.getName(), user.getStoreType(), false);
+
+				if (printableJson.getString("response_code").equals("00")) {
+					jsonResult.put(Constant.RESPONSE_CODE, "00");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE,
+							"Printing Failed. Please check your printer configuration.");
+				}
+				/*if (jsonData.has("checkNo")) {
+					JSONObject printableJson = receiptPrinter.printReceipt(user.getName(), user.getStoreType(),
+							jsonData.getString("checkNo"), false);
+
+					if (printableJson.getString("response_code").equals("00")) {
+						jsonResult.put(Constant.RESPONSE_CODE, "00");
+						jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+					} else {
+						jsonResult.put(Constant.RESPONSE_CODE, "01");
+						jsonResult.put(Constant.RESPONSE_MESSAGE,
+								"Printing Failed. Please check your printer configuration.");
+					}
+				} else {
+					jsonResult.put(Constant.RESPONSE_CODE, "01");
+					jsonResult.put(Constant.RESPONSE_MESSAGE, "Check No Not Found");
+				}*/
+			} else {
+				response.setStatus(408);
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+
+		}
+
+		return jsonResult.toString();
+	}
+	
 	public void cashDrawerMK410() {
 		System.out.println("Keluar lah wahai MK410!!");
 		byte[] open = {27,112,0,25,(byte) 250};

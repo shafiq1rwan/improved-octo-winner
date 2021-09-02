@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -87,6 +88,9 @@ public class ReceiptPrinter {
 
 	@Value("${receipt-path}")
 	private String receiptPath;
+	
+	@Value("${eod-path}")
+	private String eodPath;
 
 	private static final String RECEIPT_FONT_FAMILY = "Arial";
 
@@ -2917,6 +2921,496 @@ public class ReceiptPrinter {
 				}
 
 				// }
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception :", HARDWARE_FOLDER);
+			e.printStackTrace();
+		}
+		System.out.println(jsonResult.toString());
+		return jsonResult;
+	}
+	
+	public JSONObject printEndOfDayReport(String staffName, int storeType, boolean isDisplayPdf) {
+		JSONObject jsonResult = new JSONObject();
+		System.out.println("start printEndOfDayReport() method");
+		try {
+			JSONObject eodHeader = getReceiptHeader();
+			JSONObject eodContent = getEndOfDayContent();
+			// JSONObject receiptFooter
+			JSONObject response = printEndOfDayData(staffName, storeType, eodHeader, eodContent, null, isDisplayPdf);
+
+			if (response.length() > 0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+			} else {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "PRINTING FAIL");
+			}
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		}		
+		Logger.writeActivity("Print Receipt Result: " + jsonResult.toString(), ECPOS_FOLDER);
+		return jsonResult;
+	}
+	
+	// end of day report content
+	private JSONObject getEndOfDayContent() {
+		JSONObject jsonResult = new JSONObject();
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
+		ResultSet rs4 = null;
+		ResultSet rs5 = null;
+		
+		final String reportName = "End Of Day Report";
+		
+		try {
+			connection = dataSource.getConnection();
+
+			SimpleDateFormat d = new SimpleDateFormat("dd MMMM yyyy");
+			SimpleDateFormat t = new SimpleDateFormat("h:mm a");
+			SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Calendar c = Calendar.getInstance();
+			c.setTime(new Date());
+			
+			jsonResult.put("reportName", reportName);
+			jsonResult.put("reportDate", d.format(c.getTime()));
+			
+			String toTime = sdf2.format(c.getTime());
+			String toDisplayTime = t.format(c.getTime());
+			
+			if (c.get(Calendar.HOUR_OF_DAY) < 9) {
+				c.add(Calendar.DAY_OF_YEAR,-1);
+			}
+			c.set(Calendar.HOUR_OF_DAY, 9);
+			c.set(Calendar.MINUTE, 0);
+			c.set(Calendar.SECOND, 0);
+			String fromTime = sdf2.format(c.getTime());
+			String fromDisplayTime = t.format(c.getTime());
+			
+			jsonResult.put("reportTimeRange", fromDisplayTime + "-" + toDisplayTime);
+			
+			BigDecimal cashAmt = new BigDecimal("0.00");
+			BigDecimal newAmt = new BigDecimal("0.00");
+			
+			BigDecimal openAmt = new BigDecimal("0.00");
+			BigDecimal floatAmt = new BigDecimal("0.00");
+			BigDecimal drawerCashSales = new BigDecimal("0.00");
+			BigDecimal drawertotalCashRefund = new BigDecimal("0.00");
+			BigDecimal finalAdjustments = new BigDecimal("0.00");
+			
+			stmt5 = connection.prepareStatement("select cash_amount,"
+					+ "'' as 'new_amount','' as 'reference' from cash_drawer a "
+					+ "union "
+					+ "(select cash_amount,new_amount,reference from cash_drawer_log b "
+					+ "where b.created_date > ? and b.created_date < ? "
+					+ "order by b.created_date);");
+			stmt5.setString(1, fromTime);
+			stmt5.setString(2, toTime);
+			rs5 = stmt5.executeQuery();
+			
+			int count = 0;
+			while (rs5.next()) {
+				if (count == 0) {
+					floatAmt = new BigDecimal(rs5.getString("cash_amount"));
+					openAmt = floatAmt;
+				} else {
+					cashAmt = new BigDecimal(rs5.getString("cash_amount"));
+					newAmt = new BigDecimal(rs5.getString("new_amount"));
+					if (count == 1) {
+						if (rs5.getString("reference").equalsIgnoreCase("Cash From Sale")) {
+							openAmt = newAmt.subtract(cashAmt);
+						} else {
+							openAmt = newAmt.add(cashAmt);
+						}
+					}
+				}
+				
+				count++;
+			}
+			
+			stmt = connection.prepareStatement("select a.id,a.check_id,a.transaction_amount,a.transaction_type "
+					+ "from transaction a inner join `check` b on a.check_id = b.id "
+					+ "where a.created_date > ? and a.created_date < ? "
+					+ "and b.order_type = 2 "					// take away only
+					+ "and a.transaction_type in (1,2) "		// 1 = sale & 2 = void only
+					+ "and payment_method = 1;");				// cash only
+			stmt.setString(1, fromTime);
+			stmt.setString(2, toTime);
+			rs = stmt.executeQuery();
+			
+			while (rs.next()) {
+				
+				if (rs.getString("transaction_type").equals("1")) { // sale
+					drawerCashSales = drawerCashSales.add(new BigDecimal(rs.getString("transaction_amount")));
+				} else { // void
+					drawerCashSales = drawerCashSales.add(new BigDecimal(rs.getString("transaction_amount")));
+					drawertotalCashRefund = drawertotalCashRefund.add(new BigDecimal(rs.getString("transaction_amount")));
+				}
+			}
+			
+			BigDecimal depositCashSales = new BigDecimal("0.00");
+			stmt2 = connection.prepareStatement("select a.transaction_amount "
+					+ "from transaction a inner join `check` b on a.check_id = b.id "
+					+ "where a.created_date > ? and a.created_date < ? "
+					+ "and b.order_type = 3 "					// deposit only
+					+ "and a.transaction_type = 1 "				// sale only
+					+ "and a.payment_method = 1;");				// cash only
+			stmt2.setString(1, fromTime);
+			stmt2.setString(2, toTime);
+			rs2 = stmt2.executeQuery();
+			
+			while (rs2.next()) {
+				depositCashSales = depositCashSales.add(new BigDecimal(rs2.getString("transaction_amount")));
+			}
+			finalAdjustments = openAmt.add(drawerCashSales).add(depositCashSales);
+			floatAmt = finalAdjustments.subtract(drawerCashSales).subtract(depositCashSales);
+			
+			BigDecimal creditCardSales = new BigDecimal("0.00");
+			stmt3 = connection.prepareStatement("select sum(transaction_amount) as transaction_amount,card_issuer_name "
+					+ "from transaction where "
+					+ "created_date > ? and created_date < ? "
+					+ "and transaction_type = 1 "			// sale only
+					+ "and transaction_status = 3 "			// approved only
+					+ "and payment_method = 2 "				// credit card only
+					+ "group by card_issuer_name;");
+			
+			stmt3.setString(1, fromTime);
+			stmt3.setString(2, toTime);
+			rs3 = stmt3.executeQuery();
+			
+			JSONArray creditCardSalesByName = new JSONArray();
+			while (rs3.next()) {
+				creditCardSales = creditCardSales.add(new BigDecimal(rs3.getString("transaction_amount")));
+				JSONObject obj = new JSONObject();
+				obj.put("card_issuer_name", rs3.getString("card_issuer_name"));
+				obj.put("transaction_amount", "RM "+new BigDecimal(rs3.getString("transaction_amount")).setScale(2, BigDecimal.ROUND_HALF_EVEN));
+				creditCardSalesByName.put(obj);
+			}
+			
+			BigDecimal eWalletSales = new BigDecimal("0.00");
+			stmt4 = connection.prepareStatement("select sum(transaction_amount) as transaction_amount,qr_issuer_type "
+					+ "from transaction where "
+					+ "created_date > ? and created_date < ? "
+					+ "and transaction_type = 1 "			// sale only
+					+ "and transaction_status = 3 "			// approved only
+					+ "and payment_method = 3 "				// e-wallet only
+					+ "group by qr_issuer_type;");
+			
+			stmt4.setString(1, fromTime);
+			stmt4.setString(2, toTime);
+			rs4 = stmt4.executeQuery();
+			
+			JSONArray eWalletSalesByName = new JSONArray();
+			while (rs4.next()) {
+				eWalletSales = eWalletSales.add(new BigDecimal(rs4.getString("transaction_amount")));
+				JSONObject obj = new JSONObject();
+				obj.put("qr_issuer_type", rs4.getString("qr_issuer_type"));
+				obj.put("transaction_amount", "RM "+new BigDecimal(rs4.getString("transaction_amount")).setScale(2, BigDecimal.ROUND_HALF_EVEN));
+				eWalletSalesByName.put(obj);
+			}
+			
+			jsonResult.put("openAmt", "RM "+openAmt.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("floatAmt", "RM "+floatAmt.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("drawerCashSales", "RM "+drawerCashSales.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("drawertotalCashRefund", "RM "+drawertotalCashRefund.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("depositCashSales", "RM "+depositCashSales.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("creditCardSales", "RM "+creditCardSales.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("creditCardSalesByName", creditCardSalesByName);
+			jsonResult.put("eWalletSales", "RM "+eWalletSales.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			jsonResult.put("eWalletSalesByName", eWalletSalesByName);
+			jsonResult.put("finalAdjustments", "RM "+finalAdjustments.setScale(2, BigDecimal.ROUND_HALF_EVEN));
+			
+		} catch (Exception e) {
+			Logger.writeError(e, "Exception: ", ECPOS_FOLDER);
+			e.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) {stmt.close();}
+				if (stmt2 != null) {stmt2.close();}
+				if (stmt3 != null) {stmt3.close();}
+				if (stmt4 != null) {stmt4.close();}
+				if (stmt5 != null) {stmt5.close();}
+				if (rs != null) {rs.close();}
+				if (rs2 != null) {rs2.close();}
+				if (rs3 != null) {rs3.close();}
+				if (rs4 != null) {rs4.close();}
+				if (rs5 != null) {rs5.close();}
+				
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Printable Result: " + jsonResult.toString());
+		return jsonResult;
+	}
+	
+	private JSONObject printEndOfDayData(String staffName, int storeType, JSONObject eodHeader, 
+			JSONObject eodContent, JSONObject eodFooter, boolean isDisplayPdf) {
+		XWPFParagraph emptyParagraph = null;
+		JSONObject jsonResult = new JSONObject();
+
+		try {
+			if (eodHeader.length() == 0 || eodContent.length() == 0) {
+				jsonResult.put(Constant.RESPONSE_CODE, "01");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "Receipt Data Incomplete");
+			} else {
+				JSONObject printerResult = getSelectedReceiptPrinter();
+				
+				new File(eodPath).mkdirs();
+
+				PrintService myPrintService = null;
+				String templateName = "ReceiptStyleTemplate_EPSON";
+		
+				if (printerResult.has("receipt_printer")) {
+					Logger.writeActivity("Selected Printer Brand: " + printerResult.getString("receipt_printer"),
+							ECPOS_FOLDER);
+					
+					if(printerResult.getString("receipt_printer").equals("No Printing")) {
+						Logger.writeActivity("No Printing", ECPOS_FOLDER);
+					} else {
+						myPrintService = findPrintService(printerResult.getString("receipt_printer"));
+						if(myPrintService!= null) {
+							Logger.writeActivity("Selected Printer: " + myPrintService.getName(), ECPOS_FOLDER);
+						} else {
+							Logger.writeActivity("No such Printer Exist in your PC", ECPOS_FOLDER);
+						}
+					}
+
+					if (printerResult.getString("receipt_printer").equals("EPSON"))
+						templateName = "ReceiptStyleTemplate_EPSON";
+					else if (printerResult.getString("receipt_printer").equals("Posiflex"))
+						templateName = "ReceiptStyleTemplate_Posiflex";
+					else if(printerResult.getString("receipt_printer").equals("IBM"))
+						templateName = "ReceiptStyleTemplate_EPSON";
+					else if(printerResult.getString("receipt_printer").equals("TP8"))
+						templateName = "ReceiptStyleTemplate_Posiflex";
+					else if (printerResult.getString("receipt_printer").equals("POS80"))
+						templateName = "ReceiptStyleTemplate_EPSON";
+					else {
+						templateName = "ReceiptStyleTemplate_Posiflex";
+					}
+				}
+
+				System.out.println("Template Name: " + templateName);
+				Logger.writeActivity("Template Name: " + templateName, ECPOS_FOLDER);
+				try (XWPFDocument doc = new XWPFDocument(new FileInputStream(URLDecoder.decode(getClass()
+						.getClassLoader().getResource(Paths.get("docx", templateName + ".docx").toString())
+						.toString().substring("file:/".length()), "UTF-8")))) {
+					
+
+					if (doc.getStyles() != null) {
+						
+						System.out.println("Loaded Template Style: " + doc.getStyles().toString());
+						Logger.writeActivity("Loaded Template Style: " + doc.getStyles().toString(), ECPOS_FOLDER);
+						XWPFStyles styles = doc.getStyles();
+						CTFonts fonts = CTFonts.Factory.newInstance();
+						fonts.setAscii(RECEIPT_FONT_FAMILY);
+						styles.setDefaultFonts(fonts);
+					}
+
+					// Header Store Name
+					XWPFParagraph headerStoreNameParagraph = doc.createParagraph();
+					headerStoreNameParagraph.setAlignment(ParagraphAlignment.CENTER);
+					headerStoreNameParagraph.setVerticalAlignment(TextAlignment.TOP);
+					headerStoreNameParagraph.setSpacingAfter(0);
+
+					XWPFRun runHeaderStoreNameParagraph = headerStoreNameParagraph.createRun();
+					runHeaderStoreNameParagraph.setBold(true);
+					runHeaderStoreNameParagraph.setFontSize(12);
+					runHeaderStoreNameParagraph.setText(eodHeader.getString("storeName"));
+
+					// Header Store Address
+					XWPFParagraph headerStoreAddressParagraph = doc.createParagraph();
+					headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+					headerStoreAddressParagraph.setSpacingAfter(0);
+
+					XWPFRun runHeaderStoreAddressParagraph = headerStoreAddressParagraph.createRun();
+					runHeaderStoreAddressParagraph.setFontSize(8);
+					runHeaderStoreAddressParagraph.setText(eodHeader.getString("storeAddress"));
+					runHeaderStoreAddressParagraph.addBreak();
+					runHeaderStoreAddressParagraph
+							.setText("Contact No: " + eodHeader.getString("storeContactHpNumber"));
+					runHeaderStoreAddressParagraph.addBreak();
+					runHeaderStoreAddressParagraph.addBreak();
+					
+					// Header Report Type
+					XWPFParagraph headerReportTypeParagraph = doc.createParagraph();
+					headerStoreAddressParagraph.setAlignment(ParagraphAlignment.CENTER);
+					headerStoreAddressParagraph.setSpacingAfter(0);
+
+					XWPFRun runHeaderReportTypeParagraph = headerReportTypeParagraph.createRun();
+					runHeaderStoreAddressParagraph.setFontSize(9);
+					runHeaderStoreAddressParagraph.setText(eodContent.getString("reportName"));
+					runHeaderStoreAddressParagraph.addBreak();
+					runHeaderStoreAddressParagraph.setText(eodContent.getString("reportDate"));
+					runHeaderStoreAddressParagraph.addBreak();
+					runHeaderStoreAddressParagraph.setText(eodContent.getString("reportTimeRange"));
+					runHeaderStoreAddressParagraph.addBreak();
+
+					emptyParagraph = doc.createParagraph();
+					emptyParagraph.setSpacingAfter(0);
+					emptyParagraph.createRun().addBreak();
+					emptyParagraph.removeRun(0);
+
+					// Report Content
+					//XWPFTable table = doc.createTable();
+					//CTTblLayoutType type = table.getCTTbl().getTblPr().addNewTblLayout(); // set Layout
+					//type.setType(STTblLayoutType.FIXED);
+
+					//table.getCTTbl().getTblPr().unsetTblBorders(); // set table no border
+
+					//XWPFTableRow tableRowOne = table.getRow(0);
+					//XWPFTableRow tableRowTwo = table.createRow();
+					
+					//int twipsPerInch =  1000;
+					
+					// Receipt Result
+					List<String> receiptResultLabels = new ArrayList<>();
+					receiptResultLabels.add("Open By");
+					receiptResultLabels.add("Open Amount");
+					receiptResultLabels.add("Total Cash Sales");
+					receiptResultLabels.add("Total Cash Refund");
+					receiptResultLabels.add("Total Deposit Cash Sales");
+					receiptResultLabels.add("Total Credit Card Sales");
+					
+					List<String> receiptResultContents = new ArrayList<String>();
+					//receiptResultContents.add(formatDecimalString(eodContent.getString("totalAmount")));
+					//receiptResultContents.add(formatDecimalString(eodContent.getString("totalAmountWithTaxRoundingAdjustment")));
+					//receiptResultContents.add(formatDecimalString(eodContent.getString("grandTotalAmount")));
+					receiptResultContents.add(staffName);
+					receiptResultContents.add(eodContent.getString("openAmt"));
+					receiptResultContents.add(eodContent.getString("drawerCashSales"));
+					receiptResultContents.add(eodContent.getString("drawertotalCashRefund"));
+					receiptResultContents.add(eodContent.getString("depositCashSales"));
+					receiptResultContents.add(eodContent.getString("creditCardSales"));
+					
+					if (eodContent.getJSONArray("creditCardSalesByName").length() > 0) {
+						JSONArray arr = eodContent.getJSONArray("creditCardSalesByName");
+						for(int i = 0; i < arr.length(); i++) {
+							JSONObject obj = arr.getJSONObject(i);
+							receiptResultLabels.add(obj.getString("card_issuer_name"));
+							receiptResultContents.add(obj.getString("transaction_amount"));
+						}
+					}
+					
+					receiptResultLabels.add("Total e-Wallet Sales");
+					receiptResultContents.add(eodContent.getString("eWalletSales"));
+					
+					if (eodContent.getJSONArray("eWalletSalesByName").length() > 0) {
+						JSONArray arr = eodContent.getJSONArray("eWalletSalesByName");
+						System.out.println("wallet arr size = "+arr.length());
+						for(int i = 0; i < arr.length(); i++) {
+							JSONObject obj = arr.getJSONObject(i);
+							System.out.println(obj.getString("qr_issuer_type"));
+							receiptResultLabels.add(obj.getString("qr_issuer_type"));
+							receiptResultContents.add(obj.getString("transaction_amount"));
+						}
+					}
+					
+					receiptResultLabels.add("Final Adjustment (Total Amount In Cash Register)");
+					receiptResultLabels.add("Float");
+					
+					receiptResultContents.add(eodContent.getString("finalAdjustments"));
+					receiptResultContents.add(eodContent.getString("floatAmt"));
+					
+					XWPFTable receiptResultTable = doc.createTable(receiptResultLabels.size()+4, 2);
+					receiptResultTable.getCTTbl().getTblPr().addNewTblLayout().setType(STTblLayoutType.FIXED);
+					receiptResultTable.getCTTbl().getTblPr().unsetTblBorders(); // set table no
+					for (int i = 0; i < receiptResultLabels.size(); i++) {
+						XWPFTableRow receiptResultRow = receiptResultTable.getRow(i);
+						if (receiptResultLabels.get(i).equalsIgnoreCase("Total Cash Sales") || 
+								receiptResultLabels.get(i).equalsIgnoreCase("Total Credit Card Sales") || 
+								receiptResultLabels.get(i).equalsIgnoreCase("Total e-Wallet Sales") || 
+								receiptResultLabels.get(i).equalsIgnoreCase("Final Adjustment (Total Amount In Cash Register)")) {
+							createCellText(receiptResultRow.getCell(0), "", false,
+									ParagraphAlignment.LEFT, 9);
+							createCellText(receiptResultRow.getCell(1), "", false,
+									ParagraphAlignment.RIGHT, 9);
+						}
+						createCellText(receiptResultRow.getCell(0), receiptResultLabels.get(i), false,
+								ParagraphAlignment.LEFT, 9);
+						createCellText(receiptResultRow.getCell(1), receiptResultContents.get(i), false,
+								ParagraphAlignment.RIGHT, 9);
+					}
+					
+					long receiptResultTableWidths[] = { 2980, 1000 };
+
+					CTTblGrid cttblgridReceiptResult = receiptResultTable.getCTTbl().addNewTblGrid();
+					cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("2780"));
+					cttblgridReceiptResult.addNewGridCol().setW(new BigInteger("1000"));
+
+					for (int x = 0; x < receiptResultTable.getNumberOfRows(); x++) {
+						XWPFTableRow row = receiptResultTable.getRow(x);
+						int numberOfCell = row.getTableCells().size();
+						for (int y = 0; y < numberOfCell; y++) {
+							XWPFTableCell cell = row.getCell(y);
+							cell.getCTTc().addNewTcPr().addNewTcW()
+									.setW(BigInteger.valueOf(receiptResultTableWidths[y]));
+						}
+					}
+										
+					emptyParagraph = doc.createParagraph();
+					emptyParagraph.setSpacingAfter(0);
+					emptyParagraph.createRun().addBreak();
+					emptyParagraph.removeRun(0);
+
+					/*emptyParagraph = doc.createParagraph();
+					emptyParagraph.setAlignment(ParagraphAlignment.CENTER);
+					emptyParagraph.setSpacingAfter(1440);
+					emptyParagraph.createRun().setText("Please Come Again. Thank You");*/
+					
+					// output the result as doc file
+					try (FileOutputStream out = new FileOutputStream(
+							Paths.get(eodPath, "eod.docx").toString())) {
+						doc.write(out);
+					}
+				}
+
+				XWPFDocument document = new XWPFDocument(
+						new FileInputStream(new File(Paths.get(eodPath, "eod.docx").toString())));
+				PdfOptions options = PdfOptions.create();
+				OutputStream out = new FileOutputStream(new File(Paths.get(eodPath, "eod.pdf").toString()));
+				PdfConverter.getInstance().convert(document, out, options);
+				document.close();
+				out.close();
+
+				// print pdf if isDisplay pdf is false
+				if (myPrintService != null && !isDisplayPdf) {
+					PDDocument printablePdf = PDDocument
+							.load(new File(Paths.get(eodPath, "eod.pdf").toString()));
+					// PrintService myPrintService = findPrintService("EPSON TM-T82 Receipt");
+					// PrintService myPrintService = findPrintService("Posiflex PP6900 Printer");
+
+					PrinterJob job = PrinterJob.getPrinterJob();
+					job.setJobName("End Of Day Report");
+					job.setPageable(new PDFPageable(printablePdf));
+					job.setPrintService(myPrintService);
+					job.print();
+					
+					ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+					printablePdf.save(byteArrayOutputStream);
+					printablePdf.close();
+					InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+					System.out.println(inputStream.toString());
+					
+					printablePdf.close();
+				} 
+					
+				jsonResult.put(Constant.RESPONSE_CODE, "00");
+				jsonResult.put(Constant.RESPONSE_MESSAGE, "SUCCESS");
+		
 			}
 		} catch (Exception e) {
 			Logger.writeError(e, "Exception :", HARDWARE_FOLDER);

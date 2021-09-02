@@ -1074,8 +1074,14 @@ public class RestC_transaction {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt2 = null;
+		PreparedStatement stmt3 = null;
+		PreparedStatement stmt4 = null;
+		PreparedStatement stmt5 = null;
+		PreparedStatement stmt6 = null;
 		ResultSet rs = null;
 		ResultSet rs1 = null;
+		ResultSet rs2 = null;
+		ResultSet rs3 = null;
 
 		WebComponents webComponent = new WebComponents();
 		UserAuthenticationModel user = webComponent.getEcposSession(request);
@@ -1083,8 +1089,9 @@ public class RestC_transaction {
 		try {
 			if (user != null) {
 				connection = dataSource.getConnection();
+				long staffId = user.getUserLoginId();
 				JSONObject jsonObj = new JSONObject(data);
-
+				
 				stmt = connection.prepareStatement("select * from transaction where id = ?;");
 				stmt.setLong(1, jsonObj.getLong("transactionId"));
 				rs = stmt.executeQuery();
@@ -1111,10 +1118,57 @@ public class RestC_transaction {
 								stmt2 = connection.prepareStatement("update transaction SET transaction_type = ?, transaction_status = 5, updated_date = now() where id = ?");
 								stmt2.setLong(1, 2); // 2 for "void"
 								stmt2.setLong(2, jsonObj.getLong("transactionId"));
-								stmt2.executeUpdate();
+								int isTrxnVoided = stmt2.executeUpdate();
+								
+								if (isTrxnVoided == 1) {
+									if (rs.getLong("payment_method") == 1) {
+										double trxnAmt = 0.00;
+										
+										stmt3 = connection.prepareStatement("select * from transaction where id = ?");
+										stmt3.setLong(1, jsonObj.getLong("transactionId"));
+										rs2 = stmt3.executeQuery();
+										
+										while (rs2.next()) {
+											trxnAmt = rs2.getDouble("transaction_amount");
+										}
+										
+										stmt4 = connection.prepareStatement("select cash_amount, cash_alert from cash_drawer;");
+										rs3 = stmt4.executeQuery();
 
-								jsonResult.put(Constant.RESPONSE_CODE, "00");
-								jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+										if (rs3.next()) {
+											//long cashAlert = rs3.getLong("cash_alert");
+											double currentCash = rs3.getDouble("cash_amount");
+											double newCash = currentCash - trxnAmt;
+
+											stmt5 = connection.prepareStatement("update cash_drawer set cash_amount = ?;");
+											stmt5.setDouble(1, newCash);
+											int isCashDrawerUpdated = stmt5.executeUpdate();
+
+											stmt6 = connection.prepareStatement("insert into cash_drawer_log(cash_amount,new_amount,reference,performed_by) VALUES (?,?,?,?);");
+											stmt6.setDouble(1, trxnAmt);
+											stmt6.setDouble(2, newCash);
+											stmt6.setString(3, "Void/Refund");
+											stmt6.setLong(4, staffId);
+											int isCashDrawerLogUpdated = stmt6.executeUpdate();
+											
+											if (isCashDrawerUpdated == 1 && isCashDrawerLogUpdated == 1) {
+												jsonResult.put(Constant.RESPONSE_CODE, "00");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+											} else {
+												Logger.writeActivity("Update Cash Drawer Failed", ECPOS_FOLDER);
+												jsonResult.put(Constant.RESPONSE_CODE, "01");
+												jsonResult.put(Constant.RESPONSE_MESSAGE, "Update Cash Drawer Failed");
+											}
+										}
+									} else {
+										jsonResult.put(Constant.RESPONSE_CODE, "00");
+										jsonResult.put(Constant.RESPONSE_MESSAGE, "Transaction Successfully Voided");
+									}
+								} else {
+									Logger.writeActivity("Update Transaction Status Failed", ECPOS_FOLDER);
+									jsonResult.put(Constant.RESPONSE_CODE, "01");
+									jsonResult.put(Constant.RESPONSE_MESSAGE, "Update Transaction Status Failed");
+								}
 							}
 
 							// card void
@@ -1259,8 +1313,14 @@ public class RestC_transaction {
 			try {
 				if (rs != null) {rs.close();}
 				if (rs1 != null) {rs1.close();}
+				if (rs2 != null) {rs2.close();}
+				if (rs3 != null) {rs3.close();}
 				if (stmt != null){stmt.close();}
-				if (stmt2 != null){stmt.close();}
+				if (stmt2 != null){stmt2.close();}
+				if (stmt3 != null){stmt3.close();}
+				if (stmt4 != null){stmt4.close();}
+				if (stmt5 != null){stmt5.close();}
+				if (stmt6 != null){stmt6.close();}
 				if (connection != null) {connection.close();}
 			} catch (SQLException e) {
 				Logger.writeError(e, "SQLException :", ECPOS_FOLDER);

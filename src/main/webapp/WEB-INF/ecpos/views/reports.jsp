@@ -103,6 +103,11 @@
 									</table>
 								</div>
 								</div>
+								</br>
+								<div class="box-header with-border" style="border:1px grey solid;">
+									<h3 class="box-title">End Of Day Report</h3>
+									<button ng-click="printEODReport()">Print</button>
+								</div>
 							</div>
 						</div>	
 					</div>
