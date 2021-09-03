@@ -233,12 +233,16 @@ var isLoad = true;
 
 var isSyncMenu = false;
 var isSyncStore = false;
+var isSuncTransaction = false;
 
 var formTypeID = ${loginType};
 var isFormSwitchable = ${isLoginSwitch};
 
 var isQRLoginExecuted = true;
 var loginQRContent = "";
+
+var storeId = "";
+var brandId = "";
 
 $("div#loadingPanel").hide();
 $("div#loginPanel").hide();
@@ -369,7 +373,7 @@ function syncMenu() {
 }
 
 function syncStore() {
-	updateProgressbar("Checking Store Update...", 50);
+	updateProgressbar("Checking Store Update...", 30);
 	$.ajax({
 	    type: "POST",
 	    url: "${pageContext.request.contextPath}/syncStore",
@@ -381,9 +385,46 @@ function syncStore() {
 				if (response.resultCode == "00") {
 					formTypeID = response.loginType;
 					isFormSwitchable = response.loginSwitch;
-					updateLoginUI();
+					//updateLoginUI();
 					
 					isSyncStore = true;
+					//loadSuccess();
+					setTimeout(function(){
+						storeId = response.storeId;
+						brandId = response.brandId;
+						syncTransaction();
+					}, 500);
+				} else {
+					loadFailed(response.resultMessage);
+				}
+			} else {
+				loadFailed("Invalid Server Response.");
+			}
+	    },
+	    failure: function(errMsg) {
+	    	loadFailed("System Error. Please Try Again.");
+	    },
+	    error: function (xhr, ajaxOptions, thrownError) {
+	    	loadFailed("System Error. Please Try Again.");
+	    }
+	});
+}
+
+function syncTransaction() {
+	updateProgressbar("Checking Transaction Update...", 50);
+	$.ajax({
+	    type: "POST",
+	    url: "${pageContext.request.contextPath}/syncTransaction",
+	    contentType: "application/json; charset=utf-8",
+	    dataType: "json",
+	    data: JSON.stringify({"brandId": brandId, "storeId": storeId}),
+	    timeout: 30 * 1000,
+	    success: function(response) {
+	    	if (response != null && response.resultCode != null) {
+				if (response.resultCode == "00") {
+					updateLoginUI();
+					
+					isSyncTransaction = true;
 					loadSuccess();
 				} else {
 					loadFailed(response.resultMessage);

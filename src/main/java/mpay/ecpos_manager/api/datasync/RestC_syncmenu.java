@@ -440,6 +440,8 @@ public class RestC_syncmenu {
 							? responseData.getString("resultMessage")
 							: "Unknown error. Please try again later.";
 				}
+				result.put("storeId", String.valueOf(rs1.getInt("id")));
+				result.put("brandId", activationInfo.getString("brandId"));
 			} else {
 				// perform reactivation or sync store info
 			}
@@ -454,7 +456,7 @@ public class RestC_syncmenu {
 			Logger.writeActivity("Error occurred. Refer error log.", SYNC_FOLDER);
 			Logger.writeError(e, "Error", SYNC_FOLDER);
 		} finally {
-			Logger.writeActivity("----------- SYNC MENU END ---------", SYNC_FOLDER);
+			Logger.writeActivity("----------- SYNC STORE END ---------", SYNC_FOLDER);
 			
 			try {
 				if (connection != null) {
